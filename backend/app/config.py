@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-1.5-flash"
+    gistda_api_key: str | None = None
+    nasa_firms_map_key: str | None = None
 
     @property
     def allowed_origins(self) -> list[str]:

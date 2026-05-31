@@ -1,13 +1,70 @@
 {
-  "current_pm25": 48,
-  "category": "เริ่มมีผลกระทบต่อสุขภาพ",
-  "color": "orange",
-  "trend": "rising",
-  "latest_update": "2026-05-30T08:00:00+07:00",
-  "source": "cached sample; adapter target: Air4Thai primary, OpenAQ backup",
+  "current_pm25": 8.4,
+  "category": "ดีมาก",
+  "color": "green",
+  "trend": "stable",
+  "latest_update": "2026-05-31T15:00:00+07:00",
+  "source": "Air4Thai Live API",
   "stations": [
-    { "id": "CM-35T", "name": "ศาลากลางจังหวัดเชียงใหม่", "district": "เมืองเชียงใหม่", "latitude": 18.8406, "longitude": 98.9697, "pm25": 52, "trend": "rising", "updated_at": "2026-05-30T08:00:00+07:00" },
-    { "id": "CM-UP", "name": "มหาวิทยาลัยเชียงใหม่", "district": "เมืองเชียงใหม่", "latitude": 18.8021, "longitude": 98.9529, "pm25": 46, "trend": "stable", "updated_at": "2026-05-30T08:00:00+07:00" },
-    { "id": "CM-MR", "name": "แม่ริม", "district": "แม่ริม", "latitude": 18.9162, "longitude": 98.9392, "pm25": 57, "trend": "rising", "updated_at": "2026-05-30T08:00:00+07:00" }
+    {
+      "id": "CM-35T",
+      "name": "ศูนย์ราชการจังหวัดเชียงใหม่ ",
+      "district": "Meuang",
+      "latitude": 18.840732,
+      "longitude": 98.96978,
+      "pm25": 13.7,
+      "trend": "stable",
+      "updated_at": "2026-05-31T15:00:00+07:00"
+    },
+    {
+      "id": "CM-36T",
+      "name": "โรงเรียนยุพราชวิทยาลัย ",
+      "district": "Meuang",
+      "latitude": 18.7909333,
+      "longitude": 98.99,
+      "pm25": 9.4,
+      "trend": "stable",
+      "updated_at": "2026-05-31T15:00:00+07:00"
+    },
+    {
+      "id": "CM-O23",
+      "name": "พระตำหนักภูพิงคราชนิเวศน์ ",
+      "district": "Mueang",
+      "latitude": 18.804894,
+      "longitude": 98.900698,
+      "pm25": 6.5,
+      "trend": "stable",
+      "updated_at": "2026-05-31T15:00:00+07:00"
+    },
+    {
+      "id": "CM-O69",
+      "name": "การไฟฟ้าส่วนภูมิภาค สาขา อำเภอฮอด",
+      "district": "Hot",
+      "latitude": 18.172495,
+      "longitude": 98.61069,
+      "pm25": 8.0,
+      "trend": "stable",
+      "updated_at": "2026-05-31T15:00:00+07:00"
+    },
+    {
+      "id": "CM-O70",
+      "name": "สำนักงานเทศบาลตำบลเมืองนะ",
+      "district": "Chiang Dao",
+      "latitude": 19.593889,
+      "longitude": 98.961667,
+      "pm25": 6.3,
+      "trend": "stable",
+      "updated_at": "2026-05-31T15:00:00+07:00"
+    },
+    {
+      "id": "CM-O71",
+      "name": "โรงพยาบาลเทพรัตนเวชชานุกูล แม่แจ่ม",
+      "district": "Mae Chaem",
+      "latitude": 18.498333,
+      "longitude": 98.379444,
+      "pm25": 6.8,
+      "trend": "stable",
+      "updated_at": "2026-05-31T15:00:00+07:00"
+    }
   ]
 }

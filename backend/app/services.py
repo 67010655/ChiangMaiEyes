@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 from app.config import Settings
@@ -10,7 +11,11 @@ from app.models import (
     SummaryResponse,
     WeatherResponse,
 )
+from app.providers.weather_provider import fetch_live_weather
+from app.providers.pm25_provider import fetch_live_pm25
+from app.providers.hotspot_provider import fetch_live_hotspots
 
+logger = logging.getLogger(__name__)
 
 AQI_COLORS = {
     "ดี": "green",
@@ -26,19 +31,46 @@ def read_json(cache_dir: Path, filename: str) -> dict:
         return json.load(handle)
 
 
+def write_json(cache_dir: Path, filename: str, data: dict) -> None:
+    try:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        with (cache_dir / filename).open("w", encoding="utf-8") as handle:
+            json.dump(data, handle, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logger.error(f"Error writing cached JSON file {filename}: {e}")
+
+
 def get_hotspots(settings: Settings) -> HotspotResponse:
-    data = read_json(settings.cache_dir, "hotspots.json")
-    return HotspotResponse(**data)
+    try:
+        response = fetch_live_hotspots(settings.gistda_api_key, settings.nasa_firms_map_key)
+        write_json(settings.cache_dir, "hotspots.json", response.model_dump())
+        return response
+    except Exception as e:
+        logger.warning(f"Failed to fetch live hotspots, falling back to cached file: {e}")
+        data = read_json(settings.cache_dir, "hotspots.json")
+        return HotspotResponse(**data)
 
 
 def get_pm25(settings: Settings) -> Pm25Response:
-    data = read_json(settings.cache_dir, "pm25.json")
-    return Pm25Response(**data)
+    try:
+        response = fetch_live_pm25()
+        write_json(settings.cache_dir, "pm25.json", response.model_dump())
+        return response
+    except Exception as e:
+        logger.warning(f"Failed to fetch live PM2.5, falling back to cached file: {e}")
+        data = read_json(settings.cache_dir, "pm25.json")
+        return Pm25Response(**data)
 
 
 def get_weather(settings: Settings) -> WeatherResponse:
-    data = read_json(settings.cache_dir, "weather.json")
-    return WeatherResponse(**data)
+    try:
+        response = fetch_live_weather()
+        write_json(settings.cache_dir, "weather.json", response.model_dump())
+        return response
+    except Exception as e:
+        logger.warning(f"Failed to fetch live weather, falling back to cached file: {e}")
+        data = read_json(settings.cache_dir, "weather.json")
+        return WeatherResponse(**data)
 
 
 def wind_pushes_smoke_to_city(wind_direction_deg: int) -> bool:
