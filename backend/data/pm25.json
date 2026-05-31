@@ -1,0 +1,13 @@
+{
+  "current_pm25": 48,
+  "category": "เริ่มมีผลกระทบต่อสุขภาพ",
+  "color": "orange",
+  "trend": "rising",
+  "latest_update": "2026-05-30T08:00:00+07:00",
+  "source": "cached sample; adapter target: Air4Thai primary, OpenAQ backup",
+  "stations": [
+    { "id": "CM-35T", "name": "ศาลากลางจังหวัดเชียงใหม่", "district": "เมืองเชียงใหม่", "latitude": 18.8406, "longitude": 98.9697, "pm25": 52, "trend": "rising", "updated_at": "2026-05-30T08:00:00+07:00" },
+    { "id": "CM-UP", "name": "มหาวิทยาลัยเชียงใหม่", "district": "เมืองเชียงใหม่", "latitude": 18.8021, "longitude": 98.9529, "pm25": 46, "trend": "stable", "updated_at": "2026-05-30T08:00:00+07:00" },
+    { "id": "CM-MR", "name": "แม่ริม", "district": "แม่ริม", "latitude": 18.9162, "longitude": 98.9392, "pm25": 57, "trend": "rising", "updated_at": "2026-05-30T08:00:00+07:00" }
+  ]
+}

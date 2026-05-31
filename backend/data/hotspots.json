@@ -1,0 +1,13 @@
+{
+  "count": 134,
+  "density_per_100_km2": 3.8,
+  "latest_update": "2026-05-31T08:00:00+07:00",
+  "source": "cached sample; adapter target: GISTDA Disaster daily hotspot update, NASA FIRMS backup",
+  "items": [
+    { "id": "HS-001", "latitude": 18.9342, "longitude": 98.7424, "district": "แม่ริม", "confidence": 82, "source": "GISTDA Disaster sample", "detected_at": "2026-05-31T07:10:00+07:00" },
+    { "id": "HS-002", "latitude": 18.6741, "longitude": 98.5991, "district": "หางดง", "confidence": 76, "source": "GISTDA Disaster sample", "detected_at": "2026-05-31T07:25:00+07:00" },
+    { "id": "HS-003", "latitude": 19.1748, "longitude": 98.8914, "district": "เชียงดาว", "confidence": 88, "source": "GISTDA Disaster sample", "detected_at": "2026-05-31T07:35:00+07:00" },
+    { "id": "HS-004", "latitude": 18.5156, "longitude": 98.3832, "district": "สะเมิง", "confidence": 69, "source": "GISTDA Disaster sample", "detected_at": "2026-05-31T07:40:00+07:00" },
+    { "id": "HS-005", "latitude": 18.2368, "longitude": 98.6562, "district": "จอมทอง", "confidence": 91, "source": "GISTDA Disaster sample", "detected_at": "2026-05-31T07:55:00+07:00" }
+  ]
+}

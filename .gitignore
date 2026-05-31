@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Environment and local service config
+.env
+.env.*
+!.env.example
+.vercel/
+
+# Python cache/test output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,141 @@
+﻿:root {
+  color: #17211d;
+  background: #f6f8f4;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; margin: 0; }
+body { background: #f6f8f4; }
+button { font: inherit; }
+
+.app-shell {
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid #dce5dc;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(23, 33, 29, 0.06);
+}
+
+.topbar h1 { margin: 0; font-size: clamp(1.45rem, 2vw, 2.1rem); line-height: 1.05; letter-spacing: 0; }
+.topbar p { margin: 6px 0 0; color: #5b6b62; font-size: 0.96rem; }
+.topbar__status { display: inline-flex; align-items: center; gap: 8px; color: #355248; font-size: 0.9rem; white-space: nowrap; }
+
+.notice {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+}
+
+.dashboard-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(310px, 380px) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.side-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.metric-card, .risk-panel, .summary-panel {
+  background: #ffffff;
+  border: 1px solid #dce5dc;
+  border-radius: 8px;
+  padding: 14px;
+  box-shadow: 0 10px 24px rgba(23, 33, 29, 0.05);
+}
+
+.metric-card { border-left: 5px solid #229954; }
+.metric-card[data-tone="yellow"] { border-left-color: #f1c40f; }
+.metric-card[data-tone="orange"] { border-left-color: #e67e22; }
+.metric-card[data-tone="red"] { border-left-color: #c0392b; }
+.metric-card[data-tone="purple"] { border-left-color: #7d3c98; }
+.metric-card[data-tone="hotspot"] { border-left-color: #ef4e2f; }
+.metric-card[data-tone="wind"] { border-left-color: #2f80ed; }
+
+.metric-card__top, .risk-panel__header, .summary-panel > div { display: flex; align-items: center; gap: 9px; color: #43564d; font-size: 0.9rem; font-weight: 700; }
+.metric-card__icon { display: inline-flex; color: #274d40; }
+.metric-card strong { display: block; margin-top: 8px; font-size: 2rem; line-height: 1; }
+.metric-card small, .summary-panel small { display: block; margin-top: 8px; color: #66766d; line-height: 1.45; }
+
+.risk-panel__score { display: flex; align-items: baseline; margin: 8px 0; }
+.risk-panel__score strong { font-size: 3.3rem; line-height: 1; }
+.risk-panel__score span { color: #66766d; font-weight: 700; }
+.risk-bar { height: 12px; border-radius: 999px; overflow: hidden; background: #e6ece7; }
+.risk-bar span { display: block; height: 100%; background: linear-gradient(90deg, #229954, #f1c40f, #e67e22, #c0392b, #7d3c98); }
+.risk-category { margin: 10px 0; font-weight: 800; color: #17211d; }
+.risk-panel code { display: block; white-space: normal; color: #53655b; background: #f3f6f1; border-radius: 6px; padding: 9px; font-size: 0.78rem; line-height: 1.5; }
+
+.summary-panel p { margin: 10px 0 0; line-height: 1.65; font-size: 1rem; }
+
+.map-stage {
+  position: relative;
+  min-height: 650px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #dce5dc;
+  background: #e9efe8;
+  box-shadow: 0 10px 24px rgba(23, 33, 29, 0.06);
+}
+
+.leaflet-stage { height: 100%; min-height: 650px; width: 100%; }
+.map-toolbar {
+  position: absolute;
+  z-index: 500;
+  top: 12px;
+  left: 54px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: calc(100% - 70px);
+}
+.map-toolbar button {
+  border: 1px solid #c8d7ce;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.94);
+  color: #31483f;
+  padding: 8px 11px;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(23,33,29,0.1);
+}
+.map-toolbar button.active { background: #1f6f5b; color: #ffffff; border-color: #1f6f5b; }
+
+.wind-marker { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: rgba(47, 128, 237, 0.92); color: #fff; border: 2px solid #fff; box-shadow: 0 8px 18px rgba(28, 58, 86, 0.24); }
+.wind-marker span { display: block; font-size: 26px; line-height: 1; transform-origin: center; }
+
+@media (max-width: 920px) {
+  .app-shell { padding: 12px; }
+  .topbar { align-items: flex-start; flex-direction: column; }
+  .topbar__status { white-space: normal; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .side-panel { order: 2; }
+  .map-stage, .leaflet-stage { min-height: 520px; }
+  .map-toolbar { left: 48px; top: 10px; }
+}
+
+@media (max-width: 560px) {
+  .app-shell { padding: 8px; gap: 10px; }
+  .topbar, .metric-card, .risk-panel, .summary-panel { padding: 12px; }
+  .map-stage, .leaflet-stage { min-height: 430px; }
+  .map-toolbar { position: relative; left: auto; top: auto; z-index: 500; padding: 8px; background: #ffffff; border-bottom: 1px solid #dce5dc; }
+  .map-toolbar button { padding: 7px 9px; }
+}

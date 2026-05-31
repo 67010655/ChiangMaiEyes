@@ -1,0 +1,9 @@
+{
+  "wind_speed_kmh": 14,
+  "wind_direction_deg": 255,
+  "wind_direction_text": "ตะวันตกเฉียงใต้",
+  "temperature_c": 33,
+  "humidity_percent": 42,
+  "latest_update": "2026-05-30T08:00:00+07:00",
+  "source": "cached sample; adapter target: TMD primary, Open-Meteo backup"
+}
