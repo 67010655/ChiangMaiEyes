@@ -1,5 +1,6 @@
 ﻿import L from 'leaflet';
-import { CircleMarker, MapContainer, Marker, Polygon, Popup, TileLayer } from 'react-leaflet';
+import { CircleMarker, MapContainer, Marker, Polygon, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { useEffect } from 'react';
 import type { DashboardResponse } from '../lib/types';
 
 type Props = {
@@ -60,6 +61,16 @@ function pm25Color(pm25: number) {
   return '#7d3c98';
 }
 
+function ProvinceViewport() {
+  const map = useMap();
+
+  useEffect(() => {
+    map.fitBounds(chiangMaiMapBounds, { padding: [18, 18] });
+  }, [map]);
+
+  return null;
+}
+
 export function DashboardMap({ dashboard, layers }: Props) {
   return (
     <MapContainer
@@ -71,22 +82,31 @@ export function DashboardMap({ dashboard, layers }: Props) {
       scrollWheelZoom
       className="leaflet-stage"
     >
+      <ProvinceViewport />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
       {layers.districts && (
-        <Polygon
-          positions={chiangMaiProvinceBoundary}
-          pathOptions={{ color: '#17664f', weight: 4, opacity: 0.92, fillColor: '#2ea672', fillOpacity: 0.09 }}
-        >
-          <Popup>
-            <strong>จังหวัดเชียงใหม่</strong><br />
-            กรอบจังหวัดแบบ simplified สำหรับ MVP<br />
-            แทนที่ได้ด้วย GeoJSON จาก OSM relation 1908771 หรือข้อมูลราชการ
-          </Popup>
-        </Polygon>
+        <>
+          <Polygon
+            positions={chiangMaiProvinceBoundary}
+            pathOptions={{ color: '#0f4f3e', weight: 11, opacity: 0.18, fillOpacity: 0, interactive: false }}
+          />
+          <Polygon
+            positions={chiangMaiProvinceBoundary}
+            pathOptions={{ color: '#0f6b54', weight: 4, opacity: 0.98, fillColor: '#55c28f', fillOpacity: 0.11, dashArray: '10 8' }}
+          >
+            <Tooltip permanent direction="top" className="province-tooltip" offset={[0, -8]}>
+              ขอบเขตจังหวัดเชียงใหม่
+            </Tooltip>
+            <Popup>
+              <strong>จังหวัดเชียงใหม่</strong><br />
+              โฟกัสการรายงานเฉพาะพื้นที่ภายในขอบเขตจังหวัดเชียงใหม่
+            </Popup>
+          </Polygon>
+        </>
       )}
 
       {layers.hotspots &&
