@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     app_name: str = "ChiangMaiEyes API"
     cache_dir: Path = Field(default=Path(__file__).resolve().parent.parent / "data")
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5173,https://chiangmaieyes.vercel.app"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-1.5-flash"
     gistda_api_key: str | None = None
