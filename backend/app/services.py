@@ -14,6 +14,7 @@ from app.models import (
 from app.providers.weather_provider import fetch_live_weather
 from app.providers.pm25_provider import fetch_live_pm25
 from app.providers.hotspot_provider import fetch_live_hotspots
+from app.text import repair_thai_mojibake_tree
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ def write_json(cache_dir: Path, filename: str, data: dict) -> None:
 def get_hotspots(settings: Settings) -> HotspotResponse:
     try:
         response = fetch_live_hotspots(settings.gistda_api_key, settings.nasa_firms_map_key)
+        response = HotspotResponse(**repair_thai_mojibake_tree(response.model_dump()))
         write_json(settings.cache_dir, "hotspots.json", response.model_dump())
         return response
     except Exception as e:
@@ -54,6 +56,7 @@ def get_hotspots(settings: Settings) -> HotspotResponse:
 def get_pm25(settings: Settings) -> Pm25Response:
     try:
         response = fetch_live_pm25()
+        response = Pm25Response(**repair_thai_mojibake_tree(response.model_dump()))
         write_json(settings.cache_dir, "pm25.json", response.model_dump())
         return response
     except Exception as e:
@@ -65,6 +68,7 @@ def get_pm25(settings: Settings) -> Pm25Response:
 def get_weather(settings: Settings) -> WeatherResponse:
     try:
         response = fetch_live_weather()
+        response = WeatherResponse(**repair_thai_mojibake_tree(response.model_dump()))
         write_json(settings.cache_dir, "weather.json", response.model_dump())
         return response
     except Exception as e:
@@ -119,7 +123,7 @@ def fallback_summary(pm25: Pm25Response, hotspots: HotspotResponse, weather: Wea
         f"และลมพัดจากทิศ {weather.wind_direction_text} ด้วยความเร็ว {weather.wind_speed_kmh:.0f} กม./ชม. "
         f"คะแนนความเสี่ยงอยู่ที่ {risk.score}/10 ระดับ {risk.category} {action}"
     )
-    return SummaryResponse(language="th", text=text, source="rule-based fallback")
+    return SummaryResponse(language="th", text=repair_thai_mojibake_tree(text), source="rule-based fallback")
 
 
 def get_summary(settings: Settings, pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse, risk: RiskResponse) -> SummaryResponse:

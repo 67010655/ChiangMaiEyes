@@ -1,0 +1,104 @@
+{
+  "hotspots": {
+    "count": 0,
+    "density_per_100_km2": 0.0,
+    "latest_update": "2026-05-31T15:44:28.383612+07:00",
+    "source": "GISTDA Sphere Live API",
+    "items": []
+  },
+  "pm25": {
+    "current_pm25": 8.4,
+    "category": "ดีมาก",
+    "color": "green",
+    "trend": "stable",
+    "latest_update": "2026-05-31T15:00:00+07:00",
+    "source": "Air4Thai Live API",
+    "stations": [
+      {
+        "id": "CM-35T",
+        "name": "ศูนย์ราชการจังหวัดเชียงใหม่ ",
+        "district": "Meuang",
+        "latitude": 18.840732,
+        "longitude": 98.96978,
+        "pm25": 13.7,
+        "trend": "stable",
+        "updated_at": "2026-05-31T15:00:00+07:00"
+      },
+      {
+        "id": "CM-36T",
+        "name": "โรงเรียนยุพราชวิทยาลัย ",
+        "district": "Meuang",
+        "latitude": 18.7909333,
+        "longitude": 98.99,
+        "pm25": 9.4,
+        "trend": "stable",
+        "updated_at": "2026-05-31T15:00:00+07:00"
+      },
+      {
+        "id": "CM-O23",
+        "name": "พระตำหนักภูพิงคราชนิเวศน์ ",
+        "district": "Mueang",
+        "latitude": 18.804894,
+        "longitude": 98.900698,
+        "pm25": 6.5,
+        "trend": "stable",
+        "updated_at": "2026-05-31T15:00:00+07:00"
+      },
+      {
+        "id": "CM-O69",
+        "name": "การไฟฟ้าส่วนภูมิภาค สาขา อำเภอฮอด",
+        "district": "Hot",
+        "latitude": 18.172495,
+        "longitude": 98.61069,
+        "pm25": 8.0,
+        "trend": "stable",
+        "updated_at": "2026-05-31T15:00:00+07:00"
+      },
+      {
+        "id": "CM-O70",
+        "name": "สำนักงานเทศบาลตำบลเมืองนะ",
+        "district": "Chiang Dao",
+        "latitude": 19.593889,
+        "longitude": 98.961667,
+        "pm25": 6.3,
+        "trend": "stable",
+        "updated_at": "2026-05-31T15:00:00+07:00"
+      },
+      {
+        "id": "CM-O71",
+        "name": "โรงพยาบาลเทพรัตนเวชชานุกูล แม่แจ่ม",
+        "district": "Mae Chaem",
+        "latitude": 18.498333,
+        "longitude": 98.379444,
+        "pm25": 6.8,
+        "trend": "stable",
+        "updated_at": "2026-05-31T15:00:00+07:00"
+      }
+    ]
+  },
+  "weather": {
+    "wind_speed_kmh": 9.3,
+    "wind_direction_deg": 171,
+    "wind_direction_text": "ใต้",
+    "temperature_c": 29.8,
+    "humidity_percent": 71.0,
+    "latest_update": "2026-05-31T15:44:29.753879+07:00",
+    "source": "Open-Meteo Live API"
+  },
+  "risk": {
+    "score": 1,
+    "category": "Low",
+    "formula": "min(10, round(min(PM2.5/15,4) + min(hotspot_count/50,4) + wind_factor))",
+    "factors": {
+      "pm25_points": 0.56,
+      "hotspot_points": 0.0,
+      "wind_factor": 0,
+      "wind_pushes_smoke_to_city": "no"
+    }
+  },
+  "summary": {
+    "language": "th",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 8 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ใต้ ด้วยความเร็ว 9 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 1/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
+    "source": "rule-based fallback"
+  }
+}
