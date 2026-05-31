@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, type ReactNode } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Activity, AlertTriangle, Flame, Gauge, RefreshCcw, Wind } from 'lucide-react';
 import { fetchDashboard } from './lib/api';
 import { riskPercent } from './lib/risk';
@@ -38,7 +38,8 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true, districts: true });
 
-  useEffect(() => {
+  const loadDashboard = useCallback(() => {
+    setLoading(true);
     fetchDashboard()
       .then((data) => {
         setDashboard(data);
@@ -47,6 +48,12 @@ export function App() {
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadDashboard();
+    const refreshId = window.setInterval(loadDashboard, 5 * 60 * 1000);
+    return () => window.clearInterval(refreshId);
+  }, [loadDashboard]);
 
   const updatedAt = useMemo(() => {
     const times = [dashboard.hotspots.latest_update, dashboard.pm25.latest_update, dashboard.weather.latest_update];
