@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Activity, Flame, Info, Menu, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
+import { Flame, Info, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
 import { fetchDashboard } from './lib/api';
 import { riskPercent } from './lib/risk';
 import type { DashboardResponse } from './lib/types';
@@ -58,26 +58,47 @@ const adviceByColor: Record<string, { heading: string; text: string }> = {
   },
 };
 
-function Sparkline() {
-  // Decorative 24h trend placeholder because the backend does not expose a time series yet.
-  const points = [10, 9, 11, 8, 12, 9, 8, 10, 9, 13, 10, 9, 11, 8, 9, 10];
-  const w = 132;
-  const h = 44;
-  const max = Math.max(...points);
-  const min = Math.min(...points);
-  const step = w / (points.length - 1);
-  const path = points
-    .map((v, i) => {
-      const x = i * step;
-      const y = h - ((v - min) / (max - min || 1)) * (h - 6) - 3;
-      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`;
-    })
-    .join(' ');
+const PM_SEGMENTS = ['#16a34a', '#eab308', '#f97316', '#dc2626', '#7c3aed'];
+const PM_BOUNDS = [0, 25, 37, 50, 90, 150];
+const PM_TICKS = [25, 37, 50, 90];
+
+// Map a PM2.5 reading onto an equal-width 5-band category scale so the marker
+// lines up with its colour band and the printed thresholds.
+function pmScalePercent(value: number) {
+  for (let i = 0; i < 5; i += 1) {
+    const lo = PM_BOUNDS[i];
+    const hi = PM_BOUNDS[i + 1];
+    if (value <= hi || i === 4) {
+      const t = Math.min(Math.max((value - lo) / (hi - lo), 0), 1);
+      return Math.min((i + t) * 20, 100);
+    }
+  }
+  return 100;
+}
+
+function Pm25Scale({ value }: { value: number }) {
+  // Real category scale: the current reading against published thresholds, not
+  // a fabricated time series. The number + badge carry the value for assistive
+  // tech, so the bar itself is decorative to a screen reader.
+  const pct = pmScalePercent(value);
   return (
-    <svg className="sparkline" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden>
-      <path d={`${path} L${w} ${h} L0 ${h} Z`} className="sparkline__fill" />
-      <path d={path} className="sparkline__line" />
-    </svg>
+    <div className="pm-scale" aria-hidden>
+      <div className="pm-scale__bar">
+        <div className="pm-scale__track">
+          {PM_SEGMENTS.map((color) => (
+            <span key={color} className="pm-scale__seg" style={{ background: color }} />
+          ))}
+        </div>
+        <span className="pm-scale__marker" style={{ left: `${pct}%` }} />
+      </div>
+      <div className="pm-scale__ticks">
+        {PM_TICKS.map((tick, i) => (
+          <span key={tick} style={{ left: `${(i + 1) * 20}%` }}>
+            {tick}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -115,6 +136,7 @@ export function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true });
+  const [note, setNote] = useState<'pm' | 'risk' | null>(null);
 
   const loadDashboard = useCallback(() => {
     setLoading(true);
@@ -142,6 +164,7 @@ export function App() {
   const riskTone = getRiskTone(dashboard.risk.score);
   const allOn = layers.hotspots && layers.pm25 && layers.wind;
   const toggleLayer = (key: keyof LayerState) => setLayers((current) => ({ ...current, [key]: !current[key] }));
+  const toggleNote = (key: 'pm' | 'risk') => setNote((current) => (current === key ? null : key));
   const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true });
 
   const pm25Time = formatTime(dashboard.pm25.latest_update);
@@ -184,9 +207,6 @@ export function App() {
           <button className="icon-button" type="button" onClick={loadDashboard} aria-label="อัปเดตข้อมูล">
             <RefreshCcw size={18} />
           </button>
-          <button className="icon-button icon-button--filled" type="button" aria-label="เมนู">
-            <Menu size={18} />
-          </button>
         </div>
       </header>
 
@@ -197,21 +217,28 @@ export function App() {
           <section className="card pm-card">
             <div className="card__head">
               <span className="card__title">PM2.5 เฉลี่ย 24 ชม.</span>
-              <Info size={16} className="card__info" />
+              <button
+                type="button"
+                className="card__info-btn"
+                aria-label="คำอธิบายค่า PM2.5"
+                aria-expanded={note === 'pm'}
+                aria-controls="pm-note"
+                onClick={() => toggleNote('pm')}
+              >
+                <Info size={15} />
+              </button>
             </div>
+            {note === 'pm' && (
+              <p id="pm-note" className="card__note">
+                ค่าเฉลี่ย PM2.5 รอบ 24 ชั่วโมงจากสถานีตรวจวัดในเชียงใหม่ · เกณฑ์สี: ≤25 ดี · ≤37 ปานกลาง · ≤50 เริ่มมีผล · ≤90 มีผล · เกิน 90 อันตราย
+              </p>
+            )}
             <div className="pm-card__body">
               <div className="pm-card__value">
                 <strong>{dashboard.pm25.current_pm25}</strong>
                 <span>µg/m³</span>
               </div>
-              <div className="pm-card__chart">
-                <Sparkline />
-                <div className="pm-card__axis">
-                  <span>00:00</span>
-                  <span>08:00</span>
-                  <span>16:00</span>
-                </div>
-              </div>
+              <Pm25Scale value={dashboard.pm25.current_pm25} />
             </div>
             <span className={`badge badge--${dashboard.pm25.color}`}>{dashboard.pm25.category}</span>
             <small className="card__foot">อัปเดต {pm25Time} น.</small>
@@ -250,8 +277,22 @@ export function App() {
           <section className="card risk-card" data-risk={riskTone}>
             <div className="card__head">
               <span className="card__title">คะแนนความเสี่ยงการเกิดหมอกควัน</span>
-              <Info size={16} className="card__info" />
+              <button
+                type="button"
+                className="card__info-btn"
+                aria-label="คำอธิบายคะแนนความเสี่ยง"
+                aria-expanded={note === 'risk'}
+                aria-controls="risk-note"
+                onClick={() => toggleNote('risk')}
+              >
+                <Info size={15} />
+              </button>
             </div>
+            {note === 'risk' && (
+              <p id="risk-note" className="card__note">
+                คะแนน 0–10 รวมจาก 3 ปัจจัย: PM2.5 (สูงสุด 4), จุดความร้อน (สูงสุด 4) และทิศทางลม (สูงสุด 2) · ยิ่งคะแนนสูง โอกาสเกิดและสะสมหมอกควันยิ่งมาก
+              </p>
+            )}
             <div className="risk-card__body">
               <div className="risk-card__gauge">
                 <RiskDonut score={dashboard.risk.score} tone={riskTone} />
@@ -282,12 +323,6 @@ export function App() {
             </div>
             <h3 className={`advice-card__heading advice-card__heading--${dashboard.pm25.color}`}>{advice.heading}</h3>
             <p className="advice-card__text">{advice.text}</p>
-            <svg className="advice-card__art" viewBox="0 0 320 80" preserveAspectRatio="none" aria-hidden>
-              <path d="M0 80 L0 52 Q60 30 120 46 T240 40 T320 50 L320 80 Z" fill="#cdecd8" />
-              <path d="M0 80 L0 64 Q80 48 170 60 T320 60 L320 80 Z" fill="#a9dcbc" />
-              <circle cx="58" cy="40" r="11" fill="#86cba1" />
-              <path d="M150 60 l8-22 8 22 Z M182 60 l10-28 10 28 Z" fill="#5fb583" />
-            </svg>
           </section>
         </aside>
 

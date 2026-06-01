@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-01T16:48:10.0823332+07:00",
+  "title": "Design System: ChiangMaiEyes",
+  "extensions": {
+    "colorMeta": {
+      "civic-green": {
+        "role": "primary",
+        "displayName": "Civic Green",
+        "canonical": "#16a34a",
+        "tonalRamp": ["#052e16", "#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#86efac", "#dcfce7"]
+      },
+      "civic-green-deep": {
+        "role": "primary",
+        "displayName": "Deep Civic Green",
+        "canonical": "#0f6b54",
+        "tonalRamp": ["#022c22", "#064e3b", "#0f6b54", "#0f766e", "#14b8a6", "#5eead4", "#99f6e4", "#ccfbf1"]
+      },
+      "forest-ink": {
+        "role": "neutral",
+        "displayName": "Forest Ink",
+        "canonical": "#10231d",
+        "tonalRamp": ["#07110e", "#10231d", "#1f3a30", "#3e544a", "#6b7d74", "#9aaaa1", "#c5d2cb", "#eef3ef"]
+      },
+      "mist-bg": {
+        "role": "neutral",
+        "displayName": "Mist Background",
+        "canonical": "#eef3ef",
+        "tonalRamp": ["#10231d", "#3e544a", "#6b7d74", "#9aaaa1", "#c5d2cb", "#e3ece6", "#eef3ef", "#f6faf7"]
+      },
+      "warning-amber": {
+        "role": "tertiary",
+        "displayName": "Warning Amber",
+        "canonical": "#eab308",
+        "tonalRamp": ["#422006", "#713f12", "#a16207", "#ca8a04", "#eab308", "#facc15", "#fde68a", "#fef9c3"]
+      },
+      "hotspot-red": {
+        "role": "tertiary",
+        "displayName": "Hotspot Red",
+        "canonical": "#dc2626",
+        "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#fca5a5", "#fee2e2"]
+      },
+      "wind-blue": {
+        "role": "secondary",
+        "displayName": "Wind Blue",
+        "canonical": "#3b82f6",
+        "tonalRamp": ["#172554", "#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#bfdbfe", "#eff6ff"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Product identity and top-level status only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Map and major section headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles and panel labels."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Advice and public explanation copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Controls, badges, timestamps, metadata, and compact data."
+      }
+    },
+    "shadows": [
+      {
+        "name": "small-ambient",
+        "value": "0 6px 18px rgba(20, 52, 38, 0.06), 0 1px 2px rgba(20, 52, 38, 0.04)",
+        "purpose": "Resting cards, topbar, map stage, and compact controls."
+      },
+      {
+        "name": "panel-lift",
+        "value": "0 18px 44px rgba(20, 52, 38, 0.1), 0 2px 6px rgba(20, 52, 38, 0.04)",
+        "purpose": "Hovered or focused dashboard cards."
+      },
+      {
+        "name": "inspector-lift",
+        "value": "0 18px 46px rgba(15, 54, 39, 0.16)",
+        "purpose": "Map inspector overlays and floating contextual panels."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "150ms ease",
+        "purpose": "Hover, background, and border changes."
+      },
+      {
+        "name": "state-standard",
+        "value": "200ms cubic-bezier(0.22, 0.61, 0.36, 1)",
+        "purpose": "Card lift and smooth UI transitions."
+      },
+      {
+        "name": "map-smooth",
+        "value": "280ms cubic-bezier(0.22, 0.61, 0.36, 1)",
+        "purpose": "Button-driven map zoom and reset only."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "dashboard-stack",
+        "value": "1080px"
+      },
+      {
+        "name": "mobile",
+        "value": "720px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "Square dashboard action button for refresh, menu, zoom, and map controls.",
+      "html": "<button class=\"ds-icon-button\" aria-label=\"Refresh\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 12a9 9 0 1 1-3-6.7\"/><path d=\"M21 3v6h-6\"/></svg></button>",
+      "css": ".ds-icon-button{display:grid;place-items:center;width:42px;height:42px;border:1px solid #e3ece6;border-radius:12px;color:#0f6b54;background:#fff;box-shadow:0 6px 18px rgba(20,52,38,.06),0 1px 2px rgba(20,52,38,.04);cursor:pointer;transition:background .15s ease,border-color .15s ease}.ds-icon-button:hover{border-color:#16a34a;background:#f1f9f4}.ds-icon-button:focus-visible{outline:3px solid rgba(22,163,74,.28);outline-offset:2px}"
+    },
+    {
+      "name": "Active Filter Pill",
+      "kind": "chip",
+      "refersTo": "filter-pill-active",
+      "description": "Selected map layer filter with strong but restrained civic identity.",
+      "html": "<button class=\"ds-filter-pill\">PM2.5</button>",
+      "css": ".ds-filter-pill{border:0;border-radius:999px;background:#16a34a;color:#fff;padding:7px 14px;font:700 .82rem/1.2 Inter,'Noto Sans Thai',system-ui,sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease}.ds-filter-pill:hover{background:#0f6b54}.ds-filter-pill:focus-visible{outline:3px solid rgba(22,163,74,.28);outline-offset:2px}"
+    },
+    {
+      "name": "Dashboard Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Primary information container for public environmental metrics.",
+      "html": "<section class=\"ds-card\"><span class=\"ds-card-title\">PM2.5 เฉลี่ย 24 ชม.</span><div class=\"ds-card-value\">28<span>µg/m³</span></div><small class=\"ds-card-foot\">อัปเดต 16:30 น.</small></section>",
+      "css": ".ds-card{padding:18px;border:1px solid #e3ece6;border-radius:18px;background:#fff;color:#10231d;box-shadow:0 6px 18px rgba(20,52,38,.06),0 1px 2px rgba(20,52,38,.04);font-family:Inter,'Noto Sans Thai',system-ui,sans-serif;transition:transform .2s cubic-bezier(.22,.61,.36,1),box-shadow .2s ease,border-color .2s ease}.ds-card:hover{transform:translateY(-2px);border-color:#d4e6db;box-shadow:0 18px 44px rgba(20,52,38,.1),0 2px 6px rgba(20,52,38,.04)}.ds-card-title{display:block;color:#1f3a30;font-size:.95rem;font-weight:700}.ds-card-value{margin-top:10px;font-size:3rem;line-height:.9;font-weight:800}.ds-card-value span{margin-left:6px;color:#6b7d74;font-size:.95rem;font-weight:600}.ds-card-foot{display:block;margin-top:12px;color:#6b7d74;font-size:.8rem}"
+    },
+    {
+      "name": "Live Status Pill",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Compact update freshness indicator in the topbar.",
+      "html": "<div class=\"ds-live-pill\"><span class=\"ds-live-dot\"></span><div><strong>อัปเดตล่าสุด</strong><span>1 มิ.ย. 2569 16:30</span></div></div>",
+      "css": ".ds-live-pill{display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid #e3ece6;border-radius:999px;background:#f6faf7;font-family:Inter,'Noto Sans Thai',system-ui,sans-serif}.ds-live-pill strong{display:block;color:#0f6b54;font-size:.78rem;font-weight:800;white-space:nowrap}.ds-live-pill span{display:block;color:#6b7d74;font-size:.76rem;white-space:nowrap}.ds-live-dot{width:9px;height:9px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.16)}"
+    },
+    {
+      "name": "Risk Badge",
+      "kind": "chip",
+      "refersTo": "filter-pill-active",
+      "description": "Semantic PM2.5 or risk state badge, always paired with readable text.",
+      "html": "<span class=\"ds-risk-badge\">ปานกลาง</span>",
+      "css": ".ds-risk-badge{display:inline-block;padding:5px 14px;border-radius:999px;background:#eab308;color:#4a3c08;font:700 .82rem/1.2 Inter,'Noto Sans Thai',system-ui,sans-serif}.ds-risk-badge:focus-visible{outline:3px solid rgba(234,179,8,.32);outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Calm Civic Control Room",
+    "overview": "ChiangMaiEyes should feel like a public-interest control room that has been made humane: trustworthy, modern, and calm enough for daily use, but precise enough to support decisions during smoke season. The existing system uses a restrained green civic palette, white cards, soft mist backgrounds, and compact data modules to make environmental signals readable without turning the page into an emergency siren.",
+    "keyCharacteristics": [
+      "Restrained civic green identity with semantic risk colors used only for state.",
+      "White card surfaces over a pale mist background for calm public readability.",
+      "Single sans typography tuned for Thai and English scanning.",
+      "Map-first dashboard structure with compact panels for PM2.5, hotspots, wind, and advice.",
+      "Soft elevation and clear borders instead of heavy drama."
+    ],
+    "rules": [
+      {
+        "name": "The Semantic Color Rule",
+        "body": "Amber, orange, red, purple, and blue are data-state colors. Never use them as decorative accents unrelated to PM2.5, hotspots, risk, or wind.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Earns Its Place Rule",
+        "body": "Red is reserved for high-risk and hotspot meaning. A screen covered in red is prohibited because it becomes alarmist and unreadable.",
+        "section": "colors"
+      },
+      {
+        "name": "The Thai Scan Rule",
+        "body": "Thai text must wrap cleanly, stay at practical UI sizes, and never rely on compressed letter spacing or decorative font choices.",
+        "section": "typography"
+      },
+      {
+        "name": "The Paper First Rule",
+        "body": "Use border, background, and spacing before adding shadow. If the shadow is the only reason a surface is readable, the layout is too weak.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the current situation visible first: map, PM2.5, hotspots, wind direction, and risk score must be reachable without scrolling on desktop.",
+      "Do use Civic Green for identity, current selection, safe status, and primary action only.",
+      "Do pair every risk color with text labels, icons, or numbers so the interface works for color-blind users.",
+      "Do show source names, update times, fallback notices, and formula logic in quiet but findable metadata.",
+      "Do keep Thai labels short, scannable, and readable on mobile.",
+      "Do use soft elevation and borders to separate surfaces."
+    ],
+    "donts": [
+      "Don't make the interface feel like a stiff government portal.",
+      "Don't make it look like a crypto trading dashboard.",
+      "Don't create an alarmist emergency screen covered in red.",
+      "Don't add dense expert-only GIS controls unless they are progressively disclosed.",
+      "Don't add decorative complexity that does not help users understand smoke, PM2.5, hotspots, wind, or risk.",
+      "Don't write vague AI-style marketing copy.",
+      "Don't hide the current situation behind layout complexity or oversized decorative sections."
+    ]
+  }
+}

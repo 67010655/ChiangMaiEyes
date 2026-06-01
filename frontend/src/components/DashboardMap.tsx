@@ -781,9 +781,6 @@ export function DashboardMap({ dashboard, layers }: Props) {
       )}
 
       <div className="map-inspector" aria-live="polite">
-        <div className={`map-inspector__photo map-inspector__photo--${selection.imageKey ?? 'province'}`}>
-          <span>{selection.imageLabel ?? selection.title}</span>
-        </div>
         <span>{selection.eyebrow}</span>
         <strong>{selection.title}</strong>
         <small>{selection.detail}</small>
