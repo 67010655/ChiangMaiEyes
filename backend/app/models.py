@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -37,7 +39,7 @@ class Pm25Station(BaseModel):
 class Pm25Response(BaseModel):
     current_pm25: float
     category: str
-    color: str
+    color: Literal["green", "yellow", "orange", "red", "purple"]
     trend: str
     latest_update: str
     source: str
@@ -46,7 +48,7 @@ class Pm25Response(BaseModel):
 
 class WeatherResponse(BaseModel):
     wind_speed_kmh: float
-    wind_direction_deg: int
+    wind_direction_deg: float
     wind_direction_text: str
     temperature_c: float
     humidity_percent: float

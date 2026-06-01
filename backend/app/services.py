@@ -1,6 +1,8 @@
 import json
 import logging
+import time
 from pathlib import Path
+from typing import Any, TypeVar
 
 from app.config import Settings
 from app.models import (
@@ -17,6 +19,32 @@ from app.providers.hotspot_provider import fetch_live_hotspots
 from app.text import repair_thai_mojibake_tree
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Simple TTL cache to avoid hammering upstream APIs on every request.
+# Upstream data (Air4Thai, GISTDA, Open-Meteo) updates every 1-6 hours;
+# a 5-minute TTL is a good balance between freshness and rate-limit safety.
+# ---------------------------------------------------------------------------
+_CACHE_TTL_SECONDS = 300  # 5 minutes
+
+T = TypeVar("T")
+
+_cache: dict[str, tuple[float, Any]] = {}
+
+
+def _get_cached(key: str) -> Any | None:
+    entry = _cache.get(key)
+    if entry is None:
+        return None
+    ts, value = entry
+    if time.monotonic() - ts > _CACHE_TTL_SECONDS:
+        del _cache[key]
+        return None
+    return value
+
+
+def _set_cached(key: str, value: Any) -> None:
+    _cache[key] = (time.monotonic(), value)
 
 AQI_COLORS = {
     "ดี": "green",
@@ -38,46 +66,58 @@ def write_json(cache_dir: Path, filename: str, data: dict) -> None:
         with (cache_dir / filename).open("w", encoding="utf-8") as handle:
             json.dump(data, handle, ensure_ascii=False, indent=2)
     except Exception as e:
-        logger.error(f"Error writing cached JSON file {filename}: {e}")
+        logger.error("Error writing cached JSON file %s: %s", filename, e)
 
 
 def get_hotspots(settings: Settings) -> HotspotResponse:
+    cached = _get_cached("hotspots")
+    if cached is not None:
+        return cached
     try:
         response = fetch_live_hotspots(settings.gistda_api_key, settings.nasa_firms_map_key)
         response = HotspotResponse(**repair_thai_mojibake_tree(response.model_dump()))
         write_json(settings.cache_dir, "hotspots.json", response.model_dump())
+        _set_cached("hotspots", response)
         return response
     except Exception as e:
-        logger.warning(f"Failed to fetch live hotspots, falling back to cached file: {e}")
+        logger.warning("Failed to fetch live hotspots, falling back to cached file: %s", e)
         data = read_json(settings.cache_dir, "hotspots.json")
         return HotspotResponse(**data)
 
 
 def get_pm25(settings: Settings) -> Pm25Response:
+    cached = _get_cached("pm25")
+    if cached is not None:
+        return cached
     try:
         response = fetch_live_pm25()
         response = Pm25Response(**repair_thai_mojibake_tree(response.model_dump()))
         write_json(settings.cache_dir, "pm25.json", response.model_dump())
+        _set_cached("pm25", response)
         return response
     except Exception as e:
-        logger.warning(f"Failed to fetch live PM2.5, falling back to cached file: {e}")
+        logger.warning("Failed to fetch live PM2.5, falling back to cached file: %s", e)
         data = read_json(settings.cache_dir, "pm25.json")
         return Pm25Response(**data)
 
 
 def get_weather(settings: Settings) -> WeatherResponse:
+    cached = _get_cached("weather")
+    if cached is not None:
+        return cached
     try:
         response = fetch_live_weather()
         response = WeatherResponse(**repair_thai_mojibake_tree(response.model_dump()))
         write_json(settings.cache_dir, "weather.json", response.model_dump())
+        _set_cached("weather", response)
         return response
     except Exception as e:
-        logger.warning(f"Failed to fetch live weather, falling back to cached file: {e}")
+        logger.warning("Failed to fetch live weather, falling back to cached file: %s", e)
         data = read_json(settings.cache_dir, "weather.json")
         return WeatherResponse(**data)
 
 
-def wind_pushes_smoke_to_city(wind_direction_deg: int) -> bool:
+def wind_pushes_smoke_to_city(wind_direction_deg: float) -> bool:
     # Approximation for smoke movement toward Chiang Mai city from western/northern fire areas.
     return 180 <= wind_direction_deg <= 330
 

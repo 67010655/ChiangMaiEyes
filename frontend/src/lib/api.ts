@@ -1,13 +1,22 @@
-﻿import type { DashboardResponse } from './types';
+import type { DashboardResponse } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 export async function fetchDashboard(): Promise<DashboardResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15_000);
 
-  if (!response.ok) {
-    throw new Error(`Dashboard API failed with ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Dashboard API failed with ${response.status}`);
+    }
+
+    return response.json();
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return response.json();
 }

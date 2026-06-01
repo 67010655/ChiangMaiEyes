@@ -102,6 +102,34 @@ function Pm25Scale({ value }: { value: number }) {
   );
 }
 
+function Sparkline() {
+  // Decorative 24h trend placeholder because the backend does not expose a time series yet.
+  const points = [10, 9, 11, 8, 12, 9, 8, 10, 9, 13, 10, 9, 11, 8, 9, 10];
+  const w = 132;
+  const h = 44;
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const step = w / (points.length - 1);
+  const path = points
+    .map((v, i) => {
+      const x = i * step;
+      const y = h - ((v - min) / (max - min || 1)) * (h - 6) - 3;
+      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(' ');
+  return (
+    <div style={{ position: 'relative' }} aria-label="กราฟแนวโน้ม PM2.5 ย้อนหลัง 24 ชั่วโมง (ข้อมูลตัวอย่าง)">
+      <svg className="sparkline" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden>
+        <path d={`${path} L${w} ${h} L0 ${h} Z`} className="sparkline__fill" />
+        <path d={path} className="sparkline__line" />
+      </svg>
+      <span style={{ position: 'absolute', top: 0, right: 0, fontSize: '0.6rem', color: 'var(--muted)', opacity: 0.7 }}>
+        ตัวอย่าง
+      </span>
+    </div>
+  );
+}
+
 function RiskDonut({ score, tone }: { score: number; tone: string }) {
   const r = 52;
   const c = 2 * Math.PI * r;

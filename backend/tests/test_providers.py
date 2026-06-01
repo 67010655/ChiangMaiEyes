@@ -23,9 +23,9 @@ def test_pm25_category_mapping():
 def test_district_estimation():
     assert estimate_district(19.8, 99.0) == "ฝาง"
     assert estimate_district(19.3, 99.0) == "เชียงดาว"
-    assert estimate_district(18.9, 99.0) == "แม่ริม"
-    assert estimate_district(18.7, 99.0) == "หางดง"
-    assert estimate_district(18.2, 99.0) == "จอมทอง"
+    assert estimate_district(18.9, 99.0) == "สันทราย"
+    assert estimate_district(18.7, 99.0) == "สันกำแพง"
+    assert estimate_district(18.2, 99.0) == "เมืองเชียงใหม่"
 
 @patch("httpx.get")
 def test_fetch_live_weather_success(mock_get):

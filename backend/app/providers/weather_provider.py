@@ -39,7 +39,7 @@ def fetch_live_weather() -> WeatherResponse:
         temp = float(current["temperature_2m"])
         humidity = float(current["relative_humidity_2m"])
         wind_speed = float(current["wind_speed_10m"])
-        wind_dir = int(current["wind_direction_10m"])
+        wind_dir = round(float(current["wind_direction_10m"]), 1)
 
         now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
 

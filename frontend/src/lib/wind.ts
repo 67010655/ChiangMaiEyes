@@ -5,5 +5,5 @@ export function directionName(degrees: number) {
 }
 
 export function windDestinationName(sourceDegrees: number) {
-  return directionName(sourceDegrees + 180);
+  return directionName((sourceDegrees + 180) % 360);
 }
