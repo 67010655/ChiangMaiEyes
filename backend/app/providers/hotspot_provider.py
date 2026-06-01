@@ -6,6 +6,9 @@ from app.models import Hotspot, HotspotResponse
 
 logger = logging.getLogger(__name__)
 GISTDA_VIIRS_SOURCE = "GISTDA API Gateway VIIRS 1-day"
+FOREST_FIREMAP_SOURCE = "Royal Forest Department Firemap"
+FOREST_FIREMAP_URL = "https://wildfire.forest.go.th/firemap/getdb.php"
+BANGKOK_TZ = datetime.timezone(datetime.timedelta(hours=7))
 
 def estimate_district(lat: float, lon: float) -> str:
     # Simple and fast district approximation based on coordinates in Chiang Mai
@@ -69,13 +72,71 @@ def fetch_gistda_hotspots(api_key: str) -> list[Hotspot]:
                     district=properties.get("ap_tn") or estimate_district(lat, lon),
                     confidence=confidence,
                     source=GISTDA_VIIRS_SOURCE,
-                    detected_at=detected_at
+                    detected_at=detected_at,
+                    satellite="VIIRS"
                 ))
                 idx += 1
         except Exception as ex:
             logger.warning(f"Error parsing GISTDA API Gateway hotspot feature: {ex}")
             continue
             
+    return hotspots
+
+def format_forest_detected_at(date_value: str | None, time_value: str | int | None) -> str:
+    date_part = str(date_value or "").strip()[:10]
+    if not date_part:
+        date_part = datetime.datetime.now(BANGKOK_TZ).date().isoformat()
+
+    time_digits = "".join(ch for ch in str(time_value or "0000") if ch.isdigit())
+    time_digits = time_digits.zfill(4)[-4:]
+    return f"{date_part}T{time_digits[:2]}:{time_digits[2:]}:00+07:00"
+
+def fetch_forest_firemap_hotspots(target_date: datetime.date | None = None) -> list[Hotspot]:
+    # Royal Forest Department Firemap mirrors the public dashboard filters.
+    query_date = (target_date or datetime.datetime.now(BANGKOK_TZ).date()).isoformat()
+    params = {
+        "datestart": query_date,
+        "dateend": query_date,
+        "province": "เชียงใหม่",
+        "snpp": "on",
+        "noaa20": "on",
+        "noaa21": "on",
+        "nighttime": "on",
+        "daytime": "on",
+    }
+    logger.info(f"Attempting to fetch hotspots from Royal Forest Department Firemap: {FOREST_FIREMAP_URL}")
+
+    response = httpx.get(FOREST_FIREMAP_URL, params=params, timeout=15.0)
+    response.raise_for_status()
+    data = response.json()
+    rows = data.get("hotspot", [])
+
+    hotspots: list[Hotspot] = []
+    for idx, row in enumerate(rows, start=1):
+        try:
+            lat = float(row["LAT"])
+            lon = float(row["LONG"])
+            landuse_type = str(row.get("TYPE") or "").strip() or None
+            landuse_name = str(row.get("NAME") or "").strip() or None
+            confidence = 75 if landuse_type == "OTHER" else 90
+
+            hotspots.append(Hotspot(
+                id=f"HS-RFD-{idx:03d}",
+                latitude=lat,
+                longitude=lon,
+                district=str(row.get("AUMPER") or "").strip() or estimate_district(lat, lon),
+                subdistrict=str(row.get("TUMBON") or "").strip() or None,
+                landuse_type=landuse_type,
+                landuse_name=landuse_name,
+                satellite="SNPP/NOAA-20/NOAA-21 VIIRS",
+                confidence=confidence,
+                source=FOREST_FIREMAP_SOURCE,
+                detected_at=format_forest_detected_at(row.get("YYMMDD"), row.get("TIME")),
+            ))
+        except Exception as ex:
+            logger.warning(f"Error parsing Royal Forest Department hotspot row: {ex}")
+            continue
+
     return hotspots
 
 def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
@@ -124,7 +185,8 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
                 district=estimate_district(lat, lon),
                 confidence=confidence,
                 source="NASA FIRMS",
-                detected_at=detected_at
+                detected_at=detected_at,
+                satellite=row.get("satellite") or "VIIRS_SNPP_NRT"
             ))
         except Exception as ex:
             logger.warning(f"Error parsing NASA FIRMS hotspot row: {ex}")
@@ -132,33 +194,57 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
             
     return hotspots
 
+def merge_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
+    merged: list[Hotspot] = []
+    seen: set[tuple[float, float, str]] = set()
+    for group in groups:
+        for hotspot in group:
+            key = (round(hotspot.latitude, 4), round(hotspot.longitude, 4), hotspot.detected_at[:10])
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(hotspot)
+    return merged
+
 def fetch_live_hotspots(gistda_key: str | None = None, nasa_key: str | None = None) -> HotspotResponse:
-    hotspots: list[Hotspot] = []
-    source = "Unknown"
-    fetched_successfully = False
+    hotspot_groups: list[list[Hotspot]] = []
+    sources: list[str] = []
+    fetch_errors: list[str] = []
+
+    try:
+        forest_hotspots = fetch_forest_firemap_hotspots()
+        hotspot_groups.append(forest_hotspots)
+        sources.append(FOREST_FIREMAP_SOURCE)
+        logger.info(f"Loaded {len(forest_hotspots)} hotspots from Royal Forest Department Firemap")
+    except Exception as e:
+        fetch_errors.append(f"{FOREST_FIREMAP_SOURCE}: {e}")
+        logger.error(f"Royal Forest Department Firemap fetch failed: {e}")
     
-    # Try GISTDA API Gateway VIIRS first
     if gistda_key:
         try:
-            hotspots = fetch_gistda_hotspots(gistda_key)
-            source = GISTDA_VIIRS_SOURCE
-            fetched_successfully = True
-            logger.info(f"Loaded {len(hotspots)} hotspots from GISTDA API Gateway VIIRS")
+            gistda_hotspots = fetch_gistda_hotspots(gistda_key)
+            hotspot_groups.append(gistda_hotspots)
+            sources.append(GISTDA_VIIRS_SOURCE)
+            logger.info(f"Loaded {len(gistda_hotspots)} hotspots from GISTDA API Gateway VIIRS")
         except Exception as e:
-            logger.error(f"GISTDA API Gateway VIIRS fetch failed, attempting NASA backup: {e}")
+            fetch_errors.append(f"{GISTDA_VIIRS_SOURCE}: {e}")
+            logger.error(f"GISTDA API Gateway VIIRS fetch failed: {e}")
             
-    # Try NASA FIRMS backup if GISTDA failed or had no key
-    if not fetched_successfully and nasa_key:
+    if not hotspot_groups and nasa_key:
         try:
-            hotspots = fetch_nasa_firms_hotspots(nasa_key)
-            source = "NASA FIRMS Live API"
-            fetched_successfully = True
-            logger.info(f"Loaded {len(hotspots)} hotspots from NASA FIRMS")
+            nasa_hotspots = fetch_nasa_firms_hotspots(nasa_key)
+            hotspot_groups.append(nasa_hotspots)
+            sources.append("NASA FIRMS Live API")
+            logger.info(f"Loaded {len(nasa_hotspots)} hotspots from NASA FIRMS")
         except Exception as e:
+            fetch_errors.append(f"NASA FIRMS Live API: {e}")
             logger.error(f"NASA FIRMS fetch failed: {e}")
             
-    if not fetched_successfully:
-        raise Exception("Failed to fetch live hotspots from both GISTDA and NASA")
+    if not hotspot_groups:
+        raise Exception(f"Failed to fetch live hotspots: {'; '.join(fetch_errors)}")
+
+    hotspots = merge_hotspots(hotspot_groups)
+    source = " + ".join(dict.fromkeys(sources))
         
     count = len(hotspots)
     # Area of Chiang Mai is approximately 20,107 km2

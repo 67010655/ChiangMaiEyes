@@ -6,6 +6,10 @@ class Hotspot(BaseModel):
     latitude: float
     longitude: float
     district: str
+    subdistrict: str | None = None
+    landuse_type: str | None = None
+    landuse_name: str | None = None
+    satellite: str | None = None
     confidence: int = Field(ge=0, le=100)
     source: str
     detected_at: str

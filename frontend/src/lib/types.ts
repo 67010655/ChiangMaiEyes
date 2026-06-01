@@ -3,6 +3,10 @@
   latitude: number;
   longitude: number;
   district: string;
+  subdistrict?: string | null;
+  landuse_type?: string | null;
+  landuse_name?: string | null;
+  satellite?: string | null;
   confidence: number;
   source: string;
   detected_at: string;

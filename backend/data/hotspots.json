@@ -1,7 +1,47 @@
 {
-  "count": 0,
-  "density_per_100_km2": 0.0,
-  "latest_update": "2026-05-31T15:44:28.383612+07:00",
-  "source": "GISTDA API Gateway VIIRS 1-day",
-  "items": []
+  "count": 3,
+  "density_per_100_km2": 0.01,
+  "latest_update": "2026-06-01T14:01:00.571610+07:00",
+  "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day",
+  "items": [
+    {
+      "id": "HS-RFD-001",
+      "latitude": 19.08274,
+      "longitude": 98.90689,
+      "district": "แม่แตง",
+      "subdistrict": "ขี้เหล็ก",
+      "landuse_type": "OTHER",
+      "landuse_name": "พื้นที่อื่น",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 75,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-01T02:21:00+07:00"
+    },
+    {
+      "id": "HS-RFD-002",
+      "latitude": 18.90714,
+      "longitude": 98.20298,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-01T02:42:00+07:00"
+    },
+    {
+      "id": "HS-RFD-003",
+      "latitude": 19.08408,
+      "longitude": 98.9072,
+      "district": "แม่แตง",
+      "subdistrict": "ขี้เหล็ก",
+      "landuse_type": "OTHER",
+      "landuse_name": "พื้นที่อื่น",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 75,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-01T02:42:00+07:00"
+    }
+  ]
 }

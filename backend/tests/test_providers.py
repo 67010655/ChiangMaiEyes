@@ -4,7 +4,7 @@ import pytest
 
 from app.providers.weather_provider import fetch_live_weather, get_wind_direction_text
 from app.providers.pm25_provider import fetch_live_pm25, get_pm25_category_and_color
-from app.providers.hotspot_provider import fetch_live_hotspots, estimate_district
+from app.providers.hotspot_provider import fetch_live_hotspots, estimate_district, fetch_forest_firemap_hotspots
 
 def test_wind_direction_translation():
     assert get_wind_direction_text(0) == "เหนือ"
@@ -102,14 +102,17 @@ def test_fetch_live_pm25_success(mock_get):
 
 @patch("httpx.get")
 def test_fetch_live_hotspots_nasa_fallback(mock_get):
-    # Setup mock to fail GISTDA and succeed NASA
+    # Setup mock to fail Forest + GISTDA and succeed NASA
+    mock_forest_resp = MagicMock()
+    mock_forest_resp.raise_for_status.side_effect = Exception("Forest API Error")
+
     mock_gistda_resp = MagicMock()
     mock_gistda_resp.raise_for_status.side_effect = Exception("GISTDA API Error")
     
     mock_nasa_resp = MagicMock()
     mock_nasa_resp.content = b"latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_t31,frp,daynight\n18.916,98.939,320.5,1.0,1.0,2026-05-31,0645,N,V,n,1.0,300.0,10.0,D"
     
-    mock_get.side_effect = [mock_gistda_resp, mock_nasa_resp]
+    mock_get.side_effect = [mock_forest_resp, mock_gistda_resp, mock_nasa_resp]
 
     response = fetch_live_hotspots(gistda_key="gistda_key", nasa_key="nasa_key")
     
@@ -121,7 +124,44 @@ def test_fetch_live_hotspots_nasa_fallback(mock_get):
     assert response.items[0].confidence == 75
 
 @patch("httpx.get")
+def test_fetch_forest_firemap_hotspots_success(mock_get):
+    mock_response = MagicMock()
+    mock_response.json.return_value = {
+        "hotspot": [
+            {
+                "LAT": "18.90714000",
+                "LONG": "98.20298000",
+                "YYMMDD": "2026-06-01",
+                "TIME": "242",
+                "TUMBON": "แม่นาจร",
+                "AUMPER": "แม่แจ่ม",
+                "PROVINCE": "เชียงใหม่",
+                "TYPE": "NRF",
+                "NAME": "ป่าแม่แจ่ม",
+            }
+        ]
+    }
+    mock_get.return_value = mock_response
+
+    hotspots = fetch_forest_firemap_hotspots()
+
+    assert len(hotspots) == 1
+    assert hotspots[0].id == "HS-RFD-001"
+    assert hotspots[0].latitude == 18.90714
+    assert hotspots[0].longitude == 98.20298
+    assert hotspots[0].district == "แม่แจ่ม"
+    assert hotspots[0].subdistrict == "แม่นาจร"
+    assert hotspots[0].landuse_type == "NRF"
+    assert hotspots[0].landuse_name == "ป่าแม่แจ่ม"
+    assert hotspots[0].satellite == "SNPP/NOAA-20/NOAA-21 VIIRS"
+    assert hotspots[0].confidence == 90
+    assert hotspots[0].detected_at == "2026-06-01T02:42:00+07:00"
+
+@patch("httpx.get")
 def test_fetch_live_hotspots_gistda_success(mock_get):
+    mock_forest_resp = MagicMock()
+    mock_forest_resp.raise_for_status.side_effect = Exception("Forest API Error")
+
     mock_response = MagicMock()
     mock_response.json.return_value = {
         "features": [
@@ -155,7 +195,7 @@ def test_fetch_live_hotspots_gistda_success(mock_get):
             }
         ]
     }
-    mock_get.return_value = mock_response
+    mock_get.side_effect = [mock_forest_resp, mock_response]
 
     response = fetch_live_hotspots(gistda_key="gistda_key")
     

@@ -662,6 +662,40 @@ button {
   stroke-width: 2px;
 }
 
+.hotspot-marker__halo {
+  fill: rgba(239, 68, 68, 0.18);
+  stroke: rgba(127, 29, 29, 0.18);
+  stroke-width: 1.2px;
+  transition: r 0.16s ease, fill 0.16s ease, stroke-opacity 0.16s ease;
+}
+
+.hotspot-marker__ring {
+  fill: rgba(255, 255, 255, 0.86);
+  stroke: rgba(127, 29, 29, 0.38);
+  stroke-width: 1.2px;
+}
+
+.hotspot-marker__core {
+  fill: #ef4444;
+  stroke: #fff;
+  stroke-width: 1.8px;
+}
+
+.hotspot-marker--forest .hotspot-marker__halo {
+  fill: rgba(249, 115, 22, 0.2);
+  stroke: rgba(124, 45, 18, 0.24);
+}
+
+.hotspot-marker--forest .hotspot-marker__core {
+  fill: #f97316;
+}
+
+.hotspot-marker:hover .hotspot-marker__halo,
+.hotspot-marker:focus-visible .hotspot-marker__halo {
+  fill: rgba(239, 68, 68, 0.28);
+  stroke-opacity: 0.7;
+}
+
 .pm-plume {
   opacity: 0.28;
   stroke-width: 0;
@@ -741,6 +775,7 @@ button {
 .map-inspector__photo--maechaem { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #e8d9a3, #89bd73 48%, #466d5f); }
 .map-inspector__photo--hot { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #f7c38a, #8db68e 45%, #596d58); }
 .map-inspector__photo--hotspot { background: linear-gradient(180deg, transparent, rgba(75, 16, 16, 0.76)), linear-gradient(135deg, #fca5a5, #fb923c 48%, #7f1d1d); }
+.map-inspector__photo--forest { background: linear-gradient(180deg, transparent, rgba(63, 29, 7, 0.74)), linear-gradient(135deg, #fbd38d, #9fbd73 45%, #315c3a); }
 .map-inspector__photo--wind { background: linear-gradient(180deg, transparent, rgba(9, 30, 66, 0.72)), linear-gradient(135deg, #d8ecff, #81b7e8 48%, #2f5f85); }
 .map-inspector__photo--district { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #e6f4dd, #9ed09b 50%, #477b65); }
 

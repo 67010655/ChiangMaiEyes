@@ -166,6 +166,32 @@ function stationImageKey(station: Pm25Station) {
   return 'city';
 }
 
+function hotspotImageKey(hotspot: Hotspot) {
+  if (hotspot.landuse_type && hotspot.landuse_type !== 'OTHER') return 'forest';
+  return 'hotspot';
+}
+
+function hotspotPlaceTitle(hotspot: Hotspot) {
+  return hotspot.landuse_name || hotspot.district || hotspot.id;
+}
+
+function hotspotLocation(hotspot: Hotspot) {
+  const parts = [
+    hotspot.subdistrict ? `ต.${hotspot.subdistrict}` : '',
+    hotspot.district ? `อ.${hotspot.district}` : '',
+  ].filter(Boolean);
+  return parts.join(' ');
+}
+
+function hotspotStats(hotspot: Hotspot): MapSelection['stats'] {
+  return [
+    { label: 'Confidence', value: `${hotspot.confidence}%`, tone: hotspot.confidence >= 80 ? 'risk' : 'watch' },
+    { label: 'ประเภทพื้นที่', value: hotspot.landuse_name || hotspot.landuse_type || 'ไม่ระบุ' },
+    { label: 'ดาวเทียม', value: hotspot.satellite || 'VIIRS' },
+    { label: 'เวลา', value: formatTime(hotspot.detected_at) },
+  ];
+}
+
 const neighbours = [
   { label: 'เชียงราย', lat: 19.95, lng: 99.72 },
   { label: 'แม่ฮ่องสอน', lat: 18.52, lng: 97.18 },
@@ -312,16 +338,14 @@ export function DashboardMap({ dashboard, layers }: Props) {
   };
 
   const selectHotspot = (hotspot: Hotspot) => {
+    const location = hotspotLocation(hotspot);
     setSelection({
       eyebrow: 'จุดความร้อน',
-      title: hotspot.district || hotspot.id,
-      detail: `ความเชื่อมั่น ${hotspot.confidence}% · ตรวจพบ ${formatTime(hotspot.detected_at)} · ${hotspot.source}`,
-      imageKey: 'hotspot',
-      imageLabel: hotspot.district || hotspot.id,
-      stats: [
-        { label: 'Confidence', value: `${hotspot.confidence}%`, tone: hotspot.confidence >= 80 ? 'risk' : 'watch' },
-        { label: 'แหล่งข้อมูล', value: hotspot.source },
-      ],
+      title: hotspotPlaceTitle(hotspot),
+      detail: `${location ? `${location} · ` : ''}ตรวจพบ ${formatTime(hotspot.detected_at)} · ${hotspot.source}`,
+      imageKey: hotspotImageKey(hotspot),
+      imageLabel: hotspotPlaceTitle(hotspot),
+      stats: hotspotStats(hotspot),
     });
   };
 
@@ -477,24 +501,22 @@ export function DashboardMap({ dashboard, layers }: Props) {
           {layers.hotspots &&
             dashboard.hotspots.items.map((h) => {
               const p = project(h.latitude, h.longitude);
+              const location = hotspotLocation(h);
               const next: MapSelection = {
                 eyebrow: 'จุดความร้อน',
-                title: h.district || h.id,
-                detail: `ความเชื่อมั่น ${h.confidence}% · ตรวจพบ ${formatTime(h.detected_at)}`,
-                imageKey: 'hotspot',
-                imageLabel: h.district || h.id,
-                stats: [
-                  { label: 'Confidence', value: `${h.confidence}%`, tone: h.confidence >= 80 ? 'risk' : 'watch' },
-                  { label: 'เวลา', value: formatTime(h.detected_at) },
-                ],
+                title: hotspotPlaceTitle(h),
+                detail: `${location ? `${location} · ` : ''}ตรวจพบ ${formatTime(h.detected_at)} · ${h.source}`,
+                imageKey: hotspotImageKey(h),
+                imageLabel: hotspotPlaceTitle(h),
+                stats: hotspotStats(h),
               };
               return (
                 <g
                   key={h.id}
-                  className="map-marker"
+                  className={`map-marker hotspot-marker ${h.landuse_type && h.landuse_type !== 'OTHER' ? 'hotspot-marker--forest' : 'hotspot-marker--other'}`}
                   tabIndex={0}
                   role="button"
-                  aria-label={`ดูรายละเอียดจุดความร้อน ${h.district || h.id}`}
+                  aria-label={`ดูรายละเอียดจุดความร้อน ${hotspotPlaceTitle(h)}`}
                   onMouseEnter={() => selectHotspot(h)}
                   onFocus={() => selectHotspot(h)}
                   onClick={(event) => {
@@ -503,8 +525,10 @@ export function DashboardMap({ dashboard, layers }: Props) {
                   }}
                   onKeyDown={(event) => keySelect(event, next)}
                 >
-                  <title>{`${h.district || h.id} · ${h.confidence}%`}</title>
-                  <circle cx={p.x} cy={p.y} r={HOTSPOT_R} fill="#ef4444" stroke="#fff" strokeWidth={viewW * 0.002} />
+                  <title>{`${hotspotPlaceTitle(h)} · ${h.confidence}% · ${h.satellite || 'VIIRS'}`}</title>
+                  <circle className="hotspot-marker__halo" cx={p.x} cy={p.y} r={HOTSPOT_R * 2.45} />
+                  <circle className="hotspot-marker__ring" cx={p.x} cy={p.y} r={HOTSPOT_R * 1.55} />
+                  <circle className="hotspot-marker__core" cx={p.x} cy={p.y} r={HOTSPOT_R} />
                 </g>
               );
             })}
