@@ -105,6 +105,10 @@ function formatPm25(value: number) {
   return `${value.toFixed(value % 1 ? 1 : 0)} µg/m³`;
 }
 
+function pm25ValueLabel(value: number) {
+  return value.toFixed(value % 1 ? 1 : 0);
+}
+
 function formatTime(value: string) {
   return new Intl.DateTimeFormat('th-TH', { timeStyle: 'short' }).format(new Date(value));
 }
@@ -250,6 +254,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
   const windRotation = dashboard.weather.wind_direction_deg + 180;
   const arrowSize = viewW * 0.024;
+  const windStreamLength = viewW * 0.088;
   const aggCenter = project(18.98, 98.6);
 
   const districtPaths = useMemo(
@@ -461,7 +466,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
           </text>
 
           {layers.wind &&
-            windPositions.map(([lat, lng]) => {
+            windPositions.map(([lat, lng], index) => {
               const p = project(lat, lng);
               const next: MapSelection = {
                 eyebrow: 'ทิศทางลม',
@@ -478,7 +483,8 @@ export function DashboardMap({ dashboard, layers }: Props) {
                 <g
                   key={`${lat}-${lng}`}
                   transform={`translate(${p.x} ${p.y}) rotate(${windRotation})`}
-                  className="wind-arrow"
+                  className="wind-arrow wind-stream"
+                  style={{ animationDelay: `${index * -0.32}s` }}
                   tabIndex={0}
                   role="button"
                   aria-label="ดูรายละเอียดทิศทางลม"
@@ -490,9 +496,16 @@ export function DashboardMap({ dashboard, layers }: Props) {
                 >
                   <title>{`${dashboard.weather.wind_direction_text} ${dashboard.weather.wind_speed_kmh} km/h`}</title>
                   <path
+                    className="wind-stream__trail wind-stream__trail--wide"
+                    d={`M0 ${windStreamLength * 0.48} C${-arrowSize * 0.55} ${windStreamLength * 0.2}, ${arrowSize * 0.55} ${-windStreamLength * 0.1}, 0 ${-windStreamLength * 0.5}`}
+                  />
+                  <path
+                    className="wind-stream__trail"
+                    d={`M${-arrowSize * 0.52} ${windStreamLength * 0.3} C${arrowSize * 0.18} ${windStreamLength * 0.08}, ${-arrowSize * 0.2} ${-windStreamLength * 0.18}, ${arrowSize * 0.48} ${-windStreamLength * 0.4}`}
+                  />
+                  <path
+                    className="wind-stream__head"
                     d={`M0 ${-arrowSize} L${arrowSize * 0.4} ${-arrowSize * 0.1} L${arrowSize * 0.16} ${-arrowSize * 0.1} L${arrowSize * 0.16} ${arrowSize} L${-arrowSize * 0.16} ${arrowSize} L${-arrowSize * 0.16} ${-arrowSize * 0.1} L${-arrowSize * 0.4} ${-arrowSize * 0.1} Z`}
-                    fill="#2563eb"
-                    opacity="0.82"
                   />
                 </g>
               );
@@ -528,7 +541,9 @@ export function DashboardMap({ dashboard, layers }: Props) {
                   <title>{`${hotspotPlaceTitle(h)} · ${h.confidence}% · ${h.satellite || 'VIIRS'}`}</title>
                   <circle className="hotspot-marker__halo" cx={p.x} cy={p.y} r={HOTSPOT_R * 2.45} />
                   <circle className="hotspot-marker__ring" cx={p.x} cy={p.y} r={HOTSPOT_R * 1.55} />
-                  <circle className="hotspot-marker__core" cx={p.x} cy={p.y} r={HOTSPOT_R} />
+                  <text className="hotspot-marker__emoji" x={p.x} y={p.y + HOTSPOT_R * 0.58} fontSize={HOTSPOT_R * 2.05} textAnchor="middle">
+                    🔥
+                  </text>
                 </g>
               );
             })}
@@ -592,9 +607,9 @@ export function DashboardMap({ dashboard, layers }: Props) {
                 }
               >
                 <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 2.05} className="pm-station__ring" />
-                <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 1.42} fill="#16a34a" stroke="#fff" strokeWidth={viewW * 0.004} />
+                <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 1.42} fill={pm25Color(dashboard.pm25.current_pm25)} stroke="#fff" strokeWidth={viewW * 0.004} />
                 <text x={aggCenter.x} y={aggCenter.y + VALUE_FONT * 0.36} fontSize={VALUE_FONT * 1.15} fill="#fff" fontWeight={700} textAnchor="middle">
-                  {dashboard.pm25.current_pm25}
+                  {pm25ValueLabel(dashboard.pm25.current_pm25)}
                 </text>
               </g>
 
@@ -629,9 +644,9 @@ export function DashboardMap({ dashboard, layers }: Props) {
                   >
                     <title>{`${s.name.trim() || s.id} · ${formatPm25(s.pm25)}`}</title>
                     <circle cx={p.x} cy={p.y} r={STATION_R * 1.45} className="pm-station__ring" />
-                    <circle cx={p.x} cy={p.y} r={STATION_R * 0.88} fill={pm25Color(s.pm25)} stroke="#fff" strokeWidth={viewW * 0.003} />
-                    <text x={p.x} y={p.y - STATION_R - VALUE_FONT * 0.35} fontSize={VALUE_FONT} fill="#143b2d" fontWeight={700} textAnchor="middle">
-                      {s.pm25}
+                    <circle cx={p.x} cy={p.y} r={STATION_R * 1.04} fill={pm25Color(s.pm25)} stroke="#fff" strokeWidth={viewW * 0.003} />
+                    <text x={p.x} y={p.y + VALUE_FONT * 0.32} fontSize={VALUE_FONT * 0.86} fill="#fff" fontWeight={800} textAnchor="middle">
+                      {pm25ValueLabel(s.pm25)}
                     </text>
                   </g>
                 );
@@ -664,7 +679,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
       <div className="map-legend">
         <span><i className="dot dot--pm" />สถานีวัด PM2.5</span>
-        <span><i className="dot dot--hot" />จุดความร้อน</span>
+        <span><i className="fire-ic">🔥</i>จุดความร้อน</span>
         <span><i className="arrow-ic">↑</i>ทิศทางลม</span>
       </div>
 

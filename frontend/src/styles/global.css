@@ -662,6 +662,62 @@ button {
   stroke-width: 2px;
 }
 
+.wind-stream {
+  animation: wind-breathe 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.wind-stream__trail {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 2.2px;
+  stroke-linecap: round;
+  stroke-dasharray: 10 12;
+  opacity: 0.72;
+  animation: wind-flow 1.6s linear infinite;
+  animation-delay: inherit;
+}
+
+.wind-stream__trail--wide {
+  stroke-width: 3.4px;
+  opacity: 0.26;
+}
+
+.wind-stream__head {
+  fill: #2563eb;
+  opacity: 0.86;
+  animation: wind-pulse 1.6s ease-in-out infinite;
+  animation-delay: inherit;
+}
+
+@keyframes wind-flow {
+  from {
+    stroke-dashoffset: 22;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes wind-pulse {
+  0%, 100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes wind-breathe {
+  0%, 100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .hotspot-marker__halo {
   fill: rgba(239, 68, 68, 0.18);
   stroke: rgba(127, 29, 29, 0.18);
@@ -679,6 +735,14 @@ button {
   fill: #ef4444;
   stroke: #fff;
   stroke-width: 1.8px;
+}
+
+.hotspot-marker__emoji {
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 1.5px;
+  filter: drop-shadow(0 3px 6px rgba(127, 29, 29, 0.28));
+  pointer-events: none;
 }
 
 .hotspot-marker--forest .hotspot-marker__halo {
@@ -891,6 +955,15 @@ button {
   color: var(--blue);
   font-style: normal;
   font-weight: 800;
+}
+
+.map-legend .fire-ic {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  font-style: normal;
+  line-height: 1;
 }
 
 .map-scale {
