@@ -3,7 +3,7 @@
     "count": 3,
     "density_per_100_km2": 0.01,
     "latest_update": "2026-06-01T13:45:00+07:00",
-    "source": "Royal Forest Department Firemap",
+    "source": "Royal Forest Department Firemap snapshot",
     "items": [
       {
         "id": "HS-RFD-001",

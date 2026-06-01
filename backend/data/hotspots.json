@@ -1,8 +1,8 @@
 {
   "count": 3,
   "density_per_100_km2": 0.01,
-  "latest_update": "2026-06-01T14:01:00.571610+07:00",
-  "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day",
+  "latest_update": "2026-06-01T13:45:00+07:00",
+  "source": "Royal Forest Department Firemap snapshot",
   "items": [
     {
       "id": "HS-RFD-001",
