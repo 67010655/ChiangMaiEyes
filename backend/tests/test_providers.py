@@ -160,7 +160,7 @@ def test_fetch_live_hotspots_gistda_success(mock_get):
     response = fetch_live_hotspots(gistda_key="gistda_key")
     
     assert response.count == 1
-    assert response.source == "GISTDA Sphere Live API"
+    assert response.source == "GISTDA API Gateway VIIRS 1-day"
     assert response.items[0].latitude == 18.916
     assert response.items[0].longitude == 98.939
     assert response.items[0].district == "แม่ริม"

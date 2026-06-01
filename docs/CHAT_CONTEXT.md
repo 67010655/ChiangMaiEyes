@@ -29,7 +29,7 @@ ChiangMaiEyes เป็น public environmental intelligence dashboard สำห
 
 ### Hotspots
 
-Primary: GISTDA Disaster daily hotspot update
+Primary: GISTDA API Gateway VIIRS 1-day
 
 Backup: NASA FIRMS API free public access
 
@@ -159,9 +159,9 @@ Categories:
 - OSM relation `1908771` สำหรับจังหวัดเชียงใหม่
 - หรือ official Thai administrative GeoJSON ถ้าหาแหล่งเปิดที่เชื่อถือได้
 
-## GISTDA Disaster Integration Plan
+## GISTDA Hotspot Integration Status
 
-ยังไม่ได้ต่อ live GISTDA Disaster API เพราะต้องรู้ endpoint/format ที่แน่นอนก่อน
+Implemented in `backend/app/providers/hotspot_provider.py` using `https://api-gateway.gistda.or.th/api/2.0/resources/features/viirs/1day`.
 
 แนวทาง backend ที่ควรทำต่อ:
 
@@ -179,7 +179,7 @@ Schema ที่ frontend ใช้อยู่แล้ว:
   "count": 134,
   "density_per_100_km2": 3.8,
   "latest_update": "2026-05-31T08:00:00+07:00",
-  "source": "GISTDA Disaster daily hotspot update",
+  "source": "GISTDA API Gateway VIIRS 1-day",
   "items": [
     {
       "id": "HS-001",
@@ -187,7 +187,7 @@ Schema ที่ frontend ใช้อยู่แล้ว:
       "longitude": 98.7424,
       "district": "แม่ริม",
       "confidence": 82,
-      "source": "GISTDA Disaster",
+      "source": "GISTDA API Gateway VIIRS 1-day",
       "detected_at": "2026-05-31T07:10:00+07:00"
     }
   ]
@@ -260,7 +260,7 @@ Ready
 ## Next Best Tasks
 
 1. Deploy backend to Render
-2. Add GISTDA Disaster daily hotspot adapter
+2. Keep GISTDA API Gateway VIIRS 1-day source labels aligned with the actual endpoint
 3. Replace simplified Chiang Mai boundary with official/detailed GeoJSON
 4. Set `VITE_API_BASE_URL` in Vercel
 5. Redeploy frontend

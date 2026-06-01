@@ -2,6 +2,6 @@
   "count": 0,
   "density_per_100_km2": 0.0,
   "latest_update": "2026-05-31T15:44:28.383612+07:00",
-  "source": "GISTDA Sphere Live API",
+  "source": "GISTDA API Gateway VIIRS 1-day",
   "items": []
 }

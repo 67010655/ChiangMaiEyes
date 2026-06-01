@@ -611,7 +611,9 @@ button {
 .map-canvas {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 42% 38%, #f4faf5, #e7f0ea);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 34%),
+    radial-gradient(circle at 42% 38%, #f4faf5, #dfece5);
   overflow: hidden;
 }
 
@@ -660,25 +662,99 @@ button {
   stroke-width: 2px;
 }
 
+.pm-plume {
+  opacity: 0.28;
+  stroke-width: 0;
+  mix-blend-mode: multiply;
+}
+
+.pm-plume--good {
+  fill: #34d399;
+}
+
+.pm-plume--watch {
+  fill: #fbbf24;
+}
+
+.pm-plume--risk {
+  fill: #fb7185;
+}
+
+.pm-station__ring {
+  fill: rgba(255, 255, 255, 0.74);
+  stroke: rgba(20, 59, 45, 0.18);
+  stroke-width: 1.4px;
+}
+
+.pm-station:hover .pm-station__ring,
+.pm-station:focus-visible .pm-station__ring {
+  fill: rgba(255, 255, 255, 0.94);
+  stroke: rgba(20, 59, 45, 0.46);
+}
+
 .map-inspector {
   position: absolute;
   z-index: 18;
   top: 76px;
   right: 18px;
   display: grid;
-  gap: 4px;
-  width: min(300px, calc(100% - 36px));
-  padding: 12px 14px;
-  border: 1px solid rgba(24, 92, 67, 0.16);
+  gap: 8px;
+  width: min(340px, calc(100% - 36px));
+  padding: 10px;
+  border: 1px solid rgba(24, 92, 67, 0.14);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.9);
   color: #143b2d;
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 46px rgba(15, 54, 39, 0.16);
+  backdrop-filter: blur(18px);
   pointer-events: none;
 }
 
-.map-inspector span {
+.map-inspector__photo {
+  position: relative;
+  display: flex;
+  align-items: end;
+  min-height: 112px;
+  overflow: hidden;
+  padding: 12px;
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(7, 31, 22, 0.72) 100%),
+    linear-gradient(135deg, #96d3a8, #e5f4d7 42%, #8fb8d8);
+}
+
+.map-inspector__photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 74% 20%, rgba(255, 255, 255, 0.88) 0 8%, transparent 9%),
+    linear-gradient(145deg, transparent 0 46%, rgba(32, 84, 62, 0.4) 47% 64%, transparent 65%),
+    linear-gradient(25deg, rgba(17, 94, 89, 0.45), transparent 45%);
+  opacity: 0.9;
+}
+
+.map-inspector__photo--city { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #d7efe4, #8ec5b0 44%, #5e8fa3); }
+.map-inspector__photo--school { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #f7e5b5, #db9f66 42%, #7395aa); }
+.map-inspector__photo--bhubing { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #f4d8e9, #84c493 44%, #517e6a); }
+.map-inspector__photo--chiangdao { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #bfd6ef, #7eb3a0 48%, #3d5f66); }
+.map-inspector__photo--maechaem { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #e8d9a3, #89bd73 48%, #466d5f); }
+.map-inspector__photo--hot { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #f7c38a, #8db68e 45%, #596d58); }
+.map-inspector__photo--hotspot { background: linear-gradient(180deg, transparent, rgba(75, 16, 16, 0.76)), linear-gradient(135deg, #fca5a5, #fb923c 48%, #7f1d1d); }
+.map-inspector__photo--wind { background: linear-gradient(180deg, transparent, rgba(9, 30, 66, 0.72)), linear-gradient(135deg, #d8ecff, #81b7e8 48%, #2f5f85); }
+.map-inspector__photo--district { background: linear-gradient(180deg, transparent, rgba(7, 31, 22, 0.72)), linear-gradient(135deg, #e6f4dd, #9ed09b 50%, #477b65); }
+
+.map-inspector__photo span {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.32);
+}
+
+.map-inspector > span {
   color: #66796f;
   font-size: 0.74rem;
   font-weight: 800;
@@ -696,6 +772,46 @@ button {
   color: #50655b;
   font-size: 0.8rem;
   line-height: 1.45;
+}
+
+.map-inspector__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.map-inspector__stat {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(24, 92, 67, 0.1);
+  border-radius: 7px;
+  background: rgba(244, 250, 245, 0.78);
+}
+
+.map-inspector__stat span {
+  color: #6a7c72;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.map-inspector__stat b {
+  overflow-wrap: anywhere;
+  color: #143b2d;
+  font-size: 0.86rem;
+}
+
+.map-inspector__stat--good {
+  background: rgba(220, 252, 231, 0.85);
+}
+
+.map-inspector__stat--watch {
+  background: rgba(254, 249, 195, 0.86);
+}
+
+.map-inspector__stat--risk {
+  background: rgba(254, 226, 226, 0.88);
 }
 
 .map-help {
@@ -766,7 +882,7 @@ button {
   position: absolute;
   z-index: 15;
   right: 18px;
-  top: 196px;
+  top: 400px;
   display: grid;
   gap: 6px;
 }
@@ -872,10 +988,14 @@ button {
   }
 
   .map-inspector {
-    top: 112px;
+    top: 128px;
     right: 12px;
     left: 12px;
     width: auto;
+  }
+
+  .map-inspector__photo {
+    display: none;
   }
 
   .map-help {

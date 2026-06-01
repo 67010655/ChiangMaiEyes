@@ -11,7 +11,7 @@
 
 ## Phase 2: Live Data Adapters
 
-- Add GISTDA Disaster daily hotspot adapter as the primary hotspot source.
+- Keep GISTDA API Gateway VIIRS 1-day as the primary hotspot source and NASA FIRMS as backup.
 - Add NASA FIRMS adapter as backup.
 - Add Air4Thai adapter and OpenAQ fallback.
 - Add TMD adapter and Open-Meteo fallback.

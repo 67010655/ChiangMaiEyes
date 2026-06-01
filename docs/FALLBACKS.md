@@ -8,7 +8,7 @@ All MVP services must be free or have a free tier suitable for hackathon usage. 
 
 | Data | Primary | Backup | MVP fallback |
 | --- | --- | --- | --- |
-| Hotspots | GISTDA Disaster daily hotspot update | NASA FIRMS | `backend/data/hotspots.json` |
+| Hotspots | GISTDA API Gateway VIIRS 1-day | NASA FIRMS | `backend/data/hotspots.json` |
 | PM2.5 | Air4Thai | OpenAQ | `backend/data/pm25.json` |
 | Weather | TMD Open Data | Open-Meteo | `backend/data/weather.json` |
 | AI summary | Gemini free tier | Rule-based Thai text | `fallback_summary()` |

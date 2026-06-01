@@ -5,6 +5,7 @@ import httpx
 from app.models import Hotspot, HotspotResponse
 
 logger = logging.getLogger(__name__)
+GISTDA_VIIRS_SOURCE = "GISTDA API Gateway VIIRS 1-day"
 
 def estimate_district(lat: float, lon: float) -> str:
     # Simple and fast district approximation based on coordinates in Chiang Mai
@@ -67,7 +68,7 @@ def fetch_gistda_hotspots(api_key: str) -> list[Hotspot]:
                     longitude=lon,
                     district=properties.get("ap_tn") or estimate_district(lat, lon),
                     confidence=confidence,
-                    source="GISTDA Disaster Gateway",
+                    source=GISTDA_VIIRS_SOURCE,
                     detected_at=detected_at
                 ))
                 idx += 1
@@ -136,15 +137,15 @@ def fetch_live_hotspots(gistda_key: str | None = None, nasa_key: str | None = No
     source = "Unknown"
     fetched_successfully = False
     
-    # Try GISTDA Sphere first
+    # Try GISTDA API Gateway VIIRS first
     if gistda_key:
         try:
             hotspots = fetch_gistda_hotspots(gistda_key)
-            source = "GISTDA Sphere Live API"
+            source = GISTDA_VIIRS_SOURCE
             fetched_successfully = True
-            logger.info(f"Loaded {len(hotspots)} hotspots from GISTDA Sphere")
+            logger.info(f"Loaded {len(hotspots)} hotspots from GISTDA API Gateway VIIRS")
         except Exception as e:
-            logger.error(f"GISTDA Sphere fetch failed, attempting NASA backup: {e}")
+            logger.error(f"GISTDA API Gateway VIIRS fetch failed, attempting NASA backup: {e}")
             
     # Try NASA FIRMS backup if GISTDA failed or had no key
     if not fetched_successfully and nasa_key:

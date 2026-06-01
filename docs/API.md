@@ -11,7 +11,7 @@ Returns hotspot aggregate and map points.
   "count": 134,
   "density_per_100_km2": 3.8,
   "latest_update": "2026-05-30T08:00:00+07:00",
-  "source": "cached sample; adapter target: GISTDA primary, NASA FIRMS backup",
+  "source": "cached sample; adapter target: GISTDA API Gateway VIIRS 1-day, NASA FIRMS backup",
   "items": [{ "id": "HS-001", "latitude": 18.9342, "longitude": 98.7424 }]
 }
 ```

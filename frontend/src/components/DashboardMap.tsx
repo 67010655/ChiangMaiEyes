@@ -45,11 +45,14 @@ type MapSelection = {
   eyebrow: string;
   title: string;
   detail: string;
+  imageKey?: string;
+  imageLabel?: string;
+  stats?: { label: string; value: string; tone?: 'good' | 'watch' | 'risk' }[];
 };
 
 const COS_LAT = Math.cos((18.85 * Math.PI) / 180);
 const PROJ = 1000;
-const MIN_ZOOM = 0.9;
+const MIN_ZOOM = 1;
 const MAX_ZOOM = 3.4;
 const ZOOM_STEP = 0.35;
 const DEFAULT_VIEW: ViewState = { zoom: 1, panX: 0, panY: 0 };
@@ -84,6 +87,18 @@ function geoGeomToPath(geom: { type: string; coordinates: number[][][] | number[
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function clampView(next: ViewState): ViewState {
+  const zoom = clamp(next.zoom, MIN_ZOOM, MAX_ZOOM);
+  if (zoom <= 1) return { zoom: 1, panX: 0, panY: 0 };
+  const maxPanX = (viewW * (zoom - 1)) / (2 * zoom);
+  const maxPanY = (viewH * (zoom - 1)) / (2 * zoom);
+  return {
+    zoom,
+    panX: clamp(next.panX, -maxPanX, maxPanX),
+    panY: clamp(next.panY, -maxPanY, maxPanY),
+  };
 }
 
 function formatPm25(value: number) {
@@ -132,6 +147,25 @@ function pm25Color(pm25: number) {
   return '#7c3aed';
 }
 
+function pm25Tone(pm25: number): 'good' | 'watch' | 'risk' {
+  if (pm25 <= 25) return 'good';
+  if (pm25 <= 50) return 'watch';
+  return 'risk';
+}
+
+function plumeRadius(pm25: number) {
+  return viewW * (0.055 + Math.min(pm25, 120) / 120 * 0.12);
+}
+
+function stationImageKey(station: Pm25Station) {
+  if (station.id === 'CM-O23') return 'bhubing';
+  if (station.id === 'CM-O70') return 'chiangdao';
+  if (station.id === 'CM-O71') return 'maechaem';
+  if (station.id === 'CM-O69') return 'hot';
+  if (station.id === 'CM-36T') return 'school';
+  return 'city';
+}
+
 const neighbours = [
   { label: 'เชียงราย', lat: 19.95, lng: 99.72 },
   { label: 'แม่ฮ่องสอน', lat: 18.52, lng: 97.18 },
@@ -173,7 +207,13 @@ const districtLabels: { name: string; lat: number; lng: number }[] = [
 const initialSelection: MapSelection = {
   eyebrow: 'ขอบเขตจังหวัด',
   title: 'เชียงใหม่',
-  detail: 'ลากแผนที่เพื่อเลื่อน ซูมเข้าออกเพื่อดูเส้นอำเภอและจุดข้อมูลให้ชัดขึ้น',
+  detail: 'จังหวัดขนาดใหญ่ทางภาคเหนือ พื้นที่ประมาณ 20,107 ตร.กม. ใช้ดู PM2.5 จุดความร้อน และทิศทางลมแบบโฟกัสเฉพาะเชียงใหม่',
+  imageKey: 'province',
+  imageLabel: 'Chiang Mai province',
+  stats: [
+    { label: 'พื้นที่', value: '20,107 ตร.กม.' },
+    { label: 'อำเภอ', value: '24 อำเภอ' },
+  ],
 };
 
 export function DashboardMap({ dashboard, layers }: Props) {
@@ -199,10 +239,12 @@ export function DashboardMap({ dashboard, layers }: Props) {
   const mapTransform = `translate(${view.panX} ${view.panY}) translate(${cx} ${cy}) scale(${view.zoom}) translate(${-cx} ${-cy})`;
 
   const changeZoom = (delta: number) => {
-    setView((current) => ({
-      ...current,
-      zoom: Number(clamp(current.zoom + delta, MIN_ZOOM, MAX_ZOOM).toFixed(2)),
-    }));
+    setView((current) =>
+      clampView({
+        ...current,
+        zoom: Number(clamp(current.zoom + delta, MIN_ZOOM, MAX_ZOOM).toFixed(2)),
+      }),
+    );
   };
 
   const resetView = () => {
@@ -232,11 +274,13 @@ export function DashboardMap({ dashboard, layers }: Props) {
     const rect = svgRef.current.getBoundingClientRect();
     const scaleX = viewW / rect.width;
     const scaleY = viewH / rect.height;
-    setView((current) => ({
-      ...current,
-      panX: drag.panX + ((event.clientX - drag.startX) * scaleX) / current.zoom,
-      panY: drag.panY + ((event.clientY - drag.startY) * scaleY) / current.zoom,
-    }));
+    setView((current) =>
+      clampView({
+        ...current,
+        panX: drag.panX + ((event.clientX - drag.startX) * scaleX) / current.zoom,
+        panY: drag.panY + ((event.clientY - drag.startY) * scaleY) / current.zoom,
+      }),
+    );
   };
 
   const stopDragging = (event: PointerEvent<SVGSVGElement>) => {
@@ -253,10 +297,17 @@ export function DashboardMap({ dashboard, layers }: Props) {
   };
 
   const selectStation = (station: Pm25Station) => {
+    const tone = pm25Tone(station.pm25);
     setSelection({
       eyebrow: 'สถานีวัด PM2.5',
       title: station.name.trim() || station.id,
-      detail: `${formatPm25(station.pm25)} · อัปเดต ${formatTime(station.updated_at)} · ${station.district}`,
+      detail: `${formatPm25(station.pm25)} · อัปเดต ${formatTime(station.updated_at)} · ${station.district} · ขอบเขตฝุ่นเป็นการประมาณด้วยรัศมีตามค่าฝุ่นของสถานี`,
+      imageKey: stationImageKey(station),
+      imageLabel: station.name.trim() || station.id,
+      stats: [
+        { label: 'PM2.5', value: formatPm25(station.pm25), tone },
+        { label: 'รัศมีฝุ่น', value: tone === 'good' ? 'ต่ำ' : tone === 'watch' ? 'เฝ้าระวัง' : 'สูง', tone },
+      ],
     });
   };
 
@@ -265,6 +316,12 @@ export function DashboardMap({ dashboard, layers }: Props) {
       eyebrow: 'จุดความร้อน',
       title: hotspot.district || hotspot.id,
       detail: `ความเชื่อมั่น ${hotspot.confidence}% · ตรวจพบ ${formatTime(hotspot.detected_at)} · ${hotspot.source}`,
+      imageKey: 'hotspot',
+      imageLabel: hotspot.district || hotspot.id,
+      stats: [
+        { label: 'Confidence', value: `${hotspot.confidence}%`, tone: hotspot.confidence >= 80 ? 'risk' : 'watch' },
+        { label: 'แหล่งข้อมูล', value: hotspot.source },
+      ],
     });
   };
 
@@ -312,10 +369,16 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
           <g clipPath="url(#province-clip)">
             {districtPaths.map((d) => {
-              const next = {
+              const next: MapSelection = {
                 eyebrow: 'อำเภอ',
                 title: d.nameTh,
                 detail: 'อยู่ภายในขอบเขตจังหวัดเชียงใหม่ คลิกจุดข้อมูลเพื่อดูสถานะ PM2.5 หรือจุดความร้อน',
+                imageKey: 'district',
+                imageLabel: d.nameTh,
+                stats: [
+                  { label: 'จังหวัด', value: 'เชียงใหม่' },
+                  { label: 'ชั้นข้อมูล', value: 'ขอบเขตอำเภอ' },
+                ],
               };
               return (
                 <path
@@ -376,10 +439,16 @@ export function DashboardMap({ dashboard, layers }: Props) {
           {layers.wind &&
             windPositions.map(([lat, lng]) => {
               const p = project(lat, lng);
-              const next = {
+              const next: MapSelection = {
                 eyebrow: 'ทิศทางลม',
                 title: dashboard.weather.wind_direction_text,
                 detail: `${dashboard.weather.wind_speed_kmh} km/h · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
+                imageKey: 'wind',
+                imageLabel: 'Wind layer',
+                stats: [
+                  { label: 'ความเร็ว', value: `${dashboard.weather.wind_speed_kmh} km/h` },
+                  { label: 'ทิศ', value: dashboard.weather.wind_direction_text },
+                ],
               };
               return (
                 <g
@@ -408,10 +477,16 @@ export function DashboardMap({ dashboard, layers }: Props) {
           {layers.hotspots &&
             dashboard.hotspots.items.map((h) => {
               const p = project(h.latitude, h.longitude);
-              const next = {
+              const next: MapSelection = {
                 eyebrow: 'จุดความร้อน',
                 title: h.district || h.id,
                 detail: `ความเชื่อมั่น ${h.confidence}% · ตรวจพบ ${formatTime(h.detected_at)}`,
+                imageKey: 'hotspot',
+                imageLabel: h.district || h.id,
+                stats: [
+                  { label: 'Confidence', value: `${h.confidence}%`, tone: h.confidence >= 80 ? 'risk' : 'watch' },
+                  { label: 'เวลา', value: formatTime(h.detected_at) },
+                ],
               };
               return (
                 <g
@@ -420,6 +495,8 @@ export function DashboardMap({ dashboard, layers }: Props) {
                   tabIndex={0}
                   role="button"
                   aria-label={`ดูรายละเอียดจุดความร้อน ${h.district || h.id}`}
+                  onMouseEnter={() => selectHotspot(h)}
+                  onFocus={() => selectHotspot(h)}
                   onClick={(event) => {
                     event.stopPropagation();
                     selectHotspot(h);
@@ -434,18 +511,50 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
           {layers.pm25 && (
             <g>
+              <g clipPath="url(#province-clip)" className="pm-plume-layer">
+                <circle
+                  cx={aggCenter.x}
+                  cy={aggCenter.y}
+                  r={plumeRadius(dashboard.pm25.current_pm25) * 1.35}
+                  className={`pm-plume pm-plume--${pm25Tone(dashboard.pm25.current_pm25)}`}
+                />
+                {dashboard.pm25.stations.map((s) => {
+                  const p = project(s.latitude, s.longitude);
+                  return <circle key={`plume-${s.id}`} cx={p.x} cy={p.y} r={plumeRadius(s.pm25)} className={`pm-plume pm-plume--${pm25Tone(s.pm25)}`} />;
+                })}
+              </g>
+
               <g
                 filter="url(#soft)"
-                className="map-marker"
+                className="map-marker pm-station"
                 tabIndex={0}
                 role="button"
                 aria-label="ดูรายละเอียด PM2.5 เฉลี่ยจังหวัด"
+                onMouseEnter={() =>
+                  setSelection({
+                    eyebrow: 'ค่าเฉลี่ยจังหวัด',
+                    title: 'PM2.5 เชียงใหม่',
+                    detail: `${formatPm25(dashboard.pm25.current_pm25)} · ${dashboard.pm25.category} · อัปเดต ${formatTime(dashboard.pm25.latest_update)}`,
+                    imageKey: 'province',
+                    imageLabel: 'Chiang Mai province',
+                    stats: [
+                      { label: 'PM2.5 เฉลี่ย', value: formatPm25(dashboard.pm25.current_pm25), tone: pm25Tone(dashboard.pm25.current_pm25) },
+                      { label: 'สถานี', value: `${dashboard.pm25.stations.length} จุด` },
+                    ],
+                  })
+                }
                 onClick={(event) => {
                   event.stopPropagation();
                   setSelection({
                     eyebrow: 'ค่าเฉลี่ยจังหวัด',
                     title: 'PM2.5 เชียงใหม่',
                     detail: `${formatPm25(dashboard.pm25.current_pm25)} · ${dashboard.pm25.category} · อัปเดต ${formatTime(dashboard.pm25.latest_update)}`,
+                    imageKey: 'province',
+                    imageLabel: 'Chiang Mai province',
+                    stats: [
+                      { label: 'PM2.5 เฉลี่ย', value: formatPm25(dashboard.pm25.current_pm25), tone: pm25Tone(dashboard.pm25.current_pm25) },
+                      { label: 'สถานี', value: `${dashboard.pm25.stations.length} จุด` },
+                    ],
                   });
                 }}
                 onKeyDown={(event) =>
@@ -453,10 +562,13 @@ export function DashboardMap({ dashboard, layers }: Props) {
                     eyebrow: 'ค่าเฉลี่ยจังหวัด',
                     title: 'PM2.5 เชียงใหม่',
                     detail: `${formatPm25(dashboard.pm25.current_pm25)} · ${dashboard.pm25.category}`,
+                    imageKey: 'province',
+                    imageLabel: 'Chiang Mai province',
                   })
                 }
               >
-                <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 1.7} fill="#16a34a" stroke="#fff" strokeWidth={viewW * 0.004} />
+                <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 2.05} className="pm-station__ring" />
+                <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 1.42} fill="#16a34a" stroke="#fff" strokeWidth={viewW * 0.004} />
                 <text x={aggCenter.x} y={aggCenter.y + VALUE_FONT * 0.36} fontSize={VALUE_FONT * 1.15} fill="#fff" fontWeight={700} textAnchor="middle">
                   {dashboard.pm25.current_pm25}
                 </text>
@@ -464,19 +576,27 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
               {dashboard.pm25.stations.map((s) => {
                 const p = project(s.latitude, s.longitude);
-                const next = {
+                const next: MapSelection = {
                   eyebrow: 'สถานีวัด PM2.5',
                   title: s.name.trim() || s.id,
                   detail: `${formatPm25(s.pm25)} · ${s.district}`,
+                  imageKey: stationImageKey(s),
+                  imageLabel: s.name.trim() || s.id,
+                  stats: [
+                    { label: 'PM2.5', value: formatPm25(s.pm25), tone: pm25Tone(s.pm25) },
+                    { label: 'อัปเดต', value: formatTime(s.updated_at) },
+                  ],
                 };
                 return (
                   <g
                     key={s.id}
                     filter="url(#soft)"
-                    className="map-marker"
+                    className="map-marker pm-station"
                     tabIndex={0}
                     role="button"
                     aria-label={`ดูรายละเอียดสถานี ${s.name.trim() || s.id}`}
+                    onMouseEnter={() => selectStation(s)}
+                    onFocus={() => selectStation(s)}
                     onClick={(event) => {
                       event.stopPropagation();
                       selectStation(s);
@@ -484,7 +604,8 @@ export function DashboardMap({ dashboard, layers }: Props) {
                     onKeyDown={(event) => keySelect(event, next)}
                   >
                     <title>{`${s.name.trim() || s.id} · ${formatPm25(s.pm25)}`}</title>
-                    <circle cx={p.x} cy={p.y} r={STATION_R} fill={pm25Color(s.pm25)} stroke="#fff" strokeWidth={viewW * 0.003} />
+                    <circle cx={p.x} cy={p.y} r={STATION_R * 1.45} className="pm-station__ring" />
+                    <circle cx={p.x} cy={p.y} r={STATION_R * 0.88} fill={pm25Color(s.pm25)} stroke="#fff" strokeWidth={viewW * 0.003} />
                     <text x={p.x} y={p.y - STATION_R - VALUE_FONT * 0.35} fontSize={VALUE_FONT} fill="#143b2d" fontWeight={700} textAnchor="middle">
                       {s.pm25}
                     </text>
@@ -497,9 +618,22 @@ export function DashboardMap({ dashboard, layers }: Props) {
       </svg>
 
       <div className="map-inspector" aria-live="polite">
+        <div className={`map-inspector__photo map-inspector__photo--${selection.imageKey ?? 'province'}`}>
+          <span>{selection.imageLabel ?? selection.title}</span>
+        </div>
         <span>{selection.eyebrow}</span>
         <strong>{selection.title}</strong>
         <small>{selection.detail}</small>
+        {selection.stats && (
+          <div className="map-inspector__stats">
+            {selection.stats.map((stat) => (
+              <div key={`${stat.label}-${stat.value}`} className={`map-inspector__stat ${stat.tone ? `map-inspector__stat--${stat.tone}` : ''}`}>
+                <span>{stat.label}</span>
+                <b>{stat.value}</b>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="map-help">ลากเพื่อเลื่อน · ซูมเพื่อดูรายละเอียด · คลิกจุดข้อมูล</div>
