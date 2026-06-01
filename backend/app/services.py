@@ -166,10 +166,49 @@ def fallback_summary(pm25: Pm25Response, hotspots: HotspotResponse, weather: Wea
     return SummaryResponse(language="th", text=repair_thai_mojibake_tree(text), source="rule-based fallback")
 
 
+def _gemini_text(api_key: str, model_name: str, prompt: str) -> str:
+    import concurrent.futures
+    import google.generativeai as genai  # type: ignore[import-not-found]
+
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(model_name)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(model.generate_content, prompt)
+        response = future.result(timeout=10)
+    return response.text.strip()
+
+
 def get_summary(settings: Settings, pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse, risk: RiskResponse) -> SummaryResponse:
-    # MVP keeps a deterministic fallback so the dashboard works without paid AI usage.
-    # Gemini free tier can be wired here with settings.gemini_api_key.
-    return fallback_summary(pm25, hotspots, weather, risk)
+    cached = _get_cached("summary")
+    if cached is not None:
+        return cached
+
+    result = _compute_summary(settings, pm25, hotspots, weather, risk)
+    _set_cached("summary", result)
+    return result
+
+
+def _compute_summary(settings: Settings, pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse, risk: RiskResponse) -> SummaryResponse:
+    if not settings.gemini_api_key:
+        return fallback_summary(pm25, hotspots, weather, risk)
+
+    prompt = (
+        f"สรุปสถานการณ์ฝุ่น PM2.5 และไฟป่าจังหวัดเชียงใหม่วันนี้เป็นภาษาไทย 2-3 ประโยคกระชับ โดยใช้ข้อมูลต่อไปนี้:\n"
+        f"- ค่า PM2.5 เฉลี่ย {pm25.current_pm25:.0f} µg/m³ ระดับ{pm25.category}\n"
+        f"- จุดความร้อน {hotspots.count} จุดในเชียงใหม่\n"
+        f"- ลมพัดจากทิศ{weather.wind_direction_text} ความเร็ว {weather.wind_speed_kmh:.0f} กม./ชม.\n"
+        f"- คะแนนความเสี่ยงหมอกควัน {risk.score}/10 ระดับ{risk.category}\n"
+        "ตอบเป็นภาษาไทยเท่านั้น ไม่ต้องมีหัวข้อ ไม่ต้องใช้ markdown "
+        "ใช้ภาษากลาง เข้าใจง่ายสำหรับประชาชนทั่วไป ไม่เกิน 3 ประโยค"
+    )
+
+    try:
+        text = _gemini_text(settings.gemini_api_key, settings.gemini_model, prompt)
+        return SummaryResponse(language="th", text=text, source="Gemini AI")
+    except Exception as e:
+        logger.warning("Gemini call failed, using fallback: %s", e)
+        return fallback_summary(pm25, hotspots, weather, risk)
 
 
 def get_dashboard(settings: Settings) -> DashboardResponse:

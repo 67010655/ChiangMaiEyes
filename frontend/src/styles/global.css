@@ -567,6 +567,71 @@ button {
   word-break: break-word;
 }
 
+/* ---------- Advice recs (3 use-case recommendations) ---------- */
+.advice-recs {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.advice-rec {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 12px;
+  background: var(--surface-soft);
+  border-radius: 10px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #3e544a;
+}
+
+.advice-rec__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--green-deep);
+  margin-top: 1px;
+}
+
+.advice-rec__body strong {
+  font-weight: 700;
+  color: #1f3a30;
+}
+
+/* ---------- AI summary block ---------- */
+.advice-card__summary {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f0f8f2;
+  border: 1px solid #d6ead9;
+}
+
+.advice-card__summary-text {
+  margin: 0;
+  color: #354f3f;
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.advice-card__summary-source {
+  display: inline-block;
+  margin-top: 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
 /* ---------- Advice card ---------- */
 .advice-card {
   position: relative;
@@ -1140,27 +1205,72 @@ button {
 
 @media (max-width: 720px) {
   .app-shell {
-    padding: 12px;
-    gap: 12px;
+    padding: 10px;
+    gap: 10px;
   }
 
+  /* ---- Topbar: stay horizontal, hide subtitle, shrink brand ---- */
   .topbar {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 12px 14px;
+    gap: 10px;
+    flex-wrap: nowrap;
   }
 
-  .topbar__actions {
-    width: 100%;
+  .brand-lockup {
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .topbar h1 {
+    font-size: 1.2rem;
+  }
+
+  .topbar p {
+    display: none;
+  }
+
+  .live-pill strong {
+    display: none;
   }
 
   .live-pill {
-    flex: 1;
+    padding: 7px 10px;
+    gap: 7px;
   }
 
-  .card-row {
-    grid-template-columns: 1fr;
+  /* ---- Cards: tighter padding ---- */
+  .card {
+    padding: 14px;
   }
 
+  /* ---- PM2.5 hero value: slightly smaller ---- */
+  .pm-card__value strong {
+    font-size: 2.6rem;
+  }
+
+  /* ---- Info buttons: larger touch targets ---- */
+  .card__info-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  /* ---- Mini cards row: keep 2 columns ---- */
+
+  /* ---- Reorder side-panel cards on mobile ---- */
+  .pm-card   { order: 1; }
+  .advice-card { order: 2; }
+  .card-row  { order: 3; }
+  .risk-card { order: 4; }
+
+  /* ---- Map ---- */
   .map-titlebar {
     flex-direction: column;
     align-items: flex-start;
@@ -1176,7 +1286,7 @@ button {
   }
 
   .map-stage {
-    min-height: 500px;
+    min-height: 460px;
   }
 
   .map-inspector {

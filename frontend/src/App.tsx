@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Flame, Info, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
+import { BookOpen, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
 import { fetchDashboard } from './lib/api';
 import { riskPercent } from './lib/risk';
 import type { DashboardResponse } from './lib/types';
@@ -57,6 +57,48 @@ const adviceByColor: Record<string, { heading: string; text: string }> = {
     text: 'งดกิจกรรมกลางแจ้งทั้งหมด อยู่ในอาคารที่ปิดมิดชิด และใช้เครื่องฟอกอากาศหากเป็นไปได้',
   },
 };
+
+const REC_ICONS = [Home, BookOpen, MapPin] as const;
+
+function computeRecommendations(pm25: number, hotspots: number, riskScore: number): Array<{ label: string; detail: string }> {
+  let r1: string;
+  if (pm25 <= 25 && riskScore <= 3) {
+    r1 = 'ออกจากบ้านได้:อากาศดี เหมาะสำหรับกิจกรรมกลางแจ้งทุกประเภท';
+  } else if (pm25 <= 37) {
+    r1 = 'ออกจากบ้านได้:แนะนำสวมหน้ากากหากออกกำลังกายกลางแจ้งนาน';
+  } else if (pm25 <= 50 || riskScore <= 6) {
+    r1 = 'ออกนอกบ้านด้วยความระมัดระวัง:สวม N95 และลดเวลาอยู่กลางแจ้ง';
+  } else {
+    r1 = 'แนะนำอยู่ในอาคาร:PM2.5 เกินเกณฑ์ปลอดภัย ลดการสัมผัสอากาศภายนอก';
+  }
+
+  let r2: string;
+  if (pm25 <= 25) {
+    r2 = 'เด็กไปโรงเรียนได้:คุณภาพอากาศดี ปลอดภัยสำหรับเด็ก';
+  } else if (pm25 <= 37) {
+    r2 = 'เด็กไปโรงเรียนได้:แนะนำสวมหน้ากากและงดกิจกรรมกลางแจ้ง';
+  } else if (pm25 <= 50) {
+    r2 = 'ควรปรึกษาโรงเรียน:PM2.5 เริ่มส่งผลต่อระบบทางเดินหายใจของเด็ก';
+  } else {
+    r2 = 'แนะนำให้เด็กอยู่บ้าน:PM2.5 สูงเกินเกณฑ์ปลอดภัยสำหรับเด็กเล็ก';
+  }
+
+  let r3: string;
+  if (hotspots === 0) {
+    r3 = 'เจ้าหน้าที่:ยังไม่พบจุดความร้อน เฝ้าระวังตามปกติ';
+  } else if (hotspots <= 10) {
+    r3 = `เจ้าหน้าที่:พบ ${hotspots} จุดความร้อน ให้ติดตามพื้นที่ป่าและชายป่า`;
+  } else if (hotspots <= 50) {
+    r3 = `เจ้าหน้าที่:${hotspots} จุดความร้อน เพิ่มกำลังเฝ้าระวังพื้นที่ป่าและเกษตรชายขอบ`;
+  } else {
+    r3 = `เจ้าหน้าที่:${hotspots} จุดความร้อน สถานการณ์วิกฤต — ระดมพลทุกพื้นที่หนาแน่น`;
+  }
+
+  return [r1, r2, r3].map((s) => {
+    const idx = s.indexOf(':');
+    return { label: s.slice(0, idx), detail: s.slice(idx + 1) };
+  });
+}
 
 const PM_SEGMENTS = ['#16a34a', '#eab308', '#f97316', '#dc2626', '#7c3aed'];
 const PM_BOUNDS = [0, 25, 37, 50, 90, 150];
@@ -197,6 +239,11 @@ export function App() {
 
   const pm25Time = formatTime(dashboard.pm25.latest_update);
   const advice = adviceByColor[dashboard.pm25.color] ?? adviceByColor.green;
+  const recommendations = computeRecommendations(
+    dashboard.pm25.current_pm25,
+    dashboard.hotspots.count,
+    dashboard.risk.score,
+  );
   const factors = dashboard.risk.factors;
   const pm25Points = Number(factors.pm25_points ?? 0);
   const hotspotPoints = Number(factors.hotspot_points ?? 0);
@@ -351,6 +398,23 @@ export function App() {
             </div>
             <h3 className={`advice-card__heading advice-card__heading--${dashboard.pm25.color}`}>{advice.heading}</h3>
             <p className="advice-card__text">{advice.text}</p>
+            <ul className="advice-recs">
+              {recommendations.map(({ label, detail }, i) => {
+                const Icon = REC_ICONS[i];
+                return (
+                  <li key={i} className="advice-rec">
+                    <span className="advice-rec__icon"><Icon size={15} /></span>
+                    <span className="advice-rec__body"><strong>{label}:</strong> {detail}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            {dashboard.summary.text && (
+              <div className="advice-card__summary">
+                <p className="advice-card__summary-text">{dashboard.summary.text}</p>
+                <span className="advice-card__summary-source">{dashboard.summary.source}</span>
+              </div>
+            )}
           </section>
         </aside>
 
