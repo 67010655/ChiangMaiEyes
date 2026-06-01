@@ -251,6 +251,9 @@ def fetch_live_hotspots(gistda_key: str | None = None, nasa_key: str | None = No
 
     hotspots = merge_hotspots(hotspot_groups)
     source = " + ".join(dict.fromkeys(sources))
+
+    if not hotspots and any(error.startswith(FOREST_FIREMAP_SOURCE) for error in fetch_errors):
+        raise Exception(f"Royal Forest Department Firemap unavailable and backup sources returned no hotspots: {'; '.join(fetch_errors)}")
         
     count = len(hotspots)
     # Area of Chiang Mai is approximately 20,107 km2

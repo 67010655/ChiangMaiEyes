@@ -206,3 +206,19 @@ def test_fetch_live_hotspots_gistda_success(mock_get):
     assert response.items[0].district == "แม่ริม"
     assert response.items[0].confidence == 90
     assert response.items[0].detected_at == "2026-05-31T14:30:00+07:00"
+
+@patch("httpx.get")
+def test_fetch_live_hotspots_raises_when_forest_blocked_and_backups_empty(mock_get):
+    mock_forest_resp = MagicMock()
+    mock_forest_resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+        "403 Forbidden",
+        request=MagicMock(),
+        response=MagicMock(status_code=403),
+    )
+
+    mock_gistda_resp = MagicMock()
+    mock_gistda_resp.json.return_value = {"features": []}
+    mock_get.side_effect = [mock_forest_resp, mock_gistda_resp]
+
+    with pytest.raises(Exception, match="Royal Forest Department Firemap unavailable"):
+        fetch_live_hotspots(gistda_key="gistda_key")
