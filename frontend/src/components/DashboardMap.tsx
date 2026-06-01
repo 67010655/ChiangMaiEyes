@@ -4,6 +4,7 @@ import type { DashboardResponse, Hotspot, Pm25Station } from '../lib/types';
 import provinceGeo from '../data/chiangmai-province.json';
 import districtsGeo from '../data/chiangmai-districts.json';
 import neighbourGeo from '../data/neighbour-provinces.json';
+import { windDestinationName } from '../lib/wind';
 
 type Props = {
   dashboard: DashboardResponse;
@@ -113,12 +114,6 @@ function pm25ValueLabel(value: number) {
 
 function formatTime(value: string) {
   return new Intl.DateTimeFormat('th-TH', { timeStyle: 'short' }).format(new Date(value));
-}
-
-function directionName(degrees: number) {
-  const directions = ['เหนือ', 'ตะวันออกเฉียงเหนือ', 'ตะวันออก', 'ตะวันออกเฉียงใต้', 'ใต้', 'ตะวันตกเฉียงใต้', 'ตะวันตก', 'ตะวันตกเฉียงเหนือ'];
-  const idx = Math.floor(((degrees + 22.5) % 360) / 45);
-  return directions[idx];
 }
 
 // Province boundary coords [lng, lat]
@@ -283,7 +278,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
   const windRotation = dashboard.weather.wind_direction_deg + 180;
   const windSpeed = dashboard.weather.wind_speed_kmh;
   const windSourceText = dashboard.weather.wind_direction_text;
-  const windDestinationText = directionName(dashboard.weather.wind_direction_deg + 180);
+  const windDestinationText = windDestinationName(dashboard.weather.wind_direction_deg);
   // Faster wind ⇒ shorter cycle, so the streamlines visibly speed up.
   const windDur = clamp(36 / (windSpeed + 5), 1.4, 6);
   const aggCenter = project(18.98, 98.6);

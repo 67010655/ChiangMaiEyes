@@ -5,6 +5,7 @@ import { riskPercent } from './lib/risk';
 import type { DashboardResponse } from './lib/types';
 import { DashboardMap } from './components/DashboardMap';
 import dashboardSnapshot from './data/dashboardSnapshot.json';
+import { windDestinationName } from './lib/wind';
 
 type LayerState = {
   hotspots: boolean;
@@ -149,6 +150,8 @@ export function App() {
   const pm25Points = Number(factors.pm25_points ?? 0);
   const hotspotPoints = Number(factors.hotspot_points ?? 0);
   const windFactor = Number(factors.wind_factor ?? 0);
+  const windSourceText = dashboard.weather.wind_direction_text;
+  const windDestinationText = windDestinationName(dashboard.weather.wind_direction_deg);
 
   return (
     <div className="app-shell">
@@ -236,8 +239,8 @@ export function App() {
                   <Wind size={20} />
                 </span>
                 <div className="mini-card__value">
-                  <strong className="mini-card__wind">{dashboard.weather.wind_direction_text}</strong>
-                  <span>ความเร็ว {dashboard.weather.wind_speed_kmh} km/h</span>
+                  <strong className="mini-card__wind">ไป{windDestinationText}</strong>
+                  <span>จาก{windSourceText} · {dashboard.weather.wind_speed_kmh} km/h</span>
                 </div>
               </div>
               <small className="card__foot">อัปเดต {pm25Time} น.</small>
