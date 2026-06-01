@@ -585,11 +585,9 @@ export function DashboardMap({ dashboard, layers }: Props) {
           <text
             x={aggCenter.x}
             y={aggCenter.y - viewW * 0.08}
+            className="province-title-label"
             fontSize={CENTER_FONT}
-            fill="#3f5a4e"
-            fontWeight={700}
             textAnchor="middle"
-            opacity="0.36"
           >
             เชียงใหม่
           </text>

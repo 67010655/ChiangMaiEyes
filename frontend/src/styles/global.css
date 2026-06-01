@@ -691,11 +691,23 @@ button {
   fill: #9aaca2;
   font-weight: 700;
   letter-spacing: 0.02em;
-  opacity: 0.75;
+  opacity: 0.55;
 }
 
 .province-fill {
   transition: none;
+}
+
+.province-title-label {
+  fill: #0f6b54;
+  font-weight: 900;
+  opacity: 0.86;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-linejoin: round;
+  stroke-width: 7px;
+  filter: drop-shadow(0 4px 10px rgba(15, 72, 53, 0.18));
+  pointer-events: none;
 }
 
 /* ---------- Wind field: streamlines that flow along the live bearing ---------- */
