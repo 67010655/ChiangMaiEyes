@@ -115,6 +115,12 @@ function formatTime(value: string) {
   return new Intl.DateTimeFormat('th-TH', { timeStyle: 'short' }).format(new Date(value));
 }
 
+function directionName(degrees: number) {
+  const directions = ['เหนือ', 'ตะวันออกเฉียงเหนือ', 'ตะวันออก', 'ตะวันออกเฉียงใต้', 'ใต้', 'ตะวันตกเฉียงใต้', 'ตะวันตก', 'ตะวันตกเฉียงเหนือ'];
+  const idx = Math.floor(((degrees + 22.5) % 360) / 45);
+  return directions[idx];
+}
+
 // Province boundary coords [lng, lat]
 const provinceCoordsRaw = (provinceGeo as { type: string; coordinates: number[][][] }).coordinates[0];
 const provincePath = geoRingToPath(provinceCoordsRaw);
@@ -276,6 +282,8 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
   const windRotation = dashboard.weather.wind_direction_deg + 180;
   const windSpeed = dashboard.weather.wind_speed_kmh;
+  const windSourceText = dashboard.weather.wind_direction_text;
+  const windDestinationText = directionName(dashboard.weather.wind_direction_deg + 180);
   // Faster wind ⇒ shorter cycle, so the streamlines visibly speed up.
   const windDur = clamp(36 / (windSpeed + 5), 1.4, 6);
   const aggCenter = project(18.98, 98.6);
@@ -397,13 +405,14 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
   const windSelection: MapSelection = {
     eyebrow: 'ทิศทางลม',
-    title: dashboard.weather.wind_direction_text,
-    detail: `${windSpeed} km/h · พัดเข้าทาง${dashboard.weather.wind_direction_text} · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
+    title: `ไปทาง${windDestinationText}`,
+    detail: `${windSpeed} km/h · ลมมาจากทิศ${windSourceText} แล้วพัดไปทาง${windDestinationText} · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
     imageKey: 'wind',
     imageLabel: 'Wind layer',
     stats: [
       { label: 'ความเร็ว', value: `${windSpeed} km/h` },
-      { label: 'ทิศ', value: dashboard.weather.wind_direction_text },
+      { label: 'มาจาก', value: windSourceText },
+      { label: 'ไปทาง', value: windDestinationText },
     ],
   };
 
@@ -766,13 +775,13 @@ export function DashboardMap({ dashboard, layers }: Props) {
           type="button"
           className="wind-chip"
           onClick={() => setSelection(windSelection)}
-          aria-label={`ทิศทางลม ${dashboard.weather.wind_direction_text} ${windSpeed} km/h`}
+          aria-label={`ลมไปทาง${windDestinationText} ${windSpeed} km/h`}
         >
           <span className="wind-chip__compass" style={{ transform: `rotate(${windRotation}deg)` }}>
             <Wind size={15} />
           </span>
           <span className="wind-chip__text">
-            <b>{dashboard.weather.wind_direction_text}</b>
+            <b>ไป{windDestinationText}</b>
             <small>{windSpeed} km/h</small>
           </span>
         </button>
