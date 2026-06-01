@@ -1,8 +1,9 @@
-import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type WheelEvent } from 'react';
-import { Crosshair, Minus, Plus } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
+import { Crosshair, Minus, Plus, Wind } from 'lucide-react';
 import type { DashboardResponse, Hotspot, Pm25Station } from '../lib/types';
 import provinceGeo from '../data/chiangmai-province.json';
 import districtsGeo from '../data/chiangmai-districts.json';
+import neighbourGeo from '../data/neighbour-provinces.json';
 
 type Props = {
   dashboard: DashboardResponse;
@@ -39,6 +40,7 @@ type DragState = {
   startY: number;
   panX: number;
   panY: number;
+  moved: boolean;
 };
 
 type MapSelection = {
@@ -53,8 +55,8 @@ type MapSelection = {
 const COS_LAT = Math.cos((18.85 * Math.PI) / 180);
 const PROJ = 1000;
 const MIN_ZOOM = 1;
-const MAX_ZOOM = 3.4;
-const ZOOM_STEP = 0.35;
+const MAX_ZOOM = 6.5;
+const BUTTON_FACTOR = 1.45;
 const DEFAULT_VIEW: ViewState = { zoom: 1, panX: 0, panY: 0 };
 
 // GeoJSON coords = [lng, lat]
@@ -127,8 +129,11 @@ const rawMinY = Math.min(...ys);
 const rawMaxY = Math.max(...ys);
 const spanX = rawMaxX - rawMinX;
 const spanY = rawMaxY - rawMinY;
-const padX = spanX * 0.2;
-const padY = spanY * 0.08;
+// Extra breathing room so the neighbouring provinces read as a ring around
+// Chiang Mai. Horizontal padding is larger because the province is tall and
+// narrow — this lets the east/west neighbours fill the frame edges.
+const padX = spanX * 0.62;
+const padY = spanY * 0.16;
 const viewMinX = rawMinX - padX;
 const viewMinY = rawMinY - padY;
 const viewW = spanX + padX * 2;
@@ -136,12 +141,42 @@ const viewH = spanY + padY * 2;
 const cx = viewMinX + viewW / 2;
 const cy = viewMinY + viewH / 2;
 
-const STATION_R = viewW * 0.02;
-const HOTSPOT_R = viewW * 0.012;
-const VALUE_FONT = viewW * 0.022;
-const NEIGHBOUR_FONT = viewW * 0.026;
-const CENTER_FONT = viewW * 0.045;
-const DISTRICT_FONT = viewW * 0.016;
+const STATION_R = viewW * 0.016;
+const HOTSPOT_R = viewW * 0.0095;
+const VALUE_FONT = viewW * 0.0175;
+const NEIGHBOUR_FONT = viewW * 0.02;
+const CENTER_FONT = viewW * 0.036;
+const DISTRICT_FONT = viewW * 0.0128;
+
+// Neighbour provinces (decorative backdrop).
+const neighbourPaths = (neighbourGeo as unknown as GeoCollection).features.map((f) => ({
+  name: f.properties.name,
+  nameTh: f.properties.nameTh,
+  path: geoGeomToPath(f.geometry as { type: string; coordinates: number[][][] | number[][][][] }),
+}));
+
+// Curated label anchors so neighbour names sit nicely inside the frame.
+const neighbourLabels: { name: string; lat: number; lng: number }[] = [
+  { name: 'เชียงราย', lat: 19.92, lng: 99.74 },
+  { name: 'แม่ฮ่องสอน', lat: 18.62, lng: 97.62 },
+  { name: 'ลำพูน', lat: 18.0, lng: 99.05 },
+  { name: 'ลำปาง', lat: 18.22, lng: 99.72 },
+  { name: 'ตาก', lat: 17.4, lng: 98.62 },
+  { name: 'พะเยา', lat: 19.32, lng: 99.92 },
+];
+
+// Wind streamlines — drawn around the origin, then translated to the province
+// centre and rotated to the live wind bearing. Generous coverage so the field
+// still fills the province at any rotation.
+const WIND_COV = 1.2 * Math.max(spanX, spanY);
+const WIND_HALF = WIND_COV / 2;
+const WIND_LINES = Array.from({ length: 11 }, (_, i) => {
+  const step = WIND_COV / 10;
+  const lx = -WIND_HALF + i * step;
+  const amp = step * 0.42 * (i % 2 === 0 ? 1 : -1);
+  const d = `M ${lx.toFixed(1)} ${WIND_HALF.toFixed(1)} C ${(lx + amp).toFixed(1)} ${(WIND_COV / 6).toFixed(1)}, ${(lx - amp).toFixed(1)} ${(-WIND_COV / 6).toFixed(1)}, ${lx.toFixed(1)} ${(-WIND_HALF).toFixed(1)}`;
+  return { id: `wind-line-${i}`, d, delay: (i % 5) * 0.6 };
+});
 
 function pm25Color(pm25: number) {
   if (pm25 <= 25) return '#16a34a';
@@ -158,7 +193,7 @@ function pm25Tone(pm25: number): 'good' | 'watch' | 'risk' {
 }
 
 function plumeRadius(pm25: number) {
-  return viewW * (0.055 + Math.min(pm25, 120) / 120 * 0.12);
+  return viewW * (0.045 + (Math.min(pm25, 120) / 120) * 0.1);
 }
 
 function stationImageKey(station: Pm25Station) {
@@ -196,25 +231,6 @@ function hotspotStats(hotspot: Hotspot): MapSelection['stats'] {
   ];
 }
 
-const neighbours = [
-  { label: 'เชียงราย', lat: 19.95, lng: 99.72 },
-  { label: 'แม่ฮ่องสอน', lat: 18.52, lng: 97.18 },
-  { label: 'ลำพูน', lat: 18.05, lng: 99.08 },
-  { label: 'ลำปาง', lat: 18.28, lng: 99.68 },
-  { label: 'ตาก', lat: 17.42, lng: 98.6 },
-];
-
-const windPositions: [number, number][] = [
-  [19.55, 98.62],
-  [19.3, 99.18],
-  [19.02, 98.78],
-  [18.66, 99.22],
-  [18.58, 98.5],
-  [18.22, 98.92],
-  [18.4, 98.18],
-  [19.72, 98.95],
-];
-
 // District centroids for label positioning.
 const districtLabels: { name: string; lat: number; lng: number }[] = [
   { name: 'แม่ริม', lat: 18.92, lng: 98.96 },
@@ -237,7 +253,8 @@ const districtLabels: { name: string; lat: number; lng: number }[] = [
 const initialSelection: MapSelection = {
   eyebrow: 'ขอบเขตจังหวัด',
   title: 'เชียงใหม่',
-  detail: 'จังหวัดขนาดใหญ่ทางภาคเหนือ พื้นที่ประมาณ 20,107 ตร.กม. ใช้ดู PM2.5 จุดความร้อน และทิศทางลมแบบโฟกัสเฉพาะเชียงใหม่',
+  detail:
+    'จังหวัดขนาดใหญ่ทางภาคเหนือ พื้นที่ประมาณ 20,107 ตร.กม. ใช้ดู PM2.5 จุดความร้อน และทิศทางลมแบบโฟกัสเฉพาะเชียงใหม่',
   imageKey: 'province',
   imageLabel: 'Chiang Mai province',
   stats: [
@@ -248,13 +265,19 @@ const initialSelection: MapSelection = {
 
 export function DashboardMap({ dashboard, layers }: Props) {
   const [view, setView] = useState<ViewState>(DEFAULT_VIEW);
+  const [smooth, setSmooth] = useState(false);
   const [drag, setDrag] = useState<DragState | null>(null);
   const [selection, setSelection] = useState<MapSelection>(initialSelection);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  // Survives the pointerup→click sequence so a drag doesn't trigger a selection.
+  const movedRef = useRef(false);
 
   const windRotation = dashboard.weather.wind_direction_deg + 180;
-  const arrowSize = viewW * 0.024;
-  const windStreamLength = viewW * 0.088;
+  const windSpeed = dashboard.weather.wind_speed_kmh;
+  // Faster wind ⇒ shorter cycle, so the streamlines visibly speed up.
+  const windDur = clamp(36 / (windSpeed + 5), 1.4, 6);
   const aggCenter = project(18.98, 98.6);
 
   const districtPaths = useMemo(
@@ -269,27 +292,66 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
   const mapTransform = `translate(${view.panX} ${view.panY}) translate(${cx} ${cy}) scale(${view.zoom}) translate(${-cx} ${-cy})`;
 
-  const changeZoom = (delta: number) => {
-    setView((current) =>
-      clampView({
-        ...current,
-        zoom: Number(clamp(current.zoom + delta, MIN_ZOOM, MAX_ZOOM).toFixed(2)),
-      }),
-    );
+  // Convert a screen point into viewBox-space, accounting for the letterboxing
+  // introduced by preserveAspectRatio="xMidYMid meet".
+  const screenToViewBox = (clientX: number, clientY: number) => {
+    const rect = svgRef.current!.getBoundingClientRect();
+    const scale = Math.min(rect.width / viewW, rect.height / viewH);
+    const offsetX = (rect.width - viewW * scale) / 2;
+    const offsetY = (rect.height - viewH * scale) / 2;
+    return {
+      x: viewMinX + (clientX - rect.left - offsetX) / scale,
+      y: viewMinY + (clientY - rect.top - offsetY) / scale,
+    };
+  };
+
+  // Zoom toward a viewBox-space anchor, keeping that point under the cursor.
+  const zoomToward = (nextZoom: number, anchor: { x: number; y: number }) => {
+    setView((current) => {
+      const zoom = clamp(nextZoom, MIN_ZOOM, MAX_ZOOM);
+      const content = {
+        x: cx + (anchor.x - current.panX - cx) / current.zoom,
+        y: cy + (anchor.y - current.panY - cy) / current.zoom,
+      };
+      return clampView({
+        zoom,
+        panX: anchor.x - cx - zoom * (content.x - cx),
+        panY: anchor.y - cy - zoom * (content.y - cy),
+      });
+    });
+  };
+
+  const zoomByButton = (factor: number) => {
+    setSmooth(true);
+    zoomToward(viewRef.current.zoom * factor, { x: cx, y: cy });
   };
 
   const resetView = () => {
+    setSmooth(true);
     setView(DEFAULT_VIEW);
     setSelection(initialSelection);
   };
 
-  const handleWheel = (event: WheelEvent<SVGSVGElement>) => {
-    event.preventDefault();
-    changeZoom(event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP);
-  };
+  // Native, non-passive wheel listener so preventDefault actually stops the
+  // page from scrolling and zooming feels continuous rather than stepped.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (event: globalThis.WheelEvent) => {
+      event.preventDefault();
+      setSmooth(false);
+      const factor = Math.exp(-event.deltaY * 0.0016);
+      zoomToward(viewRef.current.zoom * factor, screenToViewBox(event.clientX, event.clientY));
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePointerDown = (event: PointerEvent<SVGSVGElement>) => {
     if (event.button !== 0) return;
+    setSmooth(false);
+    movedRef.current = false;
     event.currentTarget.setPointerCapture(event.pointerId);
     setDrag({
       pointerId: event.pointerId,
@@ -297,19 +359,25 @@ export function DashboardMap({ dashboard, layers }: Props) {
       startY: event.clientY,
       panX: view.panX,
       panY: view.panY,
+      moved: false,
     });
   };
 
   const handlePointerMove = (event: PointerEvent<SVGSVGElement>) => {
     if (!drag || !svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
-    const scaleX = viewW / rect.width;
-    const scaleY = viewH / rect.height;
+    const scale = Math.min(rect.width / viewW, rect.height / viewH) || 1;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (!drag.moved && Math.hypot(dx, dy) > 3) {
+      movedRef.current = true;
+      setDrag({ ...drag, moved: true });
+    }
     setView((current) =>
       clampView({
         ...current,
-        panX: drag.panX + ((event.clientX - drag.startX) * scaleX) / current.zoom,
-        panY: drag.panY + ((event.clientY - drag.startY) * scaleY) / current.zoom,
+        panX: drag.panX + dx / scale / current.zoom,
+        panY: drag.panY + dy / scale / current.zoom,
       }),
     );
   };
@@ -325,6 +393,18 @@ export function DashboardMap({ dashboard, layers }: Props) {
       event.preventDefault();
       setSelection(next);
     }
+  };
+
+  const windSelection: MapSelection = {
+    eyebrow: 'ทิศทางลม',
+    title: dashboard.weather.wind_direction_text,
+    detail: `${windSpeed} km/h · พัดเข้าทาง${dashboard.weather.wind_direction_text} · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
+    imageKey: 'wind',
+    imageLabel: 'Wind layer',
+    stats: [
+      { label: 'ความเร็ว', value: `${windSpeed} km/h` },
+      { label: 'ทิศ', value: dashboard.weather.wind_direction_text },
+    ],
   };
 
   const selectStation = (station: Pm25Station) => {
@@ -358,12 +438,11 @@ export function DashboardMap({ dashboard, layers }: Props) {
     <div className="map-canvas">
       <svg
         ref={svgRef}
-        className={drag ? 'is-dragging' : undefined}
+        className={`${drag?.moved ? 'is-dragging' : ''} ${smooth ? 'is-smooth' : ''}`.trim() || undefined}
         viewBox={`${viewMinX} ${viewMinY} ${viewW} ${viewH}`}
         role="img"
         aria-label="แผนที่จังหวัดเชียงใหม่"
         preserveAspectRatio="xMidYMid meet"
-        onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={stopDragging}
@@ -371,30 +450,69 @@ export function DashboardMap({ dashboard, layers }: Props) {
         onPointerLeave={stopDragging}
       >
         <defs>
-          <radialGradient id="terrain" cx="42%" cy="38%" r="80%">
-            <stop offset="0%" stopColor="#f4faf5" />
-            <stop offset="100%" stopColor="#e3ece6" />
+          <radialGradient id="terrain" cx="46%" cy="34%" r="90%">
+            <stop offset="0%" stopColor="#f6fbf7" />
+            <stop offset="62%" stopColor="#e8f0ea" />
+            <stop offset="100%" stopColor="#d6e2da" />
           </radialGradient>
-          <linearGradient id="province" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#d9eedf" />
-            <stop offset="100%" stopColor="#c4e4cd" />
+          <linearGradient id="province" x1="0" y1="0" x2="0.35" y2="1">
+            <stop offset="0%" stopColor="#dcf0e2" />
+            <stop offset="100%" stopColor="#bfe2c9" />
           </linearGradient>
-          <pattern id="map-grid" width={viewW * 0.06} height={viewW * 0.06} patternUnits="userSpaceOnUse">
-            <path d={`M ${viewW * 0.06} 0 L 0 0 0 ${viewW * 0.06}`} fill="none" stroke="#6aab7a" strokeWidth={viewW * 0.0007} strokeOpacity="0.18" />
+          <linearGradient id="neighbour-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#e4ebe6" />
+            <stop offset="100%" stopColor="#d4ded8" />
+          </linearGradient>
+          <pattern id="map-grid" width={viewW * 0.05} height={viewW * 0.05} patternUnits="userSpaceOnUse">
+            <path
+              d={`M ${viewW * 0.05} 0 L 0 0 0 ${viewW * 0.05}`}
+              fill="none"
+              stroke="#6aab7a"
+              strokeWidth={viewW * 0.0006}
+              strokeOpacity="0.16"
+            />
           </pattern>
           <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy={viewW * 0.003} stdDeviation={viewW * 0.004} floodColor="#1f4d3a" floodOpacity="0.18" />
+            <feDropShadow dx="0" dy={viewW * 0.0025} stdDeviation={viewW * 0.0035} floodColor="#1f4d3a" floodOpacity="0.2" />
+          </filter>
+          <filter id="province-lift" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy={viewW * 0.006} stdDeviation={viewW * 0.012} floodColor="#16432f" floodOpacity="0.22" />
           </filter>
           <clipPath id="province-clip">
             <path d={provincePath} />
           </clipPath>
+          {/* Vignette that fades the decorative neighbours toward the frame edge. */}
+          <radialGradient id="edge-fade" cx="50%" cy="48%" r="62%">
+            <stop offset="0%" stopColor="#fff" />
+            <stop offset="55%" stopColor="#fff" />
+            <stop offset="100%" stopColor="#000" />
+          </radialGradient>
+          <mask id="neighbour-mask">
+            <rect x={viewMinX} y={viewMinY} width={viewW} height={viewH} fill="url(#edge-fade)" />
+          </mask>
         </defs>
 
         <rect x={viewMinX} y={viewMinY} width={viewW} height={viewH} fill="url(#terrain)" />
 
         <g transform={mapTransform} className="map-layer">
-          <path d={provincePath} fill="url(#province)" />
-          <path d={provincePath} fill="url(#map-grid)" opacity="0.42" />
+          {/* --- Decorative neighbouring provinces (muted backdrop) --- */}
+          <g className="neighbour-layer" mask="url(#neighbour-mask)">
+            {neighbourPaths.map((n) => (
+              <path key={n.name} d={n.path} className="neighbour-path" />
+            ))}
+            {neighbourLabels.map((n) => {
+              const p = project(n.lat, n.lng);
+              return (
+                <text key={n.name} x={p.x} y={p.y} className="neighbour-label" fontSize={NEIGHBOUR_FONT} textAnchor="middle">
+                  {n.name}
+                </text>
+              );
+            })}
+          </g>
+
+          {/* --- Chiang Mai (focus) --- */}
+          <path d={provincePath} className="province-fill" fill="url(#province)" filter="url(#province-lift)" />
+          <path d={provincePath} fill="url(#map-grid)" opacity="0.4" />
 
           <g clipPath="url(#province-clip)">
             {districtPaths.map((d) => {
@@ -416,14 +534,14 @@ export function DashboardMap({ dashboard, layers }: Props) {
                   className="district-path"
                   fill="rgba(255,255,255,0.02)"
                   stroke="#6aab7a"
-                  strokeWidth={viewW * 0.0014}
+                  strokeWidth={viewW * 0.0012}
                   strokeOpacity="0.5"
                   tabIndex={0}
                   role="button"
                   aria-label={`ดูรายละเอียดอำเภอ${d.nameTh}`}
                   onClick={(event) => {
                     event.stopPropagation();
-                    setSelection(next);
+                    if (!movedRef.current) setSelection(next);
                   }}
                   onKeyDown={(event) => keySelect(event, next)}
                 >
@@ -433,83 +551,69 @@ export function DashboardMap({ dashboard, layers }: Props) {
             })}
           </g>
 
-          <path d={provincePath} fill="none" stroke="#0f6b54" strokeWidth={viewW * 0.01} strokeOpacity="0.15" />
+          <path d={provincePath} fill="none" stroke="#0f6b54" strokeWidth={viewW * 0.0085} strokeOpacity="0.12" />
           <path
             d={provincePath}
             fill="none"
             stroke="#0f6b54"
-            strokeWidth={viewW * 0.0042}
-            strokeDasharray={`${viewW * 0.011} ${viewW * 0.008}`}
+            strokeWidth={viewW * 0.004}
             strokeLinejoin="round"
           />
-
-          {neighbours.map((n) => {
-            const p = project(n.lat, n.lng);
-            return (
-              <text key={n.label} x={p.x} y={p.y} fontSize={NEIGHBOUR_FONT} fill="#7c8d84" fontWeight={600} textAnchor="middle">
-                {n.label}
-              </text>
-            );
-          })}
 
           {districtLabels.map((d) => {
             const p = project(d.lat, d.lng);
             return (
-              <text key={d.name} x={p.x} y={p.y} fontSize={DISTRICT_FONT} fill="#3d6a50" fontWeight={500} textAnchor="middle" opacity="0.74">
+              <text
+                key={d.name}
+                x={p.x}
+                y={p.y}
+                fontSize={DISTRICT_FONT}
+                fill="#3d6a50"
+                fontWeight={500}
+                textAnchor="middle"
+                opacity="0.72"
+              >
                 {d.name}
               </text>
             );
           })}
 
-          <text x={aggCenter.x} y={aggCenter.y - viewW * 0.08} fontSize={CENTER_FONT} fill="#3f5a4e" fontWeight={700} textAnchor="middle" opacity="0.42">
+          <text
+            x={aggCenter.x}
+            y={aggCenter.y - viewW * 0.08}
+            fontSize={CENTER_FONT}
+            fill="#3f5a4e"
+            fontWeight={700}
+            textAnchor="middle"
+            opacity="0.36"
+          >
             เชียงใหม่
           </text>
 
-          {layers.wind &&
-            windPositions.map(([lat, lng], index) => {
-              const p = project(lat, lng);
-              const next: MapSelection = {
-                eyebrow: 'ทิศทางลม',
-                title: dashboard.weather.wind_direction_text,
-                detail: `${dashboard.weather.wind_speed_kmh} km/h · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
-                imageKey: 'wind',
-                imageLabel: 'Wind layer',
-                stats: [
-                  { label: 'ความเร็ว', value: `${dashboard.weather.wind_speed_kmh} km/h` },
-                  { label: 'ทิศ', value: dashboard.weather.wind_direction_text },
-                ],
-              };
-              return (
-                <g
-                  key={`${lat}-${lng}`}
-                  transform={`translate(${p.x} ${p.y}) rotate(${windRotation})`}
-                  className="wind-arrow wind-stream"
-                  style={{ animationDelay: `${index * -0.32}s` }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label="ดูรายละเอียดทิศทางลม"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setSelection(next);
-                  }}
-                  onKeyDown={(event) => keySelect(event, next)}
-                >
-                  <title>{`${dashboard.weather.wind_direction_text} ${dashboard.weather.wind_speed_kmh} km/h`}</title>
-                  <path
-                    className="wind-stream__trail wind-stream__trail--wide"
-                    d={`M0 ${windStreamLength * 0.48} C${-arrowSize * 0.55} ${windStreamLength * 0.2}, ${arrowSize * 0.55} ${-windStreamLength * 0.1}, 0 ${-windStreamLength * 0.5}`}
-                  />
-                  <path
-                    className="wind-stream__trail"
-                    d={`M${-arrowSize * 0.52} ${windStreamLength * 0.3} C${arrowSize * 0.18} ${windStreamLength * 0.08}, ${-arrowSize * 0.2} ${-windStreamLength * 0.18}, ${arrowSize * 0.48} ${-windStreamLength * 0.4}`}
-                  />
-                  <path
-                    className="wind-stream__head"
-                    d={`M0 ${-arrowSize} L${arrowSize * 0.4} ${-arrowSize * 0.1} L${arrowSize * 0.16} ${-arrowSize * 0.1} L${arrowSize * 0.16} ${arrowSize} L${-arrowSize * 0.16} ${arrowSize} L${-arrowSize * 0.16} ${-arrowSize * 0.1} L${-arrowSize * 0.4} ${-arrowSize * 0.1} Z`}
-                  />
-                </g>
-              );
-            })}
+          {/* --- Wind streamlines: flow over the province along the live bearing --- */}
+          {layers.wind && (
+            <g clipPath="url(#province-clip)" className="wind-field" aria-hidden style={{ '--wind-dur': `${windDur}s` } as CSSProperties}>
+              <g transform={`translate(${cx} ${cy}) rotate(${windRotation})`}>
+                {WIND_LINES.map((line) => (
+                  <g key={line.id}>
+                    <path
+                      id={line.id}
+                      className="wind-flow-line"
+                      d={line.d}
+                      fill="none"
+                      strokeWidth={viewW * 0.0016}
+                      style={{ animationDelay: `${-line.delay}s` }}
+                    />
+                    <circle className="wind-particle" r={viewW * 0.0026}>
+                      <animateMotion dur={`${windDur}s`} begin={`${-line.delay}s`} repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="linear">
+                        <mpath href={`#${line.id}`} />
+                      </animateMotion>
+                    </circle>
+                  </g>
+                ))}
+              </g>
+            </g>
+          )}
 
           {layers.hotspots &&
             dashboard.hotspots.items.map((h) => {
@@ -534,7 +638,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
                   onFocus={() => selectHotspot(h)}
                   onClick={(event) => {
                     event.stopPropagation();
-                    selectHotspot(h);
+                    if (!movedRef.current) selectHotspot(h);
                   }}
                   onKeyDown={(event) => keySelect(event, next)}
                 >
@@ -584,6 +688,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
                 }
                 onClick={(event) => {
                   event.stopPropagation();
+                  if (movedRef.current) return;
                   setSelection({
                     eyebrow: 'ค่าเฉลี่ยจังหวัด',
                     title: 'PM2.5 เชียงใหม่',
@@ -607,7 +712,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
                 }
               >
                 <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 2.05} className="pm-station__ring" />
-                <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 1.42} fill={pm25Color(dashboard.pm25.current_pm25)} stroke="#fff" strokeWidth={viewW * 0.004} />
+                <circle cx={aggCenter.x} cy={aggCenter.y} r={STATION_R * 1.42} fill={pm25Color(dashboard.pm25.current_pm25)} stroke="#fff" strokeWidth={viewW * 0.0035} />
                 <text x={aggCenter.x} y={aggCenter.y + VALUE_FONT * 0.36} fontSize={VALUE_FONT * 1.15} fill="#fff" fontWeight={700} textAnchor="middle">
                   {pm25ValueLabel(dashboard.pm25.current_pm25)}
                 </text>
@@ -638,13 +743,13 @@ export function DashboardMap({ dashboard, layers }: Props) {
                     onFocus={() => selectStation(s)}
                     onClick={(event) => {
                       event.stopPropagation();
-                      selectStation(s);
+                      if (!movedRef.current) selectStation(s);
                     }}
                     onKeyDown={(event) => keySelect(event, next)}
                   >
                     <title>{`${s.name.trim() || s.id} · ${formatPm25(s.pm25)}`}</title>
                     <circle cx={p.x} cy={p.y} r={STATION_R * 1.45} className="pm-station__ring" />
-                    <circle cx={p.x} cy={p.y} r={STATION_R * 1.04} fill={pm25Color(s.pm25)} stroke="#fff" strokeWidth={viewW * 0.003} />
+                    <circle cx={p.x} cy={p.y} r={STATION_R * 1.04} fill={pm25Color(s.pm25)} stroke="#fff" strokeWidth={viewW * 0.0026} />
                     <text x={p.x} y={p.y + VALUE_FONT * 0.32} fontSize={VALUE_FONT * 0.86} fill="#fff" fontWeight={800} textAnchor="middle">
                       {pm25ValueLabel(s.pm25)}
                     </text>
@@ -655,6 +760,23 @@ export function DashboardMap({ dashboard, layers }: Props) {
           )}
         </g>
       </svg>
+
+      {layers.wind && (
+        <button
+          type="button"
+          className="wind-chip"
+          onClick={() => setSelection(windSelection)}
+          aria-label={`ทิศทางลม ${dashboard.weather.wind_direction_text} ${windSpeed} km/h`}
+        >
+          <span className="wind-chip__compass" style={{ transform: `rotate(${windRotation}deg)` }}>
+            <Wind size={15} />
+          </span>
+          <span className="wind-chip__text">
+            <b>{dashboard.weather.wind_direction_text}</b>
+            <small>{windSpeed} km/h</small>
+          </span>
+        </button>
+      )}
 
       <div className="map-inspector" aria-live="polite">
         <div className={`map-inspector__photo map-inspector__photo--${selection.imageKey ?? 'province'}`}>
@@ -675,7 +797,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
         )}
       </div>
 
-      <div className="map-help">ลากเพื่อเลื่อน · ซูมเพื่อดูรายละเอียด · คลิกจุดข้อมูล</div>
+      <div className="map-help">ลากเพื่อเลื่อน · เลื่อนเมาส์เพื่อซูมตรงจุด · คลิกจุดข้อมูล</div>
 
       <div className="map-legend">
         <span><i className="dot dot--pm" />สถานีวัด PM2.5</span>
@@ -690,10 +812,10 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
       <div className="map-controls">
         <span className="zoom-readout">ซูม {view.zoom.toFixed(1)}x</span>
-        <button type="button" aria-label="ขยาย" onClick={() => changeZoom(ZOOM_STEP)}>
+        <button type="button" aria-label="ขยาย" onClick={() => zoomByButton(BUTTON_FACTOR)}>
           <Plus size={18} />
         </button>
-        <button type="button" aria-label="ย่อ" onClick={() => changeZoom(-ZOOM_STEP)}>
+        <button type="button" aria-label="ย่อ" onClick={() => zoomByButton(1 / BUTTON_FACTOR)}>
           <Minus size={18} />
         </button>
         <button type="button" aria-label="กลับสู่มุมมองเริ่มต้น" onClick={resetView}>

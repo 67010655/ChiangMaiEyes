@@ -16,9 +16,10 @@
   --amber: #eab308;
   --red: #dc2626;
   --blue: #3b82f6;
-  --radius: 16px;
-  --shadow: 0 12px 32px rgba(28, 54, 42, 0.07);
-  --shadow-sm: 0 4px 14px rgba(28, 54, 42, 0.05);
+  --radius: 18px;
+  --shadow: 0 18px 44px rgba(20, 52, 38, 0.1), 0 2px 6px rgba(20, 52, 38, 0.04);
+  --shadow-sm: 0 6px 18px rgba(20, 52, 38, 0.06), 0 1px 2px rgba(20, 52, 38, 0.04);
+  --shadow-lg: 0 28px 64px rgba(16, 46, 34, 0.16);
 }
 
 * {
@@ -33,7 +34,11 @@ body,
 }
 
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(1200px 620px at 18% -8%, #f3f9f4 0%, transparent 60%),
+    radial-gradient(1000px 700px at 102% 0%, #eaf3ed 0%, transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
 }
 
 button {
@@ -55,6 +60,16 @@ button {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+}
+
+.side-panel .card {
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.side-panel .card:hover {
+  transform: translateY(-2px);
+  border-color: #d4e6db;
+  box-shadow: var(--shadow);
 }
 
 /* ---------- Topbar ---------- */
@@ -631,16 +646,17 @@ button {
 }
 
 .map-layer {
-  transition: transform 0.18s ease;
+  will-change: transform;
 }
 
-.map-canvas svg.is-dragging .map-layer {
-  transition: none;
+/* Wheel and drag update the transform every frame, so keep it immediate.
+   Only button-driven zoom / reset gets an eased transition. */
+.map-canvas svg.is-smooth .map-layer {
+  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .district-path,
-.map-marker,
-.wind-arrow {
+.map-marker {
   cursor: pointer;
   outline: none;
 }
@@ -655,66 +671,72 @@ button {
   stroke-opacity: 0.9;
 }
 
-.map-marker:focus-visible circle,
-.wind-arrow:focus-visible path {
+.map-marker:focus-visible circle {
   outline: none;
   stroke: #0f172a;
   stroke-width: 2px;
 }
 
-.wind-stream {
-  animation: wind-breathe 2.4s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
+/* ---------- Neighbouring provinces (decorative backdrop) ---------- */
+.neighbour-path {
+  fill: url(#neighbour-fill);
+  stroke: #b3c4ba;
+  stroke-width: 1.2px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.88;
 }
 
-.wind-stream__trail {
+.neighbour-label {
+  fill: #9aaca2;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+}
+
+.province-fill {
+  transition: none;
+}
+
+/* ---------- Wind field: streamlines that flow along the live bearing ---------- */
+.wind-field {
+  pointer-events: none;
+}
+
+.wind-flow-line {
   fill: none;
-  stroke: #2563eb;
-  stroke-width: 2.2px;
+  stroke: #2f7fed;
   stroke-linecap: round;
-  stroke-dasharray: 10 12;
-  opacity: 0.72;
-  animation: wind-flow 1.6s linear infinite;
-  animation-delay: inherit;
+  stroke-dasharray: 7 26;
+  opacity: 0.55;
+  animation: wind-flow var(--wind-dur, 3s) linear infinite;
 }
 
-.wind-stream__trail--wide {
-  stroke-width: 3.4px;
-  opacity: 0.26;
-}
-
-.wind-stream__head {
-  fill: #2563eb;
-  opacity: 0.86;
-  animation: wind-pulse 1.6s ease-in-out infinite;
-  animation-delay: inherit;
+.wind-particle {
+  fill: #1d4ed8;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 3px rgba(37, 99, 235, 0.55));
 }
 
 @keyframes wind-flow {
   from {
-    stroke-dashoffset: 22;
+    stroke-dashoffset: 33;
   }
   to {
     stroke-dashoffset: 0;
   }
 }
 
-@keyframes wind-pulse {
-  0%, 100% {
-    opacity: 0.72;
+@media (prefers-reduced-motion: reduce) {
+  .wind-flow-line {
+    animation: none;
+    opacity: 0.4;
   }
-  50% {
-    opacity: 1;
+  .wind-particle animateMotion {
+    display: none;
   }
-}
-
-@keyframes wind-breathe {
-  0%, 100% {
-    opacity: 0.82;
-  }
-  50% {
-    opacity: 1;
+  .wind-particle {
+    display: none;
   }
 }
 
@@ -931,6 +953,60 @@ button {
   pointer-events: none;
 }
 
+/* ---------- Wind compass chip (clickable wind summary) ---------- */
+.wind-chip {
+  position: absolute;
+  z-index: 16;
+  left: 18px;
+  bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 8px 10px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 26px rgba(24, 64, 120, 0.16);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.wind-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(24, 64, 120, 0.22);
+}
+
+.wind-chip__compass {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.wind-chip__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.wind-chip__text b {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #14306b;
+}
+
+.wind-chip__text small {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #5a6d8c;
+}
+
 .map-legend {
   position: absolute;
   z-index: 15;
@@ -969,7 +1045,7 @@ button {
 .map-scale {
   position: absolute;
   z-index: 15;
-  bottom: 20px;
+  bottom: 74px;
   left: 18px;
   display: flex;
   flex-direction: column;
@@ -990,9 +1066,10 @@ button {
   position: absolute;
   z-index: 15;
   right: 18px;
-  top: 400px;
+  bottom: 18px;
   display: grid;
   gap: 6px;
+  justify-items: center;
 }
 
 .zoom-readout {
@@ -1120,6 +1197,15 @@ button {
     bottom: 12px;
     grid-template-columns: repeat(4, auto);
     align-items: center;
+  }
+
+  .map-scale {
+    display: none;
+  }
+
+  .wind-chip {
+    left: 12px;
+    bottom: 12px;
   }
 
   .page-foot {
