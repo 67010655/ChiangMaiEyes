@@ -28,12 +28,16 @@ function getRiskTone(score: number) {
   return 'high';
 }
 
-const riskLabelTh: Record<string, string> = { low: 'ความเสี่ยงต่ำ', medium: 'ความเสี่ยงปานกลาง', high: 'ความเสี่ยงสูง' };
+const riskLabelTh: Record<string, string> = {
+  low: 'ความเสี่ยงต่ำ',
+  medium: 'ความเสี่ยงปานกลาง',
+  high: 'ความเสี่ยงสูง',
+};
 
 const adviceByColor: Record<string, { heading: string; text: string }> = {
   green: {
     heading: 'คุณภาพอากาศดีมาก',
-    text: 'เหมาะสำหรับกิจกรรมกลางแจ้ง ทำต่อเนื่องได้ตามปกติ ติดตามสถานการณ์อย่างต่อเนื่อง',
+    text: 'เหมาะสำหรับกิจกรรมกลางแจ้ง ทำต่อเนื่องได้ตามปกติ และติดตามสถานการณ์เป็นระยะ',
   },
   yellow: {
     heading: 'คุณภาพอากาศปานกลาง',
@@ -41,7 +45,7 @@ const adviceByColor: Record<string, { heading: string; text: string }> = {
   },
   orange: {
     heading: 'เริ่มมีผลต่อสุขภาพ',
-    text: 'กลุ่มเสี่ยงควรลดกิจกรรมกลางแจ้ง สวมหน้ากากป้องกันฝุ่นเมื่ออยู่นอกอาคาร',
+    text: 'กลุ่มเสี่ยงควรลดกิจกรรมกลางแจ้ง และสวมหน้ากากป้องกันฝุ่นเมื่อต้องอยู่นอกอาคาร',
   },
   red: {
     heading: 'มีผลต่อสุขภาพ',
@@ -49,12 +53,12 @@ const adviceByColor: Record<string, { heading: string; text: string }> = {
   },
   purple: {
     heading: 'อยู่ในระดับอันตราย',
-    text: 'งดกิจกรรมกลางแจ้งทั้งหมด อยู่ในอาคารที่ปิดมิดชิดและใช้เครื่องฟอกอากาศหากเป็นไปได้',
+    text: 'งดกิจกรรมกลางแจ้งทั้งหมด อยู่ในอาคารที่ปิดมิดชิด และใช้เครื่องฟอกอากาศหากเป็นไปได้',
   },
 };
 
 function Sparkline() {
-  // Decorative 24h trend placeholder — backend does not expose a time series yet.
+  // Decorative 24h trend placeholder because the backend does not expose a time series yet.
   const points = [10, 9, 11, 8, 12, 9, 8, 10, 9, 13, 10, 9, 11, 8, 9, 10];
   const w = 132;
   const h = 44;
@@ -136,7 +140,7 @@ export function App() {
 
   const riskTone = getRiskTone(dashboard.risk.score);
   const allOn = layers.hotspots && layers.pm25 && layers.wind;
-  const toggleLayer = (key: keyof LayerState) => setLayers((c) => ({ ...c, [key]: !c[key] }));
+  const toggleLayer = (key: keyof LayerState) => setLayers((current) => ({ ...current, [key]: !current[key] }));
   const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true });
 
   const pm25Time = formatTime(dashboard.pm25.latest_update);
@@ -212,7 +216,7 @@ export function App() {
 
           <div className="card-row">
             <section className="card mini-card">
-              <span className="card__title">จุดความร้อน (วันนี้)</span>
+              <span className="card__title">จุดความร้อนวันนี้</span>
               <div className="mini-card__body">
                 <span className="mini-card__icon mini-card__icon--fire">
                   <Flame size={20} />
@@ -309,7 +313,7 @@ export function App() {
 
       <footer className="page-foot">
         <span>
-          แหล่งข้อมูล: {dashboard.hotspots.source} • {dashboard.pm25.source} • {dashboard.weather.source}
+          แหล่งข้อมูล: {dashboard.hotspots.source} · {dashboard.pm25.source} · {dashboard.weather.source}
         </span>
         <span>ChiangMaiEyes © 2026</span>
       </footer>
