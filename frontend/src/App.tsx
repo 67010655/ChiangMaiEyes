@@ -3,7 +3,7 @@ import { BookOpen, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind } fr
 import { fetchDashboard } from './lib/api';
 import { riskPercent } from './lib/risk';
 import type { DashboardResponse } from './lib/types';
-import { DashboardMap } from './components/DashboardMap';
+import { DashboardMap, type MapSelection, initialSelection } from './components/DashboardMap';
 import dashboardSnapshot from './data/dashboardSnapshot.json';
 import { windDestinationName } from './lib/wind';
 
@@ -207,6 +207,7 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true });
   const [note, setNote] = useState<'pm' | 'risk' | null>(null);
+  const [mapSelection, setMapSelection] = useState<MapSelection>(initialSelection);
 
   const loadDashboard = useCallback(() => {
     setLoading(true);
@@ -287,8 +288,52 @@ export function App() {
 
       {error && <div className="notice">ใช้ snapshot สำรองชั่วคราว เพราะ live API ยังไม่พร้อม: {error}</div>}
 
-      <section className="dashboard-grid">
-        <aside className="side-panel" aria-label="สถานการณ์ล่าสุด">
+      {/* ② Map — core feature, now second after header */}
+      <section className="map-stage" aria-label="แผนที่สถานการณ์เชียงใหม่">
+        <div className="map-titlebar">
+          <h2>แผนที่จังหวัดเชียงใหม่</h2>
+          <div className="map-toolbar">
+            <button type="button" className={allOn ? 'active' : ''} onClick={setAll}>
+              ทั้งหมด
+            </button>
+            <button type="button" className={layers.pm25 ? 'active' : ''} onClick={() => toggleLayer('pm25')}>
+              PM2.5
+            </button>
+            <button type="button" className={layers.hotspots ? 'active' : ''} onClick={() => toggleLayer('hotspots')}>
+              จุดความร้อน
+            </button>
+            <button type="button" className={layers.wind ? 'active' : ''} onClick={() => toggleLayer('wind')}>
+              ลม
+            </button>
+          </div>
+        </div>
+
+        <DashboardMap dashboard={dashboard} layers={layers} selection={mapSelection} onSelectionChange={setMapSelection} />
+      </section>
+
+      {/* Map detail bar — below the map, not overlapping it */}
+      <div className="map-detail-bar card" aria-live="polite">
+        <div className="map-detail-bar__left">
+          <span className="map-detail-bar__eyebrow">{mapSelection.eyebrow}</span>
+          <strong className="map-detail-bar__title">{mapSelection.title}</strong>
+          <p className="map-detail-bar__detail">{mapSelection.detail}</p>
+        </div>
+        {mapSelection.stats && mapSelection.stats.length > 0 && (
+          <div className="map-inspector__stats map-detail-bar__stats">
+            {mapSelection.stats.map((stat) => (
+              <div key={`${stat.label}-${stat.value}`} className={`map-inspector__stat ${stat.tone ? `map-inspector__stat--${stat.tone}` : ''}`}>
+                <span>{stat.label}</span>
+                <b>{stat.value}</b>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ③④⑤ Stats cards — below map */}
+      <section className="stats-panel" aria-label="สถานการณ์ล่าสุด">
+        {/* ③ PM2.5 + hotspot + wind */}
+        <div className="stats-main">
           <section className="card pm-card">
             <div className="card__head">
               <span className="card__title">PM2.5 เฉลี่ย 24 ชม.</span>
@@ -348,96 +393,76 @@ export function App() {
               <small className="card__foot">อัปเดต {pm25Time} น.</small>
             </section>
           </div>
+        </div>
 
-          <section className="card risk-card" data-risk={riskTone}>
-            <div className="card__head">
-              <span className="card__title">คะแนนความเสี่ยงการเกิดหมอกควัน</span>
-              <button
-                type="button"
-                className="card__info-btn"
-                aria-label="คำอธิบายคะแนนความเสี่ยง"
-                aria-expanded={note === 'risk'}
-                aria-controls="risk-note"
-                onClick={() => toggleNote('risk')}
-              >
-                <Info size={15} />
-              </button>
-            </div>
-            {note === 'risk' && (
-              <p id="risk-note" className="card__note">
-                คะแนน 0–10 รวมจาก 3 ปัจจัย: PM2.5 (สูงสุด 4), จุดความร้อน (สูงสุด 4) และทิศทางลม (สูงสุด 2) · ยิ่งคะแนนสูง โอกาสเกิดและสะสมหมอกควันยิ่งมาก
-              </p>
-            )}
-            <div className="risk-card__body">
-              <div className="risk-card__gauge">
-                <RiskDonut score={dashboard.risk.score} tone={riskTone} />
-                <span className="risk-card__label">{riskLabelTh[riskTone]}</span>
-              </div>
-              <ul className="risk-card__factors">
-                <li>
-                  <span><i className="dot dot--pm" />PM2.5</span>
-                  <strong>{pm25Points.toFixed(1)} <em>/4</em></strong>
-                </li>
-                <li>
-                  <span><i className="dot dot--hot" />จุดความร้อน</span>
-                  <strong>{hotspotPoints.toFixed(1)} <em>/4</em></strong>
-                </li>
-                <li>
-                  <span><i className="dot dot--wind" />ทิศทางลม</span>
-                  <strong>{windFactor.toFixed(1)} <em>/2</em></strong>
-                </li>
-              </ul>
-            </div>
-            <p className="risk-card__formula">สมการ: {dashboard.risk.formula}</p>
-          </section>
-
-          <section className="card advice-card">
-            <div className="card__head">
-              <ShieldCheck size={18} className="advice-card__shield" />
-              <span className="card__title">คำแนะนำสำหรับประชาชน</span>
-            </div>
-            <h3 className={`advice-card__heading advice-card__heading--${dashboard.pm25.color}`}>{advice.heading}</h3>
-            <p className="advice-card__text">{advice.text}</p>
-            <ul className="advice-recs">
-              {recommendations.map(({ label, detail }, i) => {
-                const Icon = REC_ICONS[i];
-                return (
-                  <li key={i} className="advice-rec">
-                    <span className="advice-rec__icon"><Icon size={15} /></span>
-                    <span className="advice-rec__body"><strong>{label}:</strong> {detail}</span>
-                  </li>
-                );
-              })}
-            </ul>
-            {dashboard.summary.text && (
-              <div className="advice-card__summary">
-                <p className="advice-card__summary-text">{dashboard.summary.text}</p>
-                <span className="advice-card__summary-source">{dashboard.summary.source}</span>
-              </div>
-            )}
-          </section>
-        </aside>
-
-        <section className="map-stage" aria-label="แผนที่สถานการณ์เชียงใหม่">
-          <div className="map-titlebar">
-            <h2>แผนที่จังหวัดเชียงใหม่</h2>
-            <div className="map-toolbar">
-              <button type="button" className={allOn ? 'active' : ''} onClick={setAll}>
-                ทั้งหมด
-              </button>
-              <button type="button" className={layers.pm25 ? 'active' : ''} onClick={() => toggleLayer('pm25')}>
-                PM2.5
-              </button>
-              <button type="button" className={layers.hotspots ? 'active' : ''} onClick={() => toggleLayer('hotspots')}>
-                จุดความร้อน
-              </button>
-              <button type="button" className={layers.wind ? 'active' : ''} onClick={() => toggleLayer('wind')}>
-                ลม
-              </button>
-            </div>
+        {/* ④ Risk score */}
+        <section className="card risk-card" data-risk={riskTone}>
+          <div className="card__head">
+            <span className="card__title">คะแนนความเสี่ยงการเกิดหมอกควัน</span>
+            <button
+              type="button"
+              className="card__info-btn"
+              aria-label="คำอธิบายคะแนนความเสี่ยง"
+              aria-expanded={note === 'risk'}
+              aria-controls="risk-note"
+              onClick={() => toggleNote('risk')}
+            >
+              <Info size={15} />
+            </button>
           </div>
+          {note === 'risk' && (
+            <p id="risk-note" className="card__note">
+              คะแนน 0–10 รวมจาก 3 ปัจจัย: PM2.5 (สูงสุด 4), จุดความร้อน (สูงสุด 4) และทิศทางลม (สูงสุด 2) · ยิ่งคะแนนสูง โอกาสเกิดและสะสมหมอกควันยิ่งมาก
+            </p>
+          )}
+          <div className="risk-card__body">
+            <div className="risk-card__gauge">
+              <RiskDonut score={dashboard.risk.score} tone={riskTone} />
+              <span className="risk-card__label">{riskLabelTh[riskTone]}</span>
+            </div>
+            <ul className="risk-card__factors">
+              <li>
+                <span><i className="dot dot--pm" />PM2.5</span>
+                <strong>{pm25Points.toFixed(1)} <em>/4</em></strong>
+              </li>
+              <li>
+                <span><i className="dot dot--hot" />จุดความร้อน</span>
+                <strong>{hotspotPoints.toFixed(1)} <em>/4</em></strong>
+              </li>
+              <li>
+                <span><i className="dot dot--wind" />ทิศทางลม</span>
+                <strong>{windFactor.toFixed(1)} <em>/2</em></strong>
+              </li>
+            </ul>
+          </div>
+          <p className="risk-card__formula">สมการ: {dashboard.risk.formula}</p>
+        </section>
 
-          <DashboardMap dashboard={dashboard} layers={layers} />
+        {/* ④⑤ Advice + recommendations + AI summary */}
+        <section className="card advice-card">
+          <div className="card__head">
+            <ShieldCheck size={18} className="advice-card__shield" />
+            <span className="card__title">คำแนะนำสำหรับประชาชน</span>
+          </div>
+          <h3 className={`advice-card__heading advice-card__heading--${dashboard.pm25.color}`}>{advice.heading}</h3>
+          <p className="advice-card__text">{advice.text}</p>
+          <ul className="advice-recs">
+            {recommendations.map(({ label, detail }, i) => {
+              const Icon = REC_ICONS[i];
+              return (
+                <li key={i} className="advice-rec">
+                  <span className="advice-rec__icon"><Icon size={15} /></span>
+                  <span className="advice-rec__body"><strong>{label}:</strong> {detail}</span>
+                </li>
+              );
+            })}
+          </ul>
+          {dashboard.summary.text && (
+            <div className="advice-card__summary">
+              <p className="advice-card__summary-text">{dashboard.summary.text}</p>
+              <span className="advice-card__summary-source">{dashboard.summary.source}</span>
+            </div>
+          )}
         </section>
       </section>
 

@@ -13,6 +13,8 @@ type Props = {
     pm25: boolean;
     wind: boolean;
   };
+  selection: MapSelection;
+  onSelectionChange: (sel: MapSelection) => void;
 };
 
 type GeoFeature = {
@@ -44,7 +46,7 @@ type DragState = {
   moved: boolean;
 };
 
-type MapSelection = {
+export type MapSelection = {
   eyebrow: string;
   title: string;
   detail: string;
@@ -251,7 +253,7 @@ const districtLabels: { name: string; lat: number; lng: number }[] = [
   { name: 'สันกำแพง', lat: 18.74, lng: 99.12 },
 ];
 
-const initialSelection: MapSelection = {
+export const initialSelection: MapSelection = {
   eyebrow: 'ขอบเขตจังหวัด',
   title: 'เชียงใหม่',
   detail:
@@ -264,11 +266,10 @@ const initialSelection: MapSelection = {
   ],
 };
 
-export function DashboardMap({ dashboard, layers }: Props) {
+export function DashboardMap({ dashboard, layers, selection, onSelectionChange }: Props) {
   const [view, setView] = useState<ViewState>(DEFAULT_VIEW);
   const [smooth, setSmooth] = useState(false);
   const [drag, setDrag] = useState<DragState | null>(null);
-  const [selection, setSelection] = useState<MapSelection>(initialSelection);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const viewRef = useRef(view);
   viewRef.current = view;
@@ -332,7 +333,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
   const resetView = () => {
     setSmooth(true);
     setView(DEFAULT_VIEW);
-    setSelection(initialSelection);
+    onSelectionChange(initialSelection);
   };
 
   // Native, non-passive wheel listener so preventDefault actually stops the
@@ -394,7 +395,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
   const keySelect = (event: KeyboardEvent<SVGGElement>, next: MapSelection) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      setSelection(next);
+      onSelectionChange(next);
     }
   };
 
@@ -413,7 +414,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
   const selectStation = (station: Pm25Station) => {
     const tone = pm25Tone(station.pm25);
-    setSelection({
+    onSelectionChange({
       eyebrow: 'สถานีวัด PM2.5',
       title: station.name.trim() || station.id,
       detail: `${formatPm25(station.pm25)} · อัปเดต ${formatTime(station.updated_at)} · ${station.district} · ขอบเขตฝุ่นเป็นการประมาณด้วยรัศมีตามค่าฝุ่นของสถานี`,
@@ -428,7 +429,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
 
   const selectHotspot = (hotspot: Hotspot) => {
     const location = hotspotLocation(hotspot);
-    setSelection({
+    onSelectionChange({
       eyebrow: 'จุดความร้อน',
       title: hotspotPlaceTitle(hotspot),
       detail: `${location ? `${location} · ` : ''}ตรวจพบ ${formatTime(hotspot.detected_at)} · ${hotspot.source}`,
@@ -545,7 +546,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
                   aria-label={`ดูรายละเอียดอำเภอ${d.nameTh}`}
                   onClick={(event) => {
                     event.stopPropagation();
-                    if (!movedRef.current) setSelection(next);
+                    if (!movedRef.current) onSelectionChange(next);
                   }}
                   onKeyDown={(event) => keySelect(event, next)}
                 >
@@ -676,7 +677,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
                 role="button"
                 aria-label="ดูรายละเอียด PM2.5 เฉลี่ยจังหวัด"
                 onMouseEnter={() =>
-                  setSelection({
+                  onSelectionChange({
                     eyebrow: 'ค่าเฉลี่ยจังหวัด',
                     title: 'PM2.5 เชียงใหม่',
                     detail: `${formatPm25(dashboard.pm25.current_pm25)} · ${dashboard.pm25.category} · อัปเดต ${formatTime(dashboard.pm25.latest_update)}`,
@@ -691,7 +692,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
                 onClick={(event) => {
                   event.stopPropagation();
                   if (movedRef.current) return;
-                  setSelection({
+                  onSelectionChange({
                     eyebrow: 'ค่าเฉลี่ยจังหวัด',
                     title: 'PM2.5 เชียงใหม่',
                     detail: `${formatPm25(dashboard.pm25.current_pm25)} · ${dashboard.pm25.category} · อัปเดต ${formatTime(dashboard.pm25.latest_update)}`,
@@ -767,7 +768,7 @@ export function DashboardMap({ dashboard, layers }: Props) {
         <button
           type="button"
           className="wind-chip"
-          onClick={() => setSelection(windSelection)}
+          onClick={() => onSelectionChange(windSelection)}
           aria-label={`ลมไปทาง${windDestinationText} ${windSpeed} km/h`}
         >
           <span className="wind-chip__compass" style={{ transform: `rotate(${windRotation}deg)` }}>
@@ -779,22 +780,6 @@ export function DashboardMap({ dashboard, layers }: Props) {
           </span>
         </button>
       )}
-
-      <div className="map-inspector" aria-live="polite">
-        <span>{selection.eyebrow}</span>
-        <strong>{selection.title}</strong>
-        <small>{selection.detail}</small>
-        {selection.stats && (
-          <div className="map-inspector__stats">
-            {selection.stats.map((stat) => (
-              <div key={`${stat.label}-${stat.value}`} className={`map-inspector__stat ${stat.tone ? `map-inspector__stat--${stat.tone}` : ''}`}>
-                <span>{stat.label}</span>
-                <b>{stat.value}</b>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       <div className="map-help">ลากเพื่อเลื่อน · เลื่อนเมาส์เพื่อซูมตรงจุด · คลิกจุดข้อมูล</div>
 

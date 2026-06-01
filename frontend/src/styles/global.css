@@ -230,20 +230,73 @@ button {
 }
 
 /* ---------- Layout ---------- */
-.dashboard-grid {
-  flex: 1;
-  min-height: 0;
+
+/* Stats panel: sits below the map */
+.stats-panel {
   display: grid;
-  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
   gap: 16px;
+  align-items: start;
 }
 
-.side-panel {
+/* Left column: PM2.5 + mini-card row stacked */
+.stats-main {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-width: 0;
 }
+
+/* Advice + AI summary card: spans full width of the stats panel */
+.stats-panel .advice-card {
+  grid-column: 1 / -1;
+}
+
+/* Map detail bar: below the map, shows selected feature info */
+.map-detail-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+}
+
+.map-detail-bar__left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.map-detail-bar__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.map-detail-bar__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1f3a30;
+  line-height: 1.2;
+}
+
+.map-detail-bar__detail {
+  margin: 2px 0 0;
+  color: #50655b;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.map-detail-bar__stats {
+  flex: 0 0 auto;
+}
+
+/* Remove the old dashboard-grid / side-panel if referenced anywhere */
+.dashboard-grid { display: contents; }
+.side-panel { display: contents; }
 
 .card {
   padding: 18px;
@@ -672,7 +725,7 @@ button {
 /* ---------- Map ---------- */
 .map-stage {
   position: relative;
-  min-height: calc(100vh - 150px);
+  min-height: 58vh;
   overflow: hidden;
   padding: 0;
 }
@@ -1194,12 +1247,12 @@ button {
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1080px) {
-  .dashboard-grid {
+  .stats-panel {
     grid-template-columns: 1fr;
   }
 
   .map-stage {
-    min-height: 560px;
+    min-height: 52vh;
   }
 }
 
@@ -1264,11 +1317,20 @@ button {
 
   /* ---- Mini cards row: keep 2 columns ---- */
 
-  /* ---- Reorder side-panel cards on mobile ---- */
-  .pm-card   { order: 1; }
-  .advice-card { order: 2; }
-  .card-row  { order: 3; }
-  .risk-card { order: 4; }
+  /* ---- Stats panel: 1 column on mobile ---- */
+  .stats-panel {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Map detail bar: stack vertically ---- */
+  .map-detail-bar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .map-detail-bar__stats {
+    width: 100%;
+  }
 
   /* ---- Map ---- */
   .map-titlebar {
@@ -1286,7 +1348,7 @@ button {
   }
 
   .map-stage {
-    min-height: 460px;
+    min-height: 400px;
   }
 
   .map-inspector {
