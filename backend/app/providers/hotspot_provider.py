@@ -106,7 +106,13 @@ def fetch_forest_firemap_hotspots(target_date: datetime.date | None = None) -> l
     }
     logger.info(f"Attempting to fetch hotspots from Royal Forest Department Firemap: {FOREST_FIREMAP_URL}")
 
-    response = httpx.get(FOREST_FIREMAP_URL, params=params, timeout=15.0)
+    headers = {
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "Referer": "https://wildfire.forest.go.th/firemap/index.html",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+        "X-Requested-With": "XMLHttpRequest",
+    }
+    response = httpx.get(FOREST_FIREMAP_URL, params=params, headers=headers, timeout=15.0)
     response.raise_for_status()
     data = response.json()
     rows = data.get("hotspot", [])
