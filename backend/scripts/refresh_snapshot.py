@@ -17,6 +17,7 @@ Run from anywhere; paths are resolved relative to the repo, and the backend
 package is importable because we add backend/ to sys.path.
 """
 import datetime
+import json
 import logging
 import sys
 from pathlib import Path
@@ -53,6 +54,20 @@ def build_hotspots(settings) -> HotspotResponse:
     return HotspotResponse(**repair_thai_mojibake_tree(response.model_dump()))
 
 
+def _hotspot_fingerprint(items: list[dict]) -> list[tuple]:
+    """Identity of the hotspot set, ignoring volatile fields (id, timestamps)."""
+    return sorted(
+        (
+            round(i["latitude"], 4),
+            round(i["longitude"], 4),
+            i.get("detected_at", "")[:10],
+            i.get("confidence"),
+            tuple(sorted(i.get("sources") or [])),
+        )
+        for i in items
+    )
+
+
 def main() -> int:
     settings = get_settings()
     try:
@@ -63,8 +78,22 @@ def main() -> int:
 
     logger.info("Reconciled %d unique hotspots", hotspots.count)
 
+    # Idempotency: if the reconciled hotspots are identical to what's already
+    # on disk (ignoring the latest_update timestamp), change nothing — so an
+    # hourly run only produces a commit/deploy when the data actually changed.
+    new_dump = hotspots.model_dump()
+    existing_path = settings.cache_dir / "hotspots.json"
+    if existing_path.exists():
+        try:
+            old = json.loads(existing_path.read_text(encoding="utf-8"))
+            if _hotspot_fingerprint(old.get("items", [])) == _hotspot_fingerprint(new_dump["items"]):
+                logger.info("Hotspots unchanged (%d) — no write.", hotspots.count)
+                return 0
+        except Exception as exc:  # noqa: BLE001 — comparison is best-effort
+            logger.warning("Could not compare with existing snapshot: %s", exc)
+
     # Backend fallback file.
-    write_json(settings.cache_dir, "hotspots.json", hotspots.model_dump())
+    write_json(settings.cache_dir, "hotspots.json", new_dump)
 
     # Full dashboard snapshot for the frontend; pm25/weather fall back to their
     # own cached files if their live providers are unreachable from this runner.
