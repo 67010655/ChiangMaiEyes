@@ -1,19 +1,33 @@
 import type { DashboardResponse } from './types';
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY ?? '';
-// gemini-2.0-flash-lite: fastest free tier, 30 RPM / 1,500 RPD / 1M TPM
+// ─── Provider config ────────────────────────────────────────────────────────
+// Priority: Groq → Gemini (whichever key is set)
+// Groq:   Get free key at https://console.groq.com  (14,400 req/day, no billing)
+// Gemini: Get free key at https://aistudio.google.com/apikey
+
+const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY ?? '';
+const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY ?? '';
+
+// Groq key starts with 'gsk_'
+const GROQ_VALID = GROQ_KEY.startsWith('gsk_') && GROQ_KEY.length >= 20;
+// Gemini key: old 'AIzaSy' or new 'AQ.' format
+const GEMINI_VALID =
+  (GEMINI_KEY.startsWith('AIzaSy') || GEMINI_KEY.startsWith('AQ.')) &&
+  GEMINI_KEY.length >= 20;
+
+export const GEMINI_KEY_VALID = GROQ_VALID || GEMINI_VALID;
+
+// Which provider we'll actually use
+const PROVIDER: 'groq' | 'gemini' | 'none' = GROQ_VALID ? 'groq' : GEMINI_VALID ? 'gemini' : 'none';
+
+// ─── Endpoints ──────────────────────────────────────────────────────────────
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+
 const GEMINI_MODEL = 'gemini-2.0-flash-lite';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
 
-// Google AI Studio API keys: old format starts with 'AIzaSy', new format starts with 'AQ.'
-// Set VITE_GEMINI_API_KEY in frontend/.env
-// Get one at https://aistudio.google.com/apikey
-export const GEMINI_KEY_VALID =
-  (GEMINI_API_KEY.startsWith('AIzaSy') || GEMINI_API_KEY.startsWith('AQ.')) &&
-  GEMINI_API_KEY.length >= 20;
-
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-
-// ─── System prompt: expert persona ─────────────────────────────────────────
+// ─── System prompt ──────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `คุณคือ "คุณเชียงใหม่" — ผู้เชี่ยวชาญด้านหมอกควันและไฟป่าประจำจังหวัดเชียงใหม่ ที่มีความรู้ครอบคลุมทั้ง 3 ด้าน:
 
@@ -31,7 +45,7 @@ const SYSTEM_PROMPT = `คุณคือ "คุณเชียงใหม่"
 - **อย่าพูดว่าคุณเป็น AI** — คุณคือ "คุณเชียงใหม่" ผู้เชี่ยวชาญด้านหมอกควัน
 - ถ้าถูกถามเรื่องที่ไม่เกี่ยวกับเชียงใหม่/ฝุ่น/ท่องเที่ยว ให้ตอบสั้นๆ แล้วดึงกลับมาเรื่องสถานการณ์`;
 
-// ─── Build context from live dashboard data ─────────────────────────────────
+// ─── Dashboard context builder ───────────────────────────────────────────────
 
 function buildDashboardContext(data: DashboardResponse): string {
   const hotspotList = data.hotspots.items
@@ -59,12 +73,10 @@ ${data.hotspots.items.length > 0 ? `รายละเอียด:\n${hotspotLi
 ▸ อุณหภูมิ: ${data.weather.temperature_c}°C, ความชื้น: ${data.weather.humidity_percent}%
 
 ▸ คะแนนความเสี่ยง: ${data.risk.score}/10 (${data.risk.category})
-▸ สูตร: ${data.risk.formula}
-
 ▸ อัปเดตล่าสุด: ${data.pm25.latest_update}`;
 }
 
-// ─── Chat message types ─────────────────────────────────────────────────────
+// ─── Chat message types ──────────────────────────────────────────────────────
 
 export type ChatRole = 'user' | 'model';
 
@@ -73,10 +85,10 @@ export type ChatMessage = {
   text: string;
 };
 
-// ─── Generate initial daily briefing ────────────────────────────────────────
+// ─── Public API ──────────────────────────────────────────────────────────────
 
 export async function generateDailyBriefing(dashboard: DashboardResponse): Promise<string> {
-  if (!GEMINI_KEY_VALID) return '';
+  if (PROVIDER === 'none') return '';
 
   const context = buildDashboardContext(dashboard);
   const prompt = `จากข้อมูล Dashboard ด้านล่าง ช่วยสรุปสถานการณ์วันนี้ให้ประชาชนฟังหน่อย แบบสั้นกระชับ (ไม่เกิน 150 คำ) โดย:
@@ -87,95 +99,104 @@ export async function generateDailyBriefing(dashboard: DashboardResponse): Promi
 
 ${context}`;
 
-  return callGemini(prompt, []);
+  return callAI([{ role: 'user', content: prompt }], 800);
 }
-
-// ─── Chat with context ──────────────────────────────────────────────────────
 
 export async function chatWithAdvisor(
   dashboard: DashboardResponse,
   history: ChatMessage[],
   userMessage: string,
 ): Promise<string> {
-  if (!GEMINI_KEY_VALID) return 'กรุณาตั้งค่า Gemini API key (AIzaSy...) ใน frontend/.env ก่อนใช้งาน';
-
-  const context = buildDashboardContext(dashboard);
-  const contextPart = `[ข้อมูล Dashboard ล่าสุด]\n${context}\n\n---\nตอบคำถามของผู้ใช้ตามข้อมูลข้างต้น:`;
-
-  // Build conversation history for Gemini
-  const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
-
-  // Add context as first user message if no history yet
-  if (history.length === 0) {
-    contents.push({
-      role: 'user',
-      parts: [{ text: `${contextPart}\n\n${userMessage}` }],
-    });
-  } else {
-    // First turn had context
-    contents.push({
-      role: 'user',
-      parts: [{ text: `${contextPart}\n\n${history[0].text}` }],
-    });
-
-    // Rest of history
-    for (let i = 1; i < history.length; i++) {
-      contents.push({
-        role: history[i].role === 'user' ? 'user' : 'model',
-        parts: [{ text: history[i].text }],
-      });
-    }
-
-    // New user message
-    contents.push({
-      role: 'user',
-      parts: [{ text: userMessage }],
-    });
+  if (PROVIDER === 'none') {
+    return 'กรุณาตั้งค่า API key ใน frontend/.env\n• Groq (แนะนำ): VITE_GROQ_API_KEY=gsk_...\n• Gemini: VITE_GEMINI_API_KEY=AIzaSy...';
   }
 
-  return callGeminiMultiturn(contents);
+  const context = buildDashboardContext(dashboard);
+  const systemWithContext = `${SYSTEM_PROMPT}\n\n[ข้อมูล Dashboard ล่าสุด]\n${context}`;
+
+  const messages: Array<{ role: string; content: string }> = [];
+
+  // First turn or continued conversation
+  for (const msg of history) {
+    messages.push({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.text,
+    });
+  }
+  messages.push({ role: 'user', content: userMessage });
+
+  return callAI(messages, 600, systemWithContext);
 }
 
-// ─── Low-level Gemini API calls ─────────────────────────────────────────────
+// ─── Unified AI caller (Groq or Gemini) ─────────────────────────────────────
 
-async function callGemini(prompt: string, _history: ChatMessage[]): Promise<string> {
-  const body = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: 0.85,
-      maxOutputTokens: 800,
-      topP: 0.92,
-    },
-  };
+async function callAI(
+  messages: Array<{ role: string; content: string }>,
+  maxTokens: number,
+  systemOverride?: string,
+): Promise<string> {
+  if (PROVIDER === 'groq') {
+    return callGroq(messages, maxTokens, systemOverride);
+  }
+  return callGemini(messages, maxTokens, systemOverride);
+}
 
-  const response = await fetch(GEMINI_URL, {
+// ─── Groq (OpenAI-compatible) ────────────────────────────────────────────────
+
+async function callGroq(
+  messages: Array<{ role: string; content: string }>,
+  maxTokens: number,
+  systemOverride?: string,
+): Promise<string> {
+  const allMessages = [
+    { role: 'system', content: systemOverride ?? SYSTEM_PROMPT },
+    ...messages,
+  ];
+
+  const response = await fetch(GROQ_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${GROQ_KEY}`,
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: allMessages,
+      max_tokens: maxTokens,
+      temperature: 0.85,
+      top_p: 0.92,
+    }),
   });
 
   if (!response.ok) {
-    if (response.status === 429) {
-      throw new Error('QUOTA_EXCEEDED');
-    }
+    if (response.status === 429) throw new Error('QUOTA_EXCEEDED');
     const errText = await response.text().catch(() => '');
-    throw new Error(`Gemini API error ${response.status}: ${errText}`);
+    throw new Error(`Groq API error ${response.status}: ${errText}`);
   }
 
   const result = await response.json();
-  return result.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  return result.choices?.[0]?.message?.content ?? '';
 }
 
-async function callGeminiMultiturn(
-  contents: Array<{ role: string; parts: Array<{ text: string }> }>,
+// ─── Gemini ──────────────────────────────────────────────────────────────────
+
+async function callGemini(
+  messages: Array<{ role: string; content: string }>,
+  maxTokens: number,
+  systemOverride?: string,
 ): Promise<string> {
+  // Convert OpenAI-style messages to Gemini format
+  const contents = messages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }],
+  }));
+
   const body = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    system_instruction: { parts: [{ text: systemOverride ?? SYSTEM_PROMPT }] },
     contents,
     generationConfig: {
       temperature: 0.85,
-      maxOutputTokens: 600,
+      maxOutputTokens: maxTokens,
       topP: 0.92,
     },
   };
@@ -187,9 +208,7 @@ async function callGeminiMultiturn(
   });
 
   if (!response.ok) {
-    if (response.status === 429) {
-      throw new Error('QUOTA_EXCEEDED');
-    }
+    if (response.status === 429) throw new Error('QUOTA_EXCEEDED');
     const errText = await response.text().catch(() => '');
     throw new Error(`Gemini API error ${response.status}: ${errText}`);
   }
