@@ -785,116 +785,195 @@ button {
   color: #fff;
 }
 
+/* ========== Map canvas (Leaflet-based) ========== */
+
 .map-canvas {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 34%),
-    radial-gradient(circle at 42% 38%, #f4faf5, #dfece5);
   overflow: hidden;
+  background: #e8efe9; /* fallback while tiles load */
 }
 
-.map-canvas svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
+/* Leaflet map container fills the canvas */
+.map-leaflet {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 
-.map-canvas svg.is-dragging {
-  cursor: grabbing;
-}
-
-.map-layer {
-  will-change: transform;
-}
-
-/* Wheel and drag update the transform every frame, so keep it immediate.
-   Only button-driven zoom / reset gets an eased transition. */
-.map-canvas svg.is-smooth .map-layer {
-  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-.district-path,
-.map-marker {
-  cursor: pointer;
-  outline: none;
-}
-
-.district-path {
-  transition: fill 0.15s ease, stroke-opacity 0.15s ease;
-}
-
-.district-path:hover,
-.district-path:focus-visible {
-  fill: rgba(255, 255, 255, 0.35);
-  stroke-opacity: 0.9;
-}
-
-.map-marker:focus-visible circle {
-  outline: none;
-  stroke: #0f172a;
-  stroke-width: 2px;
-}
-
-/* ---------- Neighbouring provinces (decorative backdrop) ---------- */
-.neighbour-path {
-  fill: url(#neighbour-fill);
-  stroke: #b3c4ba;
-  stroke-width: 1.2px;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+/* Province title label (DivIcon — HTML, not SVG) */
+.province-title-label {
+  display: inline-block;
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: #0f6b54;
+  white-space: nowrap;
+  pointer-events: none;
+  letter-spacing: -0.01em;
+  text-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    1px 0 0 rgba(255, 255, 255, 0.95),
+    -1px 0 0 rgba(255, 255, 255, 0.95),
+    0 1px 0 rgba(255, 255, 255, 0.95),
+    0 -1px 0 rgba(255, 255, 255, 0.95),
+    0 6px 14px rgba(15, 72, 53, 0.2);
   opacity: 0.88;
 }
 
-.neighbour-label {
-  fill: #9aaca2;
+/* ── Leaflet override: hide default marker images we don't use ── */
+.lf-marker-wrap {
+  background: none !important;
+  border: none !important;
+}
+
+/* ── Hotspot markers (DivIcon) ──────────────────────────────────── */
+.lf-hotspot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.lf-hotspot__halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(127, 29, 29, 0.18);
+  transition: background 0.15s ease;
+}
+
+.lf-hotspot--forest .lf-hotspot__halo {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: rgba(124, 45, 18, 0.22);
+}
+
+.lf-hotspot:hover .lf-hotspot__halo {
+  background: rgba(239, 68, 68, 0.36);
+}
+
+.lf-hotspot__fire {
+  position: relative;
+  z-index: 1;
+  line-height: 1;
+  filter: drop-shadow(0 2px 5px rgba(127, 29, 29, 0.3));
+}
+
+.lf-hotspot__label {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  opacity: 0.55;
+  color: #78350f;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 4px;
+  padding: 1px 5px;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
-.province-fill {
-  transition: none;
+/* ── PM2.5 station markers (DivIcon) ───────────────────────────── */
+.lf-station {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 2.5px solid #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.12s ease;
 }
 
-.province-title-label {
-  fill: #0f6b54;
-  font-weight: 900;
-  opacity: 0.86;
-  paint-order: stroke;
-  stroke: rgba(255, 255, 255, 0.92);
-  stroke-linejoin: round;
-  stroke-width: 7px;
-  filter: drop-shadow(0 4px 10px rgba(15, 72, 53, 0.18));
+.lf-station:hover {
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.3);
+  transform: scale(1.08);
+}
+
+.lf-station--agg {
+  border-width: 3px;
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28), 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.lf-station__value {
+  font-weight: 800;
+  color: #fff;
+  font-size: 0.72em;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.lf-station__label {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  color: #1a5c3e;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 4px;
+  padding: 1px 5px;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* ── PM2.5 plumes (L.circle via SVG renderer) ───────────────────── */
+.lf-pm-plume {
+  stroke: none !important;
+  mix-blend-mode: multiply;
+}
+
+.lf-pm-plume--good {
+  fill: #34d399 !important;
+  fill-opacity: 0.28 !important;
+}
+
+.lf-pm-plume--watch {
+  fill: #fbbf24 !important;
+  fill-opacity: 0.28 !important;
+}
+
+.lf-pm-plume--risk {
+  fill: #fb7185 !important;
+  fill-opacity: 0.3 !important;
+}
+
+/* ── Wind field: full-viewport animated SVG overlay ─────────────── */
+.wind-field-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
   pointer-events: none;
 }
 
-/* ---------- Wind field: streamlines that flow along the live bearing ---------- */
-.wind-field {
-  pointer-events: none;
-}
-
+/* stroke-dasharray / offset are in viewBox units (3-unit wide box) */
 .wind-flow-line {
   fill: none;
   stroke: #2f7fed;
   stroke-linecap: round;
-  stroke-dasharray: 7 26;
-  opacity: 0.55;
+  stroke-dasharray: 0.07 0.26;
+  opacity: 0.5;
   animation: wind-flow var(--wind-dur, 3s) linear infinite;
 }
 
 .wind-particle {
   fill: #1d4ed8;
-  opacity: 0.85;
-  filter: drop-shadow(0 0 3px rgba(37, 99, 235, 0.55));
+  opacity: 0.82;
+  filter: drop-shadow(0 0 0.03px rgba(37, 99, 235, 0.6));
 }
 
 @keyframes wind-flow {
   from {
-    stroke-dashoffset: 33;
+    stroke-dashoffset: 0.33;
   }
   to {
     stroke-dashoffset: 0;
@@ -904,86 +983,49 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .wind-flow-line {
     animation: none;
-    opacity: 0.4;
-  }
-  .wind-particle animateMotion {
-    display: none;
+    opacity: 0.35;
   }
   .wind-particle {
     display: none;
   }
 }
 
-.hotspot-marker__halo {
-  fill: rgba(239, 68, 68, 0.18);
-  stroke: rgba(127, 29, 29, 0.18);
-  stroke-width: 1.2px;
-  transition: r 0.16s ease, fill 0.16s ease, stroke-opacity 0.16s ease;
+/* ── Leaflet built-in control overrides ─────────────────────────── */
+
+/* Scale bar (bottom-left, above wind chip) */
+.leaflet-control-scale {
+  margin-bottom: 60px !important;
+  margin-left: 18px !important;
 }
 
-.hotspot-marker__ring {
-  fill: rgba(255, 255, 255, 0.86);
-  stroke: rgba(127, 29, 29, 0.38);
-  stroke-width: 1.2px;
+.leaflet-control-scale-line {
+  border-color: #5a6d63 !important;
+  color: #5a6d63 !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  backdrop-filter: blur(8px);
+  border-radius: 0 0 4px 4px !important;
+  padding: 2px 5px !important;
 }
 
-.hotspot-marker__core {
-  fill: #ef4444;
-  stroke: #fff;
-  stroke-width: 1.8px;
+/* Attribution (bottom-right, leave room for our controls) */
+.leaflet-bottom.leaflet-right {
+  right: 64px;
+  bottom: 12px;
 }
 
-.hotspot-marker__emoji {
-  paint-order: stroke;
-  stroke: #fff;
-  stroke-width: 1.5px;
-  filter: drop-shadow(0 3px 6px rgba(127, 29, 29, 0.28));
-  pointer-events: none;
+.leaflet-control-attribution {
+  font-size: 0.66rem !important;
+  color: #5a6d63 !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(6px);
+  border-radius: 6px !important;
+  padding: 2px 7px !important;
 }
 
-.hotspot-marker--forest .hotspot-marker__halo {
-  fill: rgba(249, 115, 22, 0.2);
-  stroke: rgba(124, 45, 18, 0.24);
-}
-
-.hotspot-marker--forest .hotspot-marker__core {
-  fill: #f97316;
-}
-
-.hotspot-marker:hover .hotspot-marker__halo,
-.hotspot-marker:focus-visible .hotspot-marker__halo {
-  fill: rgba(239, 68, 68, 0.28);
-  stroke-opacity: 0.7;
-}
-
-.pm-plume {
-  opacity: 0.28;
-  stroke-width: 0;
-  mix-blend-mode: multiply;
-}
-
-.pm-plume--good {
-  fill: #34d399;
-}
-
-.pm-plume--watch {
-  fill: #fbbf24;
-}
-
-.pm-plume--risk {
-  fill: #fb7185;
-}
-
-.pm-station__ring {
-  fill: rgba(255, 255, 255, 0.74);
-  stroke: rgba(20, 59, 45, 0.18);
-  stroke-width: 1.4px;
-}
-
-.pm-station:hover .pm-station__ring,
-.pm-station:focus-visible .pm-station__ring {
-  fill: rgba(255, 255, 255, 0.94);
-  stroke: rgba(20, 59, 45, 0.46);
+.leaflet-control-attribution a {
+  color: #0f6b54 !important;
 }
 
 .map-inspector {
