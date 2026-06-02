@@ -65,13 +65,18 @@ const provinceFeature = {
 // so the group rotated by windRotation degrees makes the lines flow the right direction.
 // ─────────────────────────────────────────────
 
-const WIND_OV_LINES = Array.from({ length: 11 }, (_, i) => {
-  const step = 2 / 10;
-  const lx = -1 + i * step;
-  const amp = step * 0.42 * (i % 2 === 0 ? 1 : -1);
-  // lines go bottom→top (positive y → negative y) before rotation
-  const d = `M ${lx.toFixed(3)} 1.5 C ${(lx + amp).toFixed(3)} 0.5 ${(lx - amp).toFixed(3)} -0.5 ${lx.toFixed(3)} -1.5`;
-  return { id: `wo-${i}`, d, delay: (i % 5) * 0.6 };
+// 6 streamlines with organic (non-uniform) x-positions and a full double-S curve.
+// Paths span ±2 units so rotation up to ±45° still fills every viewport corner.
+// Amplitude alternates sign so adjacent lines wave in opposite phase.
+const WIND_OV_LINES = (
+  [-1.15, -0.65, -0.15, 0.28, 0.72, 1.18] as const
+).map((lx, i) => {
+  const amp = 0.24 * (i % 2 === 0 ? 1 : -1);
+  const d =
+    `M ${lx} 2 ` +
+    `C ${lx + amp} 1.25 ${lx - amp} 0.55 ${lx} 0 ` +
+    `C ${lx + amp} -0.55 ${lx - amp} -1.25 ${lx} -2`;
+  return { id: `wo-${i}`, d, delay: i * 0.45 };
 });
 
 // ─────────────────────────────────────────────
@@ -500,7 +505,7 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
       {layers.wind && (
         <svg
           className="wind-field-overlay"
-          viewBox="-1.5 -1.5 3 3"
+          viewBox="-2 -2 4 4"
           preserveAspectRatio="xMidYMid slice"
           aria-hidden
           style={{ '--wind-dur': `${windDur}s` } as CSSProperties}
@@ -513,10 +518,10 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
                   className="wind-flow-line"
                   d={line.d}
                   fill="none"
-                  strokeWidth="0.018"
+                  strokeWidth="0.022"
                   style={{ animationDelay: `${-line.delay}s` }}
                 />
-                <circle className="wind-particle" r="0.024">
+                <circle className="wind-particle" r="0.032">
                   <animateMotion
                     dur={`${windDur}s`}
                     begin={`${-line.delay}s`}

@@ -955,25 +955,28 @@ button {
   pointer-events: none;
 }
 
-/* stroke-dasharray / offset are in viewBox units (3-unit wide box) */
+/* stroke-dasharray / offset are in viewBox units (paths span ±2 = 4 units tall) */
 .wind-flow-line {
   fill: none;
-  stroke: #2f7fed;
+  stroke: #3b82f6;
   stroke-linecap: round;
-  stroke-dasharray: 0.07 0.26;
-  opacity: 0.5;
+  /* Long dash (0.30) + tiny gap (0.06) = flowing ribbon, not rain droplets */
+  stroke-dasharray: 0.30 0.06;
+  opacity: 0.42;
   animation: wind-flow var(--wind-dur, 3s) linear infinite;
 }
 
 .wind-particle {
-  fill: #1d4ed8;
-  opacity: 0.82;
-  filter: drop-shadow(0 0 0.03px rgba(37, 99, 235, 0.6));
+  fill: #2563eb;
+  opacity: 0.78;
+  /* filter in viewBox units — keep small */
+  filter: drop-shadow(0 0 0.025px rgba(37, 99, 235, 0.55));
 }
 
 @keyframes wind-flow {
+  /* offset = one full period (dash + gap = 0.36) for seamless loop */
   from {
-    stroke-dashoffset: 0.33;
+    stroke-dashoffset: 0.36;
   }
   to {
     stroke-dashoffset: 0;
