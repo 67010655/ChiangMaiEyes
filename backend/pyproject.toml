@@ -1,6 +1,20 @@
-# When the backend is built with backend/ as the root (manual `vercel --prod`
-# from here, or with the project's Root Directory set to "backend"), Vercel's
-# FastAPI framework still needs the entrypoint declared because both
+# Vercel's FastAPI framework builds with `uv`, which requires a PEP 621
+# [project] table. Dependencies mirror requirements.txt (minus pytest, a dev
+# dep not needed at runtime). The entrypoint is declared because both
 # api/index.py and app/main.py expose `app`.
+[project]
+name = "chiangmaieyes-api"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.1",
+    "python-dotenv==1.0.1",
+    "httpx==0.28.1",
+    "google-generativeai>=0.8.0",
+]
+
 [tool.vercel]
 entrypoint = "api.index:app"
