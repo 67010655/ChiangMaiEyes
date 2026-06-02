@@ -82,3 +82,15 @@ class DashboardResponse(BaseModel):
     weather: WeatherResponse
     risk: RiskResponse
     summary: SummaryResponse
+
+
+class DataStatusResponse(BaseModel):
+    mode: Literal["local-refresh-snapshot", "live-backend"]
+    latest_update: str
+    snapshot_age_minutes: int
+    hotspot_count: int
+    source: str
+    source_breakdown: dict[str, int] = Field(default_factory=dict)
+    local_refresh_required: bool
+    vercel_fetches_rfd_directly: bool
+    notes: list[str] = Field(default_factory=list)

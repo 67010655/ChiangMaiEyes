@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
-import { fetchDashboard } from './lib/api';
+import { BookOpen, Database, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
+import { fetchDashboard, fetchDataStatus } from './lib/api';
+import { buildDataStatusFromDashboard, getDataStatusCopy } from './lib/dataStatus';
 import { riskPercent } from './lib/risk';
-import type { DashboardResponse } from './lib/types';
+import type { DashboardResponse, DataStatusResponse } from './lib/types';
 import { DashboardMap, type MapSelection, initialSelection } from './components/DashboardMap';
 import { AiAdvisor } from './components/AiAdvisor';
 import dashboardSnapshot from './data/dashboardSnapshot.json';
@@ -204,6 +205,7 @@ function RiskDonut({ score, tone }: { score: number; tone: string }) {
 
 export function App() {
   const [dashboard, setDashboard] = useState<DashboardResponse>(fallback);
+  const [dataStatus, setDataStatus] = useState<DataStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true });
@@ -216,8 +218,14 @@ export function App() {
       .then((data) => {
         setDashboard(data);
         setError(null);
+        fetchDataStatus()
+          .then(setDataStatus)
+          .catch(() => setDataStatus(buildDataStatusFromDashboard(data)));
       })
-      .catch((err: Error) => setError(err.message))
+      .catch((err: Error) => {
+        setError(err.message);
+        setDataStatus(buildDataStatusFromDashboard(fallback));
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -252,6 +260,7 @@ export function App() {
   const windFactor = Number(factors.wind_factor ?? 0);
   const windSourceText = dashboard.weather.wind_direction_text;
   const windDestinationText = windDestinationName(dashboard.weather.wind_direction_deg);
+  const dataStatusCopy = dataStatus ? getDataStatusCopy(dataStatus) : null;
 
   return (
     <div className="app-shell">
@@ -286,6 +295,23 @@ export function App() {
           </button>
         </div>
       </header>
+
+      {dataStatus && dataStatusCopy && (
+        <section className="data-status card" aria-label="สถานะข้อมูล production">
+          <div className="data-status__icon" aria-hidden>
+            <Database size={18} />
+          </div>
+          <div className="data-status__main">
+            <span className="data-status__label">{dataStatusCopy.modeLabel}</span>
+            <strong>{dataStatus.hotspot_count} จุด · ล่าสุด {formatDateTime(dataStatus.latest_update)}</strong>
+            <p>{dataStatusCopy.detail}</p>
+          </div>
+          <div className="data-status__meta">
+            <span>อายุข้อมูล {dataStatusCopy.ageLabel}</span>
+            <span>{dataStatusCopy.breakdownLabel}</span>
+          </div>
+        </section>
+      )}
 
       {error && <div className="notice">ใช้ snapshot สำรองชั่วคราว เพราะ live API ยังไม่พร้อม: {error}</div>}
 

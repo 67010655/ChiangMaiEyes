@@ -5,25 +5,27 @@
 ```mermaid
 flowchart LR
   Citizen[Citizen mobile/desktop browser] --> Vercel[Vercel Free Tier\nReact + Vite]
-  Vercel -->|REST /api/*| Render[Render Free Tier\nFastAPI]
-  Render --> Cache[(Cached JSON files\nNo DB for MVP)]
-  Render -. primary .-> GISTDA[GISTDA wildfire data]
-  Render -. backup .-> FIRMS[NASA FIRMS]
-  Render -. primary .-> Air4Thai[Air4Thai PM2.5]
-  Render -. backup .-> OpenAQ[OpenAQ]
-  Render -. primary .-> TMD[TMD Open Data]
-  Render -. backup .-> OpenMeteo[Open-Meteo]
-  Render -. optional free tier .-> Gemini[Gemini API Free Tier]
+  Vercel -->|REST /api/*| Backend[Vercel FastAPI backend]
+  Backend --> Cache[(Committed JSON snapshots\nNo DB for MVP)]
+  ThaiPC[Windows PC on Thai network] -->|hourly refresh| RFD[RFD Firemap]
+  ThaiPC -. optional .-> GISTDA[GISTDA wildfire data]
+  ThaiPC -. backup .-> FIRMS[NASA FIRMS]
+  ThaiPC -->|commit + push changed snapshot| GitHub[GitHub main]
+  GitHub -->|auto-deploy| Backend
+  Backend -. live/fallback .-> Air4Thai[Air4Thai PM2.5]
+  Backend -. live/fallback .-> OpenMeteo[Open-Meteo]
+  Backend -. optional free tier .-> Gemini[Gemini API Free Tier]
   Vercel --> OSM[OpenStreetMap tiles]
 ```
 
 ## Runtime Flow
 
-1. Frontend requests `GET /api/dashboard`.
-2. FastAPI reads cached JSON files from `backend/data`.
-3. Backend calculates transparent risk score from PM2.5, hotspot count, and wind direction.
-4. Backend returns unified dashboard payload.
-5. React renders Leaflet map, PM2.5 panel, hotspot panel, wind layer, risk score, and Thai summary.
+1. The local Thai-network refresh worker updates `backend/data/*.json` and `frontend/src/data/dashboardSnapshot.json` when the reconciled hotspot set changes.
+2. The worker commits and pushes changed snapshots to `main`.
+3. Vercel deploys the `frontend` and `backend` projects from the pushed commit.
+4. Frontend requests `GET /api/dashboard` and `GET /api/data-status`.
+5. FastAPI serves the latest committed snapshot, calculates the risk score, and reports snapshot freshness.
+6. React renders Leaflet map, PM2.5 panel, hotspot panel, wind layer, risk score, data-status strip, and Thai summary.
 
 ## Folder Structure
 
@@ -42,7 +44,8 @@ ChiangMaiEyes/
     tests/
       test_risk.py
     requirements.txt
-    render.yaml
+    pyproject.toml
+    vercel.json
   frontend/
     src/
       components/
@@ -74,3 +77,11 @@ No database is used in the MVP. The backend uses cached JSON files:
 - `weather.json`: wind, temperature, humidity, and latest update.
 
 If the project later needs history, add PostgreSQL with tables for `hotspot_observations`, `pm25_readings`, `weather_readings`, and `daily_summaries`.
+
+## Production Data Mode
+
+Production currently runs in `local-refresh-snapshot` mode. Vercel does not
+fetch RFD directly because RFD blocks non-Thai infrastructure. The endpoint
+`GET /api/data-status` exposes this mode, the latest timestamp, snapshot age,
+hotspot count, and source breakdown so operators can see what production is
+actually serving.

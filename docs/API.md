@@ -61,3 +61,25 @@ Returns all panels in one payload:
   "summary": {}
 }
 ```
+
+## GET /api/data-status
+
+Returns production data freshness and provenance. This endpoint is intentionally
+read-only: it reports the current snapshot state and does not fetch upstream
+providers.
+
+```json
+{
+  "mode": "local-refresh-snapshot",
+  "latest_update": "2026-06-03T00:43:25+07:00",
+  "snapshot_age_minutes": 36,
+  "hotspot_count": 18,
+  "source": "Royal Forest Department Firemap + NASA FIRMS",
+  "source_breakdown": {
+    "Royal Forest Department Firemap": 14,
+    "NASA FIRMS": 8
+  },
+  "local_refresh_required": true,
+  "vercel_fetches_rfd_directly": false
+}
+```

@@ -1,11 +1,13 @@
 import json
 import logging
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, TypeVar
 
 from app.config import Settings
 from app.models import (
+    DataStatusResponse,
     DashboardResponse,
     HotspotResponse,
     Pm25Response,
@@ -67,6 +69,39 @@ def write_json(cache_dir: Path, filename: str, data: dict) -> None:
             json.dump(data, handle, ensure_ascii=False, indent=2)
     except Exception as e:
         logger.error("Error writing cached JSON file %s: %s", filename, e)
+
+
+def _parse_datetime(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def get_data_status(settings: Settings, now: str | None = None) -> DataStatusResponse:
+    hotspots = read_json(settings.cache_dir, "hotspots.json")
+    pm25 = read_json(settings.cache_dir, "pm25.json")
+    weather = read_json(settings.cache_dir, "weather.json")
+    latest_update = max(
+        hotspots["latest_update"],
+        pm25["latest_update"],
+        weather["latest_update"],
+        key=_parse_datetime,
+    )
+    current_time = _parse_datetime(now) if now else datetime.now(tz=_parse_datetime(latest_update).tzinfo)
+    age_seconds = max(0, (current_time - _parse_datetime(latest_update)).total_seconds())
+
+    return DataStatusResponse(
+        mode="local-refresh-snapshot",
+        latest_update=latest_update,
+        snapshot_age_minutes=round(age_seconds / 60),
+        hotspot_count=hotspots["count"],
+        source=hotspots["source"],
+        source_breakdown=hotspots.get("source_breakdown", {}),
+        local_refresh_required=True,
+        vercel_fetches_rfd_directly=False,
+        notes=[
+            "RFD blocks non-Thai infrastructure, so this deployment serves the latest local refresh snapshot.",
+            "The Windows startup launcher and hourly task refresh data from this PC, then push changed snapshots to Vercel.",
+        ],
+    )
 
 
 def get_hotspots(settings: Settings) -> HotspotResponse:

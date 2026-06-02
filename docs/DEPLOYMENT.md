@@ -1,24 +1,52 @@
 ﻿# Deployment Guide
 
-## Backend: Render Free Tier
+## Backend: Vercel FastAPI
+
+The backend is deployed as a separate Vercel project named `backend`.
 
 1. Push the repository to GitHub.
-2. Create a new Render Web Service.
-3. Set root directory to `backend`.
-4. Build command: `pip install -r requirements.txt`.
-5. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
-6. Set environment variables:
-   - `CORS_ORIGINS=https://your-vercel-app.vercel.app`
-   - `GEMINI_API_KEY` only if using Gemini free tier.
+2. In Vercel project `backend`, set Root Directory to `backend`.
+3. Vercel uses `backend/pyproject.toml` and `backend/api/index.py`.
+4. Set environment variables:
+   - `CORS_ORIGINS=https://chiangmaieyes.vercel.app`
+   - `GEMINI_API_KEY` only if using backend Gemini summaries.
+
+Current production backend:
+
+```text
+https://backend-mocha-tau-49.vercel.app
+```
 
 ## Frontend: Vercel Free Tier
 
-1. Import the same GitHub repository in Vercel.
-2. Set root directory to `frontend`.
-3. Build command: `npm run build`.
-4. Output directory: `dist`.
+1. Import the same GitHub repository in Vercel project `frontend`.
+2. Use repo-root `vercel.json`, which installs/builds `frontend`.
+3. Build command: `npm --prefix frontend run build`.
+4. Output directory: `frontend/dist`.
 5. Set environment variable:
-   - `VITE_API_BASE_URL=https://your-render-service.onrender.com`
+   - `VITE_API_BASE_URL=https://backend-mocha-tau-49.vercel.app`
+
+Current production frontend:
+
+```text
+https://chiangmaieyes.vercel.app
+```
+
+## Hotspot Refresh Worker
+
+RFD blocks non-Thai infrastructure. Production hotspot freshness therefore
+depends on the local Windows refresh worker:
+
+```text
+Thai-network PC -> refresh_snapshot.py -> JSON snapshot -> git push -> Vercel deploy
+```
+
+The worker is registered in two ways:
+
+- Startup launcher: `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\chiangmaieyes-refresh.cmd`
+- Scheduled Task: `ChiangMaiEyes hotspot refresh`
+
+See `scripts/README-refresh.md` for setup and troubleshooting.
 
 ## Local Run
 

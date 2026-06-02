@@ -74,3 +74,15 @@ export type DashboardResponse = {
   risk: RiskResponse;
   summary: SummaryResponse;
 };
+
+export type DataStatusResponse = {
+  mode: 'local-refresh-snapshot' | 'live-backend';
+  latest_update: string;
+  snapshot_age_minutes: number;
+  hotspot_count: number;
+  source: string;
+  source_breakdown?: Record<string, number>;
+  local_refresh_required: boolean;
+  vercel_fetches_rfd_directly: boolean;
+  notes: string[];
+};

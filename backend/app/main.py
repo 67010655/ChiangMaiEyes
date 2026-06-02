@@ -2,8 +2,8 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import Settings, get_settings
-from app.models import DashboardResponse, HotspotResponse, Pm25Response, RiskResponse, SummaryResponse, WeatherResponse
-from app.services import calculate_risk, get_dashboard, get_hotspots, get_pm25, get_summary, get_weather
+from app.models import DataStatusResponse, DashboardResponse, HotspotResponse, Pm25Response, RiskResponse, SummaryResponse, WeatherResponse
+from app.services import calculate_risk, get_dashboard, get_data_status, get_hotspots, get_pm25, get_summary, get_weather
 
 app = FastAPI(title="ChiangMaiEyes API", version="0.1.0")
 
@@ -51,3 +51,8 @@ def summary(settings: Settings = Depends(get_settings)) -> SummaryResponse:
 @app.get("/api/dashboard", response_model=DashboardResponse)
 def dashboard(settings: Settings = Depends(get_settings)) -> DashboardResponse:
     return get_dashboard(settings)
+
+
+@app.get("/api/data-status", response_model=DataStatusResponse)
+def data_status(settings: Settings = Depends(get_settings)) -> DataStatusResponse:
+    return get_data_status(settings)
