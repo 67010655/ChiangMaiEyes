@@ -3,10 +3,12 @@ import type { DashboardResponse } from './types';
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY ?? '';
 const GEMINI_MODEL = 'gemini-2.0-flash';
 
-// API key must start with 'AIzaSy' (Google AI Studio format, ~39 chars).
+// Google AI Studio API keys: old format starts with 'AIzaSy', new format starts with 'AQ.'
 // Set VITE_GEMINI_API_KEY in frontend/.env
 // Get one at https://aistudio.google.com/apikey
-export const GEMINI_KEY_VALID = GEMINI_API_KEY.startsWith('AIzaSy') && GEMINI_API_KEY.length >= 35;
+export const GEMINI_KEY_VALID =
+  (GEMINI_API_KEY.startsWith('AIzaSy') || GEMINI_API_KEY.startsWith('AQ.')) &&
+  GEMINI_API_KEY.length >= 20;
 
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -153,6 +155,9 @@ async function callGemini(prompt: string, _history: ChatMessage[]): Promise<stri
   });
 
   if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('QUOTA_EXCEEDED');
+    }
     const errText = await response.text().catch(() => '');
     throw new Error(`Gemini API error ${response.status}: ${errText}`);
   }
@@ -181,6 +186,9 @@ async function callGeminiMultiturn(
   });
 
   if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error('QUOTA_EXCEEDED');
+    }
     const errText = await response.text().catch(() => '');
     throw new Error(`Gemini API error ${response.status}: ${errText}`);
   }

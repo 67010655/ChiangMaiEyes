@@ -10,6 +10,7 @@ type Props = {
 export function AiAdvisor({ dashboard }: Props) {
   const [briefing, setBriefing] = useState<string | null>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
+  const [quotaError, setQuotaError] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -25,8 +26,11 @@ export function AiAdvisor({ dashboard }: Props) {
       .then((text) => {
         if (!cancelled) setBriefing(text);
       })
-      .catch(() => {
-        if (!cancelled) setBriefing(null);
+      .catch((err: Error) => {
+        if (!cancelled) {
+          if (err.message === 'QUOTA_EXCEEDED') setQuotaError(true);
+          setBriefing(null);
+        }
       })
       .finally(() => {
         if (!cancelled) setBriefingLoading(false);
@@ -63,9 +67,15 @@ export function AiAdvisor({ dashboard }: Props) {
       const reply = await chatWithAdvisor(dashboard, messages, text);
       setMessages((prev) => [...prev, { role: 'model', text: reply }]);
     } catch (err) {
+      const isQuota = err instanceof Error && err.message === 'QUOTA_EXCEEDED';
       setMessages((prev) => [
         ...prev,
-        { role: 'model', text: `ขออภัย เกิดข้อผิดพลาด: ${err instanceof Error ? err.message : 'ไม่ทราบสาเหตุ'}` },
+        {
+          role: 'model',
+          text: isQuota
+            ? '⚠️ Gemini quota หมด — กรุณาเปิด Billing บน Google Cloud หรือสร้าง API key ใหม่จาก aistudio.google.com/apikey'
+            : `ขออภัย เกิดข้อผิดพลาด: ${err instanceof Error ? err.message : 'ไม่ทราบสาเหตุ'}`,
+        },
       ]);
     } finally {
       setSending(false);
@@ -110,6 +120,18 @@ export function AiAdvisor({ dashboard }: Props) {
           </div>
         ) : briefing ? (
           <div className="ai-briefing__text">{briefing}</div>
+        ) : quotaError ? (
+          <div className="ai-briefing__text ai-briefing__text--fallback">
+            ⚠️ Gemini API quota หมด — ต้อง{' '}
+            <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener" className="ai-briefing__setup-link">
+              เปิด Billing
+            </a>{' '}
+            บน Google Cloud project หรือ{' '}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="ai-briefing__setup-link">
+              สร้าง key ใหม่
+            </a>{' '}
+            จาก AI Studio โดยตรง
+          </div>
         ) : (
           <div className="ai-briefing__text ai-briefing__text--fallback">
             ไม่สามารถดึงข้อมูล AI ได้ในขณะนี้
