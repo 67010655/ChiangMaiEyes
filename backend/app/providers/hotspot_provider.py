@@ -118,10 +118,14 @@ def format_forest_detected_at(date_value: str | None, time_value: str | int | No
 
 def fetch_forest_firemap_hotspots(target_date: datetime.date | None = None) -> list[Hotspot]:
     # Royal Forest Department Firemap mirrors the public dashboard filters.
-    query_date = (target_date or datetime.datetime.now(BANGKOK_TZ).date()).isoformat()
+    # Query a 2-day window (yesterday→today) so the count doesn't collapse to 0
+    # in the early hours before today's first satellite pass — matching NASA's
+    # rolling 24h window.
+    end_date = target_date or datetime.datetime.now(BANGKOK_TZ).date()
+    start_date = end_date - datetime.timedelta(days=1)
     params = {
-        "datestart": query_date,
-        "dateend": query_date,
+        "datestart": start_date.isoformat(),
+        "dateend": end_date.isoformat(),
         "province": "เชียงใหม่",
         "snpp": "on",
         "noaa20": "on",
