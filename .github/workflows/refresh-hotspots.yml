@@ -7,9 +7,11 @@ name: Refresh hotspot snapshot
 # GitHub-hosted runners are blocked too and a Thailand egress is required
 # (e.g. a self-hosted runner on a Thai network).
 
+# NOTE: GitHub-hosted runners get HTTP 403 from RFD (it blocks non-Thai
+# source IPs), proven in run 26801058372. To activate the daily cron, this
+# must run on a self-hosted runner on a Thai network — then change
+# `runs-on` below to your self-hosted label and re-enable the schedule.
 on:
-  schedule:
-    - cron: "30 23 * * *" # 06:30 Asia/Bangkok daily
   workflow_dispatch: {}
 
 permissions:
