@@ -4,6 +4,7 @@ import { fetchDashboard } from './lib/api';
 import { riskPercent } from './lib/risk';
 import type { DashboardResponse } from './lib/types';
 import { DashboardMap, type MapSelection, initialSelection } from './components/DashboardMap';
+import { AiAdvisor } from './components/AiAdvisor';
 import dashboardSnapshot from './data/dashboardSnapshot.json';
 import { windDestinationName } from './lib/wind';
 
@@ -463,6 +464,7 @@ export function App() {
               <span className="advice-card__summary-source">{dashboard.summary.source}</span>
             </div>
           )}
+          <AiAdvisor dashboard={dashboard} />
         </section>
       </section>
 

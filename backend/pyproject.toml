@@ -1,0 +1,6 @@
+# When the backend is built with backend/ as the root (manual `vercel --prod`
+# from here, or with the project's Root Directory set to "backend"), Vercel's
+# FastAPI framework still needs the entrypoint declared because both
+# api/index.py and app/main.py expose `app`.
+[tool.vercel]
+entrypoint = "api.index:app"
