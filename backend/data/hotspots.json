@@ -1,8 +1,8 @@
 {
-  "count": 14,
-  "density_per_100_km2": 0.07,
-  "latest_update": "2026-06-02T23:17:43.672651+07:00",
-  "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day",
+  "count": 18,
+  "density_per_100_km2": 0.09,
+  "latest_update": "2026-06-02T23:54:12.019458+07:00",
+  "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
   "items": [
     {
       "id": "HS-001",
@@ -102,9 +102,10 @@
       "source": "Royal Forest Department Firemap",
       "detected_at": "2026-06-02T13:33:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap"
+        "Royal Forest Department Firemap",
+        "NASA FIRMS"
       ],
-      "source_count": 1
+      "source_count": 2
     },
     {
       "id": "HS-007",
@@ -119,9 +120,10 @@
       "source": "Royal Forest Department Firemap",
       "detected_at": "2026-06-02T13:33:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap"
+        "Royal Forest Department Firemap",
+        "NASA FIRMS"
       ],
-      "source_count": 1
+      "source_count": 2
     },
     {
       "id": "HS-008",
@@ -221,9 +223,10 @@
       "source": "Royal Forest Department Firemap",
       "detected_at": "2026-06-02T14:22:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap"
+        "Royal Forest Department Firemap",
+        "NASA FIRMS"
       ],
-      "source_count": 1
+      "source_count": 2
     },
     {
       "id": "HS-014",
@@ -238,13 +241,83 @@
       "source": "Royal Forest Department Firemap",
       "detected_at": "2026-06-02T14:22:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap"
+        "Royal Forest Department Firemap",
+        "NASA FIRMS"
+      ],
+      "source_count": 2
+    },
+    {
+      "id": "HS-015",
+      "latitude": 20.07642,
+      "longitude": 99.3443,
+      "district": "แม่อาย",
+      "subdistrict": null,
+      "landuse_type": null,
+      "landuse_name": null,
+      "satellite": "N20",
+      "confidence": 50,
+      "source": "NASA FIRMS",
+      "detected_at": "2026-06-02T13:33:00+07:00",
+      "sources": [
+        "NASA FIRMS"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-016",
+      "latitude": 20.07974,
+      "longitude": 99.34368,
+      "district": "แม่อาย",
+      "subdistrict": null,
+      "landuse_type": null,
+      "landuse_name": null,
+      "satellite": "N20",
+      "confidence": 50,
+      "source": "NASA FIRMS",
+      "detected_at": "2026-06-02T13:33:00+07:00",
+      "sources": [
+        "NASA FIRMS"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-017",
+      "latitude": 20.23069,
+      "longitude": 99.6479,
+      "district": "ฝาง",
+      "subdistrict": null,
+      "landuse_type": null,
+      "landuse_name": null,
+      "satellite": "N21",
+      "confidence": 75,
+      "source": "NASA FIRMS",
+      "detected_at": "2026-06-02T12:42:00+07:00",
+      "sources": [
+        "NASA FIRMS"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-018",
+      "latitude": 17.86456,
+      "longitude": 99.64292,
+      "district": "ฮอด",
+      "subdistrict": null,
+      "landuse_type": null,
+      "landuse_name": null,
+      "satellite": "N21",
+      "confidence": 75,
+      "source": "NASA FIRMS",
+      "detected_at": "2026-06-02T14:20:00+07:00",
+      "sources": [
+        "NASA FIRMS"
       ],
       "source_count": 1
     }
   ],
   "source_breakdown": {
     "Royal Forest Department Firemap": 14,
-    "GISTDA API Gateway VIIRS 1-day": 0
+    "GISTDA API Gateway VIIRS 1-day": 0,
+    "NASA FIRMS": 8
   }
 }

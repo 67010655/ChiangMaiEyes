@@ -5,7 +5,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Absolute path so the keys load no matter the working directory (the app
+    # runs from backend/, the hourly refresh task runs from the repo root).
+    model_config = SettingsConfigDict(
+        env_file=str(Path(__file__).resolve().parent.parent / ".env"), extra="ignore"
+    )
 
     app_name: str = "ChiangMaiEyes API"
     cache_dir: Path = Field(default=Path(__file__).resolve().parent.parent / "data")

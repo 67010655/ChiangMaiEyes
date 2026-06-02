@@ -1,9 +1,9 @@
 {
   "hotspots": {
-    "count": 14,
-    "density_per_100_km2": 0.07,
-    "latest_update": "2026-06-02T23:17:43.672651+07:00",
-    "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day",
+    "count": 18,
+    "density_per_100_km2": 0.09,
+    "latest_update": "2026-06-02T23:54:12.019458+07:00",
+    "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
         "id": "HS-001",
@@ -103,9 +103,10 @@
         "source": "Royal Forest Department Firemap",
         "detected_at": "2026-06-02T13:33:00+07:00",
         "sources": [
-          "Royal Forest Department Firemap"
+          "Royal Forest Department Firemap",
+          "NASA FIRMS"
         ],
-        "source_count": 1
+        "source_count": 2
       },
       {
         "id": "HS-007",
@@ -120,9 +121,10 @@
         "source": "Royal Forest Department Firemap",
         "detected_at": "2026-06-02T13:33:00+07:00",
         "sources": [
-          "Royal Forest Department Firemap"
+          "Royal Forest Department Firemap",
+          "NASA FIRMS"
         ],
-        "source_count": 1
+        "source_count": 2
       },
       {
         "id": "HS-008",
@@ -222,9 +224,10 @@
         "source": "Royal Forest Department Firemap",
         "detected_at": "2026-06-02T14:22:00+07:00",
         "sources": [
-          "Royal Forest Department Firemap"
+          "Royal Forest Department Firemap",
+          "NASA FIRMS"
         ],
-        "source_count": 1
+        "source_count": 2
       },
       {
         "id": "HS-014",
@@ -239,14 +242,84 @@
         "source": "Royal Forest Department Firemap",
         "detected_at": "2026-06-02T14:22:00+07:00",
         "sources": [
-          "Royal Forest Department Firemap"
+          "Royal Forest Department Firemap",
+          "NASA FIRMS"
+        ],
+        "source_count": 2
+      },
+      {
+        "id": "HS-015",
+        "latitude": 20.07642,
+        "longitude": 99.3443,
+        "district": "แม่อาย",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N20",
+        "confidence": 50,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-02T13:33:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-016",
+        "latitude": 20.07974,
+        "longitude": 99.34368,
+        "district": "แม่อาย",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N20",
+        "confidence": 50,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-02T13:33:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-017",
+        "latitude": 20.23069,
+        "longitude": 99.6479,
+        "district": "ฝาง",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N21",
+        "confidence": 75,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-02T12:42:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-018",
+        "latitude": 17.86456,
+        "longitude": 99.64292,
+        "district": "ฮอด",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N21",
+        "confidence": 75,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-02T14:20:00+07:00",
+        "sources": [
+          "NASA FIRMS"
         ],
         "source_count": 1
       }
     ],
     "source_breakdown": {
       "Royal Forest Department Firemap": 14,
-      "GISTDA API Gateway VIIRS 1-day": 0
+      "GISTDA API Gateway VIIRS 1-day": 0,
+      "NASA FIRMS": 8
     }
   },
   "pm25": {
@@ -280,12 +353,12 @@
     ]
   },
   "weather": {
-    "wind_speed_kmh": 6.3,
-    "wind_direction_deg": 37.0,
-    "wind_direction_text": "ตะวันออกเฉียงเหนือ",
-    "temperature_c": 26.3,
-    "humidity_percent": 89.0,
-    "latest_update": "2026-06-02T23:17:46.075095+07:00",
+    "wind_speed_kmh": 4.6,
+    "wind_direction_deg": 13.0,
+    "wind_direction_text": "เหนือ",
+    "temperature_c": 26.1,
+    "humidity_percent": 88.0,
+    "latest_update": "2026-06-02T23:54:16.591453+07:00",
     "source": "Open-Meteo Live API"
   },
   "risk": {
@@ -294,14 +367,14 @@
     "formula": "min(10, round(min(PM2.5/15,4) + min(hotspot_count/50,4) + wind_factor))",
     "factors": {
       "pm25_points": 1.25,
-      "hotspot_points": 0.28,
+      "hotspot_points": 0.36,
       "wind_factor": 0,
       "wind_pushes_smoke_to_city": "no"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 19 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 14 จุด และลมพัดจากทิศ ตะวันออกเฉียงเหนือ ด้วยความเร็ว 6 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 2/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 19 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 18 จุด และลมพัดจากทิศ เหนือ ด้วยความเร็ว 5 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 2/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
     "source": "rule-based fallback"
   }
 }

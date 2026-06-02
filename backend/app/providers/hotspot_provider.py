@@ -170,59 +170,62 @@ def fetch_forest_firemap_hotspots(target_date: datetime.date | None = None) -> l
 
     return hotspots
 
+# RFD aggregates SNPP + NOAA-20 + NOAA-21 VIIRS; query all three so NASA is
+# comparable rather than undercounting (SNPP alone is often empty for a day).
+NASA_VIIRS_SOURCES = ("VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT", "VIIRS_NOAA21_NRT")
+
+
+def _nasa_detected_at(acq_date: str | None, acq_time: str | int | None) -> str:
+    # NASA acq_date/acq_time are UTC; convert to Bangkok so the day matches RFD.
+    date_part = str(acq_date or "").strip()[:10]
+    digits = "".join(ch for ch in str(acq_time or "0000") if ch.isdigit()).zfill(4)[-4:]
+    try:
+        dt_utc = datetime.datetime.strptime(f"{date_part} {digits}", "%Y-%m-%d %H%M").replace(
+            tzinfo=datetime.timezone.utc
+        )
+        return dt_utc.astimezone(BANGKOK_TZ).isoformat()
+    except Exception:
+        fallback_date = date_part or datetime.datetime.now(BANGKOK_TZ).date().isoformat()
+        return f"{fallback_date}T00:00:00+07:00"
+
+
 def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
-    # NASA FIRMS Area API bounding box for Chiang Mai
-    # Format: west, south, east, north
+    # NASA FIRMS Area API bounding box for Chiang Mai (west, south, east, north).
     bbox = "97.25,17.35,99.68,20.28"
-    url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/VIIRS_SNPP_NRT/{bbox}/1"
-    logger.info("Fetching hotspots from NASA FIRMS")
-    
-    response = httpx.get(url, timeout=15.0)
-    response.raise_for_status()
-    
-    # NASA FIRMS returns CSV data
-    decoded_content = response.content.decode("utf-8")
-    lines = decoded_content.splitlines()
-    reader = csv.DictReader(lines)
-    
     hotspots: list[Hotspot] = []
-    for idx, row in enumerate(reader):
+    idx = 0
+    for src in NASA_VIIRS_SOURCES:
+        url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/1"
+        logger.info("Fetching hotspots from NASA FIRMS %s", src)
         try:
-            lat = float(row["latitude"])
-            lon = float(row["longitude"])
-            
-            # Map VIIRS confidence (usually 'n' for nominal, 'h' for high, 'l' for low)
-            conf_raw = row.get("confidence", "n").lower()
-            if conf_raw == "h":
-                confidence = 90
-            elif conf_raw == "n":
-                confidence = 75
-            else:
-                confidence = 50
-                
-            # Formatting acquisition time acq_time is e.g. "0645"
-            acq_date = row.get("acq_date", datetime.date.today().isoformat())
-            acq_time = row.get("acq_time", "0000")
-            if len(acq_time) == 4:
-                time_str = f"{acq_time[:2]}:{acq_time[2:]}:00+07:00"
-            else:
-                time_str = "00:00:00+07:00"
-            detected_at = f"{acq_date}T{time_str}"
-            
-            hotspots.append(Hotspot(
-                id=f"HS-NASA-{idx + 1:03d}",
-                latitude=lat,
-                longitude=lon,
-                district=estimate_district(lat, lon),
-                confidence=confidence,
-                source="NASA FIRMS",
-                detected_at=detected_at,
-                satellite=row.get("satellite") or "VIIRS_SNPP_NRT"
-            ))
+            response = httpx.get(url, timeout=15.0)
+            response.raise_for_status()
         except Exception as ex:
-            logger.warning("Error parsing NASA FIRMS hotspot row: %s", ex)
+            logger.warning("NASA FIRMS %s fetch failed: %s", src, ex)
             continue
-            
+
+        reader = csv.DictReader(response.content.decode("utf-8").splitlines())
+        for row in reader:
+            try:
+                lat = float(row["latitude"])
+                lon = float(row["longitude"])
+                conf_raw = str(row.get("confidence", "n")).lower()
+                confidence = 90 if conf_raw == "h" else 75 if conf_raw == "n" else 50
+                idx += 1
+                hotspots.append(Hotspot(
+                    id=f"HS-NASA-{idx:03d}",
+                    latitude=lat,
+                    longitude=lon,
+                    district=estimate_district(lat, lon),
+                    confidence=confidence,
+                    source="NASA FIRMS",
+                    detected_at=_nasa_detected_at(row.get("acq_date"), row.get("acq_time")),
+                    satellite=row.get("satellite") or src,
+                ))
+            except Exception as ex:
+                logger.warning("Error parsing NASA FIRMS hotspot row: %s", ex)
+                continue
+
     return hotspots
 
 def merge_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
