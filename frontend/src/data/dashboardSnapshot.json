@@ -1,27 +1,14 @@
 {
   "hotspots": {
-    "count": 3,
-    "density_per_100_km2": 0.01,
-    "latest_update": "2026-06-01T13:45:00+07:00",
-    "source": "Royal Forest Department Firemap snapshot",
+    "count": 10,
+    "density_per_100_km2": 0.05,
+    "latest_update": "2026-06-02T11:49:51.586090+07:00",
+    "source": "Royal Forest Department Firemap",
     "items": [
       {
         "id": "HS-RFD-001",
-        "latitude": 19.08274,
-        "longitude": 98.90689,
-        "district": "แม่แตง",
-        "subdistrict": "ขี้เหล็ก",
-        "landuse_type": "OTHER",
-        "landuse_name": "พื้นที่อื่น",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 75,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-01T02:21:00+07:00"
-      },
-      {
-        "id": "HS-RFD-002",
-        "latitude": 18.90714,
-        "longitude": 98.20298,
+        "latitude": 18.90499,
+        "longitude": 98.20406,
         "district": "แม่แจ่ม",
         "subdistrict": "แม่นาจร",
         "landuse_type": "NRF",
@@ -29,60 +16,164 @@
         "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
         "confidence": 90,
         "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-01T02:42:00+07:00"
+        "detected_at": "2026-06-02T02:21:00+07:00"
+      },
+      {
+        "id": "HS-RFD-002",
+        "latitude": 18.93446,
+        "longitude": 98.91862,
+        "district": "แม่ริม",
+        "subdistrict": "แม่แรม",
+        "landuse_type": "KTC",
+        "landuse_name": "ป่าแม่ริม",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-02T02:21:00+07:00"
       },
       {
         "id": "HS-RFD-003",
-        "latitude": 19.08408,
-        "longitude": 98.9072,
-        "district": "แม่แตง",
-        "subdistrict": "ขี้เหล็ก",
-        "landuse_type": "OTHER",
-        "landuse_name": "พื้นที่อื่น",
+        "latitude": 19.70234,
+        "longitude": 98.94344,
+        "district": "เชียงดาว",
+        "subdistrict": "แม่นะ",
+        "landuse_type": "NRF",
+        "landuse_name": "ป่าเชียงดาว",
         "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 75,
+        "confidence": 90,
         "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-01T02:42:00+07:00"
+        "detected_at": "2026-06-02T02:21:00+07:00"
+      },
+      {
+        "id": "HS-RFD-004",
+        "latitude": 19.707,
+        "longitude": 98.93938,
+        "district": "เชียงดาว",
+        "subdistrict": "แม่นะ",
+        "landuse_type": "NRF",
+        "landuse_name": "ป่าเชียงดาว",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-02T02:21:00+07:00"
+      },
+      {
+        "id": "HS-RFD-005",
+        "latitude": 19.71166,
+        "longitude": 98.93526,
+        "district": "เชียงดาว",
+        "subdistrict": "แม่นะ",
+        "landuse_type": "NRF",
+        "landuse_name": "ป่าเชียงดาว",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-02T02:21:00+07:00"
+      },
+      {
+        "id": "HS-RFD-006",
+        "latitude": 18.82737,
+        "longitude": 98.33193,
+        "district": "แม่แจ่ม",
+        "subdistrict": "แม่นาจร",
+        "landuse_type": "NRF",
+        "landuse_name": "ป่าแม่แจ่ม",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-02T01:30:00+07:00"
+      },
+      {
+        "id": "HS-RFD-007",
+        "latitude": 19.70959,
+        "longitude": 98.93642,
+        "district": "เชียงดาว",
+        "subdistrict": "แม่นะ",
+        "landuse_type": "DNP",
+        "landuse_name": "อุทยานแห่งชาติผาแดง",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-02T01:30:00+07:00"
+      },
+      {
+        "id": "HS-RFD-008",
+        "latitude": 19.69911,
+        "longitude": 98.94136,
+        "district": "เชียงดาว",
+        "subdistrict": "แม่นะ",
+        "landuse_type": "DNP",
+        "landuse_name": "อุทยานแห่งชาติผาแดง",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-02T01:30:00+07:00"
+      },
+      {
+        "id": "HS-RFD-009",
+        "latitude": 19.71231,
+        "longitude": 98.93542,
+        "district": "เชียงดาว",
+        "subdistrict": "แม่นะ",
+        "landuse_type": "NRF",
+        "landuse_name": "ป่าเชียงดาว",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-02T01:30:00+07:00"
+      },
+      {
+        "id": "HS-RFD-010",
+        "latitude": 19.70179,
+        "longitude": 98.94025,
+        "district": "เชียงดาว",
+        "subdistrict": "แม่นะ",
+        "landuse_type": "DNP",
+        "landuse_name": "อุทยานแห่งชาติผาแดง",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-02T01:30:00+07:00"
       }
     ]
   },
   "pm25": {
-    "current_pm25": 10.6,
+    "current_pm25": 13.3,
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-01T12:00:00+07:00",
+    "latest_update": "2026-06-02T11:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
         "id": "CM-35T",
-        "name": "ศูนย์ราชการจังหวัดเชียงใหม่",
-        "district": "Mueang",
+        "name": "ศูนย์ราชการจังหวัดเชียงใหม่ ",
+        "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 15.0,
+        "pm25": 23.1,
         "trend": "stable",
-        "updated_at": "2026-06-01T12:00:00+07:00"
+        "updated_at": "2026-06-02T11:00:00+07:00"
       },
       {
         "id": "CM-36T",
-        "name": "โรงเรียนยุพราชวิทยาลัย",
-        "district": "Mueang",
+        "name": "โรงเรียนยุพราชวิทยาลัย ",
+        "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 11.1,
+        "pm25": 13.9,
         "trend": "stable",
-        "updated_at": "2026-06-01T12:00:00+07:00"
+        "updated_at": "2026-06-02T11:00:00+07:00"
       },
       {
         "id": "CM-O23",
-        "name": "พระตำหนักภูพิงคราชนิเวศน์",
+        "name": "พระตำหนักภูพิงคราชนิเวศน์ ",
         "district": "Mueang",
         "latitude": 18.804894,
         "longitude": 98.900698,
-        "pm25": 8.5,
+        "pm25": 7.9,
         "trend": "stable",
-        "updated_at": "2026-06-01T12:00:00+07:00"
+        "updated_at": "2026-06-02T11:00:00+07:00"
       },
       {
         "id": "CM-O69",
@@ -90,9 +181,9 @@
         "district": "Hot",
         "latitude": 18.172495,
         "longitude": 98.61069,
-        "pm25": 10.8,
+        "pm25": 15.0,
         "trend": "stable",
-        "updated_at": "2026-06-01T12:00:00+07:00"
+        "updated_at": "2026-06-02T11:00:00+07:00"
       },
       {
         "id": "CM-O70",
@@ -110,35 +201,35 @@
         "district": "Mae Chaem",
         "latitude": 18.498333,
         "longitude": 98.379444,
-        "pm25": 11.7,
+        "pm25": 13.8,
         "trend": "stable",
-        "updated_at": "2026-06-01T12:00:00+07:00"
+        "updated_at": "2026-06-02T11:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 6.5,
-    "wind_direction_deg": 188,
-    "wind_direction_text": "ใต้",
-    "temperature_c": 32.0,
-    "humidity_percent": 58.0,
-    "latest_update": "2026-06-01T13:01:20.327691+07:00",
+    "wind_speed_kmh": 5.3,
+    "wind_direction_deg": 156.0,
+    "wind_direction_text": "ตะวันออกเฉียงใต้",
+    "temperature_c": 32.1,
+    "humidity_percent": 62.0,
+    "latest_update": "2026-06-02T11:49:52.760167+07:00",
     "source": "Open-Meteo Live API"
   },
   "risk": {
-    "score": 3,
+    "score": 1,
     "category": "Low",
     "formula": "min(10, round(min(PM2.5/15,4) + min(hotspot_count/50,4) + wind_factor))",
     "factors": {
-      "pm25_points": 0.71,
-      "hotspot_points": 0.0,
-      "wind_factor": 2,
-      "wind_pushes_smoke_to_city": "yes"
+      "pm25_points": 0.89,
+      "hotspot_points": 0.2,
+      "wind_factor": 0,
+      "wind_pushes_smoke_to_city": "no"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 11 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศใต้ด้วยความเร็ว 6 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 3/10 สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 13 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 10 จุด และลมพัดจากทิศ ตะวันออกเฉียงใต้ ด้วยความเร็ว 5 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 1/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
     "source": "rule-based fallback"
   }
 }
