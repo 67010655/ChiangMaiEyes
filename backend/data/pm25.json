@@ -1,9 +1,9 @@
 {
-  "current_pm25": 13.4,
-  "category": "ดีมาก",
+  "current_pm25": 18.8,
+  "category": "ดี",
   "color": "green",
   "trend": "stable",
-  "latest_update": "2026-06-02T12:00:00+07:00",
+  "latest_update": "2026-06-02T23:00:00+07:00",
   "source": "Air4Thai Live API",
   "stations": [
     {
@@ -12,9 +12,9 @@
       "district": "Meuang",
       "latitude": 18.840732,
       "longitude": 98.96978,
-      "pm25": 23.2,
+      "pm25": 22.4,
       "trend": "stable",
-      "updated_at": "2026-06-02T12:00:00+07:00"
+      "updated_at": "2026-06-02T23:00:00+07:00"
     },
     {
       "id": "CM-36T",
@@ -22,49 +22,9 @@
       "district": "Meuang",
       "latitude": 18.7909333,
       "longitude": 98.99,
-      "pm25": 14.1,
+      "pm25": 15.1,
       "trend": "stable",
-      "updated_at": "2026-06-02T12:00:00+07:00"
-    },
-    {
-      "id": "CM-O23",
-      "name": "พระตำหนักภูพิงคราชนิเวศน์ ",
-      "district": "Mueang",
-      "latitude": 18.804894,
-      "longitude": 98.900698,
-      "pm25": 8.1,
-      "trend": "stable",
-      "updated_at": "2026-06-02T12:00:00+07:00"
-    },
-    {
-      "id": "CM-O69",
-      "name": "การไฟฟ้าส่วนภูมิภาค สาขา อำเภอฮอด",
-      "district": "Hot",
-      "latitude": 18.172495,
-      "longitude": 98.61069,
-      "pm25": 14.6,
-      "trend": "stable",
-      "updated_at": "2026-06-02T12:00:00+07:00"
-    },
-    {
-      "id": "CM-O70",
-      "name": "สำนักงานเทศบาลตำบลเมืองนะ",
-      "district": "Chiang Dao",
-      "latitude": 19.593889,
-      "longitude": 98.961667,
-      "pm25": 6.4,
-      "trend": "stable",
-      "updated_at": "2026-05-31T17:00:00+07:00"
-    },
-    {
-      "id": "CM-O71",
-      "name": "โรงพยาบาลเทพรัตนเวชชานุกูล แม่แจ่ม",
-      "district": "Mae Chaem",
-      "latitude": 18.498333,
-      "longitude": 98.379444,
-      "pm25": 13.9,
-      "trend": "stable",
-      "updated_at": "2026-06-02T12:00:00+07:00"
+      "updated_at": "2026-06-02T23:00:00+07:00"
     }
   ]
 }

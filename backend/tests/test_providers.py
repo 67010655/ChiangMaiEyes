@@ -4,7 +4,66 @@ import pytest
 
 from app.providers.weather_provider import fetch_live_weather, get_wind_direction_text
 from app.providers.pm25_provider import fetch_live_pm25, get_pm25_category_and_color
-from app.providers.hotspot_provider import fetch_live_hotspots, estimate_district, fetch_forest_firemap_hotspots
+from app.providers.hotspot_provider import (
+    fetch_live_hotspots,
+    estimate_district,
+    fetch_forest_firemap_hotspots,
+    reconcile_hotspots,
+)
+from app.models import Hotspot
+
+
+def _hs(lat, lon, source, conf=80, day="2026-06-02", **extra):
+    return Hotspot(
+        id=f"X-{lat}-{lon}",
+        latitude=lat,
+        longitude=lon,
+        district=extra.get("district", "เชียงดาว"),
+        confidence=conf,
+        source=source,
+        detected_at=f"{day}T02:00:00+07:00",
+        **{k: v for k, v in extra.items() if k != "district"},
+    )
+
+
+RFD = "Royal Forest Department Firemap"
+NASA = "NASA FIRMS"
+
+
+def test_reconcile_merges_nearby_cross_source_detections():
+    # Same fire seen by RFD and NASA ~200 m apart → one reconciled hotspot.
+    rfd = [_hs(19.7023, 98.9434, RFD, conf=90, district="เชียงดาว", subdistrict="แม่นะ")]
+    nasa = [_hs(19.7039, 98.9430, NASA, conf=75)]
+    out = reconcile_hotspots([rfd, nasa])
+    assert len(out) == 1
+    assert out[0].source_count == 2
+    assert set(out[0].sources) == {RFD, NASA}
+    assert out[0].confidence == 90  # highest of the two
+    assert out[0].source == RFD  # richest record kept as representative
+    assert out[0].subdistrict == "แม่นะ"
+
+
+def test_reconcile_keeps_distinct_fires_apart():
+    # Two fires ~3 km apart stay separate even if both come from one source.
+    a = [_hs(19.70, 98.94, RFD)]
+    b = [_hs(19.73, 98.94, RFD)]
+    out = reconcile_hotspots([a, b])
+    assert len(out) == 2
+    assert all(h.source_count == 1 for h in out)
+
+
+def test_reconcile_does_not_collapse_same_source_points():
+    # Two RFD detections 200 m apart stay distinct — we respect RFD's own count.
+    rfd = [_hs(19.7023, 98.9434, RFD), _hs(19.7039, 98.9430, RFD)]
+    out = reconcile_hotspots([rfd])
+    assert len(out) == 2
+
+
+def test_reconcile_does_not_merge_across_days():
+    today = [_hs(19.70, 98.94, RFD, day="2026-06-02")]
+    yesterday = [_hs(19.70, 98.94, NASA, day="2026-06-01")]
+    out = reconcile_hotspots([today, yesterday])
+    assert len(out) == 2
 
 def test_wind_direction_translation():
     assert get_wind_direction_text(0) == "เหนือ"
@@ -115,9 +174,9 @@ def test_fetch_live_hotspots_nasa_fallback(mock_get):
     mock_get.side_effect = [mock_forest_resp, mock_gistda_resp, mock_nasa_resp]
 
     response = fetch_live_hotspots(gistda_key="gistda_key", nasa_key="nasa_key")
-    
+
     assert response.count == 1
-    assert response.source == "NASA FIRMS Live API"
+    assert response.source == "NASA FIRMS"
     assert response.items[0].latitude == 18.916
     assert response.items[0].longitude == 98.939
     assert response.items[0].district == "แม่ริม"

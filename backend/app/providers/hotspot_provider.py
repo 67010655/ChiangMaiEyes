@@ -1,6 +1,7 @@
 import csv
 import datetime
 import logging
+import math
 import httpx
 from app.models import Hotspot, HotspotResponse
 
@@ -236,60 +237,123 @@ def merge_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
             merged.append(hotspot)
     return merged
 
+
+# A VIIRS pixel is ~375 m; different sources report the same fire at slightly
+# offset coordinates, so cluster detections within this radius (same day) as one.
+RECONCILE_RADIUS_M = 750.0
+
+# When several sources report the same fire, keep the richest record as the
+# representative: RFD carries district/subdistrict/landuse, GISTDA next, NASA last.
+_SOURCE_PRIORITY = {FOREST_FIREMAP_SOURCE: 0, GISTDA_VIIRS_SOURCE: 1, "NASA FIRMS": 2}
+
+
+def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    radius = 6_371_000.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlam = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlam / 2) ** 2
+    return 2 * radius * math.asin(math.sqrt(a))
+
+
+def reconcile_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
+    """Cross-reference detections from multiple sources into unique hotspots.
+
+    Detections from any source within RECONCILE_RADIUS_M on the same day are
+    treated as one real fire. Each output hotspot records every source that saw
+    it (``sources``/``source_count``) and takes the highest confidence reported.
+    """
+    clusters: list[dict] = []  # {rep: Hotspot, sources: set[str], members: list[Hotspot]}
+    for group in groups:
+        for hs in group:
+            day = hs.detected_at[:10]
+            # Only merge detections from *different* sources: each source already
+            # decided its own points are distinct, so we never collapse a source's
+            # own count — we only fuse the same fire seen by another source.
+            best = None
+            best_dist = RECONCILE_RADIUS_M
+            for cluster in clusters:
+                if cluster["rep"].detected_at[:10] != day:
+                    continue
+                if hs.source in cluster["sources"]:
+                    continue
+                dist = _haversine_m(
+                    cluster["rep"].latitude, cluster["rep"].longitude, hs.latitude, hs.longitude
+                )
+                if dist <= best_dist:
+                    best = cluster
+                    best_dist = dist
+            if best is None:
+                clusters.append({"rep": hs, "sources": {hs.source}, "members": [hs]})
+                continue
+            best["members"].append(hs)
+            best["sources"].add(hs.source)
+            # Promote the representative if this source is richer (lower priority value).
+            if _SOURCE_PRIORITY.get(hs.source, 99) < _SOURCE_PRIORITY.get(best["rep"].source, 99):
+                best["rep"] = hs
+
+    reconciled: list[Hotspot] = []
+    for idx, cluster in enumerate(clusters, start=1):
+        rep: Hotspot = cluster["rep"]
+        sources = sorted(cluster["sources"], key=lambda s: _SOURCE_PRIORITY.get(s, 99))
+        reconciled.append(
+            rep.model_copy(
+                update={
+                    "id": f"HS-{idx:03d}",
+                    "sources": sources,
+                    "source_count": len(sources),
+                    "confidence": max(m.confidence for m in cluster["members"]),
+                }
+            )
+        )
+    return reconciled
+
 def fetch_live_hotspots(gistda_key: str | None = None, nasa_key: str | None = None) -> HotspotResponse:
+    # Always query every available source so we can cross-reference them, rather
+    # than stopping at the first that responds. Each source is best-effort.
     hotspot_groups: list[list[Hotspot]] = []
     sources: list[str] = []
+    source_breakdown: dict[str, int] = {}
     fetch_errors: list[str] = []
 
-    try:
-        forest_hotspots = fetch_forest_firemap_hotspots()
-        hotspot_groups.append(forest_hotspots)
-        sources.append(FOREST_FIREMAP_SOURCE)
-        logger.info("Loaded %d hotspots from Royal Forest Department Firemap", len(forest_hotspots))
-    except Exception as e:
-        fetch_errors.append(f"{FOREST_FIREMAP_SOURCE}: {e}")
-        logger.error("Royal Forest Department Firemap fetch failed: %s", e)
-    
+    def _try(label: str, fetch) -> None:
+        try:
+            group = fetch()
+            hotspot_groups.append(group)
+            sources.append(label)
+            source_breakdown[label] = len(group)
+            logger.info("Loaded %d hotspots from %s", len(group), label)
+        except Exception as e:  # noqa: BLE001 — one source failing must not sink the rest
+            fetch_errors.append(f"{label}: {e}")
+            logger.error("%s fetch failed: %s", label, e)
+
+    _try(FOREST_FIREMAP_SOURCE, fetch_forest_firemap_hotspots)
     if gistda_key:
-        try:
-            gistda_hotspots = fetch_gistda_hotspots(gistda_key)
-            hotspot_groups.append(gistda_hotspots)
-            sources.append(GISTDA_VIIRS_SOURCE)
-            logger.info("Loaded %d hotspots from GISTDA API Gateway VIIRS", len(gistda_hotspots))
-        except Exception as e:
-            fetch_errors.append(f"{GISTDA_VIIRS_SOURCE}: {e}")
-            logger.error("GISTDA API Gateway VIIRS fetch failed: %s", e)
-            
-    if not hotspot_groups and nasa_key:
-        try:
-            nasa_hotspots = fetch_nasa_firms_hotspots(nasa_key)
-            hotspot_groups.append(nasa_hotspots)
-            sources.append("NASA FIRMS Live API")
-            logger.info("Loaded %d hotspots from NASA FIRMS", len(nasa_hotspots))
-        except Exception as e:
-            fetch_errors.append(f"NASA FIRMS Live API: {e}")
-            logger.error("NASA FIRMS fetch failed: %s", e)
-            
+        _try(GISTDA_VIIRS_SOURCE, lambda: fetch_gistda_hotspots(gistda_key))
+    if nasa_key:
+        _try("NASA FIRMS", lambda: fetch_nasa_firms_hotspots(nasa_key))
+
     if not hotspot_groups:
         raise Exception(f"Failed to fetch live hotspots: {'; '.join(fetch_errors)}")
 
-    hotspots = merge_hotspots(hotspot_groups)
+    hotspots = reconcile_hotspots(hotspot_groups)
     source = " + ".join(dict.fromkeys(sources))
 
     if not hotspots and any(error.startswith(FOREST_FIREMAP_SOURCE) for error in fetch_errors):
         raise Exception(f"Royal Forest Department Firemap unavailable and backup sources returned no hotspots: {'; '.join(fetch_errors)}")
-        
+
     count = len(hotspots)
     # Area of Chiang Mai is approximately 20,107 km2
     density = round((count / 20107.0) * 100.0, 2)
-    
+
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
     latest_update = now.isoformat()
-    
+
     return HotspotResponse(
         count=count,
         density_per_100_km2=density,
         latest_update=latest_update,
         source=source,
-        items=hotspots
+        items=hotspots,
+        source_breakdown=source_breakdown,
     )

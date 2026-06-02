@@ -146,9 +146,27 @@ function hotspotLocation(h: Hotspot) {
     .join(' ');
 }
 
+function shortSourceName(source: string): string {
+  if (source.startsWith('Royal Forest')) return 'กรมป่าไม้';
+  if (source.startsWith('GISTDA')) return 'GISTDA';
+  if (source.startsWith('NASA')) return 'NASA';
+  return source;
+}
+
+function hotspotSourcesLabel(h: Hotspot): string {
+  const list = (h.sources && h.sources.length ? h.sources : [h.source]).map(shortSourceName);
+  return Array.from(new Set(list)).join(' + ');
+}
+
 function hotspotStats(h: Hotspot): MapSelection['stats'] {
+  const sourceCount = h.source_count ?? (h.sources?.length || 1);
   return [
     { label: 'Confidence', value: `${h.confidence}%`, tone: h.confidence >= 80 ? 'risk' : 'watch' },
+    {
+      label: 'ยืนยันโดย',
+      value: `${hotspotSourcesLabel(h)}${sourceCount > 1 ? ` (${sourceCount} แหล่ง)` : ''}`,
+      tone: sourceCount > 1 ? 'risk' : undefined,
+    },
     { label: 'ประเภทพื้นที่', value: h.landuse_name || h.landuse_type || 'ไม่ระบุ' },
     { label: 'ดาวเทียม', value: h.satellite || 'VIIRS' },
     { label: 'เวลา', value: formatTime(h.detected_at) },

@@ -15,6 +15,10 @@ class Hotspot(BaseModel):
     confidence: int = Field(ge=0, le=100)
     source: str
     detected_at: str
+    # Provenance after cross-source reconciliation: every source that reported
+    # this (deduplicated) hotspot, and how many of them did.
+    sources: list[str] = Field(default_factory=list)
+    source_count: int = 1
 
 
 class HotspotResponse(BaseModel):
@@ -23,6 +27,9 @@ class HotspotResponse(BaseModel):
     latest_update: str
     source: str
     items: list[Hotspot]
+    # Raw hotspot count reported by each source *before* dedup, so the UI can
+    # show "RFD 12 · NASA 8 → 15 unique".
+    source_breakdown: dict[str, int] = Field(default_factory=dict)
 
 
 class Pm25Station(BaseModel):

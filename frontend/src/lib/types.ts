@@ -10,6 +10,8 @@
   confidence: number;
   source: string;
   detected_at: string;
+  sources?: string[];
+  source_count?: number;
 };
 
 export type HotspotResponse = {
@@ -18,6 +20,7 @@ export type HotspotResponse = {
   latest_update: string;
   source: string;
   items: Hotspot[];
+  source_breakdown?: Record<string, number>;
 };
 
 export type Pm25Station = {
