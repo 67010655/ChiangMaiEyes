@@ -1,0 +1,6 @@
+# Vercel deploys the "backend" project from the repo root (rootDirectory is
+# unset), and its FastAPI framework builder needs the entrypoint declared
+# explicitly — otherwise it errors with "No FastAPI entrypoint found" because
+# both backend/api/index.py and backend/app/main.py expose `app`.
+[tool.vercel]
+entrypoint = "backend.api.index:app"
