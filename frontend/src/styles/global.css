@@ -1489,6 +1489,24 @@ button {
   font-weight: 600;
 }
 
+.ai-briefing__setup-link {
+  color: #0f6b54;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.ai-briefing__setup-link:hover {
+  color: #0d5a47;
+}
+
+.ai-briefing__text code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  background: rgba(15, 107, 84, 0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
 .ai-briefing__chat-btn {
   display: inline-flex;
   align-items: center;

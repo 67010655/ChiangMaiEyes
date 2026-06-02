@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, Sparkles, X } from 'lucide-react';
 import type { DashboardResponse } from '../lib/types';
-import { chatWithAdvisor, generateDailyBriefing, type ChatMessage } from '../lib/gemini';
+import { chatWithAdvisor, generateDailyBriefing, GEMINI_KEY_VALID, type ChatMessage } from '../lib/gemini';
 
 type Props = {
   dashboard: DashboardResponse;
@@ -94,7 +94,16 @@ export function AiAdvisor({ dashboard }: Props) {
           <Sparkles size={16} className="ai-briefing__icon" />
           <span className="ai-briefing__title">สรุปสถานการณ์วันนี้ โดยคุณเชียงใหม่</span>
         </div>
-        {briefingLoading ? (
+        {!GEMINI_KEY_VALID ? (
+          <div className="ai-briefing__text ai-briefing__text--fallback">
+            ยังไม่ได้ตั้งค่า API key —{' '}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="ai-briefing__setup-link">
+              ขอ Gemini API key ฟรีที่นี่
+            </a>{' '}
+            แล้วใส่ใน <code>frontend/.env</code>
+            <br /><small style={{ opacity: 0.7 }}>รูปแบบ: VITE_GEMINI_API_KEY=AIzaSy...</small>
+          </div>
+        ) : briefingLoading ? (
           <div className="ai-briefing__loading">
             <span className="ai-dot-pulse" />
             <span>กำลังวิเคราะห์ข้อมูล...</span>
@@ -103,7 +112,7 @@ export function AiAdvisor({ dashboard }: Props) {
           <div className="ai-briefing__text">{briefing}</div>
         ) : (
           <div className="ai-briefing__text ai-briefing__text--fallback">
-            ตั้งค่า Gemini API key เพื่อเปิดใช้ AI advisor
+            ไม่สามารถดึงข้อมูล AI ได้ในขณะนี้
           </div>
         )}
         <button

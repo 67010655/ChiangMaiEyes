@@ -2,6 +2,12 @@ import type { DashboardResponse } from './types';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY ?? '';
 const GEMINI_MODEL = 'gemini-2.0-flash';
+
+// API key must start with 'AIzaSy' (Google AI Studio format, ~39 chars).
+// Set VITE_GEMINI_API_KEY in frontend/.env
+// Get one at https://aistudio.google.com/apikey
+export const GEMINI_KEY_VALID = GEMINI_API_KEY.startsWith('AIzaSy') && GEMINI_API_KEY.length >= 35;
+
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 // ─── System prompt: expert persona ─────────────────────────────────────────
@@ -67,7 +73,7 @@ export type ChatMessage = {
 // ─── Generate initial daily briefing ────────────────────────────────────────
 
 export async function generateDailyBriefing(dashboard: DashboardResponse): Promise<string> {
-  if (!GEMINI_API_KEY) return '';
+  if (!GEMINI_KEY_VALID) return '';
 
   const context = buildDashboardContext(dashboard);
   const prompt = `จากข้อมูล Dashboard ด้านล่าง ช่วยสรุปสถานการณ์วันนี้ให้ประชาชนฟังหน่อย แบบสั้นกระชับ (ไม่เกิน 150 คำ) โดย:
@@ -88,7 +94,7 @@ export async function chatWithAdvisor(
   history: ChatMessage[],
   userMessage: string,
 ): Promise<string> {
-  if (!GEMINI_API_KEY) return 'กรุณาตั้งค่า Gemini API key ใน .env ก่อนใช้งาน';
+  if (!GEMINI_KEY_VALID) return 'กรุณาตั้งค่า Gemini API key (AIzaSy...) ใน frontend/.env ก่อนใช้งาน';
 
   const context = buildDashboardContext(dashboard);
   const contextPart = `[ข้อมูล Dashboard ล่าสุด]\n${context}\n\n---\nตอบคำถามของผู้ใช้ตามข้อมูลข้างต้น:`;
