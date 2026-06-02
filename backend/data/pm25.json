@@ -1,9 +1,9 @@
 {
-  "current_pm25": 13.3,
+  "current_pm25": 13.4,
   "category": "ดีมาก",
   "color": "green",
   "trend": "stable",
-  "latest_update": "2026-06-02T11:00:00+07:00",
+  "latest_update": "2026-06-02T12:00:00+07:00",
   "source": "Air4Thai Live API",
   "stations": [
     {
@@ -12,9 +12,9 @@
       "district": "Meuang",
       "latitude": 18.840732,
       "longitude": 98.96978,
-      "pm25": 23.1,
+      "pm25": 23.2,
       "trend": "stable",
-      "updated_at": "2026-06-02T11:00:00+07:00"
+      "updated_at": "2026-06-02T12:00:00+07:00"
     },
     {
       "id": "CM-36T",
@@ -22,9 +22,9 @@
       "district": "Meuang",
       "latitude": 18.7909333,
       "longitude": 98.99,
-      "pm25": 13.9,
+      "pm25": 14.1,
       "trend": "stable",
-      "updated_at": "2026-06-02T11:00:00+07:00"
+      "updated_at": "2026-06-02T12:00:00+07:00"
     },
     {
       "id": "CM-O23",
@@ -32,9 +32,9 @@
       "district": "Mueang",
       "latitude": 18.804894,
       "longitude": 98.900698,
-      "pm25": 7.9,
+      "pm25": 8.1,
       "trend": "stable",
-      "updated_at": "2026-06-02T11:00:00+07:00"
+      "updated_at": "2026-06-02T12:00:00+07:00"
     },
     {
       "id": "CM-O69",
@@ -42,9 +42,9 @@
       "district": "Hot",
       "latitude": 18.172495,
       "longitude": 98.61069,
-      "pm25": 15.0,
+      "pm25": 14.6,
       "trend": "stable",
-      "updated_at": "2026-06-02T11:00:00+07:00"
+      "updated_at": "2026-06-02T12:00:00+07:00"
     },
     {
       "id": "CM-O70",
@@ -62,9 +62,9 @@
       "district": "Mae Chaem",
       "latitude": 18.498333,
       "longitude": 98.379444,
-      "pm25": 13.8,
+      "pm25": 13.9,
       "trend": "stable",
-      "updated_at": "2026-06-02T11:00:00+07:00"
+      "updated_at": "2026-06-02T12:00:00+07:00"
     }
   ]
 }

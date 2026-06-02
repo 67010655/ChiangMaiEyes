@@ -1,0 +1,51 @@
+name: Refresh hotspot snapshot
+
+# The production backend (Vercel) cannot reach the Royal Forest Department
+# Firemap from its datacenter, so it serves a baked-in snapshot. This job
+# refreshes that snapshot from CI and commits it. The "RFD reachability"
+# step below prints whether *this* runner can reach RFD — if it times out,
+# GitHub-hosted runners are blocked too and a Thailand egress is required
+# (e.g. a self-hosted runner on a Thai network).
+
+on:
+  schedule:
+    - cron: "30 23 * * *" # 06:30 Asia/Bangkok daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend deps
+        run: pip install -r backend/requirements.txt
+
+      - name: RFD reachability diagnostic
+        continue-on-error: true
+        run: |
+          URL="https://wildfire.forest.go.th/firemap/getdb.php?datestart=2026-01-01&dateend=2026-01-01&province=%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88&snpp=on"
+          echo "Probing RFD Firemap from this runner..."
+          curl -s -o /dev/null -w "RFD probe: HTTP %{http_code}  connect %{time_connect}s  total %{time_total}s\n" -m 30 "$URL" || echo "RFD probe: FAILED (curl exit $?)"
+
+      - name: Refresh snapshot
+        run: python backend/scripts/refresh_snapshot.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- backend/data/hotspots.json frontend/src/data/dashboardSnapshot.json backend/data/pm25.json backend/data/weather.json; then
+            echo "No snapshot changes."
+          else
+            git add backend/data/hotspots.json frontend/src/data/dashboardSnapshot.json backend/data/pm25.json backend/data/weather.json
+            git commit -m "chore: refresh hotspot snapshot from RFD Firemap [skip ci]"
+            git push
+          fi
