@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import L from 'leaflet';
+import 'leaflet-velocity';
 import { Crosshair, Minus, Plus, Wind } from 'lucide-react';
 import type { DashboardResponse, Hotspot, Pm25Station } from '../lib/types';
 import provinceGeoData from '../data/chiangmai-province.json';
 import districtsGeoData from '../data/chiangmai-districts.json';
 import { windDestinationName } from '../lib/wind';
+import { fetchWindField } from '../lib/windGrid';
 
 // ─────────────────────────────────────────────
 // Types
@@ -179,6 +181,11 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
   const mapRef = useRef<L.Map | null>(null);
   const hotspotsLayerRef = useRef<L.LayerGroup | null>(null);
   const pm25LayerRef = useRef<L.LayerGroup | null>(null);
+  const velocityLayerRef = useRef<L.Layer | null>(null);
+
+  // True once the Windy-style particle layer is live, so we can hide the
+  // lightweight SVG streamline fallback.
+  const [windParticlesOn, setWindParticlesOn] = useState(false);
 
   // Callback ref — avoids stale closures inside Leaflet event handlers
   const onSelChangeRef = useRef(onSelectionChange);
@@ -467,6 +474,60 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
     });
   }, [dashboard.pm25, layers.pm25, zoom]);
 
+  // ── Windy-style wind particles (leaflet-velocity + Open-Meteo grid) ────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Tear down when the layer is toggled off.
+    if (!layers.wind) {
+      if (velocityLayerRef.current) {
+        map.removeLayer(velocityLayerRef.current);
+        velocityLayerRef.current = null;
+      }
+      setWindParticlesOn(false);
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    fetchWindField(controller.signal)
+      .then((data) => {
+        if (cancelled || !mapRef.current) return;
+        if (velocityLayerRef.current) {
+          mapRef.current.removeLayer(velocityLayerRef.current);
+          velocityLayerRef.current = null;
+        }
+        const layer = (L as any).velocityLayer({
+          displayValues: false,
+          data,
+          minVelocity: 0,
+          maxVelocity: 10,
+          velocityScale: 0.014,
+          particleAge: 80,
+          particleMultiplier: 1 / 190,
+          lineWidth: 1.6,
+          frameRate: 20,
+          opacity: 0.97,
+          // Blue gradient (slow → fast) — high contrast over the light/green map.
+          colorScale: ['#1e4fa3', '#2f7ad1', '#3aa0e6', '#57c4f0', '#8fe0ff'],
+        });
+        layer.addTo(mapRef.current);
+        velocityLayerRef.current = layer;
+        setWindParticlesOn(true);
+      })
+      .catch(() => {
+        // Network/shape failure → keep the SVG streamline fallback visible.
+        if (!cancelled) setWindParticlesOn(false);
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [layers.wind]);
+
   // ── Zoom controls ─────────────────────────────────────────────────────────
   const handleZoomIn = useCallback(() => mapRef.current?.zoomIn(), []);
   const handleZoomOut = useCallback(() => mapRef.current?.zoomOut(), []);
@@ -501,8 +562,9 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
       {/* Leaflet map mount point */}
       <div ref={mapDivRef} className="map-leaflet" />
 
-      {/* Wind streamline overlay — covers full viewport, rotated to bearing */}
-      {layers.wind && (
+      {/* Wind streamline overlay — fallback shown only until the leaflet-velocity
+          particle layer is live (or if its grid fetch fails) */}
+      {layers.wind && !windParticlesOn && (
         <svg
           className="wind-field-overlay"
           viewBox="-2 -2 4 4"
