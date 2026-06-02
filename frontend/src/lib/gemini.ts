@@ -1,7 +1,8 @@
 import type { DashboardResponse } from './types';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY ?? '';
-const GEMINI_MODEL = 'gemini-2.0-flash';
+// gemini-2.0-flash-lite: fastest free tier, 30 RPM / 1,500 RPD / 1M TPM
+const GEMINI_MODEL = 'gemini-2.0-flash-lite';
 
 // Google AI Studio API keys: old format starts with 'AIzaSy', new format starts with 'AQ.'
 // Set VITE_GEMINI_API_KEY in frontend/.env
