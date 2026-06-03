@@ -1,8 +1,8 @@
 {
   "hotspots": {
-    "count": 44,
+    "count": 45,
     "density_per_100_km2": 0.22,
-    "latest_update": "2026-06-03T16:24:12.011234+07:00",
+    "latest_update": "2026-06-03T18:24:10.949412+07:00",
     "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
@@ -657,6 +657,23 @@
       },
       {
         "id": "HS-039",
+        "latitude": 17.5132,
+        "longitude": 98.13667,
+        "district": "ฮอด",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N",
+        "confidence": 75,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-03T14:35:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-040",
         "latitude": 17.9658,
         "longitude": 99.67561,
         "district": "ฮอด",
@@ -673,7 +690,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-040",
+        "id": "HS-041",
         "latitude": 18.06477,
         "longitude": 99.48328,
         "district": "ฮอด",
@@ -690,7 +707,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-041",
+        "id": "HS-042",
         "latitude": 18.87126,
         "longitude": 99.4792,
         "district": "เมืองเชียงใหม่",
@@ -707,7 +724,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-042",
+        "id": "HS-043",
         "latitude": 20.03352,
         "longitude": 98.97157,
         "district": "ฝาง",
@@ -724,7 +741,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-043",
+        "id": "HS-044",
         "latitude": 17.91916,
         "longitude": 99.57384,
         "district": "ฮอด",
@@ -741,7 +758,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-044",
+        "id": "HS-045",
         "latitude": 17.96701,
         "longitude": 99.67591,
         "district": "ฮอด",
@@ -761,15 +778,15 @@
     "source_breakdown": {
       "Royal Forest Department Firemap": 38,
       "GISTDA API Gateway VIIRS 1-day": 0,
-      "NASA FIRMS": 10
+      "NASA FIRMS": 11
     }
   },
   "pm25": {
-    "current_pm25": 18.3,
+    "current_pm25": 18.1,
     "category": "ดี",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-03T16:00:00+07:00",
+    "latest_update": "2026-06-03T18:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -778,9 +795,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 21.0,
+        "pm25": 21.2,
         "trend": "stable",
-        "updated_at": "2026-06-03T16:00:00+07:00"
+        "updated_at": "2026-06-03T18:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -788,19 +805,19 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 15.6,
+        "pm25": 15.1,
         "trend": "stable",
-        "updated_at": "2026-06-03T16:00:00+07:00"
+        "updated_at": "2026-06-03T18:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 8.1,
-    "wind_direction_deg": 193.0,
+    "wind_speed_kmh": 3.3,
+    "wind_direction_deg": 202.0,
     "wind_direction_text": "ใต้",
-    "temperature_c": 34.2,
-    "humidity_percent": 46.0,
-    "latest_update": "2026-06-03T16:24:13.538554+07:00",
+    "temperature_c": 31.2,
+    "humidity_percent": 69.0,
+    "latest_update": "2026-06-03T18:24:12.503942+07:00",
     "source": "Open-Meteo Live API"
   },
   "risk": {
@@ -808,15 +825,15 @@
     "category": "Medium",
     "formula": "min(10, round(min(PM2.5/15,4) + min(hotspot_count/50,4) + wind_factor))",
     "factors": {
-      "pm25_points": 1.22,
-      "hotspot_points": 0.88,
+      "pm25_points": 1.21,
+      "hotspot_points": 0.9,
       "wind_factor": 2,
       "wind_pushes_smoke_to_city": "yes"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 18 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 44 จุด และลมพัดจากทิศ ใต้ ด้วยความเร็ว 8 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 18 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 45 จุด และลมพัดจากทิศ ใต้ ด้วยความเร็ว 3 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
     "source": "rule-based fallback"
   }
 }
