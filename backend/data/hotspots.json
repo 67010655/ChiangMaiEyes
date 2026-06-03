@@ -1,11 +1,113 @@
 {
-  "count": 18,
-  "density_per_100_km2": 0.09,
-  "latest_update": "2026-06-03T00:19:27.933864+07:00",
+  "count": 34,
+  "density_per_100_km2": 0.17,
+  "latest_update": "2026-06-03T12:39:51.966979+07:00",
   "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
   "items": [
     {
       "id": "HS-001",
+      "latitude": 19.7092,
+      "longitude": 98.93546,
+      "district": "เชียงดาว",
+      "subdistrict": "แม่นะ",
+      "landuse_type": "DNP",
+      "landuse_name": "อุทยานแห่งชาติผาแดง",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:43:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-002",
+      "latitude": 18.56838,
+      "longitude": 98.24204,
+      "district": "แม่แจ่ม",
+      "subdistrict": "ปางหินฝน",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:45:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-003",
+      "latitude": 18.82643,
+      "longitude": 98.32932,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:45:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-004",
+      "latitude": 18.828,
+      "longitude": 98.33161,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:45:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-005",
+      "latitude": 18.83092,
+      "longitude": 98.32998,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:45:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-006",
+      "latitude": 18.87348,
+      "longitude": 98.33372,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:45:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-007",
       "latitude": 18.90499,
       "longitude": 98.20406,
       "district": "แม่แจ่ม",
@@ -22,7 +124,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-002",
+      "id": "HS-008",
       "latitude": 18.93446,
       "longitude": 98.91862,
       "district": "แม่ริม",
@@ -39,7 +141,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-003",
+      "id": "HS-009",
       "latitude": 19.70234,
       "longitude": 98.94344,
       "district": "เชียงดาว",
@@ -56,7 +158,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-004",
+      "id": "HS-010",
       "latitude": 19.707,
       "longitude": 98.93938,
       "district": "เชียงดาว",
@@ -73,7 +175,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-005",
+      "id": "HS-011",
       "latitude": 19.71166,
       "longitude": 98.93526,
       "district": "เชียงดาว",
@@ -90,7 +192,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-006",
+      "id": "HS-012",
       "latitude": 20.01798,
       "longitude": 99.32011,
       "district": "แม่อาย",
@@ -102,13 +204,12 @@
       "source": "Royal Forest Department Firemap",
       "detected_at": "2026-06-02T13:33:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap",
-        "NASA FIRMS"
+        "Royal Forest Department Firemap"
       ],
-      "source_count": 2
+      "source_count": 1
     },
     {
-      "id": "HS-007",
+      "id": "HS-013",
       "latitude": 18.78275,
       "longitude": 98.6965,
       "district": "สะเมิง",
@@ -120,13 +221,131 @@
       "source": "Royal Forest Department Firemap",
       "detected_at": "2026-06-02T13:33:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap",
-        "NASA FIRMS"
+        "Royal Forest Department Firemap"
       ],
-      "source_count": 2
+      "source_count": 1
     },
     {
-      "id": "HS-008",
+      "id": "HS-014",
+      "latitude": 19.70877,
+      "longitude": 98.93642,
+      "district": "เชียงดาว",
+      "subdistrict": "แม่นะ",
+      "landuse_type": "DNP",
+      "landuse_name": "อุทยานแห่งชาติผาแดง",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:04:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-015",
+      "latitude": 19.70105,
+      "longitude": 98.94255,
+      "district": "เชียงดาว",
+      "subdistrict": "แม่นะ",
+      "landuse_type": "DNP",
+      "landuse_name": "อุทยานแห่งชาติผาแดง",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:04:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-016",
+      "latitude": 18.87431,
+      "longitude": 98.3357,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:04:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-017",
+      "latitude": 18.82867,
+      "longitude": 98.41029,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:04:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-018",
+      "latitude": 18.8306,
+      "longitude": 98.33199,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:04:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-019",
+      "latitude": 18.72117,
+      "longitude": 98.38103,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:04:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-020",
+      "latitude": 18.56911,
+      "longitude": 98.24352,
+      "district": "แม่แจ่ม",
+      "subdistrict": "ปางหินฝน",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:04:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-021",
       "latitude": 18.82737,
       "longitude": 98.33193,
       "district": "แม่แจ่ม",
@@ -143,7 +362,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-009",
+      "id": "HS-022",
       "latitude": 19.70959,
       "longitude": 98.93642,
       "district": "เชียงดาว",
@@ -160,7 +379,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-010",
+      "id": "HS-023",
       "latitude": 19.69911,
       "longitude": 98.94136,
       "district": "เชียงดาว",
@@ -177,7 +396,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-011",
+      "id": "HS-024",
       "latitude": 19.71231,
       "longitude": 98.93542,
       "district": "เชียงดาว",
@@ -194,7 +413,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-012",
+      "id": "HS-025",
       "latitude": 19.70179,
       "longitude": 98.94025,
       "district": "เชียงดาว",
@@ -211,7 +430,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-013",
+      "id": "HS-026",
       "latitude": 20.07642,
       "longitude": 99.51534,
       "district": "แม่อาย",
@@ -223,13 +442,12 @@
       "source": "Royal Forest Department Firemap",
       "detected_at": "2026-06-02T14:22:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap",
-        "NASA FIRMS"
+        "Royal Forest Department Firemap"
       ],
-      "source_count": 2
+      "source_count": 1
     },
     {
-      "id": "HS-014",
+      "id": "HS-027",
       "latitude": 20.07749,
       "longitude": 99.51459,
       "district": "แม่อาย",
@@ -241,83 +459,133 @@
       "source": "Royal Forest Department Firemap",
       "detected_at": "2026-06-02T14:22:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap",
-        "NASA FIRMS"
-      ],
-      "source_count": 2
-    },
-    {
-      "id": "HS-015",
-      "latitude": 20.07642,
-      "longitude": 99.3443,
-      "district": "แม่อาย",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N20",
-      "confidence": 50,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-02T13:33:00+07:00",
-      "sources": [
-        "NASA FIRMS"
+        "Royal Forest Department Firemap"
       ],
       "source_count": 1
     },
     {
-      "id": "HS-016",
-      "latitude": 20.07974,
-      "longitude": 99.34368,
-      "district": "แม่อาย",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N20",
-      "confidence": 50,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-02T13:33:00+07:00",
+      "id": "HS-028",
+      "latitude": 19.70863,
+      "longitude": 98.93791,
+      "district": "เชียงดาว",
+      "subdistrict": "แม่นะ",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าเชียงดาว",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:11:00+07:00",
       "sources": [
-        "NASA FIRMS"
+        "Royal Forest Department Firemap"
       ],
       "source_count": 1
     },
     {
-      "id": "HS-017",
-      "latitude": 20.23069,
-      "longitude": 99.6479,
-      "district": "ฝาง",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N21",
-      "confidence": 75,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-02T12:42:00+07:00",
+      "id": "HS-029",
+      "latitude": 18.82942,
+      "longitude": 98.33168,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:11:00+07:00",
       "sources": [
-        "NASA FIRMS"
+        "Royal Forest Department Firemap"
       ],
       "source_count": 1
     },
     {
-      "id": "HS-018",
-      "latitude": 17.86456,
-      "longitude": 99.64292,
-      "district": "ฮอด",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N21",
-      "confidence": 75,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-02T14:20:00+07:00",
+      "id": "HS-030",
+      "latitude": 18.83149,
+      "longitude": 98.33106,
+      "district": "แม่แจ่ม",
+      "subdistrict": "แม่นาจร",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่แจ่ม",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T01:11:00+07:00",
       "sources": [
-        "NASA FIRMS"
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-031",
+      "latitude": 19.7098,
+      "longitude": 98.93727,
+      "district": "เชียงดาว",
+      "subdistrict": "แม่นะ",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าเชียงดาว",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:51:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-032",
+      "latitude": 19.7101,
+      "longitude": 98.93715,
+      "district": "เชียงดาว",
+      "subdistrict": "แม่นะ",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าเชียงดาว",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:51:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-033",
+      "latitude": 18.45367,
+      "longitude": 98.16076,
+      "district": "แม่แจ่ม",
+      "subdistrict": "ปางหินฝน",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่ยวมฝั่งซ้าย",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:51:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-034",
+      "latitude": 18.45524,
+      "longitude": 98.16226,
+      "district": "แม่แจ่ม",
+      "subdistrict": "ปางหินฝน",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าแม่ยวมฝั่งซ้าย",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-03T02:51:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
       ],
       "source_count": 1
     }
   ],
   "source_breakdown": {
-    "Royal Forest Department Firemap": 14,
+    "Royal Forest Department Firemap": 34,
     "GISTDA API Gateway VIIRS 1-day": 0,
-    "NASA FIRMS": 8
+    "NASA FIRMS": 0
   }
 }

@@ -15,7 +15,30 @@ $repo = 'C:\Users\User\Desktop\ChiangMaiEyes'
 Set-Location $repo
 
 $log = Join-Path $repo 'scripts\refresh.log'
-function Log($m) { "$([DateTime]::Now.ToString('s'))  $m" | Tee-Object -FilePath $log -Append }
+function Log($m) {
+  $line = "$([DateTime]::Now.ToString('s'))  $m"
+  Write-Output $line
+  $line | Out-File -FilePath $log -Append -Encoding utf8
+}
+
+function Run-PythonRefresh {
+  $previousPythonEncoding = $env:PYTHONIOENCODING
+  try {
+    $env:PYTHONIOENCODING = 'utf-8'
+    cmd.exe /d /c "python backend\scripts\refresh_snapshot.py >> ""$log"" 2>>&1"
+    if ($LASTEXITCODE -ne 0) {
+      throw "refresh_snapshot.py exited $LASTEXITCODE"
+    }
+  }
+  finally {
+    if ($null -eq $previousPythonEncoding) {
+      Remove-Item Env:\PYTHONIOENCODING -ErrorAction SilentlyContinue
+    }
+    else {
+      $env:PYTHONIOENCODING = $previousPythonEncoding
+    }
+  }
+}
 
 $dataFiles = @(
   'backend/data/hotspots.json',
@@ -26,7 +49,7 @@ $dataFiles = @(
 
 try {
   Log 'refresh: start'
-  python backend\scripts\refresh_snapshot.py 2>&1 | Out-File -FilePath $log -Append -Encoding utf8
+  Run-PythonRefresh
 
   # The refresh only rewrites files when the reconciled hotspots changed.
   $changed = git status --porcelain -- $dataFiles

@@ -14,7 +14,7 @@ flowchart LR
   GitHub -->|auto-deploy| Backend
   Backend -. live/fallback .-> Air4Thai[Air4Thai PM2.5]
   Backend -. live/fallback .-> OpenMeteo[Open-Meteo]
-  Backend -. optional free tier .-> Gemini[Gemini API Free Tier]
+  Frontend -. advisor chat .-> Groq[Groq API]
   Vercel --> OSM[OpenStreetMap tiles]
 ```
 

@@ -1,31 +1,18 @@
 import type { DashboardResponse } from './types';
 
 // ─── Provider config ────────────────────────────────────────────────────────
-// Priority: Groq → Gemini (whichever key is set)
-// Groq:   Get free key at https://console.groq.com  (14,400 req/day, no billing)
-// Gemini: Get free key at https://aistudio.google.com/apikey
+// Groq only. Get a free key at https://console.groq.com
 
 const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY ?? '';
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY ?? '';
 
 // Groq key starts with 'gsk_'
 const GROQ_VALID = GROQ_KEY.startsWith('gsk_') && GROQ_KEY.length >= 20;
-// Gemini key: old 'AIzaSy' or new 'AQ.' format
-const GEMINI_VALID =
-  (GEMINI_KEY.startsWith('AIzaSy') || GEMINI_KEY.startsWith('AQ.')) &&
-  GEMINI_KEY.length >= 20;
 
-export const GEMINI_KEY_VALID = GROQ_VALID || GEMINI_VALID;
-
-// Which provider we'll actually use
-const PROVIDER: 'groq' | 'gemini' | 'none' = GROQ_VALID ? 'groq' : GEMINI_VALID ? 'gemini' : 'none';
+export const GROQ_KEY_VALID = GROQ_VALID;
 
 // ─── Endpoints ──────────────────────────────────────────────────────────────
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
-
-const GEMINI_MODEL = 'gemini-2.0-flash-lite';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
 
 // ─── System prompt ──────────────────────────────────────────────────────────
 
@@ -88,7 +75,7 @@ export type ChatMessage = {
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 export async function generateDailyBriefing(dashboard: DashboardResponse): Promise<string> {
-  if (PROVIDER === 'none') return '';
+  if (!GROQ_VALID) return '';
 
   const context = buildDashboardContext(dashboard);
   const prompt = `จากข้อมูล Dashboard ด้านล่าง ช่วยสรุปสถานการณ์วันนี้ให้ประชาชนฟังหน่อย แบบสั้นกระชับ (ไม่เกิน 150 คำ) โดย:
@@ -107,8 +94,8 @@ export async function chatWithAdvisor(
   history: ChatMessage[],
   userMessage: string,
 ): Promise<string> {
-  if (PROVIDER === 'none') {
-    return 'กรุณาตั้งค่า API key ใน frontend/.env\n• Groq (แนะนำ): VITE_GROQ_API_KEY=gsk_...\n• Gemini: VITE_GEMINI_API_KEY=AIzaSy...';
+  if (!GROQ_VALID) {
+    return 'กรุณาตั้งค่า Groq API key ใน frontend/.env\nVITE_GROQ_API_KEY=gsk_...';
   }
 
   const context = buildDashboardContext(dashboard);
@@ -128,17 +115,14 @@ export async function chatWithAdvisor(
   return callAI(messages, 600, systemWithContext);
 }
 
-// ─── Unified AI caller (Groq or Gemini) ─────────────────────────────────────
+// ─── Groq AI caller ─────────────────────────────────────────────────────────
 
 async function callAI(
   messages: Array<{ role: string; content: string }>,
   maxTokens: number,
   systemOverride?: string,
 ): Promise<string> {
-  if (PROVIDER === 'groq') {
-    return callGroq(messages, maxTokens, systemOverride);
-  }
-  return callGemini(messages, maxTokens, systemOverride);
+  return callGroq(messages, maxTokens, systemOverride);
 }
 
 // ─── Groq (OpenAI-compatible) ────────────────────────────────────────────────
@@ -176,43 +160,4 @@ async function callGroq(
 
   const result = await response.json();
   return result.choices?.[0]?.message?.content ?? '';
-}
-
-// ─── Gemini ──────────────────────────────────────────────────────────────────
-
-async function callGemini(
-  messages: Array<{ role: string; content: string }>,
-  maxTokens: number,
-  systemOverride?: string,
-): Promise<string> {
-  // Convert OpenAI-style messages to Gemini format
-  const contents = messages.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }],
-  }));
-
-  const body = {
-    system_instruction: { parts: [{ text: systemOverride ?? SYSTEM_PROMPT }] },
-    contents,
-    generationConfig: {
-      temperature: 0.85,
-      maxOutputTokens: maxTokens,
-      topP: 0.92,
-    },
-  };
-
-  const response = await fetch(GEMINI_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    if (response.status === 429) throw new Error('QUOTA_EXCEEDED');
-    const errText = await response.text().catch(() => '');
-    throw new Error(`Gemini API error ${response.status}: ${errText}`);
-  }
-
-  const result = await response.json();
-  return result.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }

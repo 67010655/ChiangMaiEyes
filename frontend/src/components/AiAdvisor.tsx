@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, Sparkles, X } from 'lucide-react';
 import type { DashboardResponse } from '../lib/types';
-import { chatWithAdvisor, generateDailyBriefing, GEMINI_KEY_VALID, type ChatMessage } from '../lib/gemini';
+import { chatWithAdvisor, generateDailyBriefing, GROQ_KEY_VALID, type ChatMessage } from '../lib/gemini';
 
 type Props = {
   dashboard: DashboardResponse;
@@ -73,7 +73,7 @@ export function AiAdvisor({ dashboard }: Props) {
         {
           role: 'model',
           text: isQuota
-            ? '⚠️ Gemini quota หมด — กรุณาเปิด Billing บน Google Cloud หรือสร้าง API key ใหม่จาก aistudio.google.com/apikey'
+            ? '⚠️ Groq quota หมดชั่วคราว — กรุณารอสักครู่หรือสร้าง Groq API key ใหม่จาก console.groq.com'
             : `ขออภัย เกิดข้อผิดพลาด: ${err instanceof Error ? err.message : 'ไม่ทราบสาเหตุ'}`,
         },
       ]);
@@ -104,14 +104,14 @@ export function AiAdvisor({ dashboard }: Props) {
           <Sparkles size={16} className="ai-briefing__icon" />
           <span className="ai-briefing__title">สรุปสถานการณ์วันนี้ โดยคุณเชียงใหม่</span>
         </div>
-        {!GEMINI_KEY_VALID ? (
+        {!GROQ_KEY_VALID ? (
           <div className="ai-briefing__text ai-briefing__text--fallback">
             ยังไม่ได้ตั้งค่า API key —{' '}
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="ai-briefing__setup-link">
-              ขอ Gemini API key ฟรีที่นี่
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener" className="ai-briefing__setup-link">
+              ขอ Groq API key ฟรีที่นี่
             </a>{' '}
             แล้วใส่ใน <code>frontend/.env</code>
-            <br /><small style={{ opacity: 0.7 }}>รูปแบบ: VITE_GEMINI_API_KEY=AIzaSy...</small>
+            <br /><small style={{ opacity: 0.7 }}>รูปแบบ: VITE_GROQ_API_KEY=gsk_...</small>
           </div>
         ) : briefingLoading ? (
           <div className="ai-briefing__loading">
@@ -122,15 +122,11 @@ export function AiAdvisor({ dashboard }: Props) {
           <div className="ai-briefing__text">{briefing}</div>
         ) : quotaError ? (
           <div className="ai-briefing__text ai-briefing__text--fallback">
-            ⚠️ Gemini API quota หมด — ต้อง{' '}
-            <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener" className="ai-briefing__setup-link">
-              เปิด Billing
+            ⚠️ Groq quota หมดชั่วคราว — กรุณารอสักครู่หรือ{' '}
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener" className="ai-briefing__setup-link">
+              สร้าง Groq key ใหม่
             </a>{' '}
-            บน Google Cloud project หรือ{' '}
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="ai-briefing__setup-link">
-              สร้าง key ใหม่
-            </a>{' '}
-            จาก AI Studio โดยตรง
+            จาก console.groq.com
           </div>
         ) : (
           <div className="ai-briefing__text ai-briefing__text--fallback">

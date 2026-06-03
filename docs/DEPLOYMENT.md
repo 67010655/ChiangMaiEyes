@@ -9,7 +9,7 @@ The backend is deployed as a separate Vercel project named `backend`.
 3. Vercel uses `backend/pyproject.toml` and `backend/api/index.py`.
 4. Set environment variables:
    - `CORS_ORIGINS=https://chiangmaieyes.vercel.app`
-   - `GEMINI_API_KEY` only if using backend Gemini summaries.
+   - `VITE_GROQ_API_KEY` for the frontend advisor.
 
 Current production backend:
 

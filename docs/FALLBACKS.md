@@ -11,7 +11,7 @@ All MVP services must be free or have a free tier suitable for hackathon usage. 
 | Hotspots | GISTDA API Gateway VIIRS 1-day | NASA FIRMS | `backend/data/hotspots.json` |
 | PM2.5 | Air4Thai | OpenAQ | `backend/data/pm25.json` |
 | Weather | TMD Open Data | Open-Meteo | `backend/data/weather.json` |
-| AI summary | Gemini free tier | Rule-based Thai text | `fallback_summary()` |
+| AI advisor | Groq API | No-key setup prompt / rule-based dashboard summary | `frontend/src/lib/gemini.ts`, `fallback_summary()` |
 | Map | OpenStreetMap | Browser cache | Leaflet base map still loads when online |
 
 ## Operational Risks
@@ -20,7 +20,7 @@ All MVP services must be free or have a free tier suitable for hackathon usage. 
 - Render free tier may cold start.
 - Vercel frontend needs CORS configured on backend.
 - OpenStreetMap tile usage should remain lightweight and attribution must stay visible.
-- Gemini can fail, timeout, or exceed free quota; summary must fall back without blocking the dashboard.
+- Groq can fail, timeout, or exceed quota; advisor errors must not block the dashboard.
 
 ## Mitigations
 

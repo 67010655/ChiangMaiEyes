@@ -46,7 +46,7 @@ Categories:
 
 ## GET /api/summary
 
-Returns a Thai summary with maximum 3 sentences. The MVP includes a deterministic fallback summary. Gemini free tier can be enabled from `GEMINI_API_KEY`.
+Returns a Thai summary with maximum 3 sentences. The MVP includes a deterministic fallback summary; the interactive frontend advisor uses Groq via `VITE_GROQ_API_KEY`.
 
 ## GET /api/dashboard
 

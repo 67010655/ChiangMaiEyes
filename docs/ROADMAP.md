@@ -23,7 +23,7 @@
 - Station-level trend sparkline.
 - Daily archive files.
 - Source freshness badges.
-- Better Gemini prompt guardrails and timeout fallback.
+- Better Groq prompt guardrails and timeout fallback.
 
 ## Out of Scope for MVP
 
