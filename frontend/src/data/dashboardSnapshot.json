@@ -1,8 +1,8 @@
 {
   "hotspots": {
-    "count": 34,
-    "density_per_100_km2": 0.17,
-    "latest_update": "2026-06-03T12:39:51.966979+07:00",
+    "count": 44,
+    "density_per_100_km2": 0.22,
+    "latest_update": "2026-06-03T16:24:12.011234+07:00",
     "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
@@ -347,6 +347,60 @@
       },
       {
         "id": "HS-021",
+        "latitude": 18.31678,
+        "longitude": 98.37119,
+        "district": "แม่แจ่ม",
+        "subdistrict": "กองแขก",
+        "landuse_type": "FIO",
+        "landuse_name": "สวนป่าแม่แจ่ม",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-03T13:14:00+07:00",
+        "sources": [
+          "Royal Forest Department Firemap",
+          "NASA FIRMS"
+        ],
+        "source_count": 2
+      },
+      {
+        "id": "HS-022",
+        "latitude": 18.85713,
+        "longitude": 98.84456,
+        "district": "หางดง",
+        "subdistrict": "บ้านปง",
+        "landuse_type": "DNP",
+        "landuse_name": "อุทยานแห่งชาติดอยสุเทพ-ปุย",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-03T13:14:00+07:00",
+        "sources": [
+          "Royal Forest Department Firemap",
+          "NASA FIRMS"
+        ],
+        "source_count": 2
+      },
+      {
+        "id": "HS-023",
+        "latitude": 19.19871,
+        "longitude": 98.84843,
+        "district": "แม่แตง",
+        "subdistrict": "กื้ดช้าง",
+        "landuse_type": "NRF",
+        "landuse_name": "ป่าแม่แตง",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-03T13:14:00+07:00",
+        "sources": [
+          "Royal Forest Department Firemap",
+          "NASA FIRMS"
+        ],
+        "source_count": 2
+      },
+      {
+        "id": "HS-024",
         "latitude": 18.82737,
         "longitude": 98.33193,
         "district": "แม่แจ่ม",
@@ -363,7 +417,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-022",
+        "id": "HS-025",
         "latitude": 19.70959,
         "longitude": 98.93642,
         "district": "เชียงดาว",
@@ -380,7 +434,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-023",
+        "id": "HS-026",
         "latitude": 19.69911,
         "longitude": 98.94136,
         "district": "เชียงดาว",
@@ -397,7 +451,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-024",
+        "id": "HS-027",
         "latitude": 19.71231,
         "longitude": 98.93542,
         "district": "เชียงดาว",
@@ -414,7 +468,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-025",
+        "id": "HS-028",
         "latitude": 19.70179,
         "longitude": 98.94025,
         "district": "เชียงดาว",
@@ -431,7 +485,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-026",
+        "id": "HS-029",
         "latitude": 20.07642,
         "longitude": 99.51534,
         "district": "แม่อาย",
@@ -448,7 +502,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-027",
+        "id": "HS-030",
         "latitude": 20.07749,
         "longitude": 99.51459,
         "district": "แม่อาย",
@@ -465,7 +519,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-028",
+        "id": "HS-031",
         "latitude": 19.70863,
         "longitude": 98.93791,
         "district": "เชียงดาว",
@@ -482,7 +536,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-029",
+        "id": "HS-032",
         "latitude": 18.82942,
         "longitude": 98.33168,
         "district": "แม่แจ่ม",
@@ -499,7 +553,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-030",
+        "id": "HS-033",
         "latitude": 18.83149,
         "longitude": 98.33106,
         "district": "แม่แจ่ม",
@@ -516,7 +570,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-031",
+        "id": "HS-034",
         "latitude": 19.7098,
         "longitude": 98.93727,
         "district": "เชียงดาว",
@@ -533,7 +587,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-032",
+        "id": "HS-035",
         "latitude": 19.7101,
         "longitude": 98.93715,
         "district": "เชียงดาว",
@@ -550,7 +604,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-033",
+        "id": "HS-036",
         "latitude": 18.45367,
         "longitude": 98.16076,
         "district": "แม่แจ่ม",
@@ -567,7 +621,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-034",
+        "id": "HS-037",
         "latitude": 18.45524,
         "longitude": 98.16226,
         "district": "แม่แจ่ม",
@@ -582,20 +636,140 @@
           "Royal Forest Department Firemap"
         ],
         "source_count": 1
+      },
+      {
+        "id": "HS-038",
+        "latitude": 18.11926,
+        "longitude": 98.63142,
+        "district": "ฮอด",
+        "subdistrict": "บ้านตาล",
+        "landuse_type": "DOL",
+        "landuse_name": "กระทรวงการคลัง(ใช้ในราชการกรมชลประทาน โครงการเขื่อนภูมิพล อ่างเก็บน้ำเขื่อนภูมิพล)",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-03T14:01:00+07:00",
+        "sources": [
+          "Royal Forest Department Firemap",
+          "NASA FIRMS"
+        ],
+        "source_count": 2
+      },
+      {
+        "id": "HS-039",
+        "latitude": 17.9658,
+        "longitude": 99.67561,
+        "district": "ฮอด",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N20",
+        "confidence": 75,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-03T13:14:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-040",
+        "latitude": 18.06477,
+        "longitude": 99.48328,
+        "district": "ฮอด",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N20",
+        "confidence": 75,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-03T13:14:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-041",
+        "latitude": 18.87126,
+        "longitude": 99.4792,
+        "district": "เมืองเชียงใหม่",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N20",
+        "confidence": 75,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-03T13:14:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-042",
+        "latitude": 20.03352,
+        "longitude": 98.97157,
+        "district": "ฝาง",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N20",
+        "confidence": 50,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-03T13:16:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-043",
+        "latitude": 17.91916,
+        "longitude": 99.57384,
+        "district": "ฮอด",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N21",
+        "confidence": 75,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-03T14:01:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
+      },
+      {
+        "id": "HS-044",
+        "latitude": 17.96701,
+        "longitude": 99.67591,
+        "district": "ฮอด",
+        "subdistrict": null,
+        "landuse_type": null,
+        "landuse_name": null,
+        "satellite": "N21",
+        "confidence": 75,
+        "source": "NASA FIRMS",
+        "detected_at": "2026-06-03T14:01:00+07:00",
+        "sources": [
+          "NASA FIRMS"
+        ],
+        "source_count": 1
       }
     ],
     "source_breakdown": {
-      "Royal Forest Department Firemap": 34,
+      "Royal Forest Department Firemap": 38,
       "GISTDA API Gateway VIIRS 1-day": 0,
-      "NASA FIRMS": 0
+      "NASA FIRMS": 10
     }
   },
   "pm25": {
-    "current_pm25": 17.9,
+    "current_pm25": 18.3,
     "category": "ดี",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-03T12:00:00+07:00",
+    "latest_update": "2026-06-03T16:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -604,9 +778,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 20.9,
+        "pm25": 21.0,
         "trend": "stable",
-        "updated_at": "2026-06-03T12:00:00+07:00"
+        "updated_at": "2026-06-03T16:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -614,35 +788,35 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 15.0,
+        "pm25": 15.6,
         "trend": "stable",
-        "updated_at": "2026-06-03T12:00:00+07:00"
+        "updated_at": "2026-06-03T16:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 8.2,
-    "wind_direction_deg": 171.0,
+    "wind_speed_kmh": 8.1,
+    "wind_direction_deg": 193.0,
     "wind_direction_text": "ใต้",
-    "temperature_c": 33.4,
-    "humidity_percent": 56.0,
-    "latest_update": "2026-06-03T12:39:53.400117+07:00",
+    "temperature_c": 34.2,
+    "humidity_percent": 46.0,
+    "latest_update": "2026-06-03T16:24:13.538554+07:00",
     "source": "Open-Meteo Live API"
   },
   "risk": {
-    "score": 2,
-    "category": "Low",
+    "score": 4,
+    "category": "Medium",
     "formula": "min(10, round(min(PM2.5/15,4) + min(hotspot_count/50,4) + wind_factor))",
     "factors": {
-      "pm25_points": 1.19,
-      "hotspot_points": 0.68,
-      "wind_factor": 0,
-      "wind_pushes_smoke_to_city": "no"
+      "pm25_points": 1.22,
+      "hotspot_points": 0.88,
+      "wind_factor": 2,
+      "wind_pushes_smoke_to_city": "yes"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 18 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 34 จุด และลมพัดจากทิศ ใต้ ด้วยความเร็ว 8 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 2/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 18 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 44 จุด และลมพัดจากทิศ ใต้ ด้วยความเร็ว 8 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
     "source": "rule-based fallback"
   }
 }
