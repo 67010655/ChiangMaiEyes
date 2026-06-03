@@ -1,9 +1,9 @@
 {
-  "wind_speed_kmh": 3.3,
-  "wind_direction_deg": 202.0,
-  "wind_direction_text": "ใต้",
-  "temperature_c": 31.2,
-  "humidity_percent": 69.0,
-  "latest_update": "2026-06-03T18:24:12.503942+07:00",
+  "wind_speed_kmh": 3.2,
+  "wind_direction_deg": 218.0,
+  "wind_direction_text": "ตะวันตกเฉียงใต้",
+  "temperature_c": 27.1,
+  "humidity_percent": 87.0,
+  "latest_update": "2026-06-04T00:24:10.770771+07:00",
   "source": "Open-Meteo Live API"
 }

@@ -1,8 +1,8 @@
 {
   "hotspots": {
-    "count": 45,
-    "density_per_100_km2": 0.22,
-    "latest_update": "2026-06-03T18:24:10.949412+07:00",
+    "count": 31,
+    "density_per_100_km2": 0.15,
+    "latest_update": "2026-06-04T00:24:08.556536+07:00",
     "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
@@ -109,125 +109,6 @@
       },
       {
         "id": "HS-007",
-        "latitude": 18.90499,
-        "longitude": 98.20406,
-        "district": "แม่แจ่ม",
-        "subdistrict": "แม่นาจร",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าแม่แจ่ม",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T02:21:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-008",
-        "latitude": 18.93446,
-        "longitude": 98.91862,
-        "district": "แม่ริม",
-        "subdistrict": "แม่แรม",
-        "landuse_type": "KTC",
-        "landuse_name": "ป่าแม่ริม",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T02:21:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-009",
-        "latitude": 19.70234,
-        "longitude": 98.94344,
-        "district": "เชียงดาว",
-        "subdistrict": "แม่นะ",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าเชียงดาว",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T02:21:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-010",
-        "latitude": 19.707,
-        "longitude": 98.93938,
-        "district": "เชียงดาว",
-        "subdistrict": "แม่นะ",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าเชียงดาว",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T02:21:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-011",
-        "latitude": 19.71166,
-        "longitude": 98.93526,
-        "district": "เชียงดาว",
-        "subdistrict": "แม่นะ",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าเชียงดาว",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T02:21:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-012",
-        "latitude": 20.01798,
-        "longitude": 99.32011,
-        "district": "แม่อาย",
-        "subdistrict": "แม่อาย",
-        "landuse_type": "OTHER",
-        "landuse_name": "พื้นที่อื่น",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 75,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T13:33:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-013",
-        "latitude": 18.78275,
-        "longitude": 98.6965,
-        "district": "สะเมิง",
-        "subdistrict": "สะเมิงใต้",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าแม่ขานและป่าแม่วาง",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T13:33:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-014",
         "latitude": 19.70877,
         "longitude": 98.93642,
         "district": "เชียงดาว",
@@ -244,7 +125,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-015",
+        "id": "HS-008",
         "latitude": 19.70105,
         "longitude": 98.94255,
         "district": "เชียงดาว",
@@ -261,7 +142,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-016",
+        "id": "HS-009",
         "latitude": 18.87431,
         "longitude": 98.3357,
         "district": "แม่แจ่ม",
@@ -278,7 +159,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-017",
+        "id": "HS-010",
         "latitude": 18.82867,
         "longitude": 98.41029,
         "district": "แม่แจ่ม",
@@ -295,7 +176,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-018",
+        "id": "HS-011",
         "latitude": 18.8306,
         "longitude": 98.33199,
         "district": "แม่แจ่ม",
@@ -312,7 +193,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-019",
+        "id": "HS-012",
         "latitude": 18.72117,
         "longitude": 98.38103,
         "district": "แม่แจ่ม",
@@ -329,7 +210,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-020",
+        "id": "HS-013",
         "latitude": 18.56911,
         "longitude": 98.24352,
         "district": "แม่แจ่ม",
@@ -346,7 +227,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-021",
+        "id": "HS-014",
         "latitude": 18.31678,
         "longitude": 98.37119,
         "district": "แม่แจ่ม",
@@ -364,7 +245,7 @@
         "source_count": 2
       },
       {
-        "id": "HS-022",
+        "id": "HS-015",
         "latitude": 18.85713,
         "longitude": 98.84456,
         "district": "หางดง",
@@ -382,7 +263,7 @@
         "source_count": 2
       },
       {
-        "id": "HS-023",
+        "id": "HS-016",
         "latitude": 19.19871,
         "longitude": 98.84843,
         "district": "แม่แตง",
@@ -400,126 +281,7 @@
         "source_count": 2
       },
       {
-        "id": "HS-024",
-        "latitude": 18.82737,
-        "longitude": 98.33193,
-        "district": "แม่แจ่ม",
-        "subdistrict": "แม่นาจร",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าแม่แจ่ม",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T01:30:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-025",
-        "latitude": 19.70959,
-        "longitude": 98.93642,
-        "district": "เชียงดาว",
-        "subdistrict": "แม่นะ",
-        "landuse_type": "DNP",
-        "landuse_name": "อุทยานแห่งชาติผาแดง",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T01:30:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-026",
-        "latitude": 19.69911,
-        "longitude": 98.94136,
-        "district": "เชียงดาว",
-        "subdistrict": "แม่นะ",
-        "landuse_type": "DNP",
-        "landuse_name": "อุทยานแห่งชาติผาแดง",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T01:30:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-027",
-        "latitude": 19.71231,
-        "longitude": 98.93542,
-        "district": "เชียงดาว",
-        "subdistrict": "แม่นะ",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าเชียงดาว",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T01:30:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-028",
-        "latitude": 19.70179,
-        "longitude": 98.94025,
-        "district": "เชียงดาว",
-        "subdistrict": "แม่นะ",
-        "landuse_type": "DNP",
-        "landuse_name": "อุทยานแห่งชาติผาแดง",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T01:30:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-029",
-        "latitude": 20.07642,
-        "longitude": 99.51534,
-        "district": "แม่อาย",
-        "subdistrict": "ท่าตอน",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าดอยบ่อ",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T14:22:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-030",
-        "latitude": 20.07749,
-        "longitude": 99.51459,
-        "district": "แม่อาย",
-        "subdistrict": "ท่าตอน",
-        "landuse_type": "NRF",
-        "landuse_name": "ป่าดอยบ่อ",
-        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-        "confidence": 90,
-        "source": "Royal Forest Department Firemap",
-        "detected_at": "2026-06-02T14:22:00+07:00",
-        "sources": [
-          "Royal Forest Department Firemap"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-031",
+        "id": "HS-017",
         "latitude": 19.70863,
         "longitude": 98.93791,
         "district": "เชียงดาว",
@@ -536,7 +298,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-032",
+        "id": "HS-018",
         "latitude": 18.82942,
         "longitude": 98.33168,
         "district": "แม่แจ่ม",
@@ -553,7 +315,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-033",
+        "id": "HS-019",
         "latitude": 18.83149,
         "longitude": 98.33106,
         "district": "แม่แจ่ม",
@@ -570,7 +332,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-034",
+        "id": "HS-020",
         "latitude": 19.7098,
         "longitude": 98.93727,
         "district": "เชียงดาว",
@@ -587,7 +349,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-035",
+        "id": "HS-021",
         "latitude": 19.7101,
         "longitude": 98.93715,
         "district": "เชียงดาว",
@@ -604,7 +366,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-036",
+        "id": "HS-022",
         "latitude": 18.45367,
         "longitude": 98.16076,
         "district": "แม่แจ่ม",
@@ -621,7 +383,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-037",
+        "id": "HS-023",
         "latitude": 18.45524,
         "longitude": 98.16226,
         "district": "แม่แจ่ม",
@@ -638,7 +400,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-038",
+        "id": "HS-024",
         "latitude": 18.11926,
         "longitude": 98.63142,
         "district": "ฮอด",
@@ -656,7 +418,7 @@
         "source_count": 2
       },
       {
-        "id": "HS-039",
+        "id": "HS-025",
         "latitude": 17.5132,
         "longitude": 98.13667,
         "district": "ฮอด",
@@ -673,7 +435,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-040",
+        "id": "HS-026",
         "latitude": 17.9658,
         "longitude": 99.67561,
         "district": "ฮอด",
@@ -690,7 +452,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-041",
+        "id": "HS-027",
         "latitude": 18.06477,
         "longitude": 99.48328,
         "district": "ฮอด",
@@ -707,7 +469,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-042",
+        "id": "HS-028",
         "latitude": 18.87126,
         "longitude": 99.4792,
         "district": "เมืองเชียงใหม่",
@@ -724,7 +486,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-043",
+        "id": "HS-029",
         "latitude": 20.03352,
         "longitude": 98.97157,
         "district": "ฝาง",
@@ -741,7 +503,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-044",
+        "id": "HS-030",
         "latitude": 17.91916,
         "longitude": 99.57384,
         "district": "ฮอด",
@@ -758,7 +520,7 @@
         "source_count": 1
       },
       {
-        "id": "HS-045",
+        "id": "HS-031",
         "latitude": 17.96701,
         "longitude": 99.67591,
         "district": "ฮอด",
@@ -776,17 +538,17 @@
       }
     ],
     "source_breakdown": {
-      "Royal Forest Department Firemap": 38,
+      "Royal Forest Department Firemap": 24,
       "GISTDA API Gateway VIIRS 1-day": 0,
       "NASA FIRMS": 11
     }
   },
   "pm25": {
-    "current_pm25": 18.1,
+    "current_pm25": 17.1,
     "category": "ดี",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-03T18:00:00+07:00",
+    "latest_update": "2026-06-04T00:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -797,7 +559,7 @@
         "longitude": 98.96978,
         "pm25": 21.2,
         "trend": "stable",
-        "updated_at": "2026-06-03T18:00:00+07:00"
+        "updated_at": "2026-06-04T00:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -805,19 +567,19 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 15.1,
+        "pm25": 13.0,
         "trend": "stable",
-        "updated_at": "2026-06-03T18:00:00+07:00"
+        "updated_at": "2026-06-04T00:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 3.3,
-    "wind_direction_deg": 202.0,
-    "wind_direction_text": "ใต้",
-    "temperature_c": 31.2,
-    "humidity_percent": 69.0,
-    "latest_update": "2026-06-03T18:24:12.503942+07:00",
+    "wind_speed_kmh": 3.2,
+    "wind_direction_deg": 218.0,
+    "wind_direction_text": "ตะวันตกเฉียงใต้",
+    "temperature_c": 27.1,
+    "humidity_percent": 87.0,
+    "latest_update": "2026-06-04T00:24:10.770771+07:00",
     "source": "Open-Meteo Live API"
   },
   "risk": {
@@ -825,15 +587,15 @@
     "category": "Medium",
     "formula": "min(10, round(min(PM2.5/15,4) + min(hotspot_count/50,4) + wind_factor))",
     "factors": {
-      "pm25_points": 1.21,
-      "hotspot_points": 0.9,
+      "pm25_points": 1.14,
+      "hotspot_points": 0.62,
       "wind_factor": 2,
       "wind_pushes_smoke_to_city": "yes"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 18 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 45 จุด และลมพัดจากทิศ ใต้ ด้วยความเร็ว 3 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 17 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 31 จุด และลมพัดจากทิศ ตะวันตกเฉียงใต้ ด้วยความเร็ว 3 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
     "source": "rule-based fallback"
   }
 }
