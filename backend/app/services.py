@@ -19,10 +19,15 @@ from app.models import (
 )
 from app.providers.weather_provider import fetch_live_weather
 from app.providers.pm25_provider import fetch_live_pm25
-from app.providers.hotspot_provider import fetch_live_hotspots
+from app.providers.hotspot_provider import FOREST_FIREMAP_SOURCE, fetch_live_hotspots
 from app.text import repair_thai_mojibake_tree
 
 logger = logging.getLogger(__name__)
+
+# Snapshot files baked into the deployment. Always readable (even on a
+# read-only serverless FS), so they are the last-resort source when neither
+# live providers nor a writable cache can supply data.
+_BUNDLED_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 # ---------------------------------------------------------------------------
 # Simple TTL cache to avoid hammering upstream APIs on every request.
@@ -106,6 +111,20 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
     )
 
 
+def _serve_hotspot_snapshot(settings: Settings) -> HotspotResponse:
+    """Serve the most recent hotspot snapshot, preferring a writable cache
+    (refreshed from Thailand) and falling back to the bundled deploy file so a
+    read-only or empty /tmp can never turn this into a 500."""
+    for directory in (settings.cache_dir, _BUNDLED_DATA_DIR):
+        try:
+            snapshot = HotspotResponse(**read_json(directory, "hotspots.json"))
+            _set_cached("hotspots", snapshot)
+            return snapshot
+        except Exception as exc:  # noqa: BLE001 — try the next location
+            logger.debug("Hotspot snapshot unavailable in %s: %s", directory, exc)
+    raise RuntimeError("No hotspot snapshot available")
+
+
 def get_hotspots(settings: Settings) -> HotspotResponse:
     cached = _get_cached("hotspots")
     if cached is not None:
@@ -113,13 +132,22 @@ def get_hotspots(settings: Settings) -> HotspotResponse:
     try:
         response = fetch_live_hotspots(settings.gistda_api_key, settings.nasa_firms_map_key)
         response = HotspotResponse(**repair_thai_mojibake_tree(response.model_dump()))
+        # RFD (Royal Forest Department) is the authoritative, full-coverage source.
+        # Infrastructure it blocks (e.g. Vercel's datacenter) only gets partial live
+        # data from NASA/GISTDA, which under-counts. When RFD didn't contribute,
+        # serve the Thailand-refreshed snapshot — it still carries RFD's complete
+        # in-province picture — instead of the thin live result.
+        if FOREST_FIREMAP_SOURCE not in (response.source_breakdown or {}):
+            logger.info(
+                "RFD absent from live hotspots — serving snapshot instead of partial live data"
+            )
+            return _serve_hotspot_snapshot(settings)
         write_json(settings.cache_dir, "hotspots.json", response.model_dump())
         _set_cached("hotspots", response)
         return response
     except Exception as e:
-        logger.warning("Failed to fetch live hotspots, falling back to cached file: %s", e)
-        data = read_json(settings.cache_dir, "hotspots.json")
-        return HotspotResponse(**data)
+        logger.warning("Failed to fetch live hotspots, falling back to snapshot: %s", e)
+        return _serve_hotspot_snapshot(settings)
 
 
 def get_pm25(settings: Settings) -> Pm25Response:
