@@ -3511,6 +3511,13 @@ button {
   min-width: 0;
 }
 
+/* Personal-checker + hotspot mini-card: 2-up only when there's real room,
+   otherwise stack so the checker's title/GPS button don't overflow a narrow
+   scroll column. */
+.dashboard-secondary .metrics-bento-grid {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
 .dashboard-risk-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
