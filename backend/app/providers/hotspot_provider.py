@@ -283,6 +283,49 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
 
     return hotspots
 
+def fetch_hotspot_history(map_key: str, days: int = 5) -> list[tuple[str, int]]:
+    """Daily in-province hotspot counts for the last ``days`` days from NASA
+    VIIRS, returned oldest→newest as (YYYY-MM-DD, count) with missing days
+    zero-filled. NASA is reachable from anywhere (unlike RFD), so this gives a
+    consistent historical trend on both the user's machine and Vercel.
+    """
+    ring = _province_ring()
+    bbox = "97.25,17.35,99.68,20.28"
+    span = max(1, min(days, 5))  # NASA Area API day range is capped at 5
+    seen: set[tuple[float, float, str]] = set()
+    per_day: dict[str, int] = {}
+
+    for src in NASA_VIIRS_SOURCES:
+        url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{span}"
+        try:
+            response = httpx.get(url, timeout=20.0)
+            response.raise_for_status()
+        except Exception as ex:  # noqa: BLE001 — one satellite failing is fine
+            logger.warning("NASA FIRMS history %s fetch failed: %s", src, ex)
+            continue
+        reader = csv.DictReader(response.content.decode("utf-8").splitlines())
+        for row in reader:
+            try:
+                lat = float(row["latitude"])
+                lon = float(row["longitude"])
+                if ring and not _point_in_ring(lon, lat, ring):
+                    continue
+                day = _nasa_detected_at(row.get("acq_date"), row.get("acq_time"))[:10]
+                key = (round(lat, 3), round(lon, 3), day)
+                if key in seen:
+                    continue
+                seen.add(key)
+                per_day[day] = per_day.get(day, 0) + 1
+            except Exception:  # noqa: BLE001 — skip malformed rows
+                continue
+
+    today = datetime.datetime.now(BANGKOK_TZ).date()
+    return [
+        ((today - datetime.timedelta(days=i)).isoformat(), per_day.get((today - datetime.timedelta(days=i)).isoformat(), 0))
+        for i in range(span - 1, -1, -1)
+    ]
+
+
 def merge_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
     merged: list[Hotspot] = []
     seen: set[tuple[float, float, str]] = set()

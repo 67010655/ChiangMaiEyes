@@ -9,13 +9,23 @@ from app.models import (
     AdvisorResponse,
     DataStatusResponse,
     DashboardResponse,
+    HotspotHistoryResponse,
     HotspotResponse,
     Pm25Response,
     RiskResponse,
     SummaryResponse,
     WeatherResponse,
 )
-from app.services import calculate_risk, get_dashboard, get_data_status, get_hotspots, get_pm25, get_summary, get_weather
+from app.services import (
+    calculate_risk,
+    get_dashboard,
+    get_data_status,
+    get_hotspot_history,
+    get_hotspots,
+    get_pm25,
+    get_summary,
+    get_weather,
+)
 
 app = FastAPI(title="ChiangMaiEyes API", version="0.1.0")
 
@@ -37,6 +47,11 @@ def health() -> dict[str, str]:
 @app.get("/api/hotspots", response_model=HotspotResponse)
 def hotspots(settings: Settings = Depends(get_settings)) -> HotspotResponse:
     return get_hotspots(settings)
+
+
+@app.get("/api/hotspots/history", response_model=HotspotHistoryResponse)
+def hotspots_history(settings: Settings = Depends(get_settings)) -> HotspotHistoryResponse:
+    return get_hotspot_history(settings)
 
 
 @app.get("/api/pm25", response_model=Pm25Response)

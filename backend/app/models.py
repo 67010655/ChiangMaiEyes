@@ -32,6 +32,18 @@ class HotspotResponse(BaseModel):
     source_breakdown: dict[str, int] = Field(default_factory=dict)
 
 
+class HotspotHistoryDay(BaseModel):
+    date: str  # ISO date YYYY-MM-DD (Bangkok day)
+    count: int
+
+
+class HotspotHistoryResponse(BaseModel):
+    # In-province daily hotspot counts, oldest→newest, for the authority trend.
+    days: list[HotspotHistoryDay] = Field(default_factory=list)
+    source: str
+    latest_update: str
+
+
 class Pm25Station(BaseModel):
     id: str
     name: str

@@ -23,6 +23,17 @@ export type HotspotResponse = {
   source_breakdown?: Record<string, number>;
 };
 
+export type HotspotHistoryDay = {
+  date: string;
+  count: number;
+};
+
+export type HotspotHistoryResponse = {
+  days: HotspotHistoryDay[];
+  source: string;
+  latest_update: string;
+};
+
 export type Pm25Station = {
   id: string;
   name: string;

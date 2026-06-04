@@ -11,6 +11,8 @@ from app.config import Settings
 from app.models import (
     DataStatusResponse,
     DashboardResponse,
+    HotspotHistoryDay,
+    HotspotHistoryResponse,
     HotspotResponse,
     Pm25Response,
     RiskResponse,
@@ -19,7 +21,11 @@ from app.models import (
 )
 from app.providers.weather_provider import fetch_live_weather
 from app.providers.pm25_provider import fetch_live_pm25
-from app.providers.hotspot_provider import FOREST_FIREMAP_SOURCE, fetch_live_hotspots
+from app.providers.hotspot_provider import (
+    FOREST_FIREMAP_SOURCE,
+    fetch_hotspot_history,
+    fetch_live_hotspots,
+)
 from app.text import repair_thai_mojibake_tree
 
 logger = logging.getLogger(__name__)
@@ -148,6 +154,33 @@ def get_hotspots(settings: Settings) -> HotspotResponse:
     except Exception as e:
         logger.warning("Failed to fetch live hotspots, falling back to snapshot: %s", e)
         return _serve_hotspot_snapshot(settings)
+
+
+def get_hotspot_history(settings: Settings) -> HotspotHistoryResponse:
+    """7-day in-province hotspot trend from NASA VIIRS for the authority view.
+    Best-effort: returns an empty series rather than erroring if NASA is
+    unreachable or no key is configured."""
+    cached = _get_cached("hotspot_history")
+    if cached is not None:
+        return cached
+
+    days: list[HotspotHistoryDay] = []
+    if settings.nasa_firms_map_key:
+        try:
+            raw = fetch_hotspot_history(settings.nasa_firms_map_key, 5)
+            days = [HotspotHistoryDay(date=d, count=c) for d, c in raw]
+        except Exception as e:  # noqa: BLE001 — history is non-critical
+            logger.warning("Failed to fetch hotspot history: %s", e)
+
+    response = HotspotHistoryResponse(
+        days=days,
+        source="NASA VIIRS (SNPP/NOAA-20/NOAA-21)",
+        latest_update=datetime.now().isoformat(),
+    )
+    # Only cache a real series, so a transient NASA failure is retried next call.
+    if days:
+        _set_cached("hotspot_history", response)
+    return response
 
 
 def get_pm25(settings: Settings) -> Pm25Response:

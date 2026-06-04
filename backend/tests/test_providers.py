@@ -5,11 +5,14 @@ import pytest
 from app.providers.weather_provider import fetch_live_weather, get_wind_direction_text
 from app.providers.pm25_provider import fetch_live_pm25, get_pm25_category_and_color
 from app.providers.hotspot_provider import (
+    BANGKOK_TZ,
+    fetch_hotspot_history,
     fetch_live_hotspots,
     estimate_district,
     fetch_forest_firemap_hotspots,
     reconcile_hotspots,
 )
+import datetime
 from app.models import Hotspot
 
 
@@ -233,6 +236,33 @@ def test_fetch_forest_firemap_hotspots_success(mock_get):
     assert hotspots[0].satellite == "SNPP/NOAA-20/NOAA-21 VIIRS"
     assert hotspots[0].confidence == 90
     assert hotspots[0].detected_at == "2026-06-01T02:42:00+07:00"
+
+@patch("httpx.get")
+def test_fetch_hotspot_history_buckets_clips_and_zero_fills(mock_get):
+    today = datetime.datetime.now(BANGKOK_TZ).date().isoformat()
+    # Two NASA rows for the same CM fire (round to the same cell → deduped) plus a
+    # Bangkok row that must be clipped out by the province polygon.
+    csv1 = (
+        "latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight\n"
+        f"18.9160,98.9390,320,1,1,{today},0645,N,V,n,1,300,10,D\n"
+        f"18.9161,98.9390,320,1,1,{today},0700,N,V,n,1,300,10,D\n"
+        f"13.7800,100.5400,320,1,1,{today},0645,N,V,n,1,300,10,D\n"
+    ).encode()
+    empty = b"latitude,longitude,acq_date,acq_time\n"
+    r1, r2, r3 = MagicMock(), MagicMock(), MagicMock()
+    r1.content, r2.content, r3.content = csv1, empty, empty
+    mock_get.side_effect = [r1, r2, r3]
+
+    days = fetch_hotspot_history("nasa_key", days=5)
+
+    assert len(days) == 5  # 5-day window, oldest→newest
+    dates = [d for d, _ in days]
+    assert dates == sorted(dates)
+    assert days[-1][0] == today
+    counts = dict(days)
+    assert counts[today] == 1  # dup merged, Bangkok point clipped out
+    assert sum(c for _, c in days) == 1
+
 
 @patch("httpx.get")
 def test_fetch_live_hotspots_gistda_success(mock_get):
