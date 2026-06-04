@@ -1,7 +1,7 @@
 {
-  "count": 26,
+  "count": 27,
   "density_per_100_km2": 0.13,
-  "latest_update": "2026-06-04T16:53:01.409559+07:00",
+  "latest_update": "2026-06-04T17:24:09.191371+07:00",
   "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
   "items": [
     {
@@ -92,6 +92,24 @@
     },
     {
       "id": "HS-006",
+      "latitude": 19.16259,
+      "longitude": 98.93114,
+      "district": "แม่แตง",
+      "subdistrict": "แม่แตง",
+      "landuse_type": "TD",
+      "landuse_name": "กรมพัฒนาที่ดินใช้ประโยชน์ทั้งหมด",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-04T14:18:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap",
+        "NASA FIRMS"
+      ],
+      "source_count": 2
+    },
+    {
+      "id": "HS-007",
       "latitude": 18.82747,
       "longitude": 98.3338,
       "district": "แม่แจ่ม",
@@ -108,7 +126,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-007",
+      "id": "HS-008",
       "latitude": 18.82795,
       "longitude": 98.32994,
       "district": "แม่แจ่ม",
@@ -125,7 +143,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-008",
+      "id": "HS-009",
       "latitude": 18.45603,
       "longitude": 98.1637,
       "district": "แม่แจ่ม",
@@ -142,7 +160,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-009",
+      "id": "HS-010",
       "latitude": 18.48517,
       "longitude": 98.35625,
       "district": "แม่แจ่ม",
@@ -159,7 +177,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-010",
+      "id": "HS-011",
       "latitude": 18.48565,
       "longitude": 98.3526,
       "district": "แม่แจ่ม",
@@ -176,7 +194,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-011",
+      "id": "HS-012",
       "latitude": 18.73541,
       "longitude": 98.24349,
       "district": "แม่แจ่ม",
@@ -193,7 +211,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-012",
+      "id": "HS-013",
       "latitude": 18.82686,
       "longitude": 98.32864,
       "district": "แม่แจ่ม",
@@ -210,7 +228,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-013",
+      "id": "HS-014",
       "latitude": 18.45708,
       "longitude": 98.16183,
       "district": "แม่แจ่ม",
@@ -227,7 +245,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-014",
+      "id": "HS-015",
       "latitude": 18.45472,
       "longitude": 98.15945,
       "district": "แม่แจ่ม",
@@ -244,7 +262,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-015",
+      "id": "HS-016",
       "latitude": 18.78291,
       "longitude": 99.03358,
       "district": "เมืองเชียงใหม่",
@@ -262,7 +280,7 @@
       "source_count": 2
     },
     {
-      "id": "HS-016",
+      "id": "HS-017",
       "latitude": 18.87581,
       "longitude": 98.99537,
       "district": "แม่ริม",
@@ -280,7 +298,7 @@
       "source_count": 2
     },
     {
-      "id": "HS-017",
+      "id": "HS-018",
       "latitude": 18.98664,
       "longitude": 98.89323,
       "district": "แม่ริม",
@@ -298,7 +316,7 @@
       "source_count": 2
     },
     {
-      "id": "HS-018",
+      "id": "HS-019",
       "latitude": 19.16201,
       "longitude": 98.93414,
       "district": "แม่แตง",
@@ -316,7 +334,7 @@
       "source_count": 2
     },
     {
-      "id": "HS-019",
+      "id": "HS-020",
       "latitude": 17.75743,
       "longitude": 98.83841,
       "district": "ฮอด",
@@ -333,7 +351,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-020",
+      "id": "HS-021",
       "latitude": 17.68617,
       "longitude": 98.98902,
       "district": "ฮอด",
@@ -350,7 +368,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-021",
+      "id": "HS-022",
       "latitude": 17.74534,
       "longitude": 99.53574,
       "district": "ฮอด",
@@ -367,7 +385,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-022",
+      "id": "HS-023",
       "latitude": 17.86299,
       "longitude": 99.50218,
       "district": "ฮอด",
@@ -384,7 +402,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-023",
+      "id": "HS-024",
       "latitude": 18.06477,
       "longitude": 99.30064,
       "district": "ฮอด",
@@ -401,7 +419,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-024",
+      "id": "HS-025",
       "latitude": 18.16963,
       "longitude": 99.34605,
       "district": "ฮอด",
@@ -418,7 +436,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-025",
+      "id": "HS-026",
       "latitude": 18.78709,
       "longitude": 99.49437,
       "district": "เมืองเชียงใหม่",
@@ -435,7 +453,7 @@
       "source_count": 1
     },
     {
-      "id": "HS-026",
+      "id": "HS-027",
       "latitude": 19.27296,
       "longitude": 98.43732,
       "district": "เมืองเชียงใหม่",
@@ -453,8 +471,8 @@
     }
   ],
   "source_breakdown": {
-    "Royal Forest Department Firemap": 18,
+    "Royal Forest Department Firemap": 19,
     "GISTDA API Gateway VIIRS 1-day": 0,
-    "NASA FIRMS": 13
+    "NASA FIRMS": 14
   }
 }
