@@ -44,6 +44,28 @@ class HotspotHistoryResponse(BaseModel):
     latest_update: str
 
 
+class DailyMetric(BaseModel):
+    date: str
+    value: float
+
+
+class WeatherHistoryDay(BaseModel):
+    date: str
+    temp_max: float
+    temp_min: float
+
+
+class HistoryResponse(BaseModel):
+    # Combined N-day backward trends for the authority view. Each series is
+    # oldest→newest and best-effort (may be empty if its provider is down).
+    days: int
+    hotspots: list[HotspotHistoryDay] = Field(default_factory=list)
+    pm25: list[DailyMetric] = Field(default_factory=list)
+    weather: list[WeatherHistoryDay] = Field(default_factory=list)
+    sources: dict[str, str] = Field(default_factory=dict)
+    latest_update: str
+
+
 class Pm25Station(BaseModel):
     id: str
     name: str

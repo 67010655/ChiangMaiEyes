@@ -2847,65 +2847,80 @@ button {
 }
 
 /* Bento weather and details grids */
-/* Authority historical hotspot trend (5-day bar chart) */
-.history-total {
-  margin-left: auto;
-  font-size: 0.78rem;
+/* Authority historical trends (14-day multi-metric bar charts) */
+.history-charts {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.trend-block__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+
+.trend-block__title {
+  font-size: 0.84rem;
   font-weight: 800;
   color: var(--text);
 }
 
-.history-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
+.trend-block__stat {
+  font-size: 0.7rem;
+  color: var(--muted);
 }
 
-.history-bar-col {
-  flex: 1;
+.trend-block__stat b {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.trend-bars {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
+  align-items: flex-end;
+  gap: 3px;
+  height: 64px;
+  background: linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 50% no-repeat;
+}
+
+.trend-bar {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
   min-width: 0;
 }
 
-.history-bar-count {
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.history-bar-track {
+.trend-bar__fill {
   width: 100%;
-  max-width: 44px;
-  height: 96px;
-  display: flex;
-  align-items: flex-end;
-  background: var(--surface-soft);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.history-bar-fill {
-  width: 100%;
-  border-radius: 8px 8px 0 0;
-  min-height: 4px;
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
   transition: height 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.history-bar-label {
-  font-size: 0.7rem;
+.trend-bar--today .trend-bar__fill {
+  box-shadow: 0 0 0 2px rgba(15, 107, 84, 0.35);
+}
+
+.trend-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 0.64rem;
   font-weight: 600;
   color: var(--muted);
 }
 
-.history-bar-label--today {
+.trend-axis--today {
   color: var(--green-deep);
   font-weight: 800;
 }
 
-[data-theme='dark'] .history-bar-label--today {
+[data-theme='dark'] .trend-axis--today {
   color: var(--green);
 }
 

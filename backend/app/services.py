@@ -9,18 +9,22 @@ import math
 from app.fire_spread_physics import get_district_physics
 from app.config import Settings
 from app.models import (
+    DailyMetric,
     DataStatusResponse,
     DashboardResponse,
+    HistoryResponse,
     HotspotHistoryDay,
     HotspotHistoryResponse,
     HotspotResponse,
     Pm25Response,
     RiskResponse,
     SummaryResponse,
+    WeatherHistoryDay,
     WeatherResponse,
 )
 from app.providers.weather_provider import fetch_live_weather
 from app.providers.pm25_provider import fetch_live_pm25
+from app.providers.history_provider import fetch_pm25_history, fetch_weather_history
 from app.providers.hotspot_provider import (
     FOREST_FIREMAP_SOURCE,
     fetch_hotspot_history,
@@ -180,6 +184,51 @@ def get_hotspot_history(settings: Settings) -> HotspotHistoryResponse:
     # Only cache a real series, so a transient NASA failure is retried next call.
     if days:
         _set_cached("hotspot_history", response)
+    return response
+
+
+def get_history(settings: Settings, days: int = 14) -> HistoryResponse:
+    """Combined backward trends (hotspots · PM2.5 · weather) for the authority
+    view. Every series is best-effort, so one failing provider never sinks the
+    others or errors the request."""
+    cached = _get_cached("history")
+    if cached is not None:
+        return cached
+
+    hotspots: list[HotspotHistoryDay] = []
+    if settings.nasa_firms_map_key:
+        try:
+            hotspots = [HotspotHistoryDay(date=d, count=c) for d, c in fetch_hotspot_history(settings.nasa_firms_map_key, days)]
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Hotspot history failed: %s", e)
+
+    try:
+        pm25 = [DailyMetric(date=d, value=v) for d, v in fetch_pm25_history(days)]
+    except Exception as e:  # noqa: BLE001
+        logger.warning("PM2.5 history failed: %s", e)
+        pm25 = []
+
+    try:
+        weather = [WeatherHistoryDay(date=d, temp_max=hi, temp_min=lo) for d, hi, lo in fetch_weather_history(days)]
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Weather history failed: %s", e)
+        weather = []
+
+    response = HistoryResponse(
+        days=days,
+        hotspots=hotspots,
+        pm25=pm25,
+        weather=weather,
+        sources={
+            "hotspots": "NASA VIIRS (SNPP/NOAA-20/NOAA-21)",
+            "pm25": "Open-Meteo Air Quality",
+            "weather": "Open-Meteo (ECMWF/GFS)",
+        },
+        latest_update=datetime.now().isoformat(),
+    )
+    # Cache only when we actually got something, so transient failures retry.
+    if hotspots or pm25 or weather:
+        _set_cached("history", response)
     return response
 
 

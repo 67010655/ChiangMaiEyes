@@ -1,10 +1,10 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { BookOpen, CalendarDays, CloudSun, Database, ExternalLink, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind, Sun, Cloud, CloudRain, AlertTriangle, Thermometer, Droplets, Eye, Compass, Phone, MessageSquare } from 'lucide-react';
-import { fetchDashboard, fetchDataStatus, fetchHotspotHistory } from './lib/api';
+import { fetchDashboard, fetchDataStatus, fetchHistory } from './lib/api';
 import { buildDataStatusFromDashboard, getDataStatusCopy } from './lib/dataStatus';
 import { getDistanceKm, initialSelection, type MapSelection } from './lib/mapSelection';
 import { riskPercent } from './lib/risk';
-import type { DashboardResponse, DataStatusResponse, HotspotHistoryResponse } from './lib/types';
+import type { DashboardResponse, DataStatusResponse, HistoryResponse } from './lib/types';
 import dashboardSnapshot from './data/dashboardSnapshot.json';
 import { windDestinationName, getBearing } from './lib/wind';
 import { getDistrictPhysics, calculateRateOfSpread } from './lib/firePhysics';
@@ -594,45 +594,86 @@ function RiskDonut({ score, tone }: { score: number; tone: string }) {
   );
 }
 
-// Authority-only: real 5-day historical hotspot trend (NASA VIIRS, in-province).
-// This is genuine back-data — the only place the app looks backwards in time.
-function HotspotHistoryCard({ history }: { history: HotspotHistoryResponse | null }) {
-  if (!history || history.days.length === 0) return null;
-  const days = history.days;
-  const max = Math.max(...days.map((d) => d.count), 1);
-  const total = days.reduce((sum, d) => sum + d.count, 0);
+// One historical metric as a compact bar trend (≈14 points). Authority-only.
+function TrendBars({
+  emoji,
+  title,
+  points,
+  color,
+  unit,
+  decimals = 0,
+}: {
+  emoji: string;
+  title: string;
+  points: { date: string; value: number }[];
+  color: (v: number) => string;
+  unit: string;
+  decimals?: number;
+}) {
+  if (points.length === 0) return null;
+  const max = Math.max(...points.map((p) => p.value), 1);
+  const peak = Math.max(...points.map((p) => p.value));
+  const latest = points[points.length - 1].value;
   const todayIso = new Date().toISOString().slice(0, 10);
-  const barColor = (c: number) => (c === 0 ? '#cbd5e1' : c <= 10 ? '#16a34a' : c <= 25 ? '#f97316' : '#dc2626');
-  const dayLabel = (iso: string, idx: number) => {
-    if (iso === todayIso) return 'วันนี้';
-    if (idx === days.length - 2) return 'เมื่อวาน';
+  const fmt = (v: number) => v.toFixed(decimals);
+  const lbl = (iso: string) => {
     const d = new Date(`${iso}T00:00:00`);
     return `${d.getDate()}/${d.getMonth() + 1}`;
   };
   return (
-    <section className="card hotspot-history-card" aria-label="จุดความร้อนย้อนหลัง 5 วัน">
-      <div className="card__head">
-        <span className="card__title">📉 จุดความร้อนย้อนหลัง 5 วัน</span>
-        <span className="history-total">รวม {total} จุด</span>
+    <div className="trend-block">
+      <div className="trend-block__head">
+        <span className="trend-block__title">{emoji} {title}</span>
+        <span className="trend-block__stat">
+          ล่าสุด <b>{fmt(latest)}</b> · สูงสุด {fmt(peak)} {unit}
+        </span>
       </div>
-      <p className="personal-checker-desc" style={{ marginBottom: '14px' }}>
-        จำนวนจุดความร้อนในเขตจังหวัดต่อวัน (ข้อมูลจริงจาก {history.source})
-      </p>
-      <div className="history-bars">
-        {days.map((d, i) => {
-          const h = Math.round((d.count / max) * 100);
+      <div className="trend-bars">
+        {points.map((p) => {
+          const h = Math.max(Math.round((p.value / max) * 100), 2);
           return (
-            <div key={d.date} className="history-bar-col">
-              <span className="history-bar-count">{d.count}</span>
-              <div className="history-bar-track">
-                <div className="history-bar-fill" style={{ height: `${Math.max(h, 3)}%`, background: barColor(d.count) }} />
-              </div>
-              <span className={`history-bar-label${d.date === todayIso ? ' history-bar-label--today' : ''}`}>
-                {dayLabel(d.date, i)}
-              </span>
+            <div
+              key={p.date}
+              className={`trend-bar${p.date === todayIso ? ' trend-bar--today' : ''}`}
+              title={`${lbl(p.date)} · ${fmt(p.value)} ${unit}`}
+            >
+              <div className="trend-bar__fill" style={{ height: `${h}%`, background: color(p.value) }} />
             </div>
           );
         })}
+      </div>
+      <div className="trend-axis">
+        <span>{lbl(points[0].date)}</span>
+        <span>{lbl(points[Math.floor(points.length / 2)].date)}</span>
+        <span className="trend-axis--today">วันนี้</span>
+      </div>
+    </div>
+  );
+}
+
+// Authority-only: real backward trends (hotspots · PM2.5 · temperature) pulled
+// live from NASA VIIRS and Open-Meteo — the app's look back in time.
+function HistorySection({ history }: { history: HistoryResponse | null }) {
+  if (!history) return null;
+  const hp = history.hotspots.map((d) => ({ date: d.date, value: d.count }));
+  const pm = history.pm25.map((d) => ({ date: d.date, value: d.value }));
+  const wx = history.weather.map((d) => ({ date: d.date, value: d.temp_max }));
+  if (hp.length === 0 && pm.length === 0 && wx.length === 0) return null;
+  const fireColor = (c: number) => (c === 0 ? '#cbd5e1' : c <= 10 ? '#16a34a' : c <= 25 ? '#f97316' : '#dc2626');
+  const pmColor = (v: number) => pmHex(getPm25Color(v));
+  const tempColor = (t: number) => (t >= 38 ? '#dc2626' : t >= 35 ? '#f97316' : t >= 30 ? '#f59e0b' : '#10b981');
+  return (
+    <section className="card history-section" aria-label={`ข้อมูลย้อนหลัง ${history.days} วัน`}>
+      <div className="card__head">
+        <span className="card__title">📊 ข้อมูลย้อนหลัง {history.days} วัน</span>
+      </div>
+      <p className="personal-checker-desc" style={{ marginBottom: '16px' }}>
+        แนวโน้มจริงรายวันจากดาวเทียมและโมเดลอุตุฯ — จุดความร้อน, PM2.5 ({history.sources.pm25}) และอุณหภูมิ
+      </p>
+      <div className="history-charts">
+        <TrendBars emoji="🔥" title="จุดความร้อน/วัน" points={hp} color={fireColor} unit="จุด" />
+        <TrendBars emoji="🌫️" title="PM2.5 เฉลี่ย/วัน" points={pm} color={pmColor} unit="µg/m³" decimals={1} />
+        <TrendBars emoji="🌡️" title="อุณหภูมิสูงสุด/วัน" points={wx} color={tempColor} unit="°C" decimals={1} />
       </div>
     </section>
   );
@@ -701,7 +742,7 @@ function CitizenSummary({
 export function App() {
   const [dashboard, setDashboard] = useState<DashboardResponse>(fallback);
   const [dataStatus, setDataStatus] = useState<DataStatusResponse | null>(null);
-  const [hotspotHistory, setHotspotHistory] = useState<HotspotHistoryResponse | null>(null);
+  const [history, setHistory] = useState<HistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true, landmarks: false, fuelRisk: false });
@@ -746,14 +787,14 @@ export function App() {
     return () => window.clearInterval(clockId);
   }, []);
 
-  // Lazy-load the historical trend only when an authority opens their view.
+  // Lazy-load the historical trends only when an authority opens their view.
   useEffect(() => {
-    if (uiMode === 'authority' && !hotspotHistory) {
-      fetchHotspotHistory()
-        .then(setHotspotHistory)
+    if (uiMode === 'authority' && !history) {
+      fetchHistory()
+        .then(setHistory)
         .catch(() => undefined);
     }
-  }, [uiMode, hotspotHistory]);
+  }, [uiMode, history]);
 
   useEffect(() => {
     if (!userLocation) return;
@@ -1263,8 +1304,8 @@ export function App() {
 
           </div>
 
-          {/* Historical (back) — real 5-day hotspot trend */}
-          {uiMode === 'authority' && <HotspotHistoryCard history={hotspotHistory} />}
+          {/* Historical (back) — real 14-day trends: hotspots · PM2.5 · temp */}
+          {uiMode === 'authority' && <HistorySection history={history} />}
 
           {/* 7-Day Forest Fire Risk & Plume Outlook */}
           {uiMode === 'authority' && (

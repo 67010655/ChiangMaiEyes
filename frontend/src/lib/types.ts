@@ -34,6 +34,26 @@ export type HotspotHistoryResponse = {
   latest_update: string;
 };
 
+export type DailyMetric = {
+  date: string;
+  value: number;
+};
+
+export type WeatherHistoryDay = {
+  date: string;
+  temp_max: number;
+  temp_min: number;
+};
+
+export type HistoryResponse = {
+  days: number;
+  hotspots: HotspotHistoryDay[];
+  pm25: DailyMetric[];
+  weather: WeatherHistoryDay[];
+  sources: Record<string, string>;
+  latest_update: string;
+};
+
 export type Pm25Station = {
   id: string;
   name: string;

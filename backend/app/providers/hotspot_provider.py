@@ -288,41 +288,53 @@ def fetch_hotspot_history(map_key: str, days: int = 5) -> list[tuple[str, int]]:
     VIIRS, returned oldest→newest as (YYYY-MM-DD, count) with missing days
     zero-filled. NASA is reachable from anywhere (unlike RFD), so this gives a
     consistent historical trend on both the user's machine and Vercel.
+
+    NASA's Area CSV API caps each request at a 5-day range, so for longer
+    windows we chain date-anchored 5-day requests and dedup detections across
+    windows and satellites.
     """
     ring = _province_ring()
     bbox = "97.25,17.35,99.68,20.28"
-    span = max(1, min(days, 5))  # NASA Area API day range is capped at 5
+    span = max(1, min(days, 31))
+    today = datetime.datetime.now(BANGKOK_TZ).date()
+    earliest = today - datetime.timedelta(days=span - 1)
+
     seen: set[tuple[float, float, str]] = set()
     per_day: dict[str, int] = {}
 
-    for src in NASA_VIIRS_SOURCES:
-        url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{span}"
-        try:
-            response = httpx.get(url, timeout=20.0)
-            response.raise_for_status()
-        except Exception as ex:  # noqa: BLE001 — one satellite failing is fine
-            logger.warning("NASA FIRMS history %s fetch failed: %s", src, ex)
-            continue
-        reader = csv.DictReader(response.content.decode("utf-8").splitlines())
-        for row in reader:
+    window_start = earliest
+    while window_start <= today:
+        chunk = min(5, (today - window_start).days + 1)  # ≤5-day API limit
+        start_str = window_start.isoformat()
+        for src in NASA_VIIRS_SOURCES:
+            url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{chunk}/{start_str}"
             try:
-                lat = float(row["latitude"])
-                lon = float(row["longitude"])
-                if ring and not _point_in_ring(lon, lat, ring):
-                    continue
-                day = _nasa_detected_at(row.get("acq_date"), row.get("acq_time"))[:10]
-                key = (round(lat, 3), round(lon, 3), day)
-                if key in seen:
-                    continue
-                seen.add(key)
-                per_day[day] = per_day.get(day, 0) + 1
-            except Exception:  # noqa: BLE001 — skip malformed rows
+                response = httpx.get(url, timeout=20.0)
+                response.raise_for_status()
+            except Exception as ex:  # noqa: BLE001 — one satellite/window failing is fine
+                logger.warning("NASA FIRMS history %s @%s fetch failed: %s", src, start_str, ex)
                 continue
+            reader = csv.DictReader(response.content.decode("utf-8").splitlines())
+            for row in reader:
+                try:
+                    lat = float(row["latitude"])
+                    lon = float(row["longitude"])
+                    if ring and not _point_in_ring(lon, lat, ring):
+                        continue
+                    day = _nasa_detected_at(row.get("acq_date"), row.get("acq_time"))[:10]
+                    key = (round(lat, 3), round(lon, 3), day)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    per_day[day] = per_day.get(day, 0) + 1
+                except Exception:  # noqa: BLE001 — skip malformed rows
+                    continue
+        window_start += datetime.timedelta(days=5)
 
-    today = datetime.datetime.now(BANGKOK_TZ).date()
     return [
-        ((today - datetime.timedelta(days=i)).isoformat(), per_day.get((today - datetime.timedelta(days=i)).isoformat(), 0))
-        for i in range(span - 1, -1, -1)
+        ((earliest + datetime.timedelta(days=i)).isoformat(),
+         per_day.get((earliest + datetime.timedelta(days=i)).isoformat(), 0))
+        for i in range(span)
     ]
 
 

@@ -9,6 +9,7 @@ from app.models import (
     AdvisorResponse,
     DataStatusResponse,
     DashboardResponse,
+    HistoryResponse,
     HotspotHistoryResponse,
     HotspotResponse,
     Pm25Response,
@@ -20,6 +21,7 @@ from app.services import (
     calculate_risk,
     get_dashboard,
     get_data_status,
+    get_history,
     get_hotspot_history,
     get_hotspots,
     get_pm25,
@@ -52,6 +54,11 @@ def hotspots(settings: Settings = Depends(get_settings)) -> HotspotResponse:
 @app.get("/api/hotspots/history", response_model=HotspotHistoryResponse)
 def hotspots_history(settings: Settings = Depends(get_settings)) -> HotspotHistoryResponse:
     return get_hotspot_history(settings)
+
+
+@app.get("/api/history", response_model=HistoryResponse)
+def history(settings: Settings = Depends(get_settings)) -> HistoryResponse:
+    return get_history(settings, days=14)
 
 
 @app.get("/api/pm25", response_model=Pm25Response)

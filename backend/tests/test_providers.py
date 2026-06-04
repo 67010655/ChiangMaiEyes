@@ -265,6 +265,35 @@ def test_fetch_hotspot_history_buckets_clips_and_zero_fills(mock_get):
 
 
 @patch("httpx.get")
+def test_fetch_pm25_history_daily_mean(mock_get):
+    from app.providers.history_provider import fetch_pm25_history
+    resp = MagicMock()
+    resp.json.return_value = {
+        "hourly": {
+            "time": ["2026-06-01T00:00", "2026-06-01T01:00", "2026-06-02T00:00"],
+            "pm2_5": [10.0, 20.0, 30.0],
+        }
+    }
+    mock_get.return_value = resp
+    assert fetch_pm25_history(2) == [("2026-06-01", 15.0), ("2026-06-02", 30.0)]
+
+
+@patch("httpx.get")
+def test_fetch_weather_history_daily(mock_get):
+    from app.providers.history_provider import fetch_weather_history
+    resp = MagicMock()
+    resp.json.return_value = {
+        "daily": {
+            "time": ["2026-06-01", "2026-06-02"],
+            "temperature_2m_max": [34.1, 35.2],
+            "temperature_2m_min": [24.0, 25.1],
+        }
+    }
+    mock_get.return_value = resp
+    assert fetch_weather_history(2) == [("2026-06-01", 34.1, 24.0), ("2026-06-02", 35.2, 25.1)]
+
+
+@patch("httpx.get")
 def test_fetch_live_hotspots_gistda_success(mock_get):
     mock_forest_resp = MagicMock()
     mock_forest_resp.raise_for_status.side_effect = Exception("Forest API Error")
