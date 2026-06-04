@@ -594,6 +594,66 @@ function RiskDonut({ score, tone }: { score: number; tone: string }) {
   );
 }
 
+function pmHex(color: string) {
+  return color === 'green'
+    ? '#10b981'
+    : color === 'yellow'
+      ? '#f59e0b'
+      : color === 'orange'
+        ? '#f97316'
+        : color === 'red'
+          ? '#ef4444'
+          : '#8b5cf6';
+}
+
+// Mobile-first "today at a glance" card: the three pillars (air · risk ·
+// hotspots) as one compact block so a citizen sees the whole situation
+// without scrolling. Hidden on desktop (where the detailed cards lead).
+function CitizenSummary({
+  pm25,
+  pm25Color,
+  temp,
+  riskScore,
+  riskTone,
+  hotspots,
+}: {
+  pm25: number;
+  pm25Color: string;
+  temp: number;
+  riskScore: number;
+  riskTone: string;
+  hotspots: number;
+}) {
+  const airHex = pmHex(pm25Color);
+  const riskHex = riskTone === 'low' ? '#16a34a' : riskTone === 'medium' ? '#eab308' : '#dc2626';
+  const fireHex = hotspots === 0 ? '#16a34a' : hotspots <= 20 ? '#f97316' : '#dc2626';
+  const tiles = [
+    { accent: airHex, label: 'คุณภาพอากาศ', value: `${pm25}`, unit: 'µg/m³', tag: `${getPm25Label(pm25)} · ${Math.round(temp)}°C` },
+    { accent: riskHex, label: 'ความเสี่ยงหมอกควัน', value: riskScore, suffix: '/10', unit: 'คะแนน', tag: riskLabelTh[riskTone] },
+    { accent: fireHex, label: 'จุดความร้อน', value: `${hotspots}`, unit: 'จุด', tag: 'ดาวเทียมวันนี้' },
+  ] as const;
+  return (
+    <section className="card today-summary" aria-label="สรุปสถานการณ์วันนี้">
+      <div className="card__head">
+        <span className="card__title">📊 สถานการณ์วันนี้ · เชียงใหม่</span>
+      </div>
+      <div className="today-summary__grid">
+        {tiles.map((t) => (
+          <div key={t.label} className="summary-tile" style={{ ['--accent' as string]: t.accent }}>
+            <span className="summary-tile__label">{t.label}</span>
+            <strong className="summary-tile__value">
+              {t.value}
+              {'suffix' in t && t.suffix ? <em>{t.suffix}</em> : null}
+            </strong>
+            <span className="summary-tile__unit">{t.unit}</span>
+            <span className="summary-tile__tag">{t.tag}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function App() {
   const [dashboard, setDashboard] = useState<DashboardResponse>(fallback);
   const [dataStatus, setDataStatus] = useState<DataStatusResponse | null>(null);
@@ -944,7 +1004,19 @@ export function App() {
         
         {/* LEFT COLUMN: Hero weather, pollutants breakdown, hourly forecast */}
         <div className="stats-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
+
+          {/* Mobile-only combined summary of the three pillars */}
+          {uiMode === 'citizen' && (
+            <CitizenSummary
+              pm25={dashboard.pm25.current_pm25}
+              pm25Color={dashboard.pm25.color}
+              temp={dashboard.weather.temperature_c}
+              riskScore={dashboard.risk.score}
+              riskTone={riskTone}
+              hotspots={dashboard.hotspots.count}
+            />
+          )}
+
           {/* Hero Weather & AQI card */}
           <section className="card hero-weather-card">
             <div className="hero-weather-main">

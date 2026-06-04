@@ -2847,6 +2847,65 @@ button {
 }
 
 /* Bento weather and details grids */
+/* Combined "today at a glance" summary (mobile-only; hidden on desktop where
+   the detailed cards lead). Three pillar tiles: air · risk · hotspots. */
+.today-summary {
+  display: none;
+}
+
+.today-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.summary-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 10px 8px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent, var(--green));
+  min-width: 0;
+}
+
+.summary-tile__label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+.summary-tile__value {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--accent, var(--text));
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.summary-tile__value em {
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.summary-tile__unit {
+  font-size: 0.58rem;
+  color: var(--muted);
+}
+
+.summary-tile__tag {
+  margin-top: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
 .hero-weather-card {
   display: flex;
   flex-direction: column;
@@ -3567,16 +3626,21 @@ button {
     display: contents !important;
   }
 
+  /* The three pillars (air · risk · hotspots) merge into one summary card up
+     top, then the map, then what-to-do, then the detailed cards. The standalone
+     hotspot mini-card is redundant on mobile (it's in the summary). */
+  [data-ui-mode='citizen'] .today-summary { display: flex; flex-direction: column; order: 2; }
+  [data-ui-mode='citizen'] .mini-card--hotspots { display: none; }
+
   [data-ui-mode='citizen'] .topbar { order: 0; }
   [data-ui-mode='citizen'] .notice { order: 1; }
-  [data-ui-mode='citizen'] .hero-weather-card { order: 2; }
   [data-ui-mode='citizen'] .map-hero { order: 3; }
   [data-ui-mode='citizen'] .map-detail-bar { order: 4; }
   [data-ui-mode='citizen'] .advice-card { order: 5; }
   [data-ui-mode='citizen'] .personal-checker-card { order: 6; }
-  [data-ui-mode='citizen'] .risk-card { order: 7; }
-  [data-ui-mode='citizen'] .citizen-guide-card { order: 8; }
-  [data-ui-mode='citizen'] .mini-card--hotspots { order: 9; }
+  [data-ui-mode='citizen'] .hero-weather-card { order: 7; }
+  [data-ui-mode='citizen'] .risk-card { order: 8; }
+  [data-ui-mode='citizen'] .citizen-guide-card { order: 9; }
   [data-ui-mode='citizen'] .emergency-contacts-card { order: 10; }
   [data-ui-mode='citizen'] .page-foot { order: 11; }
 }
