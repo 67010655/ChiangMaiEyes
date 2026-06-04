@@ -1,14 +1,20 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { BookOpen, CalendarDays, CloudSun, Database, ExternalLink, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind, Sun, Cloud, CloudRain, AlertTriangle, Thermometer, Droplets, Eye, Compass, Phone, MessageSquare } from 'lucide-react';
 import { fetchDashboard, fetchDataStatus } from './lib/api';
 import { buildDataStatusFromDashboard, getDataStatusCopy } from './lib/dataStatus';
+import { getDistanceKm, initialSelection, type MapSelection } from './lib/mapSelection';
 import { riskPercent } from './lib/risk';
 import type { DashboardResponse, DataStatusResponse } from './lib/types';
-import { DashboardMap, type MapSelection, initialSelection, getDistanceKm } from './components/DashboardMap';
-import { AiAdvisor } from './components/AiAdvisor';
 import dashboardSnapshot from './data/dashboardSnapshot.json';
 import { windDestinationName, getBearing } from './lib/wind';
 import { getDistrictPhysics, calculateRateOfSpread } from './lib/firePhysics';
+
+const DashboardMap = lazy(() =>
+  import('./components/DashboardMap').then((module) => ({ default: module.DashboardMap })),
+);
+const AiAdvisor = lazy(() =>
+  import('./components/AiAdvisor').then((module) => ({ default: module.AiAdvisor })),
+);
 
 type LayerState = {
   hotspots: boolean;
@@ -879,18 +885,20 @@ export function App() {
           </div>
         </div>
 
-        <DashboardMap
-          dashboard={dashboard}
-          layers={layers}
-          selection={mapSelection}
-          onSelectionChange={setMapSelection}
-          uiMode={uiMode}
-          theme={theme}
-          userLocation={userLocation}
-          onMapClick={setUserLocation}
-          isFullscreen={mapFullscreen}
-          onToggleFullscreen={() => setMapFullscreen((prev) => !prev)}
-        />
+        <Suspense fallback={<div className="map-loading">กำลังโหลดแผนที่...</div>}>
+          <DashboardMap
+            dashboard={dashboard}
+            layers={layers}
+            selection={mapSelection}
+            onSelectionChange={setMapSelection}
+            uiMode={uiMode}
+            theme={theme}
+            userLocation={userLocation}
+            onMapClick={setUserLocation}
+            isFullscreen={mapFullscreen}
+            onToggleFullscreen={() => setMapFullscreen((prev) => !prev)}
+          />
+        </Suspense>
       </section>
 
       {/* Map selection detail inspector */}
@@ -1240,7 +1248,9 @@ export function App() {
                   );
                 })}
               </ul>
-              <AiAdvisor dashboard={dashboard} />
+              <Suspense fallback={<div className="ai-briefing ai-briefing__text--fallback">กำลังโหลดที่ปรึกษา...</div>}>
+                <AiAdvisor dashboard={dashboard} />
+              </Suspense>
             </section>
 
           </div>

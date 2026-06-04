@@ -222,6 +222,14 @@ button {
   background: #f1f9f4;
 }
 
+.map-loading {
+  min-height: 520px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .icon-button--filled {
   border-color: transparent;
   color: #fff;
