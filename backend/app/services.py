@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Simple TTL cache to avoid hammering upstream APIs on every request.
-# Upstream data (Air4Thai, GISTDA, Open-Meteo) updates every 1-6 hours;
+# Upstream data (Air4Thai, GISTDA, TMD AWS) updates every 1-6 hours;
 # a 5-minute TTL is a good balance between freshness and rate-limit safety.
 # ---------------------------------------------------------------------------
 _CACHE_TTL_SECONDS = 300  # 5 minutes
@@ -142,7 +142,6 @@ def get_weather(settings: Settings) -> WeatherResponse:
         return cached
     try:
         response = fetch_live_weather()
-        response = WeatherResponse(**repair_thai_mojibake_tree(response.model_dump()))
         write_json(settings.cache_dir, "weather.json", response.model_dump())
         _set_cached("weather", response)
         return response

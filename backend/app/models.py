@@ -61,6 +61,15 @@ class WeatherResponse(BaseModel):
     humidity_percent: float
     latest_update: str
     source: str
+    station_name: str | None = None
+    station_latitude: float | None = None
+    station_longitude: float | None = None
+    pressure_hpa: float | None = None
+    rain_15m_mm: float | None = None
+    rain_1h_mm: float | None = None
+    rain_today_mm: float | None = None
+    temperature_min_today_c: float | None = None
+    temperature_max_today_c: float | None = None
 
 
 class RiskResponse(BaseModel):

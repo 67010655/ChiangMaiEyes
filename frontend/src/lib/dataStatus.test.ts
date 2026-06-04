@@ -55,7 +55,7 @@ describe('buildDataStatusFromDashboard', () => {
         temperature_c: 25,
         humidity_percent: 90,
         latest_update: '2026-06-03T00:43:25+07:00',
-        source: 'Open-Meteo',
+        source: 'Thai Meteorological Department AWS',
       },
       risk: { score: 2, category: 'Low', formula: 'test', factors: {} },
       summary: { language: 'th', text: 'test', source: 'fallback' },

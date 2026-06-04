@@ -66,10 +66,11 @@ def test_reconcile_does_not_merge_across_days():
     assert len(out) == 2
 
 def test_wind_direction_translation():
-    assert get_wind_direction_text(0) == "เหนือ"
-    assert get_wind_direction_text(225) == "ตะวันตกเฉียงใต้"
-    assert get_wind_direction_text(270) == "ตะวันตก"
-    assert get_wind_direction_text(359) == "เหนือ"
+    assert get_wind_direction_text(0) == "ทิศเหนือ"
+    assert get_wind_direction_text(225) == "ทิศตะวันตกเฉียงใต้"
+    assert get_wind_direction_text(245) == "ทิศตะวันตกค่อนไปทางใต้"
+    assert get_wind_direction_text(270) == "ทิศตะวันตก"
+    assert get_wind_direction_text(359) == "ทิศเหนือ"
 
 def test_pm25_category_mapping():
     assert get_pm25_category_and_color(10.0) == ("ดีมาก", "green")
@@ -90,23 +91,40 @@ def test_district_estimation():
 def test_fetch_live_weather_success(mock_get):
     mock_response = MagicMock()
     mock_response.json.return_value = {
-        "current": {
-            "temperature_2m": 31.5,
-            "relative_humidity_2m": 60,
-            "wind_speed_10m": 12.5,
-            "wind_direction_10m": 225
-        }
+        "success": True,
+        "data": [
+            {
+                "stationId": 1,
+                "stationNameTh": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
+                "stationLat": 18.7711,
+                "stationLon": 98.9692,
+                "temperature": 34.5,
+                "temperatureMinToday": 26.6,
+                "temperatureMaxToday": 35.1,
+                "humidity": 56,
+                "windDirection": 245,
+                "windSpeed": 2.2,
+                "precip15Mins": 0,
+                "precip1Hr": 0,
+                "precipToday": 0,
+                "pressure": 967.9,
+                "dateTimeUtc7": "2026-06-04T11:46:00.000+0700",
+            }
+        ],
     }
     mock_get.return_value = mock_response
 
     weather = fetch_live_weather()
     
-    assert weather.temperature_c == 31.5
-    assert weather.humidity_percent == 60
-    assert weather.wind_speed_kmh == 12.5
-    assert weather.wind_direction_deg == 225
-    assert weather.wind_direction_text == "ตะวันตกเฉียงใต้"
-    assert weather.source == "Open-Meteo Live API"
+    assert weather.temperature_c == 34.5
+    assert weather.humidity_percent == 56
+    assert weather.wind_speed_kmh == 2.2
+    assert weather.wind_direction_deg == 245
+    assert weather.wind_direction_text == "ทิศตะวันตกค่อนไปทางใต้"
+    assert weather.pressure_hpa == 967.9
+    assert weather.rain_15m_mm == 0
+    assert weather.latest_update == "2026-06-04T11:46:00+07:00"
+    assert weather.source == "Thai Meteorological Department AWS"
 
 @patch("httpx.get")
 def test_fetch_live_pm25_success(mock_get):

@@ -6,7 +6,7 @@ import type { DashboardResponse, Hotspot, Pm25Station } from '../lib/types';
 import provinceGeoData from '../data/chiangmai-province.json';
 import districtsGeoData from '../data/chiangmai-districts.json';
 import { windDestinationName } from '../lib/wind';
-import { fetchWindField } from '../lib/windGrid';
+import { buildWindFieldFromStation } from '../lib/windGrid';
 
 // ─────────────────────────────────────────────
 // Types
@@ -1044,23 +1044,45 @@ const CHIANG_MAI_LANDMARKS = [
 ] as const;
 
 type ChiangMaiLandmark = (typeof CHIANG_MAI_LANDMARKS)[number];
+type LandmarkKind = 'temple' | 'nature' | 'garden' | 'water' | 'activity' | 'community';
+
+function landmarkKind(landmark: ChiangMaiLandmark): LandmarkKind {
+  const text = `${landmark.name} ${landmark.category} ${landmark.mood}`;
+  if (text.includes('วัด') || text.includes('เมืองเก่า') || text.includes('วัฒนธรรม')) return 'temple';
+  if (text.includes('สวน') || text.includes('ดอกไม้') || text.includes('เกษตร')) return 'garden';
+  if (text.includes('น้ำพุร้อน') || text.includes('อ่าง') || text.includes('น้ำ')) return 'water';
+  if (text.includes('กิจกรรม') || text.includes('แอดเวนเจอร์')) return 'activity';
+  if (text.includes('ชุมชน') || text.includes('นาขั้นบันได')) return 'community';
+  return 'nature';
+}
+
+function landmarkKindLabel(kind: LandmarkKind) {
+  return {
+    temple: 'วัด',
+    nature: 'ดอย',
+    garden: 'สวน',
+    water: 'น้ำ',
+    activity: 'กิจ',
+    community: 'ชุม',
+  }[kind];
+}
 
 function landmarkSelection(landmark: ChiangMaiLandmark, dashboard: DashboardResponse): MapSelection {
   const pm25 = dashboard.pm25.current_pm25;
+  const kind = landmarkKind(landmark);
   return {
-    eyebrow: `${landmark.category} · ${landmark.area}`,
+    eyebrow: `สถานที่เสริม · ${landmark.category} · ${landmark.area}`,
     title: landmark.name,
-    detail: `${landmark.about} ก่อนวางแผนเที่ยว ดู PM2.5 จุดความร้อน และลมวันนี้ประกอบ`,
+    detail: `${landmark.about} ใช้เป็นบริบทเสริมเมื่อประเมินผลกระทบต่อพื้นที่ท่องเที่ยวและชุมชนใกล้เคียง`,
     mapUrl: googleMapsSearchUrl(landmark.name, landmark.area),
     sourceUrl: landmark.url,
     sourceLabel: `Wongnai #${landmark.rank}`,
     imageKey: 'landmark',
     imageLabel: landmark.name,
     stats: [
+      { label: 'ประเภท', value: landmarkKindLabel(kind) },
       { label: 'ลำดับ Wongnai', value: `#${landmark.rank} จาก 60` },
       { label: 'จุดเด่น', value: landmark.bestFor },
-      { label: 'เหมาะกับ', value: landmark.mood },
-      { label: 'พิกัดอ้างอิง', value: 'จากหน้า Wongnai' },
       { label: 'PM2.5 วันนี้', value: formatPm25(pm25), tone: pm25Tone(pm25) },
       { label: 'ลม', value: `ไป${windDestinationName(dashboard.weather.wind_direction_deg)}` },
     ],
@@ -1407,17 +1429,18 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
     if (!layers.landmarks) return;
 
     const tier = zoom <= 8 ? 'sm' : zoom <= 10 ? 'md' : 'lg';
-    const size = tier === 'sm' ? 18 : tier === 'md' ? 24 : 30;
+    const size = tier === 'sm' ? 16 : tier === 'md' ? 21 : 27;
 
     CHIANG_MAI_LANDMARKS.forEach((landmark) => {
       const showLabel = tier === 'lg' || (tier === 'md' && zoom >= 10 && 'featured' in landmark && landmark.featured);
+      const kind = landmarkKind(landmark);
       const labelHtml =
         showLabel
           ? `<span class="lf-landmark__label">${landmark.name}</span>`
           : '';
       const icon = L.divIcon({
-        html: `<div class="lf-landmark" style="width:${size}px;height:${size}px">
-          <span class="lf-landmark__pin"></span>
+        html: `<div class="lf-landmark lf-landmark--${kind}" style="width:${size}px;height:${size}px">
+          <span class="lf-landmark__pin">${landmarkKindLabel(kind)}</span>
           ${labelHtml}
         </div>`,
         className: 'lf-marker-wrap',
@@ -1426,7 +1449,7 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
       });
       const next = landmarkSelection(landmark, dashboard);
 
-      L.marker(landmark.coords, { icon, zIndexOffset: 90 })
+      L.marker(landmark.coords, { icon, zIndexOffset: 35 })
         .on('click', (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
           onSelChangeRef.current(next);
@@ -1436,7 +1459,7 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
     });
   }, [dashboard, layers.landmarks, zoom]);
 
-  // ── Windy-style wind particles (leaflet-velocity + Open-Meteo grid) ────────
+  // ── Windy-style wind particles from the current TMD AWS station reading ───
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -1451,44 +1474,39 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
       return;
     }
 
-    let cancelled = false;
-    const controller = new AbortController();
-
-    fetchWindField(controller.signal)
-      .then((data) => {
-        if (cancelled || !mapRef.current) return;
-        if (velocityLayerRef.current) {
-          mapRef.current.removeLayer(velocityLayerRef.current);
-          velocityLayerRef.current = null;
-        }
-        const layer = (L as any).velocityLayer({
-          displayValues: false,
-          data,
-          minVelocity: 0,
-          maxVelocity: 10,
-          velocityScale: 0.014,
-          particleAge: 80,
-          particleMultiplier: 1 / 190,
-          lineWidth: 1.6,
-          frameRate: 20,
-          opacity: 0.97,
-          // Blue gradient (slow → fast) — high contrast over the light/green map.
-          colorScale: ['#1e4fa3', '#2f7ad1', '#3aa0e6', '#57c4f0', '#8fe0ff'],
-        });
-        layer.addTo(mapRef.current);
-        velocityLayerRef.current = layer;
-        setWindParticlesOn(true);
-      })
-      .catch(() => {
-        // Network/shape failure → keep the wind chip visible without stale fallback animation.
-        if (!cancelled) setWindParticlesOn(false);
-      });
+    const data = buildWindFieldFromStation(
+      dashboard.weather.wind_speed_kmh,
+      dashboard.weather.wind_direction_deg,
+      dashboard.weather.latest_update,
+    );
+    if (velocityLayerRef.current) {
+      map.removeLayer(velocityLayerRef.current);
+      velocityLayerRef.current = null;
+    }
+    const layer = (L as any).velocityLayer({
+      displayValues: false,
+      data,
+      minVelocity: 0,
+      maxVelocity: 10,
+      velocityScale: 0.01,
+      particleAge: 120,
+      particleMultiplier: 1 / 280,
+      lineWidth: 1.15,
+      frameRate: 30,
+      opacity: 0.48,
+      colorScale: ['#2f7ad1', '#45a6d9', '#75c7e5', '#a8dfee'],
+    });
+    layer.addTo(map);
+    velocityLayerRef.current = layer;
+    setWindParticlesOn(true);
 
     return () => {
-      cancelled = true;
-      controller.abort();
+      if (velocityLayerRef.current && mapRef.current) {
+        mapRef.current.removeLayer(velocityLayerRef.current);
+        velocityLayerRef.current = null;
+      }
     };
-  }, [layers.wind]);
+  }, [dashboard.weather.latest_update, dashboard.weather.wind_direction_deg, dashboard.weather.wind_speed_kmh, layers.wind]);
 
   // ── Zoom controls ─────────────────────────────────────────────────────────
   const handleZoomIn = useCallback(() => mapRef.current?.zoomIn(), []);
@@ -1507,7 +1525,7 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
   const windSelection: MapSelection = {
     eyebrow: 'ทิศทางลม',
     title: `ไปทาง${windDestinationText}`,
-    detail: `${windSpeed} km/h · ลมมาจากทิศ${windSourceText} แล้วพัดไปทาง${windDestinationText} · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
+    detail: `${windSpeed} km/h · ลมมาจาก${windSourceText} แล้วพัดไปทาง${windDestinationText} · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
     imageKey: 'wind',
     imageLabel: 'Wind layer',
     stats: [
@@ -1546,8 +1564,18 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
       <div className="map-legend">
         <span><i className="dot dot--pm" />สถานีวัด PM2.5</span>
         <span><i className="fire-ic">🔥</i>จุดความร้อน</span>
-        <span><i className="landmark-ic" />ที่เที่ยว Wongnai 60</span>
-        <span><i className="arrow-ic">↑</i>ทิศทางลม</span>
+        {layers.landmarks && <span><i className="landmark-ic" />สถานที่เสริม 60</span>}
+        {layers.landmarks && (
+          <span className="landmark-kind-key" aria-label="ประเภทสถานที่เสริม">
+            <i className="landmark-kind landmark-kind--temple">วัด</i>
+            <i className="landmark-kind landmark-kind--nature">ดอย</i>
+            <i className="landmark-kind landmark-kind--garden">สวน</i>
+            <i className="landmark-kind landmark-kind--water">น้ำ</i>
+            <i className="landmark-kind landmark-kind--activity">กิจ</i>
+            <i className="landmark-kind landmark-kind--community">ชุม</i>
+          </span>
+        )}
+        <span><i className="arrow-ic">↑</i>ทิศลม TMD</span>
       </div>
 
       <div className="basemap-switcher" aria-label="เลือกพื้นแผนที่">

@@ -142,6 +142,7 @@ button {
   flex: 0 0 auto;
 }
 
+.date-pill,
 .live-pill {
   display: flex;
   align-items: center;
@@ -152,6 +153,16 @@ button {
   background: var(--surface-soft);
 }
 
+.date-pill {
+  background: #ffffff;
+}
+
+.date-pill svg {
+  flex: 0 0 auto;
+  color: var(--green-deep);
+}
+
+.date-pill strong,
 .live-pill strong {
   display: block;
   font-size: 0.78rem;
@@ -159,6 +170,7 @@ button {
   white-space: nowrap;
 }
 
+.date-pill span,
 .live-pill span {
   display: block;
   margin-top: 1px;
@@ -575,7 +587,7 @@ button {
 /* ---------- Mini cards ---------- */
 .card-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   align-items: stretch;
 }
@@ -614,9 +626,14 @@ button {
   background: #e8f5ee;
 }
 
-.mini-card__icon--tourism {
-  color: #0e7490;
-  background: #e6f7fb;
+.mini-card__icon--spread {
+  color: #b91c1c;
+  background: #fff1f2;
+}
+
+.mini-card__icon--weather {
+  color: #0f6b54;
+  background: #eef8f2;
 }
 
 .mini-card__value {
@@ -650,8 +667,40 @@ button {
   line-height: 1.1;
 }
 
-.mini-card__value--tourism {
+.mini-card__value--spread {
+  display: grid;
+  align-items: start;
+  gap: 3px;
+  line-height: 1.1;
+}
+
+.mini-card__value--spread strong {
+  font-size: clamp(1.25rem, 2.2vw, 1.5rem);
+}
+
+.mini-card__value--spread small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.mini-card__value--weather {
+  display: grid;
+  grid-template-columns: auto auto;
   align-items: baseline;
+  gap: 4px 6px;
+  line-height: 1.1;
+}
+
+.mini-card__value--weather strong {
+  font-size: clamp(1.65rem, 2.4vw, 2.1rem);
+}
+
+.mini-card__value--weather small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .mini-card__value--wind .mini-card__meta {
@@ -673,6 +722,18 @@ button {
 
 .mini-card .card__foot {
   margin-top: auto;
+}
+
+.card__foot--good {
+  color: #0f6b54;
+}
+
+.card__foot--watch {
+  color: #8a5a00;
+}
+
+.card__foot--risk {
+  color: #b91c1c;
 }
 
 /* ---------- Risk card ---------- */
@@ -1114,23 +1175,29 @@ button {
 .lf-landmark::before {
   content: '';
   position: absolute;
-  inset: -5px;
+  inset: -4px;
   border-radius: inherit;
-  background: rgba(14, 116, 144, 0.12);
-  border: 1px solid rgba(14, 116, 144, 0.12);
-  opacity: 0.82;
+  background: rgba(84, 96, 91, 0.08);
+  border: 1px solid rgba(84, 96, 91, 0.1);
+  opacity: 0.72;
   transition: transform 0.14s ease, opacity 0.14s ease;
 }
 
 .lf-landmark__pin {
   position: relative;
-  display: block;
-  width: 58%;
-  height: 58%;
-  border: 2px solid #ffffff;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: 1.5px solid #ffffff;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0f766e, #38bdf8);
-  box-shadow: 0 6px 14px rgba(8, 47, 73, 0.22), 0 0 0 1px rgba(8, 47, 73, 0.1);
+  background: #f8faf8;
+  color: #234238;
+  box-shadow: 0 4px 10px rgba(8, 47, 73, 0.12), 0 0 0 1px rgba(8, 47, 73, 0.08);
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .lf-landmark:hover::before {
@@ -1139,7 +1206,37 @@ button {
 }
 
 .lf-landmark:hover .lf-landmark__pin {
-  background: linear-gradient(135deg, #0f6b54, #67e8f9);
+  transform: scale(1.08);
+}
+
+.lf-landmark--temple .lf-landmark__pin {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.lf-landmark--nature .lf-landmark__pin {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.lf-landmark--garden .lf-landmark__pin {
+  background: #fdf2f8;
+  color: #be185d;
+}
+
+.lf-landmark--water .lf-landmark__pin {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.lf-landmark--activity .lf-landmark__pin {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.lf-landmark--community .lf-landmark__pin {
+  background: #fefce8;
+  color: #854d0e;
 }
 
 .lf-landmark__label {
@@ -1400,6 +1497,55 @@ button {
   box-shadow: 0 0 0 1px rgba(14, 116, 144, 0.28);
 }
 
+.map-legend .landmark-kind-key {
+  gap: 4px;
+}
+
+.landmark-kind {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 0.67rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(8, 47, 73, 0.08);
+}
+
+.landmark-kind--temple {
+  color: #9a3412;
+  background: #fff7ed;
+}
+
+.landmark-kind--nature {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.landmark-kind--garden {
+  color: #be185d;
+  background: #fdf2f8;
+}
+
+.landmark-kind--water {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.landmark-kind--activity {
+  color: #6d28d9;
+  background: #f5f3ff;
+}
+
+.landmark-kind--community {
+  color: #854d0e;
+  background: #fefce8;
+}
+
 .basemap-switcher {
   position: absolute;
   z-index: 16;
@@ -1532,7 +1678,7 @@ button {
   .topbar {
     padding: 12px 14px;
     gap: 10px;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
 
   .brand-lockup {
@@ -1555,13 +1701,36 @@ button {
     display: none;
   }
 
+  .topbar__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .date-pill,
+  .live-pill {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .date-pill span,
+  .live-pill span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .date-pill strong,
   .live-pill strong {
     display: none;
   }
 
+  .date-pill,
   .live-pill {
     padding: 7px 10px;
     gap: 7px;
+  }
+
+  .date-pill svg {
+    display: none;
   }
 
   .data-status {
@@ -1596,7 +1765,7 @@ button {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .mini-card--tourism-card {
+  .mini-card--spread-card {
     grid-column: 1 / -1;
     min-height: 112px;
   }

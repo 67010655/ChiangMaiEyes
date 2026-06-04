@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, Database, ExternalLink, Flame, Home, Info, MapPin, Mountain, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
+import { BookOpen, CalendarDays, CloudSun, Database, ExternalLink, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
 import { fetchDashboard, fetchDataStatus } from './lib/api';
 import { buildDataStatusFromDashboard, getDataStatusCopy } from './lib/dataStatus';
 import { riskPercent } from './lib/risk';
@@ -20,6 +20,17 @@ const fallback = dashboardSnapshot as DashboardResponse;
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+}
+
+function formatCurrentDateTime(value: Date) {
+  return new Intl.DateTimeFormat('th-TH', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(value);
 }
 
 function formatTime(value: string) {
@@ -209,9 +220,10 @@ export function App() {
   const [dataStatus, setDataStatus] = useState<DataStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true, landmarks: true });
+  const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true, landmarks: false });
   const [note, setNote] = useState<'pm' | 'risk' | null>(null);
   const [mapSelection, setMapSelection] = useState<MapSelection>(initialSelection);
+  const [now, setNow] = useState(() => new Date());
 
   const loadDashboard = useCallback(() => {
     setLoading(true);
@@ -236,6 +248,11 @@ export function App() {
     return () => window.clearInterval(refreshId);
   }, [loadDashboard]);
 
+  useEffect(() => {
+    const clockId = window.setInterval(() => setNow(new Date()), 60 * 1000);
+    return () => window.clearInterval(clockId);
+  }, []);
+
   const updatedAt = useMemo(() => {
     const times = [dashboard.hotspots.latest_update, dashboard.pm25.latest_update, dashboard.weather.latest_update];
     const sorted = [...times].sort();
@@ -243,12 +260,13 @@ export function App() {
   }, [dashboard]);
 
   const riskTone = getRiskTone(dashboard.risk.score);
-  const allOn = layers.hotspots && layers.pm25 && layers.wind && layers.landmarks;
+  const allOn = layers.hotspots && layers.pm25 && layers.wind;
   const toggleLayer = (key: keyof LayerState) => setLayers((current) => ({ ...current, [key]: !current[key] }));
   const toggleNote = (key: 'pm' | 'risk') => setNote((current) => (current === key ? null : key));
-  const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true, landmarks: true });
+  const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true, landmarks: false });
 
   const pm25Time = formatTime(dashboard.pm25.latest_update);
+  const weatherTime = formatTime(dashboard.weather.latest_update);
   const advice = adviceByColor[dashboard.pm25.color] ?? adviceByColor.green;
   const recommendations = computeRecommendations(
     dashboard.pm25.current_pm25,
@@ -262,6 +280,8 @@ export function App() {
   const windSourceText = dashboard.weather.wind_direction_text;
   const windDestinationText = windDestinationName(dashboard.weather.wind_direction_deg);
   const dataStatusCopy = dataStatus ? getDataStatusCopy(dataStatus) : null;
+  const spreadWatchLevel = dashboard.hotspots.count >= 30 || windFactor > 0 ? 'เฝ้าระวังเข้ม' : dashboard.hotspots.count > 0 ? 'เฝ้าระวัง' : 'ต่ำ';
+  const spreadWatchTone = dashboard.hotspots.count >= 30 || windFactor > 0 ? 'risk' : dashboard.hotspots.count > 0 ? 'watch' : 'good';
 
   return (
     <div className="app-shell">
@@ -284,6 +304,13 @@ export function App() {
         </div>
 
         <div className="topbar__actions">
+          <div className="date-pill" aria-label="วันที่และเวลาปัจจุบัน">
+            <CalendarDays size={16} aria-hidden />
+            <div>
+              <strong>วันที่/เวลา</strong>
+              <span>{formatCurrentDateTime(now)}</span>
+            </div>
+          </div>
           <div className="live-pill">
             <span className="live-dot" />
             <div>
@@ -322,7 +349,7 @@ export function App() {
           <h2>แผนที่จังหวัดเชียงใหม่</h2>
           <div className="map-toolbar">
             <button type="button" className={allOn ? 'active' : ''} onClick={setAll}>
-              ทั้งหมด
+              ชั้นหลัก
             </button>
             <button type="button" className={layers.pm25 ? 'active' : ''} onClick={() => toggleLayer('pm25')}>
               PM2.5
@@ -334,7 +361,7 @@ export function App() {
               ลม
             </button>
             <button type="button" className={layers.landmarks ? 'active' : ''} onClick={() => toggleLayer('landmarks')}>
-              ที่เที่ยว
+              สถานที่เสริม
             </button>
           </div>
         </div>
@@ -436,21 +463,41 @@ export function App() {
                   <span className="mini-card__speed">{dashboard.weather.wind_speed_kmh} km/h</span>
                 </div>
               </div>
-              <small className="card__foot">อัปเดต {pm25Time} น.</small>
+              <small className="card__foot">กรมอุตุฯ AWS · อัปเดต {weatherTime} น.</small>
             </section>
 
-            <section className="card mini-card mini-card--tourism-card">
-              <span className="card__title">ที่เที่ยว Wongnai</span>
+            <section className="card mini-card mini-card--weather-card">
+              <span className="card__title">อากาศจากกรมอุตุฯ</span>
               <div className="mini-card__body">
-                <span className="mini-card__icon mini-card__icon--tourism">
-                  <Mountain size={20} />
+                <span className="mini-card__icon mini-card__icon--weather">
+                  <CloudSun size={20} />
                 </span>
-                <div className="mini-card__value mini-card__value--tourism">
-                  <strong>60</strong>
-                  <span>จุดบนแผนที่</span>
+                <div className="mini-card__value mini-card__value--weather">
+                  <strong>{dashboard.weather.temperature_c.toFixed(1)}</strong>
+                  <span>°C</span>
+                  <small>ชื้น {Math.round(dashboard.weather.humidity_percent)}%</small>
+                  {dashboard.weather.pressure_hpa != null && <small>{dashboard.weather.pressure_hpa.toFixed(1)} hPa</small>}
+                  {dashboard.weather.rain_today_mm != null && <small>ฝนวันนี้ {dashboard.weather.rain_today_mm.toFixed(1)} มม.</small>}
                 </div>
               </div>
-              <small className="card__foot">คลิกหมุดเพื่อเปิด Google Maps</small>
+              <small className="card__foot">{dashboard.weather.station_name ?? 'สถานีอุตุนิยมวิทยาเชียงใหม่'} · {weatherTime} น.</small>
+            </section>
+
+            <section className="card mini-card mini-card--spread-card">
+              <span className="card__title">แนวโน้มการลาม/ควัน</span>
+              <div className="mini-card__body">
+                <span className="mini-card__icon mini-card__icon--spread">
+                  <Flame size={20} />
+                </span>
+                <div className="mini-card__value mini-card__value--spread">
+                  <strong>{spreadWatchLevel}</strong>
+                  <span>ไป{windDestinationText}</span>
+                  <small>อิงจุดความร้อน + ทิศลม TMD</small>
+                </div>
+              </div>
+              <small className={`card__foot card__foot--${spreadWatchTone}`}>
+                ใช้เป็นแนวโน้มเบื้องต้นสำหรับเจ้าหน้าที่
+              </small>
             </section>
           </div>
         </div>

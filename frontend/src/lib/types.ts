@@ -52,6 +52,15 @@ export type WeatherResponse = {
   humidity_percent: number;
   latest_update: string;
   source: string;
+  station_name?: string | null;
+  station_latitude?: number | null;
+  station_longitude?: number | null;
+  pressure_hpa?: number | null;
+  rain_15m_mm?: number | null;
+  rain_1h_mm?: number | null;
+  rain_today_mm?: number | null;
+  temperature_min_today_c?: number | null;
+  temperature_max_today_c?: number | null;
 };
 
 export type RiskResponse = {

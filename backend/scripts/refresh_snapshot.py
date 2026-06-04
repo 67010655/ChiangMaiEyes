@@ -78,22 +78,24 @@ def main() -> int:
 
     logger.info("Reconciled %d unique hotspots", hotspots.count)
 
-    # Idempotency: if the reconciled hotspots are identical to what's already
-    # on disk (ignoring the latest_update timestamp), change nothing — so an
-    # hourly run only produces a commit/deploy when the data actually changed.
+    # Idempotency: keep the hotspot fallback stable when the reconciled set is
+    # unchanged, but still refresh the full dashboard snapshot because weather
+    # and PM2.5 have their own update cadence.
     new_dump = hotspots.model_dump()
     existing_path = settings.cache_dir / "hotspots.json"
+    hotspots_changed = True
     if existing_path.exists():
         try:
             old = json.loads(existing_path.read_text(encoding="utf-8"))
             if _hotspot_fingerprint(old.get("items", [])) == _hotspot_fingerprint(new_dump["items"]):
-                logger.info("Hotspots unchanged (%d) — no write.", hotspots.count)
-                return 0
+                logger.info("Hotspots unchanged (%d) — keeping existing hotspot fallback.", hotspots.count)
+                hotspots_changed = False
         except Exception as exc:  # noqa: BLE001 — comparison is best-effort
             logger.warning("Could not compare with existing snapshot: %s", exc)
 
     # Backend fallback file.
-    write_json(settings.cache_dir, "hotspots.json", new_dump)
+    if hotspots_changed:
+        write_json(settings.cache_dir, "hotspots.json", new_dump)
 
     # Full dashboard snapshot for the frontend; pm25/weather fall back to their
     # own cached files if their live providers are unreachable from this runner.

@@ -46,7 +46,7 @@ def _write_snapshot(cache_dir: Path) -> None:
             "temperature_c": 25.7,
             "humidity_percent": 90,
             "latest_update": "2026-06-03T00:43:25+07:00",
-            "source": "Open-Meteo Live API",
+            "source": "Thai Meteorological Department AWS",
         },
     )
 
