@@ -1341,7 +1341,7 @@ export function DashboardMap({
       const icon = L.divIcon({
         html: `<div class="lf-hotspot${isForest ? ' lf-hotspot--forest' : ''}" style="width:${size}px;height:${size}px">
           <div class="lf-hotspot__halo"></div>
-          <span class="lf-hotspot__fire" style="font-size:${Math.round(size * 0.72)}px">🔥</span>
+          <span class="lf-hotspot__fire" aria-hidden="true" style="font-size:${Math.round(size * 0.72)}px"></span>
           ${labelHtml}
         </div>`,
         className: 'lf-marker-wrap',

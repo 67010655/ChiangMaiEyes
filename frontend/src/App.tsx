@@ -411,10 +411,14 @@ function EmergencyContacts() {
             </div>
           </div>
           <a
+            className="line-report-link"
             href="https://line.me/R/ti/p/%40podd-report"
             target="_blank"
             rel="noreferrer"
             style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              minHeight: '44px',
               padding: '6px 12px',
               background: '#06c755',
               color: '#ffffff',
@@ -1196,6 +1200,8 @@ export function App() {
                 <button
                   type="button"
                   className="card__info-btn"
+                  aria-label="อธิบายวิธีคำนวณคะแนนเสี่ยง"
+                  aria-expanded={note === 'risk'}
                   onClick={() => toggleNote('risk')}
                 >
                   <Info size={15} />
