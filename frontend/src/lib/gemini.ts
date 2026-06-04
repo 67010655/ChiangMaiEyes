@@ -3,12 +3,20 @@ import type { DashboardResponse } from './types';
 // ─── Provider config ────────────────────────────────────────────────────────
 // Groq only. Get a free key at https://console.groq.com
 
-const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY ?? '';
+// Supports multiple comma-separated keys in VITE_GROQ_API_KEY. We rotate
+// across them when one hits its (temporary) quota, so the advisor keeps working.
+const GROQ_KEYS = ((import.meta.env.VITE_GROQ_API_KEY ?? '') as string)
+  .split(',')
+  .map((k: string) => k.trim())
+  .filter((k: string) => k.startsWith('gsk_') && k.length >= 20);
 
-// Groq key starts with 'gsk_'
-const GROQ_VALID = GROQ_KEY.startsWith('gsk_') && GROQ_KEY.length >= 20;
+const GROQ_VALID = GROQ_KEYS.length > 0;
 
 export const GROQ_KEY_VALID = GROQ_VALID;
+
+// Index of the key to try first; advances when a key is rate-limited so the
+// next call starts from the one that last worked.
+let groqKeyIndex = 0;
 
 // ─── Endpoints ──────────────────────────────────────────────────────────────
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -136,28 +144,45 @@ async function callGroq(
     { role: 'system', content: systemOverride ?? SYSTEM_PROMPT },
     ...messages,
   ];
-
-  const response = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${GROQ_KEY}`,
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: allMessages,
-      max_tokens: maxTokens,
-      temperature: 0.85,
-      top_p: 0.92,
-    }),
+  const body = JSON.stringify({
+    model: GROQ_MODEL,
+    messages: allMessages,
+    max_tokens: maxTokens,
+    temperature: 0.85,
+    top_p: 0.92,
   });
 
-  if (!response.ok) {
-    if (response.status === 429) throw new Error('QUOTA_EXCEEDED');
+  let lastError: Error | null = null;
+
+  // Try each key at most once, starting from the last one that worked. On a
+  // rate-limit / quota / auth failure, rotate to the next key and retry.
+  for (let attempt = 0; attempt < GROQ_KEYS.length; attempt++) {
+    const key = GROQ_KEYS[groqKeyIndex];
+    const response = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${key}`,
+      },
+      body,
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      return result.choices?.[0]?.message?.content ?? '';
+    }
+
+    if (response.status === 429 || response.status === 401 || response.status === 403) {
+      lastError = new Error('QUOTA_EXCEEDED');
+      groqKeyIndex = (groqKeyIndex + 1) % GROQ_KEYS.length; // switch keys
+      continue;
+    }
+
+    // Not a key problem — surface immediately.
     const errText = await response.text().catch(() => '');
     throw new Error(`Groq API error ${response.status}: ${errText}`);
   }
 
-  const result = await response.json();
-  return result.choices?.[0]?.message?.content ?? '';
+  // Every key was exhausted.
+  throw lastError ?? new Error('QUOTA_EXCEEDED');
 }
