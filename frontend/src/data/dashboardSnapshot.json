@@ -2,7 +2,7 @@
   "hotspots": {
     "count": 13,
     "density_per_100_km2": 0.06,
-    "latest_update": "2026-06-04T11:06:17.653606+07:00",
+    "latest_update": "2026-06-04T12:24:13.000566+07:00",
     "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
@@ -234,11 +234,11 @@
     }
   },
   "pm25": {
-    "current_pm25": 16.1,
+    "current_pm25": 15.2,
     "category": "ดี",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-04T10:00:00+07:00",
+    "latest_update": "2026-06-04T12:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -247,9 +247,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 21.0,
+        "pm25": 20.5,
         "trend": "stable",
-        "updated_at": "2026-06-04T10:00:00+07:00"
+        "updated_at": "2026-06-04T12:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -257,35 +257,44 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 11.3,
+        "pm25": 9.8,
         "trend": "stable",
-        "updated_at": "2026-06-04T10:00:00+07:00"
+        "updated_at": "2026-06-04T12:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 3.6,
-    "wind_direction_deg": 160.0,
-    "wind_direction_text": "ใต้",
-    "temperature_c": 32.2,
-    "humidity_percent": 56.0,
-    "latest_update": "2026-06-04T11:06:20.977548+07:00",
-    "source": "Open-Meteo Live API"
+    "wind_speed_kmh": 5.4,
+    "wind_direction_deg": 214.2,
+    "wind_direction_text": "ทิศตะวันตกเฉียงใต้",
+    "temperature_c": 34.6,
+    "humidity_percent": 54.6,
+    "latest_update": "2026-06-04T12:23:00+07:00",
+    "source": "Thai Meteorological Department AWS",
+    "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
+    "station_latitude": 18.7711,
+    "station_longitude": 98.9692,
+    "pressure_hpa": 967.6,
+    "rain_15m_mm": 0.0,
+    "rain_1h_mm": 0.0,
+    "rain_today_mm": 0.0,
+    "temperature_min_today_c": 26.6,
+    "temperature_max_today_c": 35.3
   },
   "risk": {
-    "score": 1,
+    "score": 3,
     "category": "Low",
     "formula": "min(10, round(min(PM2.5/15,4) + min(hotspot_count/50,4) + wind_factor))",
     "factors": {
-      "pm25_points": 1.07,
+      "pm25_points": 1.01,
       "hotspot_points": 0.26,
-      "wind_factor": 0,
-      "wind_pushes_smoke_to_city": "no"
+      "wind_factor": 2,
+      "wind_pushes_smoke_to_city": "yes"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 16 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 13 จุด และลมพัดจากทิศ ใต้ ด้วยความเร็ว 4 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 1/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 15 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดี พบจุดความร้อน 13 จุด และลมพัดจากทิศ ทิศตะวันตกเฉียงใต้ ด้วยความเร็ว 5 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 3/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
     "source": "rule-based fallback"
   }
 }
