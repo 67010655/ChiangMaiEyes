@@ -2924,6 +2924,37 @@ button {
   color: var(--green);
 }
 
+/* PM2.5 × hotspot overlay chart */
+.overlay-chart {
+  width: 100%;
+  height: 130px;
+  display: block;
+}
+
+.overlay-legend {
+  font-size: 0.68rem;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ov-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin: 0 1px 0 6px;
+}
+
+.ov-dot--fire {
+  background: #f97316;
+}
+
+.ov-dot--pm {
+  background: #0ea5e9;
+}
+
 /* Combined "today at a glance" summary (mobile-only; hidden on desktop where
    the detailed cards lead). Three pillar tiles: air · risk · hotspots. */
 .today-summary {

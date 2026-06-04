@@ -287,10 +287,18 @@ def test_fetch_weather_history_daily(mock_get):
             "time": ["2026-06-01", "2026-06-02"],
             "temperature_2m_max": [34.1, 35.2],
             "temperature_2m_min": [24.0, 25.1],
-        }
+            "wind_speed_10m_max": [12.0, 9.5],
+        },
+        "hourly": {
+            "time": ["2026-06-01T00:00", "2026-06-01T01:00", "2026-06-02T00:00"],
+            "relative_humidity_2m": [80, 70, 60],
+        },
     }
     mock_get.return_value = resp
-    assert fetch_weather_history(2) == [("2026-06-01", 34.1, 24.0), ("2026-06-02", 35.2, 25.1)]
+    assert fetch_weather_history(2) == [
+        ("2026-06-01", 34.1, 24.0, 12.0, 75),
+        ("2026-06-02", 35.2, 25.1, 9.5, 60),
+    ]
 
 
 @patch("httpx.get")

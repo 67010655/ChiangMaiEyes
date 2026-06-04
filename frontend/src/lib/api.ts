@@ -42,8 +42,8 @@ export async function fetchHotspotHistory(): Promise<HotspotHistoryResponse> {
 
 export async function fetchHistory(): Promise<HistoryResponse> {
   const controller = new AbortController();
-  // First (uncached) call chains several upstream requests, so allow ~35s.
-  const timeoutId = setTimeout(() => controller.abort(), 35_000);
+  // First (uncached) call fans out to many upstream requests, so allow ~60s.
+  const timeoutId = setTimeout(() => controller.abort(), 60_000);
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/history`, {

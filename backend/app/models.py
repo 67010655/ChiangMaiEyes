@@ -53,6 +53,8 @@ class WeatherHistoryDay(BaseModel):
     date: str
     temp_max: float
     temp_min: float
+    wind_max: float
+    humidity: float
 
 
 class HistoryResponse(BaseModel):

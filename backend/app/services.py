@@ -45,18 +45,21 @@ _BUNDLED_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 # a 5-minute TTL is a good balance between freshness and rate-limit safety.
 # ---------------------------------------------------------------------------
 _CACHE_TTL_SECONDS = 300  # 5 minutes
+# Historical series are immutable except for "today", so cache them far longer
+# to avoid re-running the heavy multi-request NASA chain every 5 minutes.
+_HISTORY_TTL_SECONDS = 1800  # 30 minutes
 
 T = TypeVar("T")
 
 _cache: dict[str, tuple[float, Any]] = {}
 
 
-def _get_cached(key: str) -> Any | None:
+def _get_cached(key: str, ttl: float = _CACHE_TTL_SECONDS) -> Any | None:
     entry = _cache.get(key)
     if entry is None:
         return None
     ts, value = entry
-    if time.monotonic() - ts > _CACHE_TTL_SECONDS:
+    if time.monotonic() - ts > ttl:
         del _cache[key]
         return None
     return value
@@ -187,11 +190,11 @@ def get_hotspot_history(settings: Settings) -> HotspotHistoryResponse:
     return response
 
 
-def get_history(settings: Settings, days: int = 14) -> HistoryResponse:
+def get_history(settings: Settings, days: int = 30) -> HistoryResponse:
     """Combined backward trends (hotspots · PM2.5 · weather) for the authority
     view. Every series is best-effort, so one failing provider never sinks the
     others or errors the request."""
-    cached = _get_cached("history")
+    cached = _get_cached("history", ttl=_HISTORY_TTL_SECONDS)
     if cached is not None:
         return cached
 
@@ -209,7 +212,10 @@ def get_history(settings: Settings, days: int = 14) -> HistoryResponse:
         pm25 = []
 
     try:
-        weather = [WeatherHistoryDay(date=d, temp_max=hi, temp_min=lo) for d, hi, lo in fetch_weather_history(days)]
+        weather = [
+            WeatherHistoryDay(date=d, temp_max=hi, temp_min=lo, wind_max=wind, humidity=hum)
+            for d, hi, lo, wind, hum in fetch_weather_history(days)
+        ]
     except Exception as e:  # noqa: BLE001
         logger.warning("Weather history failed: %s", e)
         weather = []

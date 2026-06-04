@@ -43,6 +43,8 @@ export type WeatherHistoryDay = {
   date: string;
   temp_max: number;
   temp_min: number;
+  wind_max: number;
+  humidity: number;
 };
 
 export type HistoryResponse = {

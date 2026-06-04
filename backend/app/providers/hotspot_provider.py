@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import math
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
 import httpx
@@ -299,23 +300,34 @@ def fetch_hotspot_history(map_key: str, days: int = 5) -> list[tuple[str, int]]:
     today = datetime.datetime.now(BANGKOK_TZ).date()
     earliest = today - datetime.timedelta(days=span - 1)
 
-    seen: set[tuple[float, float, str]] = set()
-    per_day: dict[str, int] = {}
-
+    # Build every (satellite, 5-day window) request up front, then fetch them with
+    # bounded concurrency — a 30-day window is up to 18 calls and sequential would
+    # blow the request timeout.
+    urls: list[str] = []
     window_start = earliest
     while window_start <= today:
         chunk = min(5, (today - window_start).days + 1)  # ≤5-day API limit
         start_str = window_start.isoformat()
         for src in NASA_VIIRS_SOURCES:
-            url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{chunk}/{start_str}"
-            try:
-                response = httpx.get(url, timeout=20.0)
-                response.raise_for_status()
-            except Exception as ex:  # noqa: BLE001 — one satellite/window failing is fine
-                logger.warning("NASA FIRMS history %s @%s fetch failed: %s", src, start_str, ex)
+            urls.append(f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{chunk}/{start_str}")
+        window_start += datetime.timedelta(days=5)
+
+    def _fetch(url: str) -> str | None:
+        try:
+            response = httpx.get(url, timeout=20.0)
+            response.raise_for_status()
+            return response.content.decode("utf-8")
+        except Exception as ex:  # noqa: BLE001 — one satellite/window failing is fine
+            logger.warning("NASA FIRMS history fetch failed (%s): %s", url[-40:], ex)
+            return None
+
+    seen: set[tuple[float, float, str]] = set()
+    per_day: dict[str, int] = {}
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for body in pool.map(_fetch, urls):
+            if not body:
                 continue
-            reader = csv.DictReader(response.content.decode("utf-8").splitlines())
-            for row in reader:
+            for row in csv.DictReader(body.splitlines()):
                 try:
                     lat = float(row["latitude"])
                     lon = float(row["longitude"])
@@ -329,7 +341,6 @@ def fetch_hotspot_history(map_key: str, days: int = 5) -> list[tuple[str, int]]:
                     per_day[day] = per_day.get(day, 0) + 1
                 except Exception:  # noqa: BLE001 — skip malformed rows
                     continue
-        window_start += datetime.timedelta(days=5)
 
     return [
         ((earliest + datetime.timedelta(days=i)).isoformat(),

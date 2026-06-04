@@ -58,7 +58,7 @@ def hotspots_history(settings: Settings = Depends(get_settings)) -> HotspotHisto
 
 @app.get("/api/history", response_model=HistoryResponse)
 def history(settings: Settings = Depends(get_settings)) -> HistoryResponse:
-    return get_history(settings, days=14)
+    return get_history(settings, days=30)
 
 
 @app.get("/api/pm25", response_model=Pm25Response)

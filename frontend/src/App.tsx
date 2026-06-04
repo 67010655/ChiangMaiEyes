@@ -651,29 +651,88 @@ function TrendBars({
   );
 }
 
-// Authority-only: real backward trends (hotspots · PM2.5 · temperature) pulled
-// live from NASA VIIRS and Open-Meteo — the app's look back in time.
+// Dual-scale overlay: hotspot bars + PM2.5 line on independent axes, so an
+// analyst can read whether smoke tracks the fire count even at different scales.
+function OverlayChart({
+  hotspots,
+  pm25,
+}: {
+  hotspots: { date: string; value: number }[];
+  pm25: { date: string; value: number }[];
+}) {
+  if (hotspots.length === 0 || pm25.length === 0) return null;
+  const n = Math.max(hotspots.length, pm25.length);
+  const W = 600;
+  const H = 150;
+  const padT = 8;
+  const padB = 20;
+  const hpMax = Math.max(...hotspots.map((d) => d.value), 1);
+  const pmMax = Math.max(...pm25.map((d) => d.value), 1);
+  const bw = W / n;
+  const plotH = H - padT - padB;
+  const baseY = H - padB;
+  const linePts = pm25
+    .map((d, i) => `${(i * bw + bw / 2).toFixed(1)},${(padT + (1 - d.value / pmMax) * plotH).toFixed(1)}`)
+    .join(' ');
+  const lbl = (iso: string) => {
+    const d = new Date(`${iso}T00:00:00`);
+    return `${d.getDate()}/${d.getMonth() + 1}`;
+  };
+  return (
+    <div className="trend-block">
+      <div className="trend-block__head">
+        <span className="trend-block__title">🔁 PM2.5 เทียบจุดความร้อน</span>
+        <span className="overlay-legend">
+          <i className="ov-dot ov-dot--fire" />จุดความร้อน <i className="ov-dot ov-dot--pm" />PM2.5
+        </span>
+      </div>
+      <svg className="overlay-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="PM2.5 เทียบจุดความร้อน">
+        {hotspots.map((d, i) => {
+          const top = padT + (1 - d.value / hpMax) * plotH;
+          return (
+            <rect key={d.date} x={i * bw + 1} y={top} width={Math.max(bw - 2, 1)} height={baseY - top} fill="#f97316" opacity="0.55" rx="1">
+              <title>{`${lbl(d.date)} · ${d.value} จุด`}</title>
+            </rect>
+          );
+        })}
+        <polyline points={linePts} fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinejoin="round" />
+      </svg>
+      <div className="trend-axis">
+        <span>🔥 สูงสุด {hpMax} จุด</span>
+        <span style={{ color: '#0ea5e9', fontWeight: 800 }}>PM2.5 สูงสุด {pmMax} µg/m³</span>
+      </div>
+    </div>
+  );
+}
+
+// Authority-only: real backward trends pulled live from NASA VIIRS and
+// Open-Meteo — the app's look back in time, for analysis.
 function HistorySection({ history }: { history: HistoryResponse | null }) {
   if (!history) return null;
   const hp = history.hotspots.map((d) => ({ date: d.date, value: d.count }));
   const pm = history.pm25.map((d) => ({ date: d.date, value: d.value }));
-  const wx = history.weather.map((d) => ({ date: d.date, value: d.temp_max }));
-  if (hp.length === 0 && pm.length === 0 && wx.length === 0) return null;
-  const fireColor = (c: number) => (c === 0 ? '#cbd5e1' : c <= 10 ? '#16a34a' : c <= 25 ? '#f97316' : '#dc2626');
+  const temp = history.weather.map((d) => ({ date: d.date, value: d.temp_max }));
+  const wind = history.weather.map((d) => ({ date: d.date, value: d.wind_max }));
+  const humid = history.weather.map((d) => ({ date: d.date, value: d.humidity }));
+  if (hp.length === 0 && pm.length === 0 && temp.length === 0) return null;
   const pmColor = (v: number) => pmHex(getPm25Color(v));
   const tempColor = (t: number) => (t >= 38 ? '#dc2626' : t >= 35 ? '#f97316' : t >= 30 ? '#f59e0b' : '#10b981');
+  // Drier + windier = higher fire/smoke risk, so colour those toward red.
+  const windColor = (w: number) => (w >= 18 ? '#dc2626' : w >= 12 ? '#f97316' : '#10b981');
+  const humidColor = (h: number) => (h < 40 ? '#dc2626' : h < 60 ? '#f97316' : '#10b981');
   return (
     <section className="card history-section" aria-label={`ข้อมูลย้อนหลัง ${history.days} วัน`}>
       <div className="card__head">
-        <span className="card__title">📊 ข้อมูลย้อนหลัง {history.days} วัน</span>
+        <span className="card__title">📊 ข้อมูลย้อนหลัง {history.days} วัน (เชิงวิเคราะห์)</span>
       </div>
       <p className="personal-checker-desc" style={{ marginBottom: '16px' }}>
-        แนวโน้มจริงรายวันจากดาวเทียมและโมเดลอุตุฯ — จุดความร้อน, PM2.5 ({history.sources.pm25}) และอุณหภูมิ
+        แนวโน้มจริงรายวันจากดาวเทียมและโมเดลอุตุฯ เพื่อวิเคราะห์ความสัมพันธ์ไฟ–ควัน–สภาพอากาศ
       </p>
       <div className="history-charts">
-        <TrendBars emoji="🔥" title="จุดความร้อน/วัน" points={hp} color={fireColor} unit="จุด" />
-        <TrendBars emoji="🌫️" title="PM2.5 เฉลี่ย/วัน" points={pm} color={pmColor} unit="µg/m³" decimals={1} />
-        <TrendBars emoji="🌡️" title="อุณหภูมิสูงสุด/วัน" points={wx} color={tempColor} unit="°C" decimals={1} />
+        <OverlayChart hotspots={hp} pm25={pm} />
+        <TrendBars emoji="🌡️" title="อุณหภูมิสูงสุด/วัน" points={temp} color={tempColor} unit="°C" decimals={1} />
+        <TrendBars emoji="💨" title="ความเร็วลมสูงสุด/วัน" points={wind} color={windColor} unit="km/h" decimals={1} />
+        <TrendBars emoji="💧" title="ความชื้นเฉลี่ย/วัน" points={humid} color={humidColor} unit="%" />
       </div>
     </section>
   );
