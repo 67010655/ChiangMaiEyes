@@ -2,7 +2,7 @@
   "hotspots": {
     "count": 19,
     "density_per_100_km2": 0.09,
-    "latest_update": "2026-06-04T19:24:08.690272+07:00",
+    "latest_update": "2026-06-04T20:24:10.326932+07:00",
     "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
@@ -342,11 +342,11 @@
     }
   },
   "pm25": {
-    "current_pm25": 14.3,
+    "current_pm25": 13.9,
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-04T19:00:00+07:00",
+    "latest_update": "2026-06-04T20:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -355,9 +355,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 19.9,
+        "pm25": 19.4,
         "trend": "stable",
-        "updated_at": "2026-06-04T19:00:00+07:00"
+        "updated_at": "2026-06-04T20:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -365,24 +365,24 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 8.8,
+        "pm25": 8.5,
         "trend": "stable",
-        "updated_at": "2026-06-04T19:00:00+07:00"
+        "updated_at": "2026-06-04T20:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 5.4,
-    "wind_direction_deg": 154.0,
+    "wind_speed_kmh": 4.7,
+    "wind_direction_deg": 151.2,
     "wind_direction_text": "ทิศใต้ค่อนไปทางตะวันออก",
-    "temperature_c": 30.1,
-    "humidity_percent": 62.5,
-    "latest_update": "2026-06-04T19:23:00+07:00",
+    "temperature_c": 29.7,
+    "humidity_percent": 65.3,
+    "latest_update": "2026-06-04T20:23:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
     "station_longitude": 98.9692,
-    "pressure_hpa": 966.4,
+    "pressure_hpa": 967.9,
     "rain_15m_mm": 0.0,
     "rain_1h_mm": 0.0,
     "rain_today_mm": 0.0,
@@ -394,13 +394,13 @@
     "category": "Medium",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
-      "pm25_points": 0.72,
+      "pm25_points": 0.7,
       "hotspot_points": 0.47,
       "spread_points": 4.0,
       "avg_flammability": 1.59,
       "avg_slope_factor": 1.46,
       "avg_history_factor": 1.38,
-      "wind_speed_kmh": 5.4,
+      "wind_speed_kmh": 4.7,
       "wind_pushes_smoke_to_city": "no"
     }
   },
