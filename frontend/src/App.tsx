@@ -356,7 +356,7 @@ function EmergencyContacts() {
         หากท่านพบเห็นประกายไฟ จุด hotspot หรือแนวควันป่า สามารถโทรแจ้งเจ้าหน้าที่หรือส่งพิกัดทาง LINE เพื่อเข้าระงับเหตุได้ทันที
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div className="hotline-list">
         {hotlines.map((h) => (
           <a
             key={h.number}
@@ -381,6 +381,7 @@ function EmergencyContacts() {
         ))}
       </div>
       <div
+        className="line-report-panel"
         style={{
           marginTop: '14px',
           paddingTop: '12px',
@@ -1044,11 +1045,10 @@ export function App() {
             </>
           )}
 
-          <EmergencyContacts />
         </div>
 
         {/* RIGHT COLUMN: PERSONAL CHECKER + FORECAST TABLES + RISK CHECKS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="dashboard-secondary">
 
           {/* Personal Checker & Stats */}
           <div className="metrics-bento-grid">
@@ -1191,7 +1191,7 @@ export function App() {
           )}
 
           {/* Risk score & Advice summary card row */}
-          <div className="dashboard-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+          <div className="dashboard-risk-grid">
             
             {/* Risk Factor details */}
             <section className="card risk-card" data-risk={riskTone}>
@@ -1262,6 +1262,8 @@ export function App() {
           </div>
 
         </div>
+
+        <EmergencyContacts />
 
       </div>
 

@@ -1721,17 +1721,30 @@ button {
 
   .topbar__actions {
     width: 100%;
+    flex-wrap: wrap;
     justify-content: space-between;
+  }
+
+  .ui-mode-selector {
+    flex: 1 1 100%;
   }
 
   .date-pill,
   .live-pill {
-    flex: 1 1 0;
+    flex: 1 1 calc(50% - 44px);
     min-width: 0;
+  }
+
+  .date-pill > div,
+  .live-pill > div {
+    min-width: 0;
+    overflow: hidden;
   }
 
   .date-pill span,
   .live-pill span {
+    min-width: 0;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -3380,5 +3393,247 @@ button {
   background: var(--green) !important;
   color: #fff !important;
   border-radius: 8px;
+}
+
+/* ---------- Responsive priority pass ---------- */
+.dashboard-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dashboard-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.hotline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.line-report-panel {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 767px) {
+  .dashboard-container {
+    display: flex !important;
+    flex-direction: column;
+  }
+
+  .emergency-contacts-card {
+    order: 99;
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    background: var(--surface);
+  }
+
+  [data-theme='dark'] body {
+    background: var(--bg) !important;
+  }
+
+  .app-shell {
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface);
+  }
+
+  [data-theme='dark'] .app-shell {
+    background: var(--bg);
+  }
+
+  .topbar {
+    padding: 12px 16px;
+  }
+
+  .map-hero,
+  .map-stage.map-hero {
+    height: clamp(360px, 42vh, 500px) !important;
+    min-height: clamp(360px, 42vh, 500px) !important;
+  }
+
+  .map-detail-bar {
+    padding: 10px 14px;
+  }
+
+  .dashboard-container {
+    grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.35fr);
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .stats-main,
+  .dashboard-secondary {
+    gap: 12px !important;
+  }
+
+  .dashboard-risk-grid {
+    gap: 12px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .hero-weather-card {
+    gap: 12px;
+  }
+
+  .metric-bento-item,
+  .pollutant-card,
+  .hourly-item-box,
+  .hotline-item {
+    padding: 10px;
+  }
+
+  .forecast-hourly-list {
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+
+  .hourly-item-box {
+    flex-basis: 88px;
+    gap: 6px;
+  }
+
+  .daily-cell,
+  .daily-forecast-table th,
+  .daily-forecast-table td {
+    padding: 8px 10px !important;
+  }
+
+  .emergency-contacts-card {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+
+  .emergency-contacts-card .personal-checker-desc {
+    display: none;
+  }
+
+  .hotline-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .line-report-panel {
+    margin-top: 10px !important;
+    padding-top: 10px !important;
+  }
+
+  .page-foot {
+    padding: 0 2px 2px;
+  }
+}
+
+@media (min-width: 1280px) and (max-height: 820px) {
+  .map-hero,
+  .map-stage.map-hero {
+    height: 360px !important;
+    min-height: 360px !important;
+  }
+
+  .hero-temp {
+    font-size: 3rem;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 900px) {
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app-shell {
+    height: 100vh;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(380px, 430px) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    overflow: hidden;
+  }
+
+  .topbar {
+    grid-column: 1 / -1;
+  }
+
+  .data-status,
+  .notice {
+    grid-column: 1 / -1;
+  }
+
+  .map-hero,
+  .map-stage.map-hero {
+    grid-column: 2;
+    grid-row: 2;
+    height: auto !important;
+    min-height: 0 !important;
+    align-self: stretch;
+  }
+
+  .map-detail-bar {
+    grid-column: 2;
+    grid-row: 3;
+    max-height: 128px;
+    overflow: auto;
+  }
+
+  .dashboard-container {
+    grid-column: 1;
+    grid-row: 2 / 4;
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 12px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--green) transparent;
+  }
+
+  .dashboard-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .dashboard-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .dashboard-container::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 999px;
+  }
+
+  .dashboard-risk-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hotline-list {
+    grid-template-columns: 1fr;
+  }
+
+  .emergency-contacts-card {
+    grid-column: auto;
+  }
+
+  .page-foot {
+    display: none;
+  }
 }
 
