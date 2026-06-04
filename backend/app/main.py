@@ -1,8 +1,20 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.advisor import AdvisorUnavailable, chat_with_advisor, generate_daily_briefing
 from app.config import Settings, get_settings
-from app.models import DataStatusResponse, DashboardResponse, HotspotResponse, Pm25Response, RiskResponse, SummaryResponse, WeatherResponse
+from app.models import (
+    AdvisorBriefingRequest,
+    AdvisorChatRequest,
+    AdvisorResponse,
+    DataStatusResponse,
+    DashboardResponse,
+    HotspotResponse,
+    Pm25Response,
+    RiskResponse,
+    SummaryResponse,
+    WeatherResponse,
+)
 from app.services import calculate_risk, get_dashboard, get_data_status, get_hotspots, get_pm25, get_summary, get_weather
 
 app = FastAPI(title="ChiangMaiEyes API", version="0.1.0")
@@ -56,3 +68,27 @@ def dashboard(settings: Settings = Depends(get_settings)) -> DashboardResponse:
 @app.get("/api/data-status", response_model=DataStatusResponse)
 def data_status(settings: Settings = Depends(get_settings)) -> DataStatusResponse:
     return get_data_status(settings)
+
+
+@app.post("/api/advisor/briefing", response_model=AdvisorResponse)
+def advisor_briefing(
+    request: AdvisorBriefingRequest,
+    settings: Settings = Depends(get_settings),
+) -> AdvisorResponse:
+    try:
+        text = generate_daily_briefing(settings, request.dashboard)
+        return AdvisorResponse(text=text, source="Groq AI")
+    except AdvisorUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.post("/api/advisor/chat", response_model=AdvisorResponse)
+def advisor_chat(
+    request: AdvisorChatRequest,
+    settings: Settings = Depends(get_settings),
+) -> AdvisorResponse:
+    try:
+        text = chat_with_advisor(settings, request.dashboard, request.history, request.user_message)
+        return AdvisorResponse(text=text, source="Groq AI")
+    except AdvisorUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc

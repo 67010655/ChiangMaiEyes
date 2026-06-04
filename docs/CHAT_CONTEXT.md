@@ -1,5 +1,13 @@
 # ChiangMaiEyes Chat Context
 
+## Current Status Update (2026-06-04)
+
+- Frontend production is now `https://chiangmaieyes.vercel.app`.
+- Backend production is now a separate Vercel FastAPI project at `https://backend-mocha-tau-49.vercel.app`.
+- The frontend should use `VITE_API_BASE_URL=https://backend-mocha-tau-49.vercel.app`.
+- The AI advisor no longer uses browser-visible `VITE_GROQ_API_KEY`; set `GROQ_API_KEYS` on the backend/Vercel project instead.
+- Older notes below that mention Render or undeployed backend are historical context, not the current deployment state.
+
 เอกสารนี้บันทึกบริบทจากแชทที่ใช้สร้าง MVP เพื่อให้กลับมาต่อโปรเจกต์ได้โดยไม่ต้องไล่บทสนทนาใหม่ทั้งหมด
 
 ## เป้าหมายโปรเจกต์
@@ -108,17 +116,19 @@ Status from Vercel inspect: `Ready`
 
 ## Current Backend Status
 
-Backend exists locally under `backend/` and tests passed locally, but it has not yet been deployed to Render.
-
-Current frontend therefore falls back to embedded sample data if `/api/dashboard` is unavailable.
-
-To make live data work publicly:
-
-1. Deploy `backend/` to Render
-2. Set Vercel env var:
+Historical note: this section originally described the pre-deployment state.
+The current backend is deployed to Vercel at:
 
 ```text
-VITE_API_BASE_URL=https://your-render-service.onrender.com
+https://backend-mocha-tau-49.vercel.app
+```
+
+Current frontend still falls back to embedded sample data if `/api/dashboard` is unavailable.
+
+The live frontend should point to:
+
+```text
+VITE_API_BASE_URL=https://backend-mocha-tau-49.vercel.app
 ```
 
 3. Redeploy frontend
@@ -255,17 +265,16 @@ Ready
 - `moduleResolution` was changed to `Bundler` for current TypeScript/Vite compatibility
 - `vite-env.d.ts` was added for Vite import typings and CSS imports
 - `vite.config.ts` currently proxies local `/api` to `http://localhost:8000` for dev
-- Production frontend needs `VITE_API_BASE_URL` once backend is deployed
+- Production frontend uses `VITE_API_BASE_URL=https://backend-mocha-tau-49.vercel.app`
+- AI advisor provider keys must stay in backend env as `GROQ_API_KEYS`
 
 ## Next Best Tasks
 
-1. Deploy backend to Render
-2. Keep GISTDA API Gateway VIIRS 1-day source labels aligned with the actual endpoint
-3. Replace simplified Chiang Mai boundary with official/detailed GeoJSON
-4. Set `VITE_API_BASE_URL` in Vercel
-5. Redeploy frontend
-6. Add live PM2.5 and weather adapters
-7. Add freshness indicators in the UI
+1. Keep GISTDA/RFD/NASA source labels aligned with the actual endpoint mix
+2. Replace simplified Chiang Mai boundary with official/detailed GeoJSON
+3. Improve backend advisor prompt guardrails and timeout fallback
+4. Add daily archive files or a small historical store when MVP constraints allow
+5. Add more operator-facing freshness diagnostics in the UI
 
 ## User Preference From This Chat
 

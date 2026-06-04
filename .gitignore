@@ -28,3 +28,4 @@ Thumbs.db
 .idea/
 .vscode/
 scripts/refresh.log
+backend/uvicorn-local*.log

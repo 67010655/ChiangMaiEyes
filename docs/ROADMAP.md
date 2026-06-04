@@ -23,7 +23,7 @@
 - Station-level trend sparkline.
 - Daily archive files.
 - Source freshness badges.
-- Better Groq prompt guardrails and timeout fallback.
+- Better backend advisor prompt guardrails, timeout fallback, and observability.
 
 ## Out of Scope for MVP
 

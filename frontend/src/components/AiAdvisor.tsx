@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, Sparkles, X } from 'lucide-react';
 import type { DashboardResponse } from '../lib/types';
-import { chatWithAdvisor, generateDailyBriefing, GROQ_KEY_VALID, type ChatMessage } from '../lib/gemini';
+import { chatWithAdvisor, generateDailyBriefing, type ChatMessage } from '../lib/gemini';
 
 type Props = {
   dashboard: DashboardResponse;
@@ -28,7 +28,7 @@ export function AiAdvisor({ dashboard }: Props) {
       })
       .catch((err: Error) => {
         if (!cancelled) {
-          if (err.message === 'QUOTA_EXCEEDED') setQuotaError(true);
+          if (err.message === 'QUOTA_EXCEEDED' || err.message === 'ADVISOR_UNAVAILABLE') setQuotaError(true);
           setBriefing(null);
         }
       })
@@ -73,7 +73,7 @@ export function AiAdvisor({ dashboard }: Props) {
         {
           role: 'model',
           text: isQuota
-            ? '⚠️ Groq quota หมดชั่วคราว — กรุณารอสักครู่หรือสร้าง Groq API key ใหม่จาก console.groq.com'
+            ? 'ระบบที่ปรึกษายังไม่พร้อมใช้งานชั่วคราว แต่ข้อมูลหลักบน dashboard ยังใช้งานได้ตามปกติ'
             : `ขออภัย เกิดข้อผิดพลาด: ${err instanceof Error ? err.message : 'ไม่ทราบสาเหตุ'}`,
         },
       ]);
@@ -104,16 +104,7 @@ export function AiAdvisor({ dashboard }: Props) {
           <Sparkles size={16} className="ai-briefing__icon" />
           <span className="ai-briefing__title">สรุปสถานการณ์วันนี้ โดยคุณเชียงใหม่</span>
         </div>
-        {!GROQ_KEY_VALID ? (
-          <div className="ai-briefing__text ai-briefing__text--fallback">
-            ยังไม่ได้ตั้งค่า API key —{' '}
-            <a href="https://console.groq.com/keys" target="_blank" rel="noopener" className="ai-briefing__setup-link">
-              ขอ Groq API key ฟรีที่นี่
-            </a>{' '}
-            แล้วใส่ใน <code>frontend/.env</code>
-            <br /><small style={{ opacity: 0.7 }}>รูปแบบ: VITE_GROQ_API_KEY=gsk_...</small>
-          </div>
-        ) : briefingLoading ? (
+        {briefingLoading ? (
           <div className="ai-briefing__loading">
             <span className="ai-dot-pulse" />
             <span>กำลังวิเคราะห์ข้อมูล...</span>
@@ -122,11 +113,7 @@ export function AiAdvisor({ dashboard }: Props) {
           <div className="ai-briefing__text">{briefing}</div>
         ) : quotaError ? (
           <div className="ai-briefing__text ai-briefing__text--fallback">
-            ⚠️ Groq quota หมดชั่วคราว — กรุณารอสักครู่หรือ{' '}
-            <a href="https://console.groq.com/keys" target="_blank" rel="noopener" className="ai-briefing__setup-link">
-              สร้าง Groq key ใหม่
-            </a>{' '}
-            จาก console.groq.com
+            ระบบที่ปรึกษายังไม่พร้อมใช้งานชั่วคราว แต่ข้อมูลหลักบน dashboard ยังใช้งานได้ตามปกติ
           </div>
         ) : (
           <div className="ai-briefing__text ai-briefing__text--fallback">

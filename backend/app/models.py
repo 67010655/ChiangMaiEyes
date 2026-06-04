@@ -103,3 +103,23 @@ class DataStatusResponse(BaseModel):
     local_refresh_required: bool
     vercel_fetches_rfd_directly: bool
     notes: list[str] = Field(default_factory=list)
+
+
+class AdvisorMessage(BaseModel):
+    role: Literal["user", "model"]
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class AdvisorBriefingRequest(BaseModel):
+    dashboard: DashboardResponse
+
+
+class AdvisorChatRequest(BaseModel):
+    dashboard: DashboardResponse
+    history: list[AdvisorMessage] = Field(default_factory=list, max_length=12)
+    user_message: str = Field(min_length=1, max_length=1000)
+
+
+class AdvisorResponse(BaseModel):
+    text: str
+    source: str

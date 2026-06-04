@@ -31,6 +31,8 @@ npm run dev
 ```
 
 Set `VITE_API_BASE_URL=http://localhost:8000` for local frontend API calls.
+Set AI advisor provider keys only on the backend as `GROQ_API_KEYS`; do not put
+provider keys in frontend `VITE_*` variables because they are browser-visible.
 
 ## MVP Notes
 

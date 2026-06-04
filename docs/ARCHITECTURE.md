@@ -14,7 +14,8 @@ flowchart LR
   GitHub -->|auto-deploy| Backend
   Backend -. live/fallback .-> Air4Thai[Air4Thai PM2.5]
   Backend -. live/fallback .-> OpenMeteo[Open-Meteo]
-  Frontend -. advisor chat .-> Groq[Groq API]
+  Frontend -->|POST /api/advisor/*| Backend
+  Backend -. advisor proxy .-> Groq[Groq API]
   Vercel --> OSM[OpenStreetMap tiles]
 ```
 
@@ -26,6 +27,7 @@ flowchart LR
 4. Frontend requests `GET /api/dashboard` and `GET /api/data-status`.
 5. FastAPI serves the latest committed snapshot, calculates the risk score, and reports snapshot freshness.
 6. React renders Leaflet map, PM2.5 panel, hotspot panel, wind layer, risk score, data-status strip, and Thai summary.
+7. The AI advisor sends dashboard context to backend `/api/advisor/briefing` and `/api/advisor/chat`; provider keys stay server-side.
 
 ## Folder Structure
 

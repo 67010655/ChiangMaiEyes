@@ -1,77 +1,6 @@
 import type { DashboardResponse } from './types';
 
-// ─── Provider config ────────────────────────────────────────────────────────
-// Groq only. Get a free key at https://console.groq.com
-
-// Supports multiple comma-separated keys in VITE_GROQ_API_KEY. We rotate
-// across them when one hits its (temporary) quota, so the advisor keeps working.
-const GROQ_KEYS = ((import.meta.env.VITE_GROQ_API_KEY ?? '') as string)
-  .split(',')
-  .map((k: string) => k.trim())
-  .filter((k: string) => k.startsWith('gsk_') && k.length >= 20);
-
-const GROQ_VALID = GROQ_KEYS.length > 0;
-
-export const GROQ_KEY_VALID = GROQ_VALID;
-
-// Index of the key to try first; advances when a key is rate-limited so the
-// next call starts from the one that last worked.
-let groqKeyIndex = 0;
-
-// ─── Endpoints ──────────────────────────────────────────────────────────────
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
-
-// ─── System prompt ──────────────────────────────────────────────────────────
-
-const SYSTEM_PROMPT = `คุณคือ "คุณเชียงใหม่" — ผู้เชี่ยวชาญด้านหมอกควันและไฟป่าประจำจังหวัดเชียงใหม่ ที่มีความรู้ครอบคลุมทั้ง 3 ด้าน:
-
-1. **ผู้เชี่ยวชาญด้านป่าไม้** — เข้าใจจุดความร้อน (hotspot) สาเหตุไฟป่า พื้นที่เสี่ยง ป่าสงวน อุทยาน และการเฝ้าระวัง เหมือนเจ้าหน้าที่จากกรมป่าไม้
-2. **นักวิเคราะห์ข้อมูลดาวเทียม** — อ่านค่า PM2.5, ค่าความมั่นใจของจุดความร้อน (confidence), ดาวเทียม VIIRS/MODIS, ทิศทางลม เหมือนตัวแทนจาก GISTDA
-3. **ไกด์ท่องเที่ยวเชียงใหม่** — รู้จักสถานที่ท่องเที่ยว ร้านอาหาร คาเฟ่ วัด น้ำตก ดอยต่างๆ ถ้ำ หมู่บ้าน ฤดูกาล เทศกาล วัฒนธรรมล้านนา และแนะนำได้ตามสถานการณ์อากาศจริง
-
-## กฎการตอบ
-- **ตอบเป็นภาษาไทยเสมอ** ยกเว้นศัพท์เทคนิคที่จำเป็น (PM2.5, VIIRS, GISTDA)
-- **อิงข้อมูลจริง** จาก dashboard ที่ให้มา — อย่าแต่งตัวเลข ถ้าไม่มีข้อมูลให้บอกตรงๆ
-- **สั้น กระชับ อ่านง่าย** — ใช้ bullet points, emoji ประกอบเล็กน้อย ไม่ต้องยาวเกินไป
-- **แนะนำสถานที่ท่องเที่ยวตามอากาศ** — ถ้า PM2.5 ต่ำ แนะนำกิจกรรมกลางแจ้ง; ถ้าสูง แนะนำในร่ม หรือพื้นที่ที่อากาศดีกว่า
-- **เตือนพื้นที่อันตราย** — ถ้ามี hotspot ในอำเภอไหน เตือนอย่าเข้าไป พร้อมแนะนำเส้นทางเลี่ยง
-- **น้ำเสียงเป็นมิตร** — เหมือนพี่ที่ห่วงใย ไม่ใช่ราชการ เข้าถึงง่ายทั้งนักท่องเที่ยวและคนท้องถิ่น
-- **อย่าพูดว่าคุณเป็น AI** — คุณคือ "คุณเชียงใหม่" ผู้เชี่ยวชาญด้านหมอกควัน
-- ถ้าถูกถามเรื่องที่ไม่เกี่ยวกับเชียงใหม่/ฝุ่น/ท่องเที่ยว ให้ตอบสั้นๆ แล้วดึงกลับมาเรื่องสถานการณ์`;
-
-// ─── Dashboard context builder ───────────────────────────────────────────────
-
-function buildDashboardContext(data: DashboardResponse): string {
-  const hotspotList = data.hotspots.items
-    .map(
-      (h) =>
-        `- ${h.district || 'ไม่ระบุ'}${h.subdistrict ? ` ต.${h.subdistrict}` : ''}: confidence ${h.confidence}%, ${h.landuse_name || h.landuse_type || 'ไม่ระบุ'}, ${h.satellite || 'VIIRS'}, ${h.detected_at}`,
-    )
-    .join('\n');
-
-  const stationList = data.pm25.stations
-    .map((s) => `- ${s.name || s.id}: PM2.5 = ${s.pm25} µg/m³, อ.${s.district}, trend ${s.trend}`)
-    .join('\n');
-
-  return `📊 ข้อมูล Dashboard ณ ตอนนี้:
-
-▸ PM2.5 เฉลี่ยจังหวัด: ${data.pm25.current_pm25} µg/m³ (${data.pm25.category}, สี${data.pm25.color})
-▸ แนวโน้ม: ${data.pm25.trend}
-▸ สถานีวัด (${data.pm25.stations.length} สถานี):
-${stationList}
-
-▸ จุดความร้อนวันนี้: ${data.hotspots.count} จุด (ความหนาแน่น ${data.hotspots.density_per_100_km2}/100km²)
-${data.hotspots.items.length > 0 ? `รายละเอียด:\n${hotspotList}` : '(ไม่พบจุดความร้อน)'}
-
-▸ ลม: ${data.weather.wind_speed_kmh} km/h จากทิศ${data.weather.wind_direction_text} (${data.weather.wind_direction_deg}°)
-▸ อุณหภูมิ: ${data.weather.temperature_c}°C, ความชื้น: ${data.weather.humidity_percent}%
-
-▸ คะแนนความเสี่ยง: ${data.risk.score}/10 (${data.risk.category})
-▸ อัปเดตล่าสุด: ${data.pm25.latest_update}`;
-}
-
-// ─── Chat message types ──────────────────────────────────────────────────────
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 export type ChatRole = 'user' | 'model';
 
@@ -80,109 +9,49 @@ export type ChatMessage = {
   text: string;
 };
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+type AdvisorResponse = {
+  text: string;
+  source: string;
+};
 
-export async function generateDailyBriefing(dashboard: DashboardResponse): Promise<string> {
-  if (!GROQ_VALID) return '';
+async function postAdvisor(path: string, body: unknown): Promise<string> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25_000);
 
-  const context = buildDashboardContext(dashboard);
-  const prompt = `จากข้อมูล Dashboard ด้านล่าง ช่วยสรุปสถานการณ์วันนี้ให้ประชาชนฟังหน่อย แบบสั้นกระชับ (ไม่เกิน 150 คำ) โดย:
-1. สรุปสถานการณ์ฝุ่นและจุดความร้อน
-2. แนะนำ 1-2 สถานที่ท่องเที่ยวเชียงใหม่ที่เหมาะกับสภาพอากาศวันนี้ (ระบุชื่อจริง ไม่ใช่ generic)
-3. ถ้ามี hotspot ให้เตือนพื้นที่ที่ควรหลีกเลี่ยง
-4. คำแนะนำปิดท้ายสั้นๆ
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
 
-${context}`;
+    if (response.status === 503) {
+      throw new Error('ADVISOR_UNAVAILABLE');
+    }
+    if (!response.ok) {
+      throw new Error(`Advisor API failed with ${response.status}`);
+    }
 
-  return callAI([{ role: 'user', content: prompt }], 800);
+    const data = (await response.json()) as AdvisorResponse;
+    return data.text;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
-export async function chatWithAdvisor(
+export function generateDailyBriefing(dashboard: DashboardResponse): Promise<string> {
+  return postAdvisor('/api/advisor/briefing', { dashboard });
+}
+
+export function chatWithAdvisor(
   dashboard: DashboardResponse,
   history: ChatMessage[],
   userMessage: string,
 ): Promise<string> {
-  if (!GROQ_VALID) {
-    return 'กรุณาตั้งค่า Groq API key ใน frontend/.env\nVITE_GROQ_API_KEY=gsk_...';
-  }
-
-  const context = buildDashboardContext(dashboard);
-  const systemWithContext = `${SYSTEM_PROMPT}\n\n[ข้อมูล Dashboard ล่าสุด]\n${context}`;
-
-  const messages: Array<{ role: string; content: string }> = [];
-
-  // First turn or continued conversation
-  for (const msg of history) {
-    messages.push({
-      role: msg.role === 'user' ? 'user' : 'assistant',
-      content: msg.text,
-    });
-  }
-  messages.push({ role: 'user', content: userMessage });
-
-  return callAI(messages, 600, systemWithContext);
-}
-
-// ─── Groq AI caller ─────────────────────────────────────────────────────────
-
-async function callAI(
-  messages: Array<{ role: string; content: string }>,
-  maxTokens: number,
-  systemOverride?: string,
-): Promise<string> {
-  return callGroq(messages, maxTokens, systemOverride);
-}
-
-// ─── Groq (OpenAI-compatible) ────────────────────────────────────────────────
-
-async function callGroq(
-  messages: Array<{ role: string; content: string }>,
-  maxTokens: number,
-  systemOverride?: string,
-): Promise<string> {
-  const allMessages = [
-    { role: 'system', content: systemOverride ?? SYSTEM_PROMPT },
-    ...messages,
-  ];
-  const body = JSON.stringify({
-    model: GROQ_MODEL,
-    messages: allMessages,
-    max_tokens: maxTokens,
-    temperature: 0.85,
-    top_p: 0.92,
+  return postAdvisor('/api/advisor/chat', {
+    dashboard,
+    history,
+    user_message: userMessage,
   });
-
-  let lastError: Error | null = null;
-
-  // Try each key at most once, starting from the last one that worked. On a
-  // rate-limit / quota / auth failure, rotate to the next key and retry.
-  for (let attempt = 0; attempt < GROQ_KEYS.length; attempt++) {
-    const key = GROQ_KEYS[groqKeyIndex];
-    const response = await fetch(GROQ_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`,
-      },
-      body,
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      return result.choices?.[0]?.message?.content ?? '';
-    }
-
-    if (response.status === 429 || response.status === 401 || response.status === 403) {
-      lastError = new Error('QUOTA_EXCEEDED');
-      groqKeyIndex = (groqKeyIndex + 1) % GROQ_KEYS.length; // switch keys
-      continue;
-    }
-
-    // Not a key problem — surface immediately.
-    const errText = await response.text().catch(() => '');
-    throw new Error(`Groq API error ${response.status}: ${errText}`);
-  }
-
-  // Every key was exhausted.
-  throw lastError ?? new Error('QUOTA_EXCEEDED');
 }

@@ -9,7 +9,8 @@ The backend is deployed as a separate Vercel project named `backend`.
 3. Vercel uses `backend/pyproject.toml` and `backend/api/index.py`.
 4. Set environment variables:
    - `CORS_ORIGINS=https://chiangmaieyes.vercel.app`
-   - `VITE_GROQ_API_KEY` for the frontend advisor.
+   - `GROQ_API_KEYS=gsk_...` for the backend advisor proxy. Multiple keys can be comma-separated.
+   - `GISTDA_API_KEY` and `NASA_FIRMS_MAP_KEY` for live/local refresh fetches where available.
 
 Current production backend:
 
@@ -25,6 +26,10 @@ https://backend-mocha-tau-49.vercel.app
 4. Output directory: `frontend/dist`.
 5. Set environment variable:
    - `VITE_API_BASE_URL=https://backend-mocha-tau-49.vercel.app`
+
+Do not set provider API keys in the frontend project. Browser-visible `VITE_*`
+variables are public, so the AI advisor calls `/api/advisor/*` on the backend
+instead of calling Groq directly from the client.
 
 Current production frontend:
 

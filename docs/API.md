@@ -46,7 +46,7 @@ Categories:
 
 ## GET /api/summary
 
-Returns a Thai summary with maximum 3 sentences. The MVP includes a deterministic fallback summary; the interactive frontend advisor uses Groq via `VITE_GROQ_API_KEY`.
+Returns a Thai summary with maximum 3 sentences. The MVP includes a deterministic fallback summary.
 
 ## GET /api/dashboard
 
@@ -81,5 +81,32 @@ providers.
   },
   "local_refresh_required": true,
   "vercel_fetches_rfd_directly": false
+}
+```
+
+## POST /api/advisor/briefing
+
+Returns a short Thai daily briefing generated through the backend advisor proxy.
+The request body is:
+
+```json
+{
+  "dashboard": {}
+}
+```
+
+The backend reads `GROQ_API_KEYS` from server-side environment variables. The
+frontend must not send provider API keys.
+
+## POST /api/advisor/chat
+
+Returns a Thai chat reply from the advisor using the current dashboard context.
+The request body is:
+
+```json
+{
+  "dashboard": {},
+  "history": [{ "role": "user", "text": "วันนี้ไปเที่ยวไหนดี" }],
+  "user_message": "มีจุดความร้อนแถวไหนบ้าง"
 }
 ```
