@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, TypeVar
 
+import math
+from app.fire_spread_physics import get_district_physics
 from app.config import Settings
 from app.models import (
     DataStatusResponse,
@@ -157,29 +159,80 @@ def wind_pushes_smoke_to_city(wind_direction_deg: float) -> bool:
 
 
 def calculate_risk(pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse) -> RiskResponse:
-    pm25_points = min(pm25.current_pm25 / 15, 4)
-    hotspot_points = min(hotspots.count / 50, 4)
-    wind_points = 2 if wind_pushes_smoke_to_city(weather.wind_direction_deg) else 0
-    score = round(pm25_points + hotspot_points + wind_points)
+    # 1. Base PM2.5 points (max 3 points)
+    pm25_points = min(pm25.current_pm25 / 20.0, 3.0)
+    
+    # 2. Hotspot points (max 3 points)
+    hotspot_points = min(hotspots.count / 40.0, 3.0)
+    
+    # 3. Wind and physical spread factor (max 4 points)
+    wind_speed = weather.wind_speed_kmh
+    wind_direction = weather.wind_direction_deg
+    
+    total_flammability = 0.0
+    total_slope_factor = 0.0
+    total_history_factor = 0.0
+    
+    if hotspots.items:
+        for h in hotspots.items:
+            phys = get_district_physics(h.district)
+            total_flammability += phys["fuel_flammability"]
+            # Slope factor increases Rate of Spread exponentially
+            # ROS_slope = e^(0.0693 * slope) -> normalized slope multiplier
+            slope = phys["slope_deg"]
+            slope_factor = math.exp(0.0693 * slope) / 4.0 # normalized around 20 deg slope (~1.0)
+            total_slope_factor += slope_factor
+            total_history_factor += phys["history_multiplier"]
+            
+        avg_flammability = total_flammability / len(hotspots.items)
+        avg_slope_factor = total_slope_factor / len(hotspots.items)
+        avg_history_factor = total_history_factor / len(hotspots.items)
+    else:
+        avg_flammability = 1.2
+        avg_slope_factor = 1.0
+        avg_history_factor = 1.2
+        
+    # Rate of Spread (ROS) index based on wind speed, slope, flammability, history
+    # Let's normalize wind_speed (5 kmh -> multiplier of 1.0)
+    wind_multiplier = 1.0 + (wind_speed / 15.0)
+    
+    # Wind direction risk
+    pushes = wind_pushes_smoke_to_city(wind_direction)
+    wind_direction_mult = 1.4 if pushes else 0.8
+    
+    # Combined Spread Danger Index (SDI)
+    spread_danger = avg_flammability * avg_slope_factor * avg_history_factor * wind_multiplier * wind_direction_mult
+    
+    # Map to spread points (0 to 4)
+    spread_points = min(spread_danger * 1.25, 4.0)
+    
+    # Calculate score (out of 10)
+    score = round(pm25_points + hotspot_points + spread_points)
     score = max(0, min(score, 10))
-
+    
     if score <= 3:
         category = "Low"
     elif score <= 6:
         category = "Medium"
     else:
         category = "High"
-
+        
+    formula = "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind"
+    
     return RiskResponse(
         score=score,
         category=category,
-        formula="min(10, round(min(PM2.5/15,4) + min(hotspot_count/50,4) + wind_factor))",
+        formula=formula,
         factors={
             "pm25_points": round(pm25_points, 2),
             "hotspot_points": round(hotspot_points, 2),
-            "wind_factor": wind_points,
-            "wind_pushes_smoke_to_city": "yes" if wind_points else "no",
-        },
+            "spread_points": round(spread_points, 2),
+            "avg_flammability": round(avg_flammability, 2),
+            "avg_slope_factor": round(avg_slope_factor, 2),
+            "avg_history_factor": round(avg_history_factor, 2),
+            "wind_speed_kmh": wind_speed,
+            "wind_pushes_smoke_to_city": "yes" if pushes else "no",
+        }
     )
 
 

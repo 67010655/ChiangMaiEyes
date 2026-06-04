@@ -21,11 +21,13 @@ export type VelocityField = {
   data: number[];
 };
 
-// Bounding box over Chiang Mai + immediate surroundings.
-const WEST = 97.5;
-const EAST = 100.0;
-const SOUTH = 17.0;
-const NORTH = 20.5;
+// Bounding box covering the full map viewport (CM + surrounding provinces).
+// This ensures wind particles fill the entire visible map, not just a small
+// rectangle focused on Chiang Mai city.
+const WEST = 96.0;
+const EAST = 102.0;
+const SOUTH = 16.0;
+const NORTH = 22.0;
 const STEP = 0.25;
 
 const NX = Math.round((EAST - WEST) / STEP) + 1;

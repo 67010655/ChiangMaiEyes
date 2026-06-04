@@ -1,12 +1,13 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet-velocity';
-import { Crosshair, Minus, Plus, Wind } from 'lucide-react';
+import { Crosshair, Maximize2, Minimize2, Minus, Plus, Wind } from 'lucide-react';
 import type { DashboardResponse, Hotspot, Pm25Station } from '../lib/types';
 import provinceGeoData from '../data/chiangmai-province.json';
 import districtsGeoData from '../data/chiangmai-districts.json';
 import { windDestinationName } from '../lib/wind';
 import { buildWindFieldFromStation } from '../lib/windGrid';
+import { getDistrictPhysics } from '../lib/firePhysics';
 
 // ─────────────────────────────────────────────
 // Types
@@ -19,9 +20,16 @@ type Props = {
     pm25: boolean;
     wind: boolean;
     landmarks: boolean;
+    fuelRisk: boolean;
   };
   selection: MapSelection;
   onSelectionChange: (sel: MapSelection) => void;
+  uiMode?: 'citizen' | 'authority';
+  theme?: 'light' | 'dark';
+  userLocation?: [number, number] | null;
+  onMapClick?: (coords: [number, number]) => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 };
 
 export type MapSelection = {
@@ -140,6 +148,9 @@ function hotspotSourcesLabel(h: Hotspot): string {
 
 function hotspotStats(h: Hotspot): MapSelection['stats'] {
   const sourceCount = h.source_count ?? (h.sources?.length || 1);
+  const phys = getDistrictPhysics(h.district);
+  const slopeEffect = Math.exp(0.0693 * phys.slope_deg) / 4.0;
+
   return [
     { label: 'Confidence', value: `${h.confidence}%`, tone: h.confidence >= 80 ? 'risk' : 'watch' },
     {
@@ -148,6 +159,13 @@ function hotspotStats(h: Hotspot): MapSelection['stats'] {
       tone: sourceCount > 1 ? 'risk' : undefined,
     },
     { label: 'ประเภทพื้นที่', value: h.landuse_name || h.landuse_type || 'ไม่ระบุ' },
+    { label: 'สภาพเชื้อเพลิง', value: phys.forest_type },
+    { 
+      label: 'ความชันภูมิประเทศ', 
+      value: `${phys.slope_deg}° (ลามเร็ว ${slopeEffect.toFixed(1)}x)`,
+      tone: phys.slope_deg >= 25 ? 'risk' : 'watch'
+    },
+    { label: 'ประวัติไฟป่า', value: phys.history_level, tone: phys.history_multiplier >= 1.3 ? 'risk' : 'watch' },
     { label: 'ดาวเทียม', value: h.satellite || 'VIIRS' },
     { label: 'เวลา', value: formatTime(h.detected_at) },
   ];
@@ -1043,6 +1061,58 @@ const CHIANG_MAI_LANDMARKS = [
   }
 ] as const;
 
+export function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export const DRY_FOREST_ZONES = [
+  {
+    name: 'เขตอุทยานแห่งชาติดอยสุเทพ-ปุย',
+    center: [18.81, 98.90],
+    radius: 7000,
+    ndvi: 0.28,
+    status: 'แห้งแล้งจัด (เสี่ยงไฟไหม้สูง)',
+  },
+  {
+    name: 'เขตอุทยานแห่งชาติดอยอินทนนท์',
+    center: [18.54, 98.52],
+    radius: 9500,
+    ndvi: 0.35,
+    status: 'แห้งปานกลาง',
+  },
+  {
+    name: 'เขตรักษาพันธุ์สัตว์ป่าเชียงดาว',
+    center: [19.40, 98.88],
+    radius: 8000,
+    ndvi: 0.22,
+    status: 'วิกฤตความชื้นต่ำ',
+  },
+  {
+    name: 'เขตป่าสงวนแห่งชาติแม่แจ่ม',
+    center: [18.50, 98.37],
+    radius: 11000,
+    ndvi: 0.25,
+    status: 'แห้งแล้งจัด (เสี่ยงไฟไหม้สูง)',
+  },
+  {
+    name: 'เขตป่าต้นน้ำศรีลันนา (แม่แตง)',
+    center: [19.16, 99.04],
+    radius: 7500,
+    ndvi: 0.32,
+    status: 'แห้งปานกลาง',
+  },
+];
+
 type ChiangMaiLandmark = (typeof CHIANG_MAI_LANDMARKS)[number];
 type LandmarkKind = 'temple' | 'nature' | 'garden' | 'water' | 'activity' | 'community';
 
@@ -1110,23 +1180,37 @@ export const initialSelection: MapSelection = {
 // Component
 // ─────────────────────────────────────────────
 
-export function DashboardMap({ dashboard, layers, selection: _selection, onSelectionChange }: Props) {
+export function DashboardMap({
+  dashboard,
+  layers,
+  selection: _selection,
+  onSelectionChange,
+  uiMode,
+  theme,
+  userLocation,
+  onMapClick,
+  isFullscreen,
+  onToggleFullscreen,
+}: Props) {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const hotspotsLayerRef = useRef<L.LayerGroup | null>(null);
   const pm25LayerRef = useRef<L.LayerGroup | null>(null);
   const landmarksLayerRef = useRef<L.LayerGroup | null>(null);
+  const plumesLayerRef = useRef<L.LayerGroup | null>(null);
+  const fuelRiskLayerRef = useRef<L.LayerGroup | null>(null);
+  const userLocationLayerRef = useRef<L.LayerGroup | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const velocityLayerRef = useRef<L.Layer | null>(null);
 
-  // True once the Windy-style particle layer is live; the chip stays visible
-  // while the grid warms up so there is no stale fallback animation flash.
   const [windParticlesOn, setWindParticlesOn] = useState(false);
 
-  // Callback ref — avoids stale closures inside Leaflet event handlers
   const onSelChangeRef = useRef(onSelectionChange);
+  const onMapClickRef = useRef(onMapClick);
+
   useEffect(() => {
     onSelChangeRef.current = onSelectionChange;
+    onMapClickRef.current = onMapClick;
   });
 
   // Zoom level as React state — triggers marker rebuild only on tier boundary crossings
@@ -1230,9 +1314,18 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
     hotspotsLayerRef.current = L.layerGroup().addTo(map);
     pm25LayerRef.current = L.layerGroup().addTo(map);
     landmarksLayerRef.current = L.layerGroup().addTo(map);
+    plumesLayerRef.current = L.layerGroup().addTo(map);
+    fuelRiskLayerRef.current = L.layerGroup().addTo(map);
+    userLocationLayerRef.current = L.layerGroup().addTo(map);
 
-    // Click on blank map → reset selection
-    map.on('click', () => onSelChangeRef.current(initialSelection));
+    // Click on blank map → set user location or reset selection
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      if (onMapClickRef.current) {
+        onMapClickRef.current([e.latlng.lat, e.latlng.lng]);
+      } else {
+        onSelChangeRef.current(initialSelection);
+      }
+    });
 
     // Track zoom for React re-renders (controls zoom readout + marker tier)
     map.on('zoomend', () => setZoom(map.getZoom()));
@@ -1508,6 +1601,140 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
     };
   }, [dashboard.weather.latest_update, dashboard.weather.wind_direction_deg, dashboard.weather.wind_speed_kmh, layers.wind]);
 
+  // ── Plume vectors (rebuild on data/toggle/wind change) ──────────────────────
+  useEffect(() => {
+    const group = plumesLayerRef.current;
+    if (!group) return;
+    group.clearLayers();
+    if (!layers.hotspots || !layers.wind) return;
+
+    const windDir = dashboard.weather.wind_direction_deg;
+    const windSpeed = dashboard.weather.wind_speed_kmh;
+    
+    // Meteorological wind angle (coming from). Convert to blowing towards:
+    const blowingTowardsRad = ((windDir + 180) * Math.PI) / 180;
+    
+    // Plume length (approx 4km to 20km)
+    const length = 0.025 + Math.min(0.09, (windSpeed / 32) * 0.09); 
+    const spreadHalfRad = 0.3; // ~17 degrees spread on each side
+
+    dashboard.hotspots.items.forEach((h) => {
+      const lat0 = h.latitude;
+      const lng0 = h.longitude;
+
+      const angle1 = blowingTowardsRad - spreadHalfRad;
+      const angle2 = blowingTowardsRad + spreadHalfRad;
+      const latScale = Math.cos((lat0 * Math.PI) / 180);
+
+      const lat1 = lat0 + length * Math.cos(angle1);
+      const lng1 = lng0 + (length * Math.sin(angle1)) / latScale;
+
+      const lat2 = lat0 + length * Math.cos(angle2);
+      const lng2 = lng0 + (length * Math.sin(angle2)) / latScale;
+
+      L.polygon([[lat0, lng0], [lat1, lng1], [lat2, lng2]], {
+        color: '#f97316',
+        weight: 1,
+        fillColor: '#f97316',
+        fillOpacity: 0.16,
+        className: 'lf-smoke-plume',
+        interactive: false,
+      }).addTo(group);
+    });
+  }, [dashboard.hotspots.items, dashboard.weather.wind_direction_deg, dashboard.weather.wind_speed_kmh, layers.hotspots, layers.wind]);
+
+  // ── Sentinel NDVI Fuel Load Layer ──────────────────────────────────────────
+  useEffect(() => {
+    const group = fuelRiskLayerRef.current;
+    if (!group) return;
+    group.clearLayers();
+    if (!layers.fuelRisk) return;
+
+    DRY_FOREST_ZONES.forEach((zone) => {
+      L.circle(zone.center as [number, number], {
+        radius: zone.radius,
+        color: zone.ndvi <= 0.25 ? '#dc2626' : '#eab308',
+        weight: 1.5,
+        dashArray: '4, 6',
+        fillColor: '#dc2626',
+        fillOpacity: 0.12,
+        className: 'lf-fuel-zone',
+      })
+        .on('click', (e: L.LeafletMouseEvent) => {
+          L.DomEvent.stopPropagation(e);
+          onSelChangeRef.current({
+            eyebrow: 'Space Tech · Sentinel-2 NDVI',
+            title: zone.name,
+            detail: `วิเคราะห์พื้นที่ป่าสงวนจากภาพถ่ายดัชนีความแห้งแล้ง (NDWI/NDVI) พบสภาพ ${zone.status}`,
+            imageKey: 'forest',
+            imageLabel: zone.name,
+            stats: [
+              { label: 'ดัชนี NDVI', value: zone.ndvi.toString(), tone: zone.ndvi <= 0.25 ? 'risk' : 'watch' },
+              { label: 'ระดับความแห้ง', value: zone.ndvi <= 0.25 ? 'แห้งแล้งวิกฤต' : 'แห้งแล้งปานกลาง' },
+              { label: 'สถานะเชื้อเพลิง', value: 'มีเศษใบไม้แห้งหนาแน่น', tone: 'risk' },
+            ],
+          });
+        })
+        .on('mouseover', () => {
+          onSelChangeRef.current({
+            eyebrow: 'Space Tech · Sentinel-2 NDVI',
+            title: zone.name,
+            detail: `วิเคราะห์พื้นที่ป่าสงวนจากภาพถ่ายดัชนีความแห้งแล้ง (NDWI/NDVI) พบสภาพ ${zone.status}`,
+            imageKey: 'forest',
+            imageLabel: zone.name,
+            stats: [
+              { label: 'ดัชนี NDVI', value: zone.ndvi.toString(), tone: zone.ndvi <= 0.25 ? 'risk' : 'watch' },
+              { label: 'ระดับความแห้ง', value: zone.ndvi <= 0.25 ? 'แห้งแล้งวิกฤต' : 'แห้งแล้งปานกลาง' },
+              { label: 'สถานะเชื้อเพลิง', value: 'มีเศษใบไม้แห้งหนาแน่น', tone: 'risk' },
+            ],
+          });
+        })
+        .addTo(group);
+    });
+  }, [layers.fuelRisk]);
+
+  // ── User location marker and nearest hotspot link line ────────────────────
+  useEffect(() => {
+    const group = userLocationLayerRef.current;
+    if (!group) return;
+    group.clearLayers();
+    if (!userLocation) return;
+
+    const userIcon = L.divIcon({
+      html: `<div class="lf-user-home">
+        <span class="lf-user-home__pulse"></span>
+        <span class="lf-user-home__icon">🏠</span>
+      </div>`,
+      className: 'lf-marker-wrap',
+      iconSize: [38, 38],
+      iconAnchor: [19, 19],
+    });
+
+    L.marker(userLocation, { icon: userIcon, zIndexOffset: 300 }).addTo(group);
+
+    let nearest: Hotspot | null = null;
+    let minD = Infinity;
+    dashboard.hotspots.items.forEach((h) => {
+      const d = getDistanceKm(userLocation[0], userLocation[1], h.latitude, h.longitude);
+      if (d < minD) {
+        minD = d;
+        nearest = h;
+      }
+    });
+
+    if (nearest) {
+      L.polyline([userLocation, [(nearest as Hotspot).latitude, (nearest as Hotspot).longitude]], {
+        color: '#dc2626',
+        weight: 2,
+        dashArray: '4, 8',
+        opacity: 0.8,
+        interactive: false,
+      }).addTo(group);
+
+      mapRef.current?.panTo(userLocation, { animate: true });
+    }
+  }, [userLocation, dashboard.hotspots.items]);
+
   // ── Zoom controls ─────────────────────────────────────────────────────────
   const handleZoomIn = useCallback(() => mapRef.current?.zoomIn(), []);
   const handleZoomOut = useCallback(() => mapRef.current?.zoomOut(), []);
@@ -1564,6 +1791,8 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
       <div className="map-legend">
         <span><i className="dot dot--pm" />สถานีวัด PM2.5</span>
         <span><i className="fire-ic">🔥</i>จุดความร้อน</span>
+        {layers.fuelRisk && <span><i className="dot dot--fuel" />ดัชนีป่าแห้ง NDVI</span>}
+        {layers.hotspots && layers.wind && <span><i className="cone-ic" />ขอบเขตควันลอย</span>}
         {layers.landmarks && <span><i className="landmark-ic" />สถานที่เสริม 60</span>}
         {layers.landmarks && (
           <span className="landmark-kind-key" aria-label="ประเภทสถานที่เสริม">
@@ -1602,6 +1831,20 @@ export function DashboardMap({ dashboard, layers, selection: _selection, onSelec
         <button type="button" aria-label="กลับสู่มุมมองเริ่มต้น" onClick={handleReset}>
           <Crosshair size={18} />
         </button>
+        {onToggleFullscreen && (
+          <button
+            type="button"
+            aria-label={isFullscreen ? 'ย่อแผนที่' : 'ขยายแผนที่เต็มจอ'}
+            className={`map-fullscreen-btn${isFullscreen ? ' active' : ''}`}
+            onClick={() => {
+              onToggleFullscreen();
+              // Give Leaflet a frame to pick up the new container size
+              setTimeout(() => mapRef.current?.invalidateSize(), 120);
+            }}
+          >
+            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
+        )}
       </div>
     </div>
   );
