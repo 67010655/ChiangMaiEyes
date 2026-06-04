@@ -2,7 +2,7 @@
   "hotspots": {
     "count": 6,
     "density_per_100_km2": 0.03,
-    "latest_update": "2026-06-05T00:24:09.064206+07:00",
+    "latest_update": "2026-06-05T01:24:12.322407+07:00",
     "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
@@ -119,7 +119,7 @@
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-05T00:00:00+07:00",
+    "latest_update": "2026-06-05T01:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -130,7 +130,7 @@
         "longitude": 98.96978,
         "pm25": 19.3,
         "trend": "stable",
-        "updated_at": "2026-06-05T00:00:00+07:00"
+        "updated_at": "2026-06-05T01:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -140,26 +140,26 @@
         "longitude": 98.99,
         "pm25": 9.4,
         "trend": "stable",
-        "updated_at": "2026-06-05T00:00:00+07:00"
+        "updated_at": "2026-06-05T01:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 1.8,
-    "wind_direction_deg": 179.2,
-    "wind_direction_text": "ทิศใต้",
-    "temperature_c": 24.4,
-    "humidity_percent": 95.3,
-    "latest_update": "2026-06-05T00:23:00+07:00",
+    "wind_speed_kmh": 1.4,
+    "wind_direction_deg": 347.7,
+    "wind_direction_text": "ทิศเหนือ",
+    "temperature_c": 24.5,
+    "humidity_percent": 95.5,
+    "latest_update": "2026-06-05T01:23:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
     "station_longitude": 98.9692,
-    "pressure_hpa": 969.2,
-    "rain_15m_mm": 0.6,
-    "rain_1h_mm": 1.6,
-    "rain_today_mm": 14.4,
-    "temperature_min_today_c": 24.4,
+    "pressure_hpa": 968.5,
+    "rain_15m_mm": 0.4,
+    "rain_1h_mm": 1.4,
+    "rain_today_mm": 15.8,
+    "temperature_min_today_c": 24.3,
     "temperature_max_today_c": 37.7
   },
   "risk": {
@@ -169,17 +169,17 @@
     "factors": {
       "pm25_points": 0.72,
       "hotspot_points": 0.15,
-      "spread_points": 2.96,
+      "spread_points": 2.89,
       "avg_flammability": 1.33,
       "avg_slope_factor": 1.59,
       "avg_history_factor": 1.25,
-      "wind_speed_kmh": 1.8,
+      "wind_speed_kmh": 1.4,
       "wind_pushes_smoke_to_city": "no"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 14 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 6 จุด และลมพัดจากทิศ ทิศใต้ ด้วยความเร็ว 2 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 14 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 6 จุด และลมพัดจากทิศ ทิศเหนือ ด้วยความเร็ว 1 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
     "source": "rule-based fallback"
   }
 }
