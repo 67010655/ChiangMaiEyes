@@ -3685,6 +3685,22 @@ button {
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
 }
 
+/* ── Authority data priorities ──────────────────────────────────────────────
+   Officers analyse at a desk, so keep the 2-column desktop grid (no flatten)
+   and reorder WITHIN each column for an analytical flow:
+     left  = current conditions  (weather → pollutants → near-term hourly)
+     right = assess → analyse → forecast → lookup tools
+   `order` only reaches siblings of the same flex column, which is exactly the
+   scope we want. */
+[data-ui-mode='authority'] .stats-main > .hero-weather-card { order: 1; }
+[data-ui-mode='authority'] .stats-main > .pollutants-bento { order: 2; }
+[data-ui-mode='authority'] .stats-main > .hourly-forecast-card { order: 3; }
+
+[data-ui-mode='authority'] .dashboard-secondary > .dashboard-risk-grid { order: 1; }
+[data-ui-mode='authority'] .dashboard-secondary > .history-section { order: 2; }
+[data-ui-mode='authority'] .dashboard-secondary > .daily-forecast-card { order: 3; }
+[data-ui-mode='authority'] .dashboard-secondary > .metrics-bento-grid { order: 4; }
+
 .dashboard-risk-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
