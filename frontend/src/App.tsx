@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, Database, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
+import { BookOpen, Database, ExternalLink, Flame, Home, Info, MapPin, Mountain, RefreshCcw, ShieldCheck, Wind } from 'lucide-react';
 import { fetchDashboard, fetchDataStatus } from './lib/api';
 import { buildDataStatusFromDashboard, getDataStatusCopy } from './lib/dataStatus';
 import { riskPercent } from './lib/risk';
@@ -13,6 +13,7 @@ type LayerState = {
   hotspots: boolean;
   pm25: boolean;
   wind: boolean;
+  landmarks: boolean;
 };
 
 const fallback = dashboardSnapshot as DashboardResponse;
@@ -208,7 +209,7 @@ export function App() {
   const [dataStatus, setDataStatus] = useState<DataStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true });
+  const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true, landmarks: true });
   const [note, setNote] = useState<'pm' | 'risk' | null>(null);
   const [mapSelection, setMapSelection] = useState<MapSelection>(initialSelection);
 
@@ -242,10 +243,10 @@ export function App() {
   }, [dashboard]);
 
   const riskTone = getRiskTone(dashboard.risk.score);
-  const allOn = layers.hotspots && layers.pm25 && layers.wind;
+  const allOn = layers.hotspots && layers.pm25 && layers.wind && layers.landmarks;
   const toggleLayer = (key: keyof LayerState) => setLayers((current) => ({ ...current, [key]: !current[key] }));
   const toggleNote = (key: 'pm' | 'risk') => setNote((current) => (current === key ? null : key));
-  const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true });
+  const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true, landmarks: true });
 
   const pm25Time = formatTime(dashboard.pm25.latest_update);
   const advice = adviceByColor[dashboard.pm25.color] ?? adviceByColor.green;
@@ -332,6 +333,9 @@ export function App() {
             <button type="button" className={layers.wind ? 'active' : ''} onClick={() => toggleLayer('wind')}>
               ลม
             </button>
+            <button type="button" className={layers.landmarks ? 'active' : ''} onClick={() => toggleLayer('landmarks')}>
+              ที่เที่ยว
+            </button>
           </div>
         </div>
 
@@ -344,6 +348,20 @@ export function App() {
           <span className="map-detail-bar__eyebrow">{mapSelection.eyebrow}</span>
           <strong className="map-detail-bar__title">{mapSelection.title}</strong>
           <p className="map-detail-bar__detail">{mapSelection.detail}</p>
+          {mapSelection.mapUrl && (
+            <a className="map-detail-bar__link" href={mapSelection.mapUrl} target="_blank" rel="noreferrer">
+              <MapPin size={15} />
+              เปิดใน Google Maps
+              <ExternalLink size={13} />
+            </a>
+          )}
+          {mapSelection.sourceUrl && (
+            <a className="map-detail-bar__link map-detail-bar__link--source" href={mapSelection.sourceUrl} target="_blank" rel="noreferrer">
+              <BookOpen size={15} />
+              {mapSelection.sourceLabel ?? 'แหล่งอ้างอิง'}
+              <ExternalLink size={13} />
+            </a>
+          )}
         </div>
         {mapSelection.stats && mapSelection.stats.length > 0 && (
           <div className="map-inspector__stats map-detail-bar__stats">
@@ -392,7 +410,7 @@ export function App() {
           </section>
 
           <div className="card-row">
-            <section className="card mini-card">
+            <section className="card mini-card mini-card--hotspots">
               <span className="card__title">จุดความร้อนวันนี้</span>
               <div className="mini-card__body">
                 <span className="mini-card__icon mini-card__icon--fire">
@@ -406,18 +424,33 @@ export function App() {
               <small className="card__foot">อัปเดต {pm25Time} น.</small>
             </section>
 
-            <section className="card mini-card">
+            <section className="card mini-card mini-card--wind-card">
               <span className="card__title">ทิศทางลม</span>
               <div className="mini-card__body">
                 <span className="mini-card__icon mini-card__icon--wind">
                   <Wind size={20} />
                 </span>
-                <div className="mini-card__value">
+                <div className="mini-card__value mini-card__value--wind">
                   <strong className="mini-card__wind">ไป{windDestinationText}</strong>
-                  <span>จาก{windSourceText} · {dashboard.weather.wind_speed_kmh} km/h</span>
+                  <span className="mini-card__meta">จาก{windSourceText}</span>
+                  <span className="mini-card__speed">{dashboard.weather.wind_speed_kmh} km/h</span>
                 </div>
               </div>
               <small className="card__foot">อัปเดต {pm25Time} น.</small>
+            </section>
+
+            <section className="card mini-card mini-card--tourism-card">
+              <span className="card__title">ที่เที่ยว Wongnai</span>
+              <div className="mini-card__body">
+                <span className="mini-card__icon mini-card__icon--tourism">
+                  <Mountain size={20} />
+                </span>
+                <div className="mini-card__value mini-card__value--tourism">
+                  <strong>60</strong>
+                  <span>จุดบนแผนที่</span>
+                </div>
+              </div>
+              <small className="card__foot">คลิกหมุดเพื่อเปิด Google Maps</small>
             </section>
           </div>
         </div>

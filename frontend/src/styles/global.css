@@ -302,6 +302,27 @@ button {
   gap: 16px;
 }
 
+@media (min-width: 1081px) {
+  .stats-main {
+    display: contents;
+  }
+
+  .stats-main .pm-card {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .stats-panel .risk-card {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .stats-main .card-row {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
 /* Advice + AI summary card: spans full width of the stats panel */
 .stats-panel .advice-card {
   grid-column: 1 / -1;
@@ -346,8 +367,41 @@ button {
   line-height: 1.45;
 }
 
+.map-detail-bar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin-top: 8px;
+  padding: 7px 11px;
+  border: 1px solid rgba(15, 107, 84, 0.18);
+  border-radius: 999px;
+  background: #f0f8f2;
+  color: var(--green-deep);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.map-detail-bar__link:hover {
+  border-color: rgba(15, 107, 84, 0.35);
+  background: #e4f3ea;
+  transform: translateY(-1px);
+}
+
 .map-detail-bar__stats {
   flex: 0 0 auto;
+}
+
+.map-detail-bar .map-inspector__stats {
+  width: min(720px, 100%);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.map-detail-bar .map-inspector__stat {
+  align-content: start;
 }
 
 /* Remove the old dashboard-grid / side-panel if referenced anywhere */
@@ -521,15 +575,24 @@ button {
 /* ---------- Mini cards ---------- */
 .card-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+  align-items: stretch;
+}
+
+.mini-card {
+  min-height: 138px;
+  display: flex;
+  flex-direction: column;
 }
 
 .mini-card__body {
-  display: flex;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 
 .mini-card__icon {
@@ -551,11 +614,17 @@ button {
   background: #e8f5ee;
 }
 
+.mini-card__icon--tourism {
+  color: #0e7490;
+  background: #e6f7fb;
+}
+
 .mini-card__value {
   display: flex;
   align-items: baseline;
   gap: 6px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .mini-card__value strong {
@@ -565,13 +634,45 @@ button {
 }
 
 .mini-card__value strong.mini-card__wind {
-  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
 }
 
 .mini-card__value span {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 600;
+}
+
+.mini-card__value--wind {
+  display: grid;
+  align-items: start;
+  gap: 2px;
+  line-height: 1.1;
+}
+
+.mini-card__value--tourism {
+  align-items: baseline;
+}
+
+.mini-card__value--wind .mini-card__meta {
+  font-size: 0.76rem;
+}
+
+.mini-card__value--wind .mini-card__speed {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: #1d4ed8;
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.mini-card .card__foot {
+  margin-top: auto;
 }
 
 /* ---------- Risk card ---------- */
@@ -1001,52 +1102,66 @@ button {
   fill-opacity: 0.3 !important;
 }
 
-/* ── Wind field: full-viewport animated SVG overlay ─────────────── */
-.wind-field-overlay {
+/* ── Chiang Mai landmark markers (DivIcon) ─────────────────────── */
+.lf-landmark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.lf-landmark::before {
+  content: '';
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 5;
+  inset: -5px;
+  border-radius: inherit;
+  background: rgba(14, 116, 144, 0.12);
+  border: 1px solid rgba(14, 116, 144, 0.12);
+  opacity: 0.82;
+  transition: transform 0.14s ease, opacity 0.14s ease;
+}
+
+.lf-landmark__pin {
+  position: relative;
+  display: block;
+  width: 58%;
+  height: 58%;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f766e, #38bdf8);
+  box-shadow: 0 6px 14px rgba(8, 47, 73, 0.22), 0 0 0 1px rgba(8, 47, 73, 0.1);
+}
+
+.lf-landmark:hover::before {
+  transform: scale(1.25);
+  opacity: 1;
+}
+
+.lf-landmark:hover .lf-landmark__pin {
+  background: linear-gradient(135deg, #0f6b54, #67e8f9);
+}
+
+.lf-landmark__label {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 150px;
+  padding: 2px 7px;
+  border: 1px solid rgba(14, 116, 144, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #134e4a;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   pointer-events: none;
-}
-
-/* stroke-dasharray / offset are in viewBox units (paths span ±2 = 4 units tall) */
-.wind-flow-line {
-  fill: none;
-  stroke: #3b82f6;
-  stroke-linecap: round;
-  /* Long dash (0.30) + tiny gap (0.06) = flowing ribbon, not rain droplets */
-  stroke-dasharray: 0.30 0.06;
-  opacity: 0.42;
-  animation: wind-flow var(--wind-dur, 3s) linear infinite;
-}
-
-.wind-particle {
-  fill: #2563eb;
-  opacity: 0.78;
-  /* filter in viewBox units — keep small */
-  filter: drop-shadow(0 0 0.025px rgba(37, 99, 235, 0.55));
-}
-
-@keyframes wind-flow {
-  /* offset = one full period (dash + gap = 0.36) for seamless loop */
-  from {
-    stroke-dashoffset: 0.36;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wind-flow-line {
-    animation: none;
-    opacity: 0.35;
-  }
-  .wind-particle {
-    display: none;
-  }
+  box-shadow: 0 4px 12px rgba(8, 47, 73, 0.12);
+  backdrop-filter: blur(8px);
 }
 
 /* ── Leaflet built-in control overrides ─────────────────────────── */
@@ -1207,6 +1322,10 @@ button {
   box-shadow: 0 14px 30px rgba(24, 64, 120, 0.22);
 }
 
+.wind-chip--loading {
+  opacity: 0.94;
+}
+
 .wind-chip__compass {
   display: grid;
   place-items: center;
@@ -1270,6 +1389,52 @@ button {
   height: 14px;
   font-style: normal;
   line-height: 1;
+}
+
+.map-legend .landmark-ic {
+  width: 11px;
+  height: 11px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f766e, #38bdf8);
+  box-shadow: 0 0 0 1px rgba(14, 116, 144, 0.28);
+}
+
+.basemap-switcher {
+  position: absolute;
+  z-index: 16;
+  right: 18px;
+  top: 112px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(74px, 1fr));
+  gap: 5px;
+  padding: 6px;
+  border: 1px solid rgba(24, 92, 67, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+}
+
+.basemap-switcher button {
+  min-height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #45594f;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 800;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.basemap-switcher button:hover {
+  background: #eef6f0;
+}
+
+.basemap-switcher button.active {
+  background: #1f2a26;
+  color: #ffffff;
 }
 
 .map-scale {
@@ -1427,6 +1592,14 @@ button {
   }
 
   /* ---- Mini cards row: keep 2 columns ---- */
+  .card-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mini-card--tourism-card {
+    grid-column: 1 / -1;
+    min-height: 112px;
+  }
 
   /* ---- Stats panel: 1 column on mobile ---- */
   .stats-panel {
@@ -1450,12 +1623,38 @@ button {
     gap: 8px;
   }
 
+  .map-toolbar {
+    gap: 4px;
+    padding: 4px;
+    border-radius: 14px;
+  }
+
+  .map-toolbar button {
+    padding: 6px 10px;
+    font-size: 0.76rem;
+  }
+
   .map-legend {
     top: auto;
-    bottom: 108px;
+    bottom: 138px;
     right: 12px;
     left: 12px;
     gap: 10px;
+  }
+
+  .basemap-switcher {
+    top: auto;
+    right: 12px;
+    bottom: 64px;
+    grid-template-columns: repeat(4, auto);
+    max-width: calc(100% - 110px);
+    overflow-x: auto;
+  }
+
+  .basemap-switcher button {
+    min-width: 54px;
+    padding: 0 8px;
+    white-space: nowrap;
   }
 
   .map-stage {
@@ -1473,7 +1672,7 @@ button {
     right: 12px;
     left: 12px;
     top: auto;
-    bottom: 64px;
+    bottom: 106px;
     max-width: none;
   }
 
