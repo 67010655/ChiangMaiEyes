@@ -1,11 +1,63 @@
 import csv
 import datetime
+import json
 import logging
 import math
+from functools import lru_cache
+from pathlib import Path
 import httpx
 from app.models import Hotspot, HotspotResponse
 
 logger = logging.getLogger(__name__)
+
+# Chiang Mai province boundary (same polygon the UI draws its mask from).
+# NASA FIRMS only supports a rectangular bbox query, so its results spill into
+# neighbouring provinces at the corners; RFD/GISTDA are already province-filtered
+# server-side. We clip every source to this polygon so the map never shows fires
+# outside Chiang Mai.
+_PROVINCE_GEOJSON = Path(__file__).resolve().parent.parent.parent / "data" / "chiangmai-province.json"
+
+
+@lru_cache(maxsize=1)
+def _province_ring() -> tuple[tuple[float, float], ...]:
+    """Outer ring of the province polygon as ((lon, lat), ...), loaded once."""
+    try:
+        data = json.loads(_PROVINCE_GEOJSON.read_text(encoding="utf-8"))
+        ring = data["coordinates"][0]
+        return tuple((float(pt[0]), float(pt[1])) for pt in ring)
+    except Exception as ex:  # noqa: BLE001 — missing/invalid file must not crash a fetch
+        logger.error("Could not load province boundary %s: %s", _PROVINCE_GEOJSON, ex)
+        return ()
+
+
+def _point_in_ring(lon: float, lat: float, ring: tuple[tuple[float, float], ...]) -> bool:
+    """Ray-casting point-in-polygon test (ring points are (lon, lat))."""
+    inside = False
+    n = len(ring)
+    j = n - 1
+    for i in range(n):
+        xi, yi = ring[i]
+        xj, yj = ring[j]
+        if ((yi > lat) != (yj > lat)) and (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+
+def filter_to_province(hotspots: list[Hotspot]) -> list[Hotspot]:
+    """Drop hotspots whose coordinates fall outside the Chiang Mai boundary.
+
+    If the boundary failed to load, pass everything through rather than wiping
+    out real data.
+    """
+    ring = _province_ring()
+    if not ring:
+        return hotspots
+    kept = [h for h in hotspots if _point_in_ring(h.longitude, h.latitude, ring)]
+    dropped = len(hotspots) - len(kept)
+    if dropped:
+        logger.info("Clipped %d hotspot(s) outside Chiang Mai province", dropped)
+    return kept
 GISTDA_VIIRS_SOURCE = "GISTDA API Gateway VIIRS 1-day"
 FOREST_FIREMAP_SOURCE = "Royal Forest Department Firemap"
 FOREST_FIREMAP_URL = "https://wildfire.forest.go.th/firemap/getdb.php"
@@ -324,7 +376,10 @@ def fetch_live_hotspots(gistda_key: str | None = None, nasa_key: str | None = No
 
     def _try(label: str, fetch) -> None:
         try:
-            group = fetch()
+            # Clip each source to the province boundary before counting/merging so
+            # the headline count and per-source breakdown exclude fires that the
+            # bbox-based sources (NASA FIRMS) pick up in neighbouring provinces.
+            group = filter_to_province(fetch())
             hotspot_groups.append(group)
             sources.append(label)
             source_breakdown[label] = len(group)

@@ -343,6 +343,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 
@@ -1071,29 +1072,90 @@ button {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid rgba(127, 29, 29, 0.18);
-  transition: background 0.15s ease;
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.5) 0%, rgba(239, 68, 68, 0.18) 58%, rgba(239, 68, 68, 0) 74%);
+  animation: hotspotBreathe 1.8s ease-in-out infinite;
+}
+
+/* Expanding heat shockwaves — two staggered rings read as "fire spreading" */
+.lf-hotspot__halo::before,
+.lf-hotspot__halo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(239, 68, 68, 0.65);
+  pointer-events: none;
+  animation: hotspotRipple 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+
+.lf-hotspot__halo::after {
+  animation-delay: 1.2s;
 }
 
 .lf-hotspot--forest .lf-hotspot__halo {
-  background: rgba(249, 115, 22, 0.2);
-  border-color: rgba(124, 45, 18, 0.22);
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.52) 0%, rgba(249, 115, 22, 0.2) 58%, rgba(249, 115, 22, 0) 74%);
+}
+
+.lf-hotspot--forest .lf-hotspot__halo::before,
+.lf-hotspot--forest .lf-hotspot__halo::after {
+  border-color: rgba(249, 115, 22, 0.65);
 }
 
 .lf-hotspot:hover .lf-hotspot__halo {
-  background: rgba(239, 68, 68, 0.36);
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.72) 0%, rgba(239, 68, 68, 0.3) 58%, rgba(239, 68, 68, 0) 76%);
 }
 
 .lf-hotspot__fire {
   position: relative;
   z-index: 1;
   line-height: 1;
-  filter: drop-shadow(0 2px 5px rgba(127, 29, 29, 0.3));
+  transform-origin: center bottom;
+  animation: fireFlicker 0.9s ease-in-out infinite;
 }
 
 .lf-hotspot__fire::before {
   content: "🔥";
+}
+
+@keyframes hotspotBreathe {
+  0%, 100% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.18);
+  }
+}
+
+@keyframes hotspotRipple {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes fireFlicker {
+  0%, 100% {
+    transform: scale(1) rotate(-2deg);
+    filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.7)) brightness(1);
+  }
+  25% {
+    transform: scale(1.09) rotate(2deg);
+    filter: drop-shadow(0 0 7px rgba(239, 68, 68, 0.85)) brightness(1.15);
+  }
+  50% {
+    transform: scale(0.95) rotate(-1deg);
+    filter: drop-shadow(0 0 5px rgba(249, 115, 22, 0.75)) brightness(1.05);
+  }
+  75% {
+    transform: scale(1.06) rotate(1deg);
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.92)) brightness(1.22);
+  }
 }
 
 .lf-hotspot__label {
@@ -2609,18 +2671,39 @@ button {
 
 /* Plume vector animations */
 .lf-smoke-plume {
-  stroke-dasharray: 600;
-  stroke-dashoffset: 0;
-  animation: plumePulse 6s ease-in-out infinite alternate;
-  filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.25));
+  stroke: #f97316 !important;
+  stroke-width: 1.5 !important;
+  stroke-dasharray: 5 7 !important;
+  stroke-linecap: round;
+  animation: plumePulse 3.2s ease-in-out infinite alternate, plumeFlow 1.4s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.5));
 }
 
+/* Pulsing fill — the predicted burn area "breathes" with danger */
 @keyframes plumePulse {
   0% {
-    fill-opacity: 0.12;
+    fill-opacity: 0.1;
   }
   100% {
-    fill-opacity: 0.24;
+    fill-opacity: 0.34;
+  }
+}
+
+/* Flowing dashes that march outward along the wind = fire spreading */
+@keyframes plumeFlow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+/* Respect users who prefer reduced motion — keep the colour, drop the motion */
+@media (prefers-reduced-motion: reduce) {
+  .lf-hotspot__halo,
+  .lf-hotspot__halo::before,
+  .lf-hotspot__halo::after,
+  .lf-hotspot__fire,
+  .lf-smoke-plume {
+    animation: none !important;
   }
 }
 
@@ -2774,6 +2857,7 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
@@ -2781,6 +2865,16 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.hero-aqi-badge-wrapper {
+  flex-shrink: 0;
+}
+
+.badge--glow {
+  white-space: nowrap;
 }
 
 .hero-temp {
@@ -2875,6 +2969,7 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .metric-bento-icon {
@@ -2896,6 +2991,13 @@ button {
 .metric-bento-content {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.metric-bento-value,
+.metric-bento-sub,
+.metric-bento-label {
+  overflow-wrap: anywhere;
 }
 
 .metric-bento-label {
@@ -3400,6 +3502,13 @@ button {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
+}
+
+.dashboard-container > *,
+.metrics-bento-grid > *,
+.dashboard-risk-grid > * {
+  min-width: 0;
 }
 
 .dashboard-risk-grid {
@@ -3634,6 +3743,73 @@ button {
 
   .page-foot {
     display: none;
+  }
+
+  /* Compact the left scroll column so cards stay balanced, not oversized */
+  .dashboard-container .card {
+    padding: 12px;
+  }
+
+  .hero-weather-card {
+    gap: 10px;
+  }
+
+  .hero-weather-main {
+    gap: 10px;
+  }
+
+  .hero-temp-box {
+    gap: 8px;
+  }
+
+  .hero-temp-box > svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .hero-temp {
+    font-size: 2.5rem;
+  }
+
+  .hero-temp-unit {
+    font-size: 1.05rem;
+  }
+
+  .hero-weather-text {
+    font-size: 0.98rem;
+  }
+
+  .hero-weather-desc {
+    font-size: 0.72rem;
+  }
+
+  .badge--glow {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+
+  .metrics-bento-grid {
+    gap: 8px;
+  }
+
+  .metric-bento-item {
+    padding: 9px;
+    border-radius: 12px;
+    gap: 8px;
+  }
+
+  .metric-bento-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+
+  .metric-bento-value {
+    font-size: 0.85rem;
+  }
+
+  .citizen-guide-item {
+    padding: 11px !important;
   }
 }
 
