@@ -3549,6 +3549,36 @@ button {
     order: 99;
     margin-top: 0;
   }
+
+  /* ── Citizen mobile: data priorities reordered for "what should I do?" ──
+     Flatten the desktop column wrappers with display:contents so every card
+     becomes a direct flex sibling of the map, then order them:
+     AQI → map → advice → my-risk → risk score → 3-day guide → hotspots → SOS. */
+  .app-shell[data-ui-mode='citizen'] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  [data-ui-mode='citizen'] .dashboard-container,
+  [data-ui-mode='citizen'] .stats-main,
+  [data-ui-mode='citizen'] .dashboard-secondary,
+  [data-ui-mode='citizen'] .dashboard-secondary .metrics-bento-grid,
+  [data-ui-mode='citizen'] .dashboard-risk-grid {
+    display: contents !important;
+  }
+
+  [data-ui-mode='citizen'] .topbar { order: 0; }
+  [data-ui-mode='citizen'] .notice { order: 1; }
+  [data-ui-mode='citizen'] .hero-weather-card { order: 2; }
+  [data-ui-mode='citizen'] .map-hero { order: 3; }
+  [data-ui-mode='citizen'] .map-detail-bar { order: 4; }
+  [data-ui-mode='citizen'] .advice-card { order: 5; }
+  [data-ui-mode='citizen'] .personal-checker-card { order: 6; }
+  [data-ui-mode='citizen'] .risk-card { order: 7; }
+  [data-ui-mode='citizen'] .citizen-guide-card { order: 8; }
+  [data-ui-mode='citizen'] .mini-card--hotspots { order: 9; }
+  [data-ui-mode='citizen'] .emergency-contacts-card { order: 10; }
+  [data-ui-mode='citizen'] .page-foot { order: 11; }
 }
 
 @media (min-width: 1024px) {

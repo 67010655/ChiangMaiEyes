@@ -762,7 +762,7 @@ export function App() {
   const aqiGlowClass = `badge--glow badge--glow-${dashboard.pm25.color}`;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-ui-mode={uiMode}>
       <header className="topbar">
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden>
