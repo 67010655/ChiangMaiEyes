@@ -1766,9 +1766,11 @@ button {
     flex-wrap: wrap;
   }
 
+  /* Brand title centred on its own row. */
   .brand-lockup {
+    flex: 1 1 100%;
+    justify-content: center;
     gap: 10px;
-    flex: 1;
     min-width: 0;
   }
 
@@ -1779,7 +1781,7 @@ button {
   }
 
   .topbar h1 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
 
   .topbar p {
@@ -1789,10 +1791,11 @@ button {
   .topbar__actions {
     width: 100%;
     flex-wrap: wrap;
-    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
   }
 
-  /* Mode switch: full-width, two equal halves, clearly divided and centred. */
+  /* Mode switch: full-width, two equal centred halves. */
   .ui-mode-selector {
     flex: 1 1 100%;
     order: -1;
@@ -1800,27 +1803,43 @@ button {
 
   .ui-mode-selector .ui-mode-btn {
     flex: 1;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+  }
+
+  /* One row: theme · time · update · refresh. The pills flex from 0 so the two
+     fixed buttons never get pushed to a second line. */
+  .theme-toggle-btn,
+  .topbar__actions > .icon-button {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
   }
 
   .date-pill,
   .live-pill {
-    flex: 1 1 calc(50% - 44px);
+    flex: 1 1 0;
     min-width: 0;
-    padding: 7px 12px;
-    gap: 8px;
+    overflow: hidden;
+    padding: 5px 8px;
+    gap: 6px;
+    justify-content: center;
   }
 
   .date-pill > div,
   .live-pill > div {
     min-width: 0;
     overflow: hidden;
+    align-items: center;
   }
 
   /* Show the time prominently; drop the long date/datetime that overflowed. */
   .date-pill strong {
     display: block;
-    font-size: 1rem;
+    font-size: 0.98rem;
+    text-align: center;
   }
 
   .date-pill span.date-pill__full,
@@ -1829,12 +1848,16 @@ button {
     display: none;
   }
 
-  .live-pill__short {
+  /* Specificity must match the base hide rule (0,2,1) and, being later in the
+     source, win — otherwise the update time vanishes on mobile. */
+  .live-pill span.live-pill__short {
     display: block;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 800;
     color: var(--green-deep);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .date-pill svg {

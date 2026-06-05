@@ -1067,7 +1067,7 @@ export function App() {
             <div>
               <strong>{loading ? 'กำลังอัปเดต' : 'อัปเดตล่าสุด'}</strong>
               <span className="live-pill__full">{formatDateTime(updatedAt)}</span>
-              <span className="live-pill__short">{loading ? 'กำลังอัปเดต' : `อัปเดต ${formatTime(updatedAt)} น.`}</span>
+              <span className="live-pill__short">{loading ? 'กำลังอัปเดต' : `อัปเดต ${formatTime(updatedAt)}`}</span>
             </div>
           </div>
           <button className="icon-button" type="button" onClick={loadDashboard} aria-label="อัปเดตข้อมูล">
