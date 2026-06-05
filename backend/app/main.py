@@ -46,6 +46,28 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/api/debug-groq")
+def debug_groq(settings: Settings = Depends(get_settings)) -> dict:
+    raw_keys_env = settings.groq_api_keys
+    raw_key_env = settings.groq_api_key
+    keys = settings.groq_key_list
+    debug_keys = []
+    for k in keys:
+        debug_keys.append({
+            "length": len(k),
+            "prefix": k[:7] if len(k) >= 7 else "",
+            "suffix": k[-5:] if len(k) >= 5 else "",
+        })
+    return {
+        "has_keys_env": raw_keys_env is not None,
+        "keys_env_len": len(raw_keys_env) if raw_keys_env else 0,
+        "has_key_env": raw_key_env is not None,
+        "key_env_len": len(raw_key_env) if raw_key_env else 0,
+        "parsed_keys": debug_keys
+    }
+
+
+
 @app.get("/api/hotspots", response_model=HotspotResponse)
 def hotspots(settings: Settings = Depends(get_settings)) -> HotspotResponse:
     return get_hotspots(settings)

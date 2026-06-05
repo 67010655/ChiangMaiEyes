@@ -44,21 +44,53 @@ class AdvisorUnavailable(RuntimeError):
 
 
 def _dashboard_context(dashboard: DashboardResponse) -> str:
+    # Get top 10 highest confidence hotspots
     hotspots = [
         {
             "district": item.district,
             "subdistrict": item.subdistrict,
             "confidence": item.confidence,
             "source": item.source,
-            "sources": item.sources,
-            "detected_at": item.detected_at,
             "landuse": item.landuse_name or item.landuse_type,
+            "latitude": item.latitude,
+            "longitude": item.longitude,
         }
-        for item in dashboard.hotspots.items[:30]
+        for item in sorted(dashboard.hotspots.items, key=lambda x: x.confidence, reverse=True)[:10]
     ]
+    
+    # Filter PM2.5 data: only keep top 5 stations with highest PM2.5, exclude coordinates/IDs
+    pm25_data = {
+        "current_pm25": dashboard.pm25.current_pm25,
+        "category": dashboard.pm25.category,
+        "color": dashboard.pm25.color,
+        "trend": dashboard.pm25.trend,
+        "latest_update": dashboard.pm25.latest_update,
+        "source": dashboard.pm25.source,
+        "stations_sample": [
+            {
+                "name": s.name,
+                "district": s.district,
+                "pm25": s.pm25,
+                "trend": s.trend
+            }
+            for s in sorted(dashboard.pm25.stations, key=lambda x: x.pm25, reverse=True)[:5]
+        ]
+    }
+
+    # Filter weather data to essential fields
+    weather_data = {
+        "wind_speed_kmh": dashboard.weather.wind_speed_kmh,
+        "wind_direction_deg": dashboard.weather.wind_direction_deg,
+        "wind_direction_text": dashboard.weather.wind_direction_text,
+        "temperature_c": dashboard.weather.temperature_c,
+        "humidity_percent": dashboard.weather.humidity_percent,
+        "latest_update": dashboard.weather.latest_update,
+        "source": dashboard.weather.source,
+    }
+
     payload: dict[str, Any] = {
-        "pm25": dashboard.pm25.model_dump(),
-        "weather": dashboard.weather.model_dump(),
+        "pm25": pm25_data,
+        "weather": weather_data,
         "risk": dashboard.risk.model_dump(),
         "hotspots": {
             "count": dashboard.hotspots.count,
@@ -95,7 +127,7 @@ def _call_groq(settings: Settings, messages: list[dict[str, str]], max_tokens: i
                 timeout=20.0,
             )
             if response.status_code in {401, 403, 429}:
-                last_error = f"Groq key rejected with {response.status_code}"
+                last_error = f"Groq key rejected with {response.status_code}: {response.text}"
                 continue
             response.raise_for_status()
             data = response.json()
@@ -117,14 +149,30 @@ def generate_daily_briefing(settings: Settings, dashboard: DashboardResponse) ->
         "คำแนะนำสุขภาพ และกิจกรรมหรือพื้นที่ที่เหมาะสมกับสภาพอากาศปัจจุบัน\n\n"
         f"[dashboard]\n{context}"
     )
-    return _call_groq(
-        settings,
-        [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=800,
-    )
+    try:
+        return _call_groq(
+            settings,
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=800,
+        )
+    except AdvisorUnavailable as groq_exc:
+        if settings.gemini_api_key:
+            logger.info("Groq unavailable (rate-limited/misconfigured) - falling back to Gemini for briefing")
+            try:
+                import google.generativeai as genai  # type: ignore[import-not-found]
+                genai.configure(api_key=settings.gemini_api_key)
+                model = genai.GenerativeModel(settings.gemini_model, system_instruction=SYSTEM_PROMPT)
+                config = genai.types.GenerationConfig(max_output_tokens=800, temperature=0.75)
+                response = model.generate_content(prompt, generation_config=config)
+                return response.text.strip()
+            except Exception as gemini_exc:
+                logger.error("Gemini fallback failed: %s", gemini_exc)
+                raise AdvisorUnavailable(f"Both Groq and Gemini failed. Groq error: {groq_exc}. Gemini error: {gemini_exc}") from gemini_exc
+        else:
+            raise
 
 
 def chat_with_advisor(
@@ -140,4 +188,31 @@ def chat_with_advisor(
     for item in history[-12:]:
         messages.append({"role": "assistant" if item.role == "model" else "user", "content": item.text})
     messages.append({"role": "user", "content": user_message})
-    return _call_groq(settings, messages, max_tokens=600)
+
+    try:
+        return _call_groq(settings, messages, max_tokens=600)
+    except AdvisorUnavailable as groq_exc:
+        if settings.gemini_api_key:
+            logger.info("Groq unavailable (rate-limited/misconfigured) - falling back to Gemini for chat")
+            try:
+                import google.generativeai as genai  # type: ignore[import-not-found]
+                genai.configure(api_key=settings.gemini_api_key)
+                system_inst = f"{SYSTEM_PROMPT}\n\n[dashboard]\n{context}"
+                model = genai.GenerativeModel(settings.gemini_model, system_instruction=system_inst)
+                
+                gemini_history = []
+                for msg in history[-12:]:
+                    gemini_history.append({
+                        "role": "user" if msg.role != "model" else "model",
+                        "parts": [msg.text]
+                    })
+                
+                config = genai.types.GenerationConfig(max_output_tokens=600, temperature=0.75)
+                chat = model.start_chat(history=gemini_history)
+                response = chat.send_message(user_message, generation_config=config)
+                return response.text.strip()
+            except Exception as gemini_exc:
+                logger.error("Gemini chat fallback failed: %s", gemini_exc)
+                raise AdvisorUnavailable(f"Both Groq and Gemini failed. Groq error: {groq_exc}. Gemini error: {gemini_exc}") from gemini_exc
+        else:
+            raise
