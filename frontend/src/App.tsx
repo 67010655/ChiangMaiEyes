@@ -1490,23 +1490,31 @@ export function App() {
               )}
             </section>
 
-            {/* Advice details */}
+            {/* Advice — the plain "what to do" guidance is citizen-only (it's
+                public health advice, not analyst data); authority keeps just the
+                AI operational briefing. */}
             <section className="card advice-card">
               <div className="card__head">
                 <ShieldCheck size={18} style={{ color: 'var(--green)' }} />
-                <span className="card__title">ข้อเสนอแนะและมาตรการป้องกัน</span>
+                <span className="card__title">
+                  {uiMode === 'authority' ? '🧠 ที่ปรึกษา AI เชิงปฏิบัติการ' : 'ข้อเสนอแนะและมาตรการป้องกัน'}
+                </span>
               </div>
-              <h3 className={`advice-card__heading advice-card__heading--${dashboard.pm25.color}`} style={{ fontSize: '1.05rem', margin: '8px 0 4px' }}>{advice.heading}</h3>
-              <p className="advice-card__text" style={{ fontSize: '0.84rem', margin: '0 0 10px' }}>{advice.text}</p>
-              <ul className="advice-recs" style={{ fontSize: '0.8rem', paddingLeft: '14px', margin: '0 0 12px' }}>
-                {recommendations.map(({ label, detail }, i) => {
-                  return (
-                    <li key={i} style={{ marginBottom: '6px' }}>
-                      <strong>{label}:</strong> {detail}
-                    </li>
-                  );
-                })}
-              </ul>
+              {uiMode === 'citizen' && (
+                <>
+                  <h3 className={`advice-card__heading advice-card__heading--${dashboard.pm25.color}`} style={{ fontSize: '1.05rem', margin: '8px 0 4px' }}>{advice.heading}</h3>
+                  <p className="advice-card__text" style={{ fontSize: '0.84rem', margin: '0 0 10px' }}>{advice.text}</p>
+                  <ul className="advice-recs" style={{ fontSize: '0.8rem', paddingLeft: '14px', margin: '0 0 12px' }}>
+                    {recommendations.map(({ label, detail }, i) => {
+                      return (
+                        <li key={i} style={{ marginBottom: '6px' }}>
+                          <strong>{label}:</strong> {detail}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
               <Suspense fallback={<div className="ai-briefing ai-briefing__text--fallback">กำลังโหลดที่ปรึกษา...</div>}>
                 <AiAdvisor dashboard={dashboard} />
               </Suspense>
