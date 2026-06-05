@@ -47,8 +47,6 @@ def build_hotspots(settings) -> HotspotResponse:
     # RFD works; NASA/GISTDA join when their keys are configured.
     logger.info("Fetching + reconciling hotspots from all sources")
     response = fetch_live_hotspots(settings.gistda_api_key, settings.nasa_firms_map_key)
-    if response.count == 0:
-        raise RuntimeError("All hotspot sources returned 0 — refusing to overwrite snapshot")
     logger.info("Source breakdown: %s → %d unique", response.source_breakdown, response.count)
     # Same post-processing the backend applies before caching.
     return HotspotResponse(**repair_thai_mojibake_tree(response.model_dump()))
@@ -70,17 +68,36 @@ def _hotspot_fingerprint(items: list[dict]) -> list[tuple]:
 
 def main() -> int:
     settings = get_settings()
+
+    # --- Fetch live hotspots (best-effort) ---
+    # If all sources genuinely return 0 (e.g. rainy season, no active fires),
+    # we accept 0 and write it. We only abort on network/auth errors (fetch_live_hotspots
+    # raises an exception in those cases). This way PM2.5 and weather in the
+    # dashboardSnapshot are always refreshed even when there are no hotspots.
     try:
         hotspots = build_hotspots(settings)
-    except Exception as exc:  # noqa: BLE001 — top-level guard, report and bail
-        logger.error("Aborting without changes: %s", exc)
-        return 1
+        logger.info("Reconciled %d unique hotspots", hotspots.count)
+    except Exception as exc:  # noqa: BLE001 — network/auth failure, not a "0 count" result
+        logger.error("Hotspot fetch failed: %s", exc)
+        # Fall back to the existing snapshot so PM2.5/weather can still refresh.
+        existing_path = settings.cache_dir / "hotspots.json"
+        if existing_path.exists():
+            try:
+                existing = json.loads(existing_path.read_text(encoding="utf-8"))
+                hotspots = HotspotResponse(**existing)
+                logger.warning(
+                    "Using existing hotspot snapshot (%d hotspots) — PM2.5/weather will still refresh.",
+                    hotspots.count,
+                )
+            except Exception as load_exc:  # noqa: BLE001
+                logger.error("Could not load existing hotspot snapshot: %s — aborting.", load_exc)
+                return 1
+        else:
+            logger.error("No existing hotspot snapshot and live fetch failed — aborting.")
+            return 1
 
-    logger.info("Reconciled %d unique hotspots", hotspots.count)
-
-    # Idempotency: keep the hotspot fallback stable when the reconciled set is
-    # unchanged, but still refresh the full dashboard snapshot because weather
-    # and PM2.5 have their own update cadence.
+    # --- Idempotency check for hotspots.json ---
+    # Write only when the reconciled set actually changed.
     new_dump = hotspots.model_dump()
     existing_path = settings.cache_dir / "hotspots.json"
     hotspots_changed = True
@@ -93,12 +110,12 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001 — comparison is best-effort
             logger.warning("Could not compare with existing snapshot: %s", exc)
 
-    # Backend fallback file.
     if hotspots_changed:
         write_json(settings.cache_dir, "hotspots.json", new_dump)
 
-    # Full dashboard snapshot for the frontend; pm25/weather fall back to their
-    # own cached files if their live providers are unreachable from this runner.
+    # --- Always refresh PM2.5, weather, and the full dashboardSnapshot ---
+    # These have their own update cadence and should refresh on every run
+    # regardless of whether hotspots changed.
     pm25 = get_pm25(settings)
     weather = get_weather(settings)
     risk = calculate_risk(pm25, hotspots, weather)
@@ -109,7 +126,7 @@ def main() -> int:
     frontend_data = REPO_DIR / "frontend" / "src" / "data"
     write_json(frontend_data, "dashboardSnapshot.json", dashboard.model_dump())
 
-    logger.info("Wrote hotspots.json and dashboardSnapshot.json (count=%d)", hotspots.count)
+    logger.info("Wrote dashboardSnapshot.json (hotspot_count=%d)", hotspots.count)
     return 0
 
 
