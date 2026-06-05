@@ -378,7 +378,7 @@ export function DashboardMap({
 
   // Zoom level as React state — triggers marker rebuild only on tier boundary crossings
   const [zoom, setZoom] = useState(9);
-  const [baseMapId, setBaseMapId] = useState<BaseMapId>('terrain');
+  const [baseMapId, setBaseMapId] = useState<BaseMapId>('standard');
 
   const pinHomeFromMapEvent = (e: L.LeafletMouseEvent) => {
     if (!isPinningRef.current || !onMapClickRef.current) return false;
@@ -406,7 +406,7 @@ export function DashboardMap({
       scrollWheelZoom: true,
     });
 
-    tileLayerRef.current = createBaseTileLayer('terrain').addTo(map);
+    tileLayerRef.current = createBaseTileLayer('standard').addTo(map);
 
     // Leaflet built-in scale bar (replaces our static "20 km")
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
