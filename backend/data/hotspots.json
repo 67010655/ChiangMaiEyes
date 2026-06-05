@@ -1,115 +1,12 @@
 {
-  "count": 6,
-  "density_per_100_km2": 0.03,
-  "latest_update": "2026-06-05T06:14:20.281924+07:00",
+  "count": 0,
+  "density_per_100_km2": 0.0,
+  "latest_update": "2026-06-05T10:19:35.277357+07:00",
   "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
-  "items": [
-    {
-      "id": "HS-001",
-      "latitude": 18.9433,
-      "longitude": 98.96133,
-      "district": "สันทราย",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N",
-      "confidence": 75,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-04T14:18:00+07:00",
-      "sources": [
-        "NASA FIRMS"
-      ],
-      "source_count": 1
-    },
-    {
-      "id": "HS-002",
-      "latitude": 19.16259,
-      "longitude": 98.93114,
-      "district": "เชียงดาว",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N",
-      "confidence": 75,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-04T14:18:00+07:00",
-      "sources": [
-        "NASA FIRMS"
-      ],
-      "source_count": 1
-    },
-    {
-      "id": "HS-003",
-      "latitude": 18.78291,
-      "longitude": 99.03358,
-      "district": "สันกำแพง",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N21",
-      "confidence": 75,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-04T13:44:00+07:00",
-      "sources": [
-        "NASA FIRMS"
-      ],
-      "source_count": 1
-    },
-    {
-      "id": "HS-004",
-      "latitude": 18.87581,
-      "longitude": 98.99537,
-      "district": "แม่ริม",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N21",
-      "confidence": 75,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-04T13:44:00+07:00",
-      "sources": [
-        "NASA FIRMS"
-      ],
-      "source_count": 1
-    },
-    {
-      "id": "HS-005",
-      "latitude": 18.98664,
-      "longitude": 98.89323,
-      "district": "แม่แตง",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N21",
-      "confidence": 75,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-04T13:44:00+07:00",
-      "sources": [
-        "NASA FIRMS"
-      ],
-      "source_count": 1
-    },
-    {
-      "id": "HS-006",
-      "latitude": 19.16201,
-      "longitude": 98.93414,
-      "district": "เชียงดาว",
-      "subdistrict": null,
-      "landuse_type": null,
-      "landuse_name": null,
-      "satellite": "N21",
-      "confidence": 75,
-      "source": "NASA FIRMS",
-      "detected_at": "2026-06-04T13:44:00+07:00",
-      "sources": [
-        "NASA FIRMS"
-      ],
-      "source_count": 1
-    }
-  ],
+  "items": [],
   "source_breakdown": {
     "Royal Forest Department Firemap": 0,
     "GISTDA API Gateway VIIRS 1-day": 0,
-    "NASA FIRMS": 6
+    "NASA FIRMS": 0
   }
 }

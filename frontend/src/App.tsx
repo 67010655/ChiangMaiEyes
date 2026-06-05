@@ -708,7 +708,26 @@ function OverlayChart({
 // Authority-only: real backward trends pulled live from NASA VIIRS and
 // Open-Meteo — the app's look back in time, for analysis.
 function HistorySection({ history }: { history: HistoryResponse | null }) {
-  if (!history) return null;
+  // Genuinely null for ~8s while the multi-source history loads → skeleton,
+  // not a blank gap. (The dashboard itself always has fallback data, so it
+  // never needs one.)
+  if (!history) {
+    return (
+      <section className="card history-section" aria-busy="true" aria-label="กำลังโหลดข้อมูลย้อนหลัง">
+        <div className="card__head">
+          <span className="card__title">📊 ข้อมูลย้อนหลัง 30 วัน (เชิงวิเคราะห์)</span>
+        </div>
+        <div className="history-charts">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="trend-block">
+              <span className="skeleton skeleton--title" />
+              <span className="skeleton skeleton--chart" />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
   const hp = history.hotspots.map((d) => ({ date: d.date, value: d.count }));
   const pm = history.pm25.map((d) => ({ date: d.date, value: d.value }));
   const temp = history.weather.map((d) => ({ date: d.date, value: d.temp_max }));
@@ -1038,7 +1057,7 @@ export function App() {
               <strong style={{ fontSize: '1.05rem', fontFamily: 'monospace', fontWeight: 800 }}>
                 {formatCurrentTime(now)}
               </strong>
-              <span>
+              <span className="date-pill__full">
                 {formatCurrentDate(now)}
               </span>
             </div>
@@ -1047,7 +1066,8 @@ export function App() {
             <span className="live-dot" />
             <div>
               <strong>{loading ? 'กำลังอัปเดต' : 'อัปเดตล่าสุด'}</strong>
-              <span>{formatDateTime(updatedAt)}</span>
+              <span className="live-pill__full">{formatDateTime(updatedAt)}</span>
+              <span className="live-pill__short">{loading ? 'กำลังอัปเดต' : `อัปเดต ${formatTime(updatedAt)} น.`}</span>
             </div>
           </div>
           <button className="icon-button" type="button" onClick={loadDashboard} aria-label="อัปเดตข้อมูล">
@@ -1276,9 +1296,12 @@ export function App() {
         {/* RIGHT COLUMN: PERSONAL CHECKER + FORECAST TABLES + RISK CHECKS */}
         <div className="dashboard-secondary">
 
-          {/* Personal Checker & Stats */}
+          {/* Personal Checker & Stats — citizen-only. The "my home" self-check
+              and today's hotspot count are simple public tools; authority sees
+              the count in the data-status banner + the analytical history. */}
+          {uiMode === 'citizen' && (
           <div className="metrics-bento-grid">
-            
+
             {/* Geolocation checker card */}
             <section className="card personal-checker-card">
               <div className="card__head">
@@ -1362,6 +1385,7 @@ export function App() {
             </section>
 
           </div>
+          )}
 
           {/* Historical (back) — real 14-day trends: hotspots · PM2.5 · temp */}
           {uiMode === 'authority' && <HistorySection history={history} />}
@@ -1492,7 +1516,9 @@ export function App() {
 
         </div>
 
-        <EmergencyContacts />
+        {/* Public reporting hotlines — citizen-only; officers are the responders,
+            not the callers. */}
+        {uiMode === 'citizen' && <EmergencyContacts />}
 
       </div>
 

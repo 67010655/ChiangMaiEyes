@@ -179,6 +179,11 @@ button {
   white-space: nowrap;
 }
 
+/* Compact update time shown only on mobile (desktop shows the full datetime). */
+.live-pill span.live-pill__short {
+  display: none;
+}
+
 .live-dot {
   width: 9px;
   height: 9px;
@@ -1787,14 +1792,23 @@ button {
     justify-content: space-between;
   }
 
+  /* Mode switch: full-width, two equal halves, clearly divided and centred. */
   .ui-mode-selector {
     flex: 1 1 100%;
+    order: -1;
+  }
+
+  .ui-mode-selector .ui-mode-btn {
+    flex: 1;
+    text-align: center;
   }
 
   .date-pill,
   .live-pill {
     flex: 1 1 calc(50% - 44px);
     min-width: 0;
+    padding: 7px 12px;
+    gap: 8px;
   }
 
   .date-pill > div,
@@ -1803,23 +1817,24 @@ button {
     overflow: hidden;
   }
 
-  .date-pill span,
-  .live-pill span {
-    min-width: 0;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  /* Show the time prominently; drop the long date/datetime that overflowed. */
+  .date-pill strong {
+    display: block;
+    font-size: 1rem;
   }
 
-  .date-pill strong,
-  .live-pill strong {
+  .date-pill span.date-pill__full,
+  .live-pill strong,
+  .live-pill span.live-pill__full {
     display: none;
   }
 
-  .date-pill,
-  .live-pill {
-    padding: 7px 10px;
-    gap: 7px;
+  .live-pill__short {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--green-deep);
+    white-space: nowrap;
   }
 
   .date-pill svg {
@@ -1878,64 +1893,48 @@ button {
     width: 100%;
   }
 
-  /* ---- Map ---- */
+  /* ---- Map: declutter the phone-sized view ---- */
   .map-titlebar {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    align-items: stretch;
+    gap: 6px;
   }
 
+  .map-titlebar h2 {
+    font-size: 0.92rem;
+  }
+
+  /* Layer toggles become a single horizontal scroll strip, not a wrapped box. */
   .map-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
     gap: 4px;
     padding: 4px;
-    border-radius: 14px;
+    border-radius: 12px;
+    scrollbar-width: none;
+  }
+
+  .map-toolbar::-webkit-scrollbar {
+    display: none;
   }
 
   .map-toolbar button {
     padding: 6px 10px;
     font-size: 0.76rem;
-  }
-
-  .map-legend {
-    top: auto;
-    bottom: 138px;
-    right: 12px;
-    left: 12px;
-    gap: 10px;
-  }
-
-  .basemap-switcher {
-    top: auto;
-    right: 12px;
-    bottom: 64px;
-    grid-template-columns: repeat(4, auto);
-    max-width: calc(100% - 110px);
-    overflow-x: auto;
-  }
-
-  .basemap-switcher button {
-    min-width: 54px;
-    padding: 0 8px;
     white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  /* Legend, help hint and basemap switcher overload a small map and block taps,
+     so hide them here — they return in fullscreen, which has the room. */
+  .map-legend,
+  .map-help,
+  .basemap-switcher {
+    display: none;
   }
 
   .map-stage {
     min-height: 400px;
-  }
-
-  .map-inspector {
-    top: 128px;
-    right: 12px;
-    left: 12px;
-    width: auto;
-  }
-
-  .map-help {
-    right: 12px;
-    left: 12px;
-    top: auto;
-    bottom: 106px;
-    max-width: none;
   }
 
   .map-controls {
@@ -1946,6 +1945,19 @@ button {
     align-items: center;
   }
 
+  /* Drop the zoom readout so the 4 buttons (incl. fullscreen) fit one row. */
+  .map-controls .zoom-readout {
+    display: none;
+  }
+
+  /* The fullscreen separator (border/padding) is for the vertical desktop
+     stack — neutralise it in the horizontal mobile row. */
+  .map-fullscreen-btn {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0 !important;
+  }
+
   .map-scale {
     display: none;
   }
@@ -1953,6 +1965,29 @@ button {
   .wind-chip {
     left: 12px;
     bottom: 12px;
+  }
+
+  /* In fullscreen on a phone, the tapped-feature panel is the priority; legend
+     and basemap stay hidden (they return on the roomier desktop fullscreen). */
+  .map-hero--fullscreen .wind-chip {
+    display: none;
+  }
+
+  /* Full-width bottom sheet for the tapped feature; move the zoom/fullscreen
+     controls to a vertical stack mid-right so they clear both the titlebar and
+     the sheet. */
+  .map-hero--fullscreen .map-fs-detail {
+    width: calc(100% - 20px);
+    left: 10px;
+    right: 10px;
+  }
+
+  .map-stage.map-hero--fullscreen .map-controls {
+    top: 44%;
+    bottom: auto;
+    right: 10px;
+    grid-template-columns: auto;
+    gap: 6px;
   }
 
   .page-foot {
@@ -2847,6 +2882,42 @@ button {
 }
 
 /* Bento weather and details grids */
+/* Skeleton loading placeholders (used where data is genuinely null until an
+   async fetch resolves — e.g. the history section's ~8s load). */
+.skeleton {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--surface-soft) 25%, var(--line) 37%, var(--surface-soft) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+.skeleton--title {
+  width: 45%;
+  height: 14px;
+  margin-bottom: 8px;
+}
+
+.skeleton--chart {
+  width: 100%;
+  height: 64px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
 /* Authority historical trends (14-day multi-metric bar charts) */
 .history-charts {
   display: flex;
@@ -3649,6 +3720,105 @@ button {
 
 .map-hero--fullscreen .map-controls {
   bottom: 32px;
+}
+
+/* Fullscreen tapped-feature panel — a sheet anchored bottom-left, clear of the
+   bottom-right controls. */
+.map-fs-detail {
+  position: absolute;
+  z-index: 1200;
+  left: 16px;
+  bottom: 16px;
+  width: min(380px, calc(100% - 170px));
+  max-height: 46%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.map-fs-detail__eyebrow {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--green-deep);
+  text-transform: uppercase;
+}
+
+.map-fs-detail__title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.map-fs-detail__text {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.map-fs-detail__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.map-fs-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  min-width: 0;
+}
+
+.map-fs-stat span {
+  font-size: 0.62rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.map-fs-stat b {
+  font-size: 0.8rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.map-fs-stat--risk {
+  border-color: rgba(220, 38, 38, 0.35);
+}
+.map-fs-stat--risk b {
+  color: #dc2626;
+}
+.map-fs-stat--watch {
+  border-color: rgba(234, 179, 8, 0.4);
+}
+.map-fs-stat--good b {
+  color: var(--green-deep);
+}
+
+@media (max-width: 767px) {
+  .map-fs-detail {
+    left: 10px;
+    bottom: 10px;
+    width: calc(100% - 150px);
+    max-height: 42%;
+    padding: 11px 12px;
+  }
+  .map-fs-detail__title {
+    font-size: 0.95rem;
+  }
 }
 
 /* Fullscreen button in map controls */

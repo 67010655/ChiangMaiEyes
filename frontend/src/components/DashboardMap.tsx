@@ -1144,7 +1144,7 @@ function landmarkSelection(landmark: ChiangMaiLandmark, dashboard: DashboardResp
 export function DashboardMap({
   dashboard,
   layers,
-  selection: _selection,
+  selection,
   onSelectionChange,
   uiMode,
   theme,
@@ -1807,6 +1807,29 @@ export function DashboardMap({
           </button>
         )}
       </div>
+
+      {/* Fullscreen-only: the map-detail-bar lives outside the map, so in
+          fullscreen we surface the tapped feature's info on the map itself. */}
+      {isFullscreen && (
+        <div className="map-fs-detail" aria-live="polite">
+          {selection.eyebrow && <span className="map-fs-detail__eyebrow">{selection.eyebrow}</span>}
+          <strong className="map-fs-detail__title">{selection.title}</strong>
+          {selection.detail && <p className="map-fs-detail__text">{selection.detail}</p>}
+          {selection.stats && selection.stats.length > 0 && (
+            <div className="map-fs-detail__stats">
+              {selection.stats.slice(0, 6).map((stat) => (
+                <div
+                  key={`${stat.label}-${stat.value}`}
+                  className={`map-fs-stat${stat.tone ? ` map-fs-stat--${stat.tone}` : ''}`}
+                >
+                  <span>{stat.label}</span>
+                  <b>{stat.value}</b>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
