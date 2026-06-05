@@ -855,30 +855,30 @@ export function DashboardMap({
           L.DomEvent.stopPropagation(e);
           if (pinHomeFromMapEvent(e)) return;
           onSelChangeRef.current({
-            eyebrow: 'Space Tech · Sentinel-2 NDVI',
+            eyebrow: 'ดัชนีอ้างอิง NDVI · ค่าเฉลี่ยฤดูแล้ง (ไม่ใช่ Live Satellite)',
             title: zone.name,
-            detail: `วิเคราะห์พื้นที่ป่าสงวนจากภาพถ่ายดัชนีความแห้งแล้ง (NDWI/NDVI) พบสภาพ ${zone.status}`,
+            detail: `วิเคราะห์พื้นที่ป่าสงวนจากดัชนีความแห้งแล้ง (NDVI) พบสภาพ ${zone.status} · ค่า NDVI เป็นค่าอ้างอิงเฉลี่ยช่วงฤดูแล้ง ไม่ใช่ค่าดาวเทียมแบบ Real-time`,
             imageKey: 'forest',
             imageLabel: zone.name,
             stats: [
-              { label: 'ดัชนี NDVI', value: zone.ndvi.toString(), tone: zone.ndvi <= 0.25 ? 'risk' : 'watch' },
+              { label: 'ดัชนี NDVI (อ้างอิง)', value: zone.ndvi.toString(), tone: zone.ndvi <= 0.25 ? 'risk' : 'watch' },
               { label: 'ระดับความแห้ง', value: zone.ndvi <= 0.25 ? 'แห้งแล้งวิกฤต' : 'แห้งแล้งปานกลาง' },
-              { label: 'สถานะเชื้อเพลิง', value: 'มีเศษใบไม้แห้งหนาแน่น', tone: 'risk' },
+              { label: 'สถานะเชื้อเพลิง', value: 'มีเศษใบไม้แห้งหนาแน่น (ค่าเฉลี่ยฤดูแล้ง)', tone: 'risk' },
             ],
           });
         })
         .on('mouseover', () => {
           if (isPinningRef.current) return;
           onSelChangeRef.current({
-            eyebrow: 'Space Tech · Sentinel-2 NDVI',
+            eyebrow: 'ดัชนีอ้างอิง NDVI · ค่าเฉลี่ยฤดูแล้ง (ไม่ใช่ Live Satellite)',
             title: zone.name,
-            detail: `วิเคราะห์พื้นที่ป่าสงวนจากภาพถ่ายดัชนีความแห้งแล้ง (NDWI/NDVI) พบสภาพ ${zone.status}`,
+            detail: `วิเคราะห์พื้นที่ป่าสงวนจากดัชนีความแห้งแล้ง (NDVI) พบสภาพ ${zone.status} · ค่า NDVI เป็นค่าอ้างอิงเฉลี่ยช่วงฤดูแล้ง ไม่ใช่ค่าดาวเทียมแบบ Real-time`,
             imageKey: 'forest',
             imageLabel: zone.name,
             stats: [
-              { label: 'ดัชนี NDVI', value: zone.ndvi.toString(), tone: zone.ndvi <= 0.25 ? 'risk' : 'watch' },
+              { label: 'ดัชนี NDVI (อ้างอิง)', value: zone.ndvi.toString(), tone: zone.ndvi <= 0.25 ? 'risk' : 'watch' },
               { label: 'ระดับความแห้ง', value: zone.ndvi <= 0.25 ? 'แห้งแล้งวิกฤต' : 'แห้งแล้งปานกลาง' },
-              { label: 'สถานะเชื้อเพลิง', value: 'มีเศษใบไม้แห้งหนาแน่น', tone: 'risk' },
+              { label: 'สถานะเชื้อเพลิง', value: 'มีเศษใบไม้แห้งหนาแน่น (ค่าเฉลี่ยฤดูแล้ง)', tone: 'risk' },
             ],
           });
         })
