@@ -6,6 +6,7 @@ import { getDistanceKm, initialSelection, type MapSelection } from './lib/mapSel
 import { riskPercent } from './lib/risk';
 import type { DashboardResponse, DataStatusResponse, HistoryResponse } from './lib/types';
 import dashboardSnapshot from './data/dashboardSnapshot.json';
+import districtsGeoData from './data/chiangmai-districts.json';
 import { windDestinationName, getBearing } from './lib/wind';
 import { getDistrictPhysics, calculateRateOfSpread } from './lib/firePhysics';
 
@@ -87,14 +88,31 @@ const adviceByColor: Record<string, { heading: string; text: string }> = {
 
 const REC_ICONS = [Home, BookOpen, MapPin] as const;
 
-const DISTRICT_PRESETS = [
-  { name: 'อ.เมืองเชียงใหม่ (ต.สุเทพ / นิมมาน)', coords: [18.7961, 98.9792] },
-  { name: 'อ.แม่ริม (ม่อนแจ่ม)', coords: [18.9358, 98.8224] },
-  { name: 'อ.จอมทอง (ดอยอินทนนท์)', coords: [18.5366, 98.5209] },
-  { name: 'อ.เชียงดาว (ดอยหลวงเชียงดาว)', coords: [19.3999, 98.8762] },
-  { name: 'อ.แม่แจ่ม (ป่าบงเปียง)', coords: [18.5329, 98.4472] },
-  { name: 'อ.ฝาง (ดอยอ่างขาง)', coords: [19.9011, 99.0401] },
-];
+type DistrictPreset = { name: string; coords: [number, number] };
+
+type DistrictGeometry = {
+  type: 'Polygon' | 'MultiPolygon';
+  coordinates: number[][][] | number[][][][];
+};
+
+function districtCenter(geometry: DistrictGeometry): [number, number] {
+  const rings = geometry.type === 'Polygon'
+    ? (geometry.coordinates as number[][][])
+    : (geometry.coordinates as number[][][][]).flat(1);
+  const points = rings.flat();
+  const total = points.reduce(
+    (acc, point) => ({ lng: acc.lng + point[0], lat: acc.lat + point[1] }),
+    { lng: 0, lat: 0 },
+  );
+  return [total.lat / points.length, total.lng / points.length];
+}
+
+const DISTRICT_PRESETS: DistrictPreset[] = ((districtsGeoData as { features: Array<{ properties?: { nameTh?: string; name?: string }; geometry: DistrictGeometry }> }).features ?? [])
+  .map((feature) => ({
+    name: feature.properties?.nameTh ?? feature.properties?.name ?? 'อำเภอไม่ระบุชื่อ',
+    coords: districtCenter(feature.geometry),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name, 'th'));
 
 function getPm25Color(val: number) {
   if (val <= 25) return 'green';
@@ -791,7 +809,7 @@ function CitizenSummary({
   const riskHex = riskTone === 'low' ? '#16a34a' : riskTone === 'medium' ? '#eab308' : '#dc2626';
   const fireHex = hotspots === 0 ? '#16a34a' : hotspots <= 20 ? '#f97316' : '#dc2626';
   const tiles = [
-    { accent: airHex, label: 'คุณภาพอากาศ', value: `${pm25}`, unit: 'µg/m³', tag: `${getPm25Label(pm25)} · ${Math.round(temp)}°C` },
+    { accent: airHex, label: 'คุณภาพอากาศ', value: `${pm25}`, unit: 'µg/m³', tag: getPm25Label(pm25) },
     { accent: riskHex, label: 'ความเสี่ยงหมอกควัน', value: riskScore, suffix: '/10', unit: 'คะแนน', tag: riskLabelTh[riskTone] },
     { accent: fireHex, label: 'จุดความร้อน', value: `${hotspots}`, unit: 'จุด', tag: 'ดาวเทียมวันนี้' },
   ] as const;
@@ -823,7 +841,7 @@ export function App() {
   const [history, setHistory] = useState<HistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true, landmarks: false, fuelRisk: false });
+  const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true, landmarks: false, fuelRisk: true });
   const [note, setNote] = useState<'pm' | 'risk' | null>(null);
   const [mapSelection, setMapSelection] = useState<MapSelection>(initialSelection);
   const [now, setNow] = useState(() => new Date());
@@ -831,7 +849,34 @@ export function App() {
   const [uiMode, setUiMode] = useState<'citizen' | 'authority'>('citizen');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [isPinningMode, setIsPinningMode] = useState(false);
   const [mapFullscreen, setMapFullscreen] = useState(false);
+
+  const selectHomeLocation = useCallback((coords: [number, number]) => {
+    const windDest = windDestinationName(dashboard.weather.wind_direction_deg);
+    const pm25Value = `${dashboard.pm25.current_pm25.toFixed(1)} µg/m³`;
+    const pm25SelectionTone: 'good' | 'watch' | 'risk' =
+      dashboard.pm25.color === 'green' ? 'good' : dashboard.pm25.color === 'yellow' ? 'watch' : 'risk';
+    setUserLocation(coords);
+    setIsPinningMode(false);
+    setMapSelection({
+      eyebrow: 'พิกัดบ้านของฉัน',
+      title: `บ้านของฉัน (${coords[0].toFixed(4)}, ${coords[1].toFixed(4)})`,
+      detail: `ปักตำแหน่งนี้เป็นบ้านของคุณแล้ว ใช้ประเมินร่วมกับ PM2.5 ${pm25Value}, จุดความร้อน ${dashboard.hotspots.count} จุด และลมที่กำลังพัดไปทาง${windDest}`,
+      mapUrl: `https://www.google.com/maps?q=${coords[0]},${coords[1]}`,
+      imageKey: 'district',
+      imageLabel: 'ตำแหน่งบ้านของฉัน',
+      stats: [
+        { label: 'พิกัด', value: `${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}` },
+        { label: 'PM2.5 วันนี้', value: pm25Value, tone: pm25SelectionTone },
+        { label: 'จุดความร้อน', value: `${dashboard.hotspots.count} จุด`, tone: dashboard.hotspots.count > 0 ? 'watch' : 'good' },
+        { label: 'ลม', value: `${dashboard.weather.wind_speed_kmh.toFixed(1)} กม./ชม. ไป${windDest}` },
+      ],
+    });
+    window.requestAnimationFrame(() => {
+      document.querySelector('.map-detail-bar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [dashboard.hotspots.count, dashboard.pm25.color, dashboard.pm25.current_pm25, dashboard.weather.wind_direction_deg, dashboard.weather.wind_speed_kmh]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -953,7 +998,7 @@ export function App() {
   const allOn = layers.hotspots && layers.pm25 && layers.wind;
   const toggleLayer = (key: keyof LayerState) => setLayers((current) => ({ ...current, [key]: !current[key] }));
   const toggleNote = (key: 'pm' | 'risk') => setNote((current) => (current === key ? null : key));
-  const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true, landmarks: false, fuelRisk: false });
+  const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true, landmarks: false, fuelRisk: true });
 
   const pm25Time = formatTime(dashboard.pm25.latest_update);
   const weatherTime = formatTime(dashboard.weather.latest_update);
@@ -1133,12 +1178,115 @@ export function App() {
             uiMode={uiMode}
             theme={theme}
             userLocation={userLocation}
-            onMapClick={setUserLocation}
+            onMapClick={selectHomeLocation}
+            isPinningMode={isPinningMode}
+            onPinningModeChange={setIsPinningMode}
             isFullscreen={mapFullscreen}
             onToggleFullscreen={() => setMapFullscreen((prev) => !prev)}
           />
         </Suspense>
       </section>
+
+      {/* Personal Checker & Stats — citizen-only. The "my home" self-check
+          and today's hotspot count are simple public tools; authority sees
+          the count in the data-status banner + the analytical history. */}
+      {uiMode === 'citizen' && (
+      <div className="metrics-bento-grid">
+
+        {/* Geolocation checker card */}
+        <section className="card personal-checker-card">
+          <div className="card__head">
+            <span className="card__title">🏠 เช็คความเสี่ยงพิกัดบ้านฉัน</span>
+          </div>
+          <p className="personal-checker-desc">
+            เลือกอำเภอหรือใช้ GPS ตรวจวัดพิกัดของคุณ เพื่อคำนวณทิศควันไฟและระยะห่างไฟป่าทันที
+          </p>
+          <div className="personal-checker-actions">
+            <button
+              type="button"
+              className="btn-gps"
+              onClick={() => {
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      selectHomeLocation([pos.coords.latitude, pos.coords.longitude]);
+                    },
+                    (err) => {
+                      alert(`ไม่สามารถระบุพิกัดได้: ${err.message}`);
+                    }
+                  );
+                } else {
+                  alert('เบราว์เซอร์ของคุณไม่รองรับ GPS');
+                }
+              }}
+            >
+              📍 หาตำแหน่งของฉัน
+            </button>
+
+            <select
+              className="select-location"
+              value=""
+              onChange={(e) => {
+                if (e.target.value) {
+                  const coords = e.target.value.split(',').map(Number) as [number, number];
+                  selectHomeLocation(coords);
+                }
+              }}
+            >
+              <option value="" disabled>-- เลือกอำเภอในเชียงใหม่ --</option>
+              {DISTRICT_PRESETS.map((p) => (
+                <option key={p.name} value={p.coords.join(',')}>{p.name}</option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              className={`btn-pin-map${isPinningMode ? ' active' : ''}`}
+              onClick={() => setIsPinningMode(!isPinningMode)}
+            >
+              📌 {isPinningMode ? 'กำลังรอปักหมุด... คลิกบนแผนที่เลย' : 'ปักหมุดบ้านบนแผนที่'}
+            </button>
+          </div>
+          {userLocation ? (
+            <div className="personal-checker-status active">
+              <span>พิกัดของฉัน: <b>{userLocation[0].toFixed(3)}, {userLocation[1].toFixed(3)}</b></span>
+              <button
+                type="button"
+                className="btn-clear"
+                  onClick={() => {
+                    setUserLocation(null);
+                    setIsPinningMode(false);
+                    setMapSelection(initialSelection);
+                  }}
+              >
+                ยกเลิก
+              </button>
+            </div>
+          ) : (
+            <div className="personal-checker-status">
+              <span>💡 แนะนำ: สามารถจิ้มตำแหน่งใดก็ได้บนแผนที่เพื่อประเมินความเสี่ยงได้โดยตรง</span>
+            </div>
+          )}
+        </section>
+
+        {/* Fire hotspots card */}
+        <section className="card mini-card mini-card--hotspots">
+          <span className="card__title">จุดความร้อนดาวเทียมวันนี้</span>
+          <div className="mini-card__body">
+            <span className="mini-card__icon mini-card__icon--fire">
+              <Flame size={20} />
+            </span>
+            <div className="mini-card__value">
+              <strong>{dashboard.hotspots.count}</strong>
+              <span>จุดสะสม</span>
+            </div>
+          </div>
+          <small className="card__foot">NASA FIRMS / GISTDA · {pm25Time} น.</small>
+        </section>
+
+      </div>
+      )}
+
 
       {/* Map selection detail inspector */}
       <div className="map-detail-bar card" aria-live="polite">
@@ -1212,6 +1360,26 @@ export function App() {
                 <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--muted)', marginTop: '4px' }}>
                   {getPm25Label(dashboard.pm25.current_pm25)}
                 </span>
+                <div className="pm25-quality-bar" aria-label="ระดับ PM2.5">
+                  {[
+                    { max: 25, color: '#16a34a', label: 'ดีมาก' },
+                    { max: 37, color: '#eab308', label: 'ดี' },
+                    { max: 50, color: '#f97316', label: 'ปานกลาง' },
+                    { max: 90, color: '#dc2626', label: 'มีผลกระทบ' },
+                    { max: 200, color: '#7c3aed', label: 'อันตราย' },
+                  ].map((band, i) => (
+                    <div key={`${band.max}-${i}`} className="pm25-band" style={{ background: band.color }}>
+                      <span>{band.label}</span>
+                    </div>
+                  ))}
+                  <div
+                    className="pm25-indicator"
+                    style={{
+                      left: `${Math.min((dashboard.pm25.current_pm25 / 200) * 100, 100)}%`,
+                    }}
+                    aria-label={`ค่าปัจจุบัน ${dashboard.pm25.current_pm25}`}
+                  />
+                </div>
               </div>
             </div>
 
@@ -1295,97 +1463,6 @@ export function App() {
 
         {/* RIGHT COLUMN: PERSONAL CHECKER + FORECAST TABLES + RISK CHECKS */}
         <div className="dashboard-secondary">
-
-          {/* Personal Checker & Stats — citizen-only. The "my home" self-check
-              and today's hotspot count are simple public tools; authority sees
-              the count in the data-status banner + the analytical history. */}
-          {uiMode === 'citizen' && (
-          <div className="metrics-bento-grid">
-
-            {/* Geolocation checker card */}
-            <section className="card personal-checker-card">
-              <div className="card__head">
-                <span className="card__title">🏠 เช็คความเสี่ยงพิกัดบ้านฉัน</span>
-              </div>
-              <p className="personal-checker-desc">
-                เลือกอำเภอหรือใช้ GPS ตรวจวัดพิกัดของคุณ เพื่อคำนวณทิศควันไฟและระยะห่างไฟป่าทันที
-              </p>
-              <div className="personal-checker-actions">
-                <button
-                  type="button"
-                  className="btn-gps"
-                  onClick={() => {
-                    if (navigator.geolocation) {
-                      navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                          setUserLocation([pos.coords.latitude, pos.coords.longitude]);
-                        },
-                        (err) => {
-                          alert(`ไม่สามารถระบุพิกัดได้: ${err.message}`);
-                        }
-                      );
-                    } else {
-                      alert('เบราว์เซอร์ของคุณไม่รองรับ GPS');
-                    }
-                  }}
-                >
-                  📍 หาตำแหน่งของฉัน
-                </button>
-
-                <select
-                  className="select-location"
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      const coords = e.target.value.split(',').map(Number) as [number, number];
-                      setUserLocation(coords);
-                    }
-                  }}
-                >
-                  <option value="" disabled>-- อำเภอยอดฮิต --</option>
-                  {DISTRICT_PRESETS.map((p) => (
-                    <option key={p.name} value={p.coords.join(',')}>{p.name}</option>
-                  ))}
-                </select>
-              </div>
-              {userLocation ? (
-                <div className="personal-checker-status active">
-                  <span>พิกัดของฉัน: <b>{userLocation[0].toFixed(3)}, {userLocation[1].toFixed(3)}</b></span>
-                  <button
-                    type="button"
-                    className="btn-clear"
-                    onClick={() => {
-                      setUserLocation(null);
-                      setMapSelection(initialSelection);
-                    }}
-                  >
-                    ยกเลิก
-                  </button>
-                </div>
-              ) : (
-                <div className="personal-checker-status">
-                  <span>💡 แนะนำ: สามารถจิ้มตำแหน่งใดก็ได้บนแผนที่เพื่อประเมินความเสี่ยงได้โดยตรง</span>
-                </div>
-              )}
-            </section>
-
-            {/* Fire hotspots card */}
-            <section className="card mini-card mini-card--hotspots">
-              <span className="card__title">จุดความร้อนดาวเทียมวันนี้</span>
-              <div className="mini-card__body">
-                <span className="mini-card__icon mini-card__icon--fire">
-                  <Flame size={20} />
-                </span>
-                <div className="mini-card__value">
-                  <strong>{dashboard.hotspots.count}</strong>
-                  <span>จุดสะสม</span>
-                </div>
-              </div>
-              <small className="card__foot">NASA FIRMS / GISTDA · {pm25Time} น.</small>
-            </section>
-
-          </div>
-          )}
 
           {/* Historical (back) — real 14-day trends: hotspots · PM2.5 · temp */}
           {uiMode === 'authority' && <HistorySection history={history} />}

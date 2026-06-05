@@ -29,6 +29,8 @@ type Props = {
   theme?: 'light' | 'dark';
   userLocation?: [number, number] | null;
   onMapClick?: (coords: [number, number]) => void;
+  isPinningMode?: boolean;
+  onPinningModeChange?: (v: boolean) => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
 };
@@ -160,12 +162,6 @@ function hotspotStats(h: Hotspot): MapSelection['stats'] {
   ];
 }
 
-function googleMapsSearchUrl(name: string, area: string) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} ${area} เชียงใหม่`)}`;
-}
-
-const WONGNAI_CHIANGMAI_TRIP_URL = 'https://www.wongnai.com/trips/travel-at-chiangmai';
-
 const BASEMAPS = [
   {
     id: 'standard',
@@ -207,847 +203,50 @@ function createBaseTileLayer(id: BaseMapId) {
   });
 }
 
+let velocityLayerGuardsInstalled = false;
+
+function ensureVelocityLayerGuards() {
+  if (velocityLayerGuardsInstalled) return;
+  const canvasLayer = (L as any).CanvasLayer?.prototype;
+  if (!canvasLayer) return;
+
+  const drawLayer = canvasLayer.drawLayer;
+  const onLayerDidMove = canvasLayer._onLayerDidMove;
+  const onLayerDidResize = canvasLayer._onLayerDidResize;
+
+  canvasLayer.drawLayer = function guardedDrawLayer(this: { _map?: L.Map | null; _canvas?: HTMLCanvasElement | null; _frame?: unknown }) {
+    if (!this._map || !this._canvas) {
+      this._frame = null;
+      return;
+    }
+    return drawLayer.call(this);
+  };
+
+  canvasLayer._onLayerDidMove = function guardedOnLayerDidMove(this: { _map?: L.Map | null; _canvas?: HTMLCanvasElement | null }) {
+    if (!this._map || !this._canvas) return;
+    return onLayerDidMove.call(this);
+  };
+
+  canvasLayer._onLayerDidResize = function guardedOnLayerDidResize(
+    this: { _canvas?: HTMLCanvasElement | null },
+    resizeEvent: { newSize?: { x: number; y: number } },
+  ) {
+    if (!this._canvas || !resizeEvent?.newSize) return;
+    return onLayerDidResize.call(this, resizeEvent);
+  };
+
+  velocityLayerGuardsInstalled = true;
+}
+
 const CHIANG_MAI_LANDMARKS = [
-  {
-    rank: 1,
-    id: 'wongnai-1',
-    name: "วัดพระธาตุดอยสุเทพราชวรวิหาร",
-    url: "https://www.wongnai.com/attractions/324436dw-วัดพระธาตุดอยสุเทพราชวรวิหาร",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.เมืองเชียงใหม่",
-    address: "สุเทพ, เชียงใหม่, จ.เชียงใหม่, 50200, ประเทศไทย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "แลนด์มาร์กคู่เมืองและวิวเชียงใหม่",
-    featured: true,
-    coords: [18.805091, 98.921471] as [number, number],
-  },
-  {
-    rank: 2,
-    id: 'wongnai-2',
-    name: "One Nimman",
-    url: "https://www.wongnai.com/attractions/340131EJ-one-nimman",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "เดินเล่น / กิจกรรม / ครอบครัว",
-    area: "อ.เมืองเชียงใหม่",
-    address: "ถนน นิมมานเหมินทร์",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "ย่านเดินเล่น ร้านอาหาร และมุมถ่ายรูป",
-    featured: true,
-    coords: [18.800000368388126, 98.96800240608218] as [number, number],
-  },
-  {
-    rank: 3,
-    id: 'wongnai-3',
-    name: "ถนนคนเดินวัวลาย",
-    url: "https://www.wongnai.com/attractions/330323yo-ถนนคนเดินวัวลาย-เชียงใหม่",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "เดินเล่น / กิจกรรม / ครอบครัว",
-    area: "อ.เมืองเชียงใหม่",
-    address: "ถนน วัวลาย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "อาหาร ของฝาก และงานคราฟต์กลางคืน",
-    featured: false,
-    coords: [18.7808949, 98.987767] as [number, number],
-  },
-  {
-    rank: 4,
-    id: 'wongnai-4',
-    name: "ถนนคนเดินท่าแพ",
-    url: "https://www.wongnai.com/attractions/337475Mf-ถนนคนเดินท่าแพ",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "เดินเล่น / กิจกรรม / ครอบครัว",
-    area: "อ.เมืองเชียงใหม่",
-    address: "ถนน คนเดินท่าแพ",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "อาหาร ของฝาก และงานคราฟต์กลางคืน",
-    featured: true,
-    coords: [18.787942628930153, 98.99136370066378] as [number, number],
-  },
-  {
-    rank: 5,
-    id: 'wongnai-5',
-    name: "อ่างแก้ว",
-    url: "https://www.wongnai.com/attractions/342238oe-อ่างแก้ว-มหาวิทยาลัยเชียงใหม่",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.เมืองเชียงใหม่",
-    address: "ถนน นครพิงค์",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: true,
-    coords: [18.806901, 98.951137] as [number, number],
-  },
-  {
-    rank: 6,
-    id: 'wongnai-6',
-    name: "วัดพระธาตุดอยคำ",
-    url: "https://www.wongnai.com/attractions/324827cg-วัดพระธาตุดอยคำ-วัดสุวรรณบรรพต",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.เมืองเชียงใหม่",
-    address: "ถนนหมู่บ้านเชียงใหม่เลคแลนด์",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.759628920202136, 98.91870297572086] as [number, number],
-  },
-  {
-    rank: 7,
-    id: 'wongnai-7',
-    name: "วัดอุโมงค์ (วัดสวนพุทธธรรม)",
-    url: "https://www.wongnai.com/attractions/324434eD-วัดอุโมงค์-วัดสวนพุทธธรรม",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.เมืองเชียงใหม่",
-    address: "135 หมู่ที่ 10 ซอย บ้านใหม่หลังมอ",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.78354413260747, 98.95123193277334] as [number, number],
-  },
-  {
-    rank: 8,
-    id: 'wongnai-8',
-    name: "บ้านข้างวัด",
-    url: "https://www.wongnai.com/attractions/326929QW-บ้านข้างวัด",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.เมืองเชียงใหม่",
-    address: "191-197 5 ถนน คำหยาดฟ้า",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.77633696707432, 98.94840654232786] as [number, number],
-  },
-  {
-    rank: 9,
-    id: 'wongnai-9',
-    name: "ศูนย์พัฒนาโครงการหลวงขุนแปะ",
-    url: "https://www.wongnai.com/attractions/350644bL-ศูนย์พัฒนาโครงการหลวง-ขุนแปะ",
-    category: "เมืองเก่า / ไลฟ์สไตล์",
-    mood: "เมืองเก่า / ไลฟ์สไตล์",
-    area: "อ.เมืองเชียงใหม่",
-    address: "ถนน บ้านขุนแปะ",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เมืองเชียงใหม่ ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.3117417, 98.47984640000004] as [number, number],
-  },
-  {
-    rank: 10,
-    id: 'wongnai-10',
-    name: "อุทยานแห่งชาติดอยอินทนนท์",
-    url: "https://www.wongnai.com/attractions/324494Sm-อุทยานแห่งชาติดอยอินทนนท์",
-    category: "ดอยอินทนนท์ / ธรรมชาติ",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.จอมทอง",
-    address: "ถนน บ้านหลวง ซอย 2",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.จอมทอง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "ยอดดอย อากาศเย็น และน้ำตก",
-    featured: true,
-    coords: [18.53664331, 98.52089544] as [number, number],
-  },
-  {
-    rank: 11,
-    id: 'wongnai-11',
-    name: "เส้นทางศึกษาธรรมชาติกิ่วแม่ปาน",
-    url: "https://www.wongnai.com/attractions/325949Yd-เส้นทางศึกษาธรรมชาติกิ่วแม่ปาน",
-    category: "ดอยอินทนนท์ / ธรรมชาติ",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.จอมทอง",
-    address: "ทางหลวงแผ่นดินหมายเลข 1009",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.จอมทอง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "เส้นทางเดินชมธรรมชาติและทะเลหมอก",
-    featured: true,
-    coords: [18.55616462, 98.48200362] as [number, number],
-  },
-  {
-    rank: 12,
-    id: 'wongnai-12',
-    name: "สถานีเกษตรหลวงอินทนนท์",
-    url: "https://www.wongnai.com/attractions/325079vG-สถานีเกษตรหลวงอินทนนท์",
-    category: "ดอยอินทนนท์ / ธรรมชาติ",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.จอมทอง",
-    address: "ทางหลวงหมายเลข 1284",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.จอมทอง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.542625377706187, 98.51940349384108] as [number, number],
-  },
-  {
-    rank: 13,
-    id: 'wongnai-13',
-    name: "น้ำตกสิริภูมิ",
-    url: "https://www.wongnai.com/attractions/324828st-น้ำตกสิริภูมิ",
-    category: "ดอยอินทนนท์ / ธรรมชาติ",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.จอมทอง",
-    address: "ถนน บ้านหลวง",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.จอมทอง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.54695758, 98.51223635] as [number, number],
-  },
-  {
-    rank: 14,
-    id: 'wongnai-14',
-    name: "บ้านป่าบงเปียง",
-    url: "https://www.wongnai.com/attractions/330524pZ-บ้านป่าบงเปียง",
-    category: "นาขั้นบันได / ชุมชน",
-    mood: "นาขั้นบันได / ชุมชน",
-    area: "อ.แม่แจ่ม",
-    address: "197 หมู่13 ทางหลวงหมายเลข 1192",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แจ่ม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "นาขั้นบันไดและวิวชนบท",
-    featured: true,
-    coords: [18.532946, 98.447244] as [number, number],
-  },
-  {
-    rank: 15,
-    id: 'wongnai-15',
-    name: "น้ำแม่ออกฮู",
-    url: "https://www.wongnai.com/attractions/353079DR-น้ำแม่ออกฮู",
-    category: "นาขั้นบันได / ชุมชน",
-    mood: "นาขั้นบันได / ชุมชน",
-    area: "อ.แม่แจ่ม",
-    address: "ทางหลวงแผ่นดิน หมายเลข 1088",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แจ่ม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.546885032053353, 98.38272891783231] as [number, number],
-  },
-  {
-    rank: 16,
-    id: 'wongnai-16',
-    name: "ดอยม่อนหมาก",
-    url: "https://www.wongnai.com/attractions/1592733Av-%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%A1%E0%B9%88%E0%B8%AD%E0%B8%99%E0%B8%AB%E0%B8%A1%E0%B8%B2%E0%B8%81",
-    category: "นาขั้นบันได / ชุมชน",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่แจ่ม",
-    address: "Unnamed Road ตำบล ท่าผา อำเภอแม่แจ่ม เชียงใหม่ 50270 ไทย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แจ่ม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.46091, 98.3504171] as [number, number],
-  },
-  {
-    rank: 17,
-    id: 'wongnai-17',
-    name: "นาข้าวขั้นบันได บ้านกองกาน",
-    url: "https://www.wongnai.com/attractions/1592865On-%E0%B8%99%E0%B8%B2%E0%B8%82%E0%B9%89%E0%B8%B2%E0%B8%A7%E0%B8%82%E0%B8%B1%E0%B9%89%E0%B8%99%E0%B8%9A%E0%B8%B1%E0%B8%99%E0%B9%84%E0%B8%94-%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%AD%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%99",
-    category: "นาขั้นบันได / ชุมชน",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.แม่แจ่ม",
-    address: "G9W3+MH6 ตำบล แม่ศึก อำเภอแม่แจ่ม เชียงใหม่ 50270 ไทย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แจ่ม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "นาขั้นบันไดและวิวชนบท",
-    featured: false,
-    coords: [18.546655, 98.353882] as [number, number],
-  },
-  {
-    rank: 18,
-    id: 'wongnai-18',
-    name: "วัดกองกาน",
-    url: "https://www.wongnai.com/attractions/324878yG-%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%81%E0%B8%AD%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%99",
-    category: "นาขั้นบันได / ชุมชน",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.แม่แจ่ม",
-    address: "หมู่ 7",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แจ่ม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.54776708, 98.35295695] as [number, number],
-  },
-  {
-    rank: 19,
-    id: 'wongnai-19',
-    name: "วัดพุทธเอ้น",
-    url: "https://www.wongnai.com/attractions/324886TB-%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9E%E0%B8%B8%E0%B8%97%E0%B8%98%E0%B9%80%E0%B8%AD%E0%B9%89%E0%B8%99",
-    category: "นาขั้นบันได / ชุมชน",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.แม่แจ่ม",
-    address: "ถนน ช่างเคิ่ง",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แจ่ม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.51326312128032, 98.35051408611685] as [number, number],
-  },
-  {
-    rank: 20,
-    id: 'wongnai-20',
-    name: "หมู่บ้านทอผ้าซิ่นตีนจก",
-    url: "https://www.wongnai.com/attractions/348698pN-%E0%B8%AB%E0%B8%A1%E0%B8%B9%E0%B9%88%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%97%E0%B8%AD%E0%B8%9C%E0%B9%89%E0%B8%B2%E0%B8%8B%E0%B8%B4%E0%B9%88%E0%B8%99%E0%B8%95%E0%B8%B5%E0%B8%99%E0%B8%88%E0%B8%81-%E0%B8%AD%E0%B8%B3%E0%B9%80%E0%B8%A0%E0%B8%AD%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B9%81%E0%B8%88%E0%B9%88%E0%B8%A1",
-    category: "นาขั้นบันได / ชุมชน",
-    mood: "นาขั้นบันได / ชุมชน",
-    area: "อ.แม่แจ่ม",
-    address: "ถนน ทางหลวงแผ่นดิน หมายเลข 1088",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แจ่ม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.4915994, 98.36233560000005] as [number, number],
-  },
-  {
-    rank: 21,
-    id: 'wongnai-21',
-    name: "สวนพฤกษศาสตร์สมเด็จพระนางเจ้าสิริกิติ์",
-    url: "https://www.wongnai.com/attractions/324277FT-สวนพฤกษศาสตร์สมเด็จพระนางเจ้าสิริกิติ์",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.แม่ริม",
-    address: "ทางหลวงหมายเลข 1096",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: true,
-    coords: [18.896816486288262, 98.86004526826162] as [number, number],
-  },
-  {
-    rank: 22,
-    id: 'wongnai-22',
-    name: "อุทยานแห่งชาติดอยสุเทพ - ปุย",
-    url: "https://www.wongnai.com/attractions/324501gy-อุทยานแห่งชาติดอยสุเทพ-ปุย",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่ริม",
-    address: "ทางหลวงหมายเลข 1004",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "แลนด์มาร์กคู่เมืองและวิวเชียงใหม่",
-    featured: false,
-    coords: [18.8027095, 98.92028219999997] as [number, number],
-  },
-  {
-    rank: 23,
-    id: 'wongnai-23',
-    name: "น้ำตกแม่สา",
-    url: "https://www.wongnai.com/attractions/347929Ye-น้ำตกแม่สา",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่ริม",
-    address: "ทางหลวงแผ่นดินหมายเลข 1096",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.906237, 98.89715449999994] as [number, number],
-  },
-  {
-    rank: 24,
-    id: 'wongnai-24',
-    name: "ม่อนแจ่ม",
-    url: "https://www.wongnai.com/attractions/324274Qg-ม่อนแจ่ม",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "สวน / ดอกไม้ / ภูเขา",
-    area: "อ.แม่ริม",
-    address: "ถนนสาย 1096 น้ำตกแม่สา",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "วิวภูเขาและจุดถ่ายรูป",
-    featured: true,
-    coords: [18.93576804489993, 98.82241958470513] as [number, number],
-  },
-  {
-    rank: 25,
-    id: 'wongnai-25',
-    name: "ม่อนอิงดาว",
-    url: "https://www.wongnai.com/attractions/364984ym-ม่อนอิงดาว",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "สวน / ดอกไม้ / ภูเขา",
-    area: "อ.แม่ริม",
-    address: "26/4 หมู่ 7, ตำบลแม่แรม อำเภอแม่ริม, จังหวัดเชียงใหม่ 50180, ประเทศไทย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "วิวภูเขาและจุดถ่ายรูป",
-    featured: false,
-    coords: [18.935957, 98.815793] as [number, number],
-  },
-  {
-    rank: 26,
-    id: 'wongnai-26',
-    name: "โป่งแยงจังเกิลโคสเตอร์และซิปไลน์",
-    url: "https://www.wongnai.com/attractions/349985bq-โป่งแยงจังเกิลโคสเตอร์และซิปไลน์",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "สวน / ดอกไม้ / ภูเขา",
-    area: "อ.แม่ริม",
-    address: "ถนน ทางหลวงแผ่นดิน หมายเลข 4051",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "กิจกรรมสำหรับครอบครัวและกลุ่มเพื่อน",
-    featured: false,
-    coords: [18.9166373, 98.821483] as [number, number],
-  },
-  {
-    rank: 27,
-    id: 'wongnai-27',
-    name: "ห้วยตึงเฒ่า (คิงคองยักษ์)",
-    url: "https://www.wongnai.com/attractions/340929Aj-ห้วยตึงเฒ่า-คิงคองยักษ์",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "สวน / ดอกไม้ / ภูเขา",
-    area: "อ.แม่ริม",
-    address: "283 ม.3 ทางหลวงหมายเลข 121",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.867357056972352, 98.94035679600063] as [number, number],
-  },
-  {
-    rank: 28,
-    id: 'wongnai-28',
-    name: "Elephant Poopoopaper",
-    url: "https://www.wongnai.com/attractions/326901tv-เอเลเฟ่นพูพูเปเปอร์พาร์ค",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "เดินเล่น / กิจกรรม / ครอบครัว",
-    area: "อ.แม่ริม",
-    address: "ทางหลวงหมายเลข 1096",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.92565239, 98.93159612] as [number, number],
-  },
-  {
-    rank: 29,
-    id: 'wongnai-29',
-    name: "Into The Flower",
-    url: "https://www.wongnai.com/attractions/471836aH-into-the-flower",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.แม่ริม",
-    address: "ตำบล เหมืองแก้ว อำเภอแม่ริม เชียงใหม่ 50180",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.8930625, 98.98031249999997] as [number, number],
-  },
-  {
-    rank: 30,
-    id: 'wongnai-30',
-    name: "I love flower Farm",
-    url: "https://www.wongnai.com/attractions/456864qs-i-love-flower-farm",
-    category: "สวน / ดอกไม้ / ภูเขา",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.แม่ริม",
-    address: "ลานจอดรถชุมชน i love flower farm",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่ริม ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.901101440670505, 98.98050635396731] as [number, number],
-  },
-  {
-    rank: 31,
-    id: 'wongnai-31',
-    name: "วัดบ้านเด่น",
-    url: "https://www.wongnai.com/attractions/324891iJ-วัดเด่นสะหลีศรีเมืองแกน-วัดบ้านเด่น",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.แม่แตง",
-    address: "ถนน เชียงใหม่-ฝาง",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: true,
-    coords: [19.15773716, 98.97849819] as [number, number],
-  },
-  {
-    rank: 32,
-    id: 'wongnai-32',
-    name: "เขื่อนแม่งัดสมบูรณ์ชล",
-    url: "https://www.wongnai.com/attractions/324831VJ-เขื่อนแม่งัดสมบูรณ์ชล",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่แตง",
-    address: "ถนน สายเชียงใหม่-ฝาง",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: true,
-    coords: [19.16251013, 99.03858621] as [number, number],
-  },
-  {
-    rank: 33,
-    id: 'wongnai-33',
-    name: "ปางช้างแม่แตง",
-    url: "https://www.wongnai.com/attractions/349966Nq-ปางช้างแม่แตง",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "เดินเล่น / กิจกรรม / ครอบครัว",
-    area: "อ.แม่แตง",
-    address: "ทางหลวงแผ่นดินหมายเลข 3052",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "กิจกรรมสำหรับครอบครัวและกลุ่มเพื่อน",
-    featured: false,
-    coords: [19.1981653, 98.88736960000006] as [number, number],
-  },
-  {
-    rank: 34,
-    id: 'wongnai-34',
-    name: "ไร่ชาลุงเดช",
-    url: "https://www.wongnai.com/attractions/335412hg-ไร่ชาลุงเดช",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.แม่แตง",
-    address: "ทางหลวงชนบทเชียงใหม่ 3052",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [19.2059698, 98.7950324] as [number, number],
-  },
-  {
-    rank: 35,
-    id: 'wongnai-35',
-    name: "อุทยานแห่งชาติห้วยน้ำดัง",
-    url: "https://www.wongnai.com/attractions/324383mi-อุทยานแห่งชาติห้วยน้ำดัง",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่แตง",
-    address: "ถนน ธงชัย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: true,
-    coords: [19.303967428333678, 98.59885028083204] as [number, number],
-  },
-  {
-    rank: 36,
-    id: 'wongnai-36',
-    name: "น้ำตกหมอกฟ้า",
-    url: "https://www.wongnai.com/attractions/324230Zn-น้ำตกหมอกฟ้า",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่แตง",
-    address: "ถนน สายแม่มาลัย-ปาย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [19.112764438522014, 98.77469246866781] as [number, number],
-  },
-  {
-    rank: 37,
-    id: 'wongnai-37',
-    name: "ยอดดอยม่อนเงาะ",
-    url: "https://www.wongnai.com/attractions/442270Hv-%E0%B8%A2%E0%B8%AD%E0%B8%94%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%A1%E0%B9%88%E0%B8%AD%E0%B8%99%E0%B9%80%E0%B8%87%E0%B8%B2%E0%B8%B0",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่แตง",
-    address: "บ้านม่อนเงาะ",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "วิวภูเขาและจุดถ่ายรูป",
-    featured: false,
-    coords: [19.180456309145473, 98.76809030771255] as [number, number],
-  },
-  {
-    rank: 38,
-    id: 'wongnai-38',
-    name: "สวนสนแม่แตง",
-    url: "https://www.wongnai.com/attractions/352959nj-%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B8%9C%E0%B8%A5%E0%B8%B4%E0%B8%95%E0%B9%80%E0%B8%A1%E0%B8%A5%E0%B9%87%E0%B8%94%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B8%98%E0%B8%B8%E0%B9%8C%E0%B9%84%E0%B8%A1%E0%B9%89%E0%B8%AA%E0%B8%99%E0%B8%AA%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%9A?_st=cD0wO2I9MzUyOTU5O2FkPWZhbHNlO3Q9MTY1MDcwNDI1Mjc5MDtyaT0xWDdhUzlQQ3RsYlJUQmNLc1Q3SDJLM1JZZjJIOE07aT0xWDZ6dlRBblF2ZkhuNG5BQ3k4QlB0VHJuVFNhU2U7d3JlZj1zcjs%3D",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.แม่แตง",
-    address: "ทางหลวงแผ่นดินหมายเลข 107",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [19.150811, 98.948322] as [number, number],
-  },
-  {
-    rank: 39,
-    id: 'wongnai-39',
-    name: "อุทยานแห่งชาติ น้ำตกบัวตอง",
-    url: "https://www.wongnai.com/attractions/381620Uj-%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B9%81%E0%B8%AB%E0%B9%88%E0%B8%87%E0%B8%8A%E0%B8%B2%E0%B8%95%E0%B8%B4%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%95%E0%B8%81%E0%B8%9A%E0%B8%B1%E0%B8%A7%E0%B8%95%E0%B8%AD%E0%B8%87-%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%9E%E0%B8%B8%E0%B9%80%E0%B8%88%E0%B9%87%E0%B8%94%E0%B8%AA%E0%B8%B5",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่แตง",
-    address: "Mae Ho Phra, Mae Taeng, Chiang Mai, 50150, Thailand",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: true,
-    coords: [19.069757, 99.079469] as [number, number],
-  },
-  {
-    rank: 40,
-    id: 'wongnai-40',
-    name: "บ้านธารกล่อม",
-    url: "https://www.wongnai.com/hotels/371324qc-%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%98%E0%B8%B2%E0%B8%A3%E0%B8%81%E0%B8%A5%E0%B9%88%E0%B8%AD%E0%B8%A1",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ธรรมชาติ / แอดเวนเจอร์",
-    area: "อ.แม่แตง",
-    address: "Kuet Chang, Mae Taeng, Chiang Mai, 50150, Thailand",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [19.232265, 98.879933] as [number, number],
-  },
-  {
-    rank: 41,
-    id: 'wongnai-41',
-    name: "แก่งกึ๊ด",
-    url: "https://www.wongnai.com/attractions/372307Pd-%E0%B9%81%E0%B8%81%E0%B9%88%E0%B8%87%E0%B8%81%E0%B8%B6%E0%B9%8A%E0%B8%94",
-    category: "ธรรมชาติ / แอดเวนเจอร์",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.แม่แตง",
-    address: "ถนนสาย 3052",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.แม่แตง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [19.22047941151384, 98.84077113121748] as [number, number],
-  },
-  {
-    rank: 42,
-    id: 'wongnai-42',
-    name: "ถ้ำเชียงดาว",
-    url: "https://www.wongnai.com/attractions/325924Hp-ถ้ำเชียงดาว",
-    category: "ถ้ำ / ภูเขา / ชุมชน",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.เชียงดาว",
-    address: "ทางหลวงชนบท ชม. 3024",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เชียงดาว ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "ภูเขา ถ้ำ และธรรมชาติทางเหนือ",
-    featured: true,
-    coords: [19.39418497, 98.9278712] as [number, number],
-  },
-  {
-    rank: 43,
-    id: 'wongnai-43',
-    name: "ดอยหลวงเชียงดาว",
-    url: "https://www.wongnai.com/attractions/324826kS-ดอยหลวงเชียงดาว",
-    category: "ถ้ำ / ภูเขา / ชุมชน",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.เชียงดาว",
-    address: "ถนน ธงชัย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เชียงดาว ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "ภูเขา ถ้ำ และธรรมชาติทางเหนือ",
-    featured: true,
-    coords: [19.39986045, 98.87618904] as [number, number],
-  },
-  {
-    rank: 44,
-    id: 'wongnai-44',
-    name: "โป่งน้ำร้อนบ้านยางปู่โต๊ะ",
-    url: "https://www.wongnai.com/attractions/349237Qh-โป่งน้ำร้อนบ้านยางปู่โต๊ะ",
-    category: "ถ้ำ / ภูเขา / ชุมชน",
-    mood: "ถ้ำ / ภูเขา / ชุมชน",
-    area: "อ.เชียงดาว",
-    address: "Chiang Dao, Chiang Dao, Chiang Mai, 50170, Thailand",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เชียงดาว ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [19.362823, 98.923053] as [number, number],
-  },
-  {
-    rank: 45,
-    id: 'wongnai-45',
-    name: "บ้านแม่แมะ",
-    url: "https://www.wongnai.com/attractions/363658ox-บ้านแม่แมะ",
-    category: "ถ้ำ / ภูเขา / ชุมชน",
-    mood: "ถ้ำ / ภูเขา / ชุมชน",
-    area: "อ.เชียงดาว",
-    address: "ตำบล แม่นะ อำเภอ เชียงดาว เชียงใหม่ 50170 ประเทศไทย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.เชียงดาว ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [19.318542973933873, 98.89069311293224] as [number, number],
-  },
-  {
-    rank: 46,
-    id: 'wongnai-46',
-    name: "บ่อน้ำพุร้อนฝาง",
-    url: "https://www.wongnai.com/attractions/349956Qn-บ่อน้ำพุร้อนฝาง",
-    category: "อ่างขาง / น้ำพุร้อน",
-    mood: "อ่างขาง / น้ำพุร้อน",
-    area: "อ.ฝาง",
-    address: "ทางหลวงแผ่นดิน หมายเลข 4050",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.ฝาง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "อากาศเย็นและธรรมชาติบนดอย",
-    featured: false,
-    coords: [19.965911, 99.15426300000001] as [number, number],
-  },
-  {
-    rank: 47,
-    id: 'wongnai-47',
-    name: "จุดชมวิวม่อนสน",
-    url: "https://www.wongnai.com/hotels/344037Yx-จุดชมวิวม่อนสน",
-    category: "อ่างขาง / น้ำพุร้อน",
-    mood: "อ่างขาง / น้ำพุร้อน",
-    area: "อ.ฝาง",
-    address: "อ่างขาง",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.ฝาง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [19.86232936853322, 99.05182141810654] as [number, number],
-  },
-  {
-    rank: 48,
-    id: 'wongnai-48',
-    name: "ดอยอ่างขาง",
-    url: "https://www.wongnai.com/attractions/324233Eb-ดอยอ่างขาง",
-    category: "อ่างขาง / น้ำพุร้อน",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.ฝาง",
-    address: "ทางหลวงหมายเลข 1249",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.ฝาง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "อากาศเย็นและธรรมชาติบนดอย",
-    featured: true,
-    coords: [19.901050568796965, 99.0400560734887] as [number, number],
-  },
-  {
-    rank: 49,
-    id: 'wongnai-49',
-    name: "อุทยานแห่งชาติดอยผ้าห่มปก",
-    url: "https://www.wongnai.com/attractions/119409jh-อุทยานแห่งชาติดอยผ้าห่มปก",
-    category: "อ่างขาง / น้ำพุร้อน",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.ฝาง",
-    address: "ทางหลวงหมายเลข 107",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.ฝาง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "อากาศเย็นและธรรมชาติบนดอย",
-    featured: false,
-    coords: [19.96620616697672, 99.15501576455688] as [number, number],
-  },
-  {
-    rank: 50,
-    id: 'wongnai-50',
-    name: "สถานีเกษตรหลวงอ่างขาง",
-    url: "https://www.wongnai.com/attractions/324249OF-สถานีเกษตรหลวงอ่างขาง",
-    category: "อ่างขาง / น้ำพุร้อน",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.ฝาง",
-    address: "ถนน แม่งอน-อ่างขาง",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.ฝาง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "อากาศเย็นและธรรมชาติบนดอย",
-    featured: true,
-    coords: [19.90222514, 99.03967207] as [number, number],
-  },
-  {
-    rank: 51,
-    id: 'wongnai-51',
-    name: "ทุ่งดอกเก๊กฮวย บ้านอมลอง",
-    url: "https://www.wongnai.com/attractions/298301WY-ทุ่งดอกเก๊กฮวย-บ้านอมลอง",
-    category: "ดอกไม้ / เกษตร",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.สะเมิง",
-    address: "ถนน สะเมิง-หางดง",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.สะเมิง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.9232365, 98.6050336] as [number, number],
-  },
-  {
-    rank: 52,
-    id: 'wongnai-52',
-    name: "ศูนย์วิจัยข้าวสะเมิง",
-    url: "https://www.wongnai.com/attractions/352747zK-ศูนย์วิจัยข้าวสะเมิง",
-    category: "ดอกไม้ / เกษตร",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.สะเมิง",
-    address: "202 หมู่ที่ 10 บ้านปางดะ ทางหลวงหมายเลข 1269",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.สะเมิง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.84637, 98.77029779999998] as [number, number],
-  },
-  {
-    rank: 53,
-    id: 'wongnai-53',
-    name: "ไร่นภ ภูผา",
-    url: "https://www.wongnai.com/attractions/326874bN-ไร่นภ-ภูผา",
-    category: "ดอกไม้ / เกษตร",
-    mood: "ดอกไม้ / เกษตร / ถ่ายรูป",
-    area: "อ.สะเมิง",
-    address: "156/1 10 ทางหลวงแผ่นดินหมายเลข 1269",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.สะเมิง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.85501479, 98.75225295] as [number, number],
-  },
-  {
-    rank: 54,
-    id: 'wongnai-54',
-    name: "แกรนด์ แคนยอน (เชียงใหม่)",
-    url: "https://www.wongnai.com/attractions/330991ky-แกรนด์-แคนยอน-เชียงใหม่-หางดง",
-    category: "กิจกรรม / วัฒนธรรม",
-    mood: "เดินเล่น / กิจกรรม / ครอบครัว",
-    area: "อ.หางดง",
-    address: "ต.น้ำแพร่ อ.หางดง",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.หางดง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "กิจกรรมสำหรับครอบครัวและกลุ่มเพื่อน",
-    featured: true,
-    coords: [18.697238679683863, 98.89324328906855] as [number, number],
-  },
-  {
-    rank: 55,
-    id: 'wongnai-55',
-    name: "วัดต้นเกว๋น",
-    url: "https://www.wongnai.com/attractions/324890uC-วัดต้นเกว๋น",
-    category: "กิจกรรม / วัฒนธรรม",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.หางดง",
-    address: "ถนน บ้านต้นเกว๋น",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.หางดง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.72286887, 98.92532753] as [number, number],
-  },
-  {
-    rank: 56,
-    id: 'wongnai-56',
-    name: "พระตำหนักภูพิงคราชนิเวศน์",
-    url: "https://www.wongnai.com/attractions/336972iL-พระตำหนักภูพิงคราชนิเวศน์",
-    category: "กิจกรรม / วัฒนธรรม",
-    mood: "ไหว้พระ / วัฒนธรรม",
-    area: "อ.หางดง",
-    address: "ถนน ศรีวิชัย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.หางดง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.804111, 98.899275] as [number, number],
-  },
-  {
-    rank: 57,
-    id: 'wongnai-57',
-    name: "เชียงใหม่ไนท์ซาฟารี",
-    url: "https://www.wongnai.com/attractions/326308Mh-เชียงใหม่ไนท์ซาฟารี",
-    category: "กิจกรรม / วัฒนธรรม",
-    mood: "เดินเล่น / กิจกรรม / ครอบครัว",
-    area: "อ.หางดง",
-    address: "33  ทางหลวงหมายเลข 121",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.หางดง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "กิจกรรมสำหรับครอบครัวและกลุ่มเพื่อน",
-    featured: true,
-    coords: [18.74259081, 98.91716721] as [number, number],
-  },
-  {
-    rank: 58,
-    id: 'wongnai-58',
-    name: "ชุมชนบ้านป่าตาล",
-    url: "https://www.wongnai.com/attractions/402215nd-%E0%B8%8A%E0%B8%B8%E0%B8%A1%E0%B8%8A%E0%B8%99%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%9B%E0%B9%88%E0%B8%B2%E0%B8%95%E0%B8%B2%E0%B8%A5",
-    category: "กิจกรรม / วัฒนธรรม",
-    mood: "กิจกรรม / วัฒนธรรม",
-    area: "อ.หางดง",
-    address: "175 ม.4 ต.สันผักหวาน อ.หางดง จ.เชียงใหม่ เชียงใหม่ 50230 ไทย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.หางดง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.7247833, 98.95763979999992] as [number, number],
-  },
-  {
-    rank: 59,
-    id: 'wongnai-59',
-    name: "ชุมชนบ้านออนใต้",
-    url: "https://www.wongnai.com/attractions/402238Nw-%E0%B8%8A%E0%B8%B8%E0%B8%A1%E0%B8%8A%E0%B8%99%E0%B8%9A%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%AD%E0%B8%AD%E0%B8%99%E0%B9%83%E0%B8%95%E0%B9%89",
-    category: "ชุมชน / อ่างเก็บน้ำ",
-    mood: "ชุมชน / อ่างเก็บน้ำ",
-    area: "อ.สันกำแพง",
-    address: "22/8 หมู่ที่ 10, ตำบลออนใต้ อำเภอสันกำแพง จังหวัดเชียงใหม่, 50130 50130 ไทย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.สันกำแพง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: false,
-    coords: [18.687472, 99.22308299999997] as [number, number],
-  },
-  {
-    rank: 60,
-    id: 'wongnai-60',
-    name: "อ่างเก็บน้ำห้วยลาน",
-    url: "https://www.wongnai.com/attractions/378318WF-อ่างเก็บน้ำห้วยลาน",
-    category: "ชุมชน / อ่างเก็บน้ำ",
-    mood: "ธรรมชาติ / วิว / เดินทางกลางแจ้ง",
-    area: "อ.สันกำแพง",
-    address: "Huai Lan Reservoir, Unnamed Road, ตำบล ออนใต้ อำเภอ สันกำแพง เชียงใหม่ 50130 ไทย",
-    about: "อยู่ในลิสต์ 60 ที่เที่ยวเชียงใหม่จาก Wongnai หมวดอ.สันกำแพง ข้อมูลตำแหน่งใช้พิกัดจากหน้า Wongnai ของสถานที่นี้โดยตรง",
-    bestFor: "สถานที่ท่องเที่ยวตามลิสต์ Wongnai",
-    featured: true,
-    coords: [18.70611039101114, 99.2063270539154] as [number, number],
-  }
+  { id: 'doi-suthep', name: 'วัดพระธาตุดอยสุเทพ', category: 'วัด', mood: 'วัฒนธรรม', area: 'อ.เมือง', bestFor: 'แลนด์มาร์กคู่เมืองเชียงใหม่', featured: true, coords: [18.8049, 98.9218] as [number, number] },
+  { id: 'tha-phae', name: 'ประตูท่าแพ', category: 'เมืองเก่า', mood: 'วัฒนธรรม', area: 'อ.เมือง', bestFor: 'ใจกลางเมืองเก่าเชียงใหม่', featured: true, coords: [18.7876, 98.9935] as [number, number] },
+  { id: 'nimman', name: 'ถนนนิมมานเหมินทร์', category: 'ไลฟ์สไตล์', mood: 'เดินเล่น', area: 'อ.เมือง', bestFor: 'ย่านคาเฟ่และไลฟ์สไตล์', featured: true, coords: [18.7992, 98.9680] as [number, number] },
+  { id: 'doi-inthanon', name: 'อุทยานแห่งชาติดอยอินทนนท์', category: 'ธรรมชาติ', mood: 'ธรรมชาติ', area: 'อ.จอมทอง', bestFor: 'ยอดดอยสูงสุดในไทย', featured: true, coords: [18.5875, 98.4864] as [number, number] },
+  { id: 'angkaew', name: 'อ่างแก้ว มช.', category: 'ธรรมชาติ', mood: 'ธรรมชาติ', area: 'อ.เมือง', bestFor: 'อ่างเก็บน้ำสวยกลางมหาวิทยาลัย', featured: true, coords: [18.8027, 98.9533] as [number, number] },
+  { id: 'chedi-luang', name: 'วัดเจดีย์หลวง', category: 'วัด', mood: 'วัฒนธรรม', area: 'อ.เมือง', bestFor: 'เจดีย์โบราณใจกลางเมือง', featured: true, coords: [18.7863, 98.9862] as [number, number] },
+  { id: 'sirikitbotanic', name: 'สวนพฤกษศาสตร์สิริกิติ์', category: 'สวน', mood: 'ดอกไม้', area: 'อ.แม่ริม', bestFor: 'สวนพฤกษศาสตร์ระดับชาติ', featured: true, coords: [18.8968, 98.8600] as [number, number] },
+  { id: 'mon-cham', name: 'ม่อนแจ่ม', category: 'ธรรมชาติ', mood: 'ธรรมชาติ', area: 'อ.แม่ริม', bestFor: 'วิวภูเขาและจุดชมทะเลหมอก', featured: true, coords: [18.9358, 98.8224] as [number, number] },
 ] as const;
 
 export const DRY_FOREST_ZONES = [
@@ -1096,7 +295,7 @@ function landmarkKind(landmark: ChiangMaiLandmark): LandmarkKind {
   if (text.includes('วัด') || text.includes('เมืองเก่า') || text.includes('วัฒนธรรม')) return 'temple';
   if (text.includes('สวน') || text.includes('ดอกไม้') || text.includes('เกษตร')) return 'garden';
   if (text.includes('น้ำพุร้อน') || text.includes('อ่าง') || text.includes('น้ำ')) return 'water';
-  if (text.includes('กิจกรรม') || text.includes('แอดเวนเจอร์')) return 'activity';
+  if (text.includes('กิจกรรม') || text.includes('แอดเวนเจอร์') || text.includes('ไลฟ์สไตล์') || text.includes('เดินเล่น')) return 'activity';
   if (text.includes('ชุมชน') || text.includes('นาขั้นบันได')) return 'community';
   return 'nature';
 }
@@ -1118,15 +317,12 @@ function landmarkSelection(landmark: ChiangMaiLandmark, dashboard: DashboardResp
   return {
     eyebrow: `สถานที่เสริม · ${landmark.category} · ${landmark.area}`,
     title: landmark.name,
-    detail: `${landmark.about} ใช้เป็นบริบทเสริมเมื่อประเมินผลกระทบต่อพื้นที่ท่องเที่ยวและชุมชนใกล้เคียง`,
-    mapUrl: googleMapsSearchUrl(landmark.name, landmark.area),
-    sourceUrl: landmark.url,
-    sourceLabel: `Wongnai #${landmark.rank}`,
+    detail: `${landmark.bestFor} (${landmark.category}, ${landmark.area}) ใช้เป็นบริบทเสริมเมื่อประเมินผลกระทบต่อพื้นที่ท่องเที่ยวและชุมชนใกล้เคียง`,
+    mapUrl: `https://www.google.com/maps?q=${landmark.coords[0]},${landmark.coords[1]}`,
     imageKey: 'landmark',
     imageLabel: landmark.name,
     stats: [
       { label: 'ประเภท', value: landmarkKindLabel(kind) },
-      { label: 'ลำดับ Wongnai', value: `#${landmark.rank} จาก 60` },
       { label: 'จุดเด่น', value: landmark.bestFor },
       { label: 'PM2.5 วันนี้', value: formatPm25(pm25), tone: pm25Tone(pm25) },
       { label: 'ลม', value: `ไป${windDestinationName(dashboard.weather.wind_direction_deg)}` },
@@ -1150,6 +346,8 @@ export function DashboardMap({
   theme,
   userLocation,
   onMapClick,
+  isPinningMode,
+  onPinningModeChange,
   isFullscreen,
   onToggleFullscreen,
 }: Props) {
@@ -1168,15 +366,26 @@ export function DashboardMap({
 
   const onSelChangeRef = useRef(onSelectionChange);
   const onMapClickRef = useRef(onMapClick);
+  const isPinningRef = useRef(false);
+  const onPinningChangeRef = useRef(onPinningModeChange);
 
   useEffect(() => {
     onSelChangeRef.current = onSelectionChange;
     onMapClickRef.current = onMapClick;
+    isPinningRef.current = isPinningMode ?? false;
+    onPinningChangeRef.current = onPinningModeChange;
   });
 
   // Zoom level as React state — triggers marker rebuild only on tier boundary crossings
   const [zoom, setZoom] = useState(9);
-  const [baseMapId, setBaseMapId] = useState<BaseMapId>('standard');
+  const [baseMapId, setBaseMapId] = useState<BaseMapId>('terrain');
+
+  const pinHomeFromMapEvent = (e: L.LeafletMouseEvent) => {
+    if (!isPinningRef.current || !onMapClickRef.current) return false;
+    onMapClickRef.current([e.latlng.lat, e.latlng.lng]);
+    onPinningChangeRef.current?.(false);
+    return true;
+  };
 
   // ── Initialise Leaflet map (once) ──────────────────────────────────────────
   useEffect(() => {
@@ -1197,7 +406,7 @@ export function DashboardMap({
       scrollWheelZoom: true,
     });
 
-    tileLayerRef.current = createBaseTileLayer('standard').addTo(map);
+    tileLayerRef.current = createBaseTileLayer('terrain').addTo(map);
 
     // Leaflet built-in scale bar (replaces our static "20 km")
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
@@ -1242,6 +451,7 @@ export function DashboardMap({
         layer.on({
           click: (e: L.LeafletMouseEvent) => {
             L.DomEvent.stopPropagation(e);
+            if (pinHomeFromMapEvent(e)) return;
             onSelChangeRef.current({
               eyebrow: 'อำเภอ',
               title: nameTh,
@@ -1279,10 +489,11 @@ export function DashboardMap({
     fuelRiskLayerRef.current = L.layerGroup().addTo(map);
     userLocationLayerRef.current = L.layerGroup().addTo(map);
 
-    // Click on blank map → set user location or reset selection
+    // Click on blank map → set user location if in pinning mode, else reset selection
     map.on('click', (e: L.LeafletMouseEvent) => {
-      if (onMapClickRef.current) {
+      if (isPinningRef.current && onMapClickRef.current) {
         onMapClickRef.current([e.latlng.lat, e.latlng.lng]);
+        onPinningChangeRef.current?.(false);
       } else {
         onSelChangeRef.current(initialSelection);
       }
@@ -1352,22 +563,26 @@ export function DashboardMap({
       L.marker([h.latitude, h.longitude], { icon, zIndexOffset: 100 })
         .on('click', (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+          if (pinHomeFromMapEvent(e)) return;
           const loc = hotspotLocation(h);
           onSelChangeRef.current({
             eyebrow: 'จุดความร้อน',
             title: hotspotPlaceTitle(h),
             detail: `${loc ? `${loc} · ` : ''}ตรวจพบ ${formatTime(h.detected_at)} · ${h.source}`,
+            mapUrl: `https://www.google.com/maps?q=${h.latitude},${h.longitude}`,
             imageKey: hotspotImageKey(h),
             imageLabel: hotspotPlaceTitle(h),
             stats: hotspotStats(h),
           });
         })
         .on('mouseover', () => {
+          if (isPinningRef.current) return;
           const loc = hotspotLocation(h);
           onSelChangeRef.current({
             eyebrow: 'จุดความร้อน',
             title: hotspotPlaceTitle(h),
             detail: `${loc ? `${loc} · ` : ''}ตรวจพบ ${formatTime(h.detected_at)} · ${h.source}`,
+            mapUrl: `https://www.google.com/maps?q=${h.latitude},${h.longitude}`,
             imageKey: hotspotImageKey(h),
             imageLabel: hotspotPlaceTitle(h),
             stats: hotspotStats(h),
@@ -1431,9 +646,12 @@ export function DashboardMap({
     L.marker([18.78, 98.6], { icon: aggIcon, zIndexOffset: 200 })
       .on('click', (e: L.LeafletMouseEvent) => {
         L.DomEvent.stopPropagation(e);
+        if (pinHomeFromMapEvent(e)) return;
         onSelChangeRef.current(aggSel);
       })
-      .on('mouseover', () => onSelChangeRef.current(aggSel))
+      .on('mouseover', () => {
+        if (!isPinningRef.current) onSelChangeRef.current(aggSel);
+      })
       .addTo(group);
 
     // Individual station markers
@@ -1444,14 +662,19 @@ export function DashboardMap({
         tier !== 'sm' && stName
           ? `<span class="lf-station__label">${stName}</span>`
           : '';
+      const qualityLabel = s.pm25 <= 25 ? 'ดีมาก' : s.pm25 <= 37 ? 'ดี' : s.pm25 <= 50 ? 'ปานกลาง' : s.pm25 <= 90 ? 'เริ่มมีผลกระทบ' : 'อันตราย';
+      const healthAdvice = s.pm25 <= 37 ? 'ปลอดภัยสำหรับทุกคน' : s.pm25 <= 50 ? 'กลุ่มเสี่ยงควรระวัง' : 'หลีกเลี่ยงกิจกรรมกลางแจ้ง';
       const next: MapSelection = {
         eyebrow: 'สถานีวัด PM2.5',
         title: s.name.trim() || s.id,
-        detail: `${formatPm25(s.pm25)} · อัปเดต ${formatTime(s.updated_at)} · ${s.district}`,
+        detail: `${formatPm25(s.pm25)} · ${qualityLabel} · อัปเดต ${formatTime(s.updated_at)} · ${s.district}`,
         imageKey: stationImageKey(s),
         imageLabel: s.name.trim() || s.id,
         stats: [
           { label: 'PM2.5', value: formatPm25(s.pm25), tone: pm25Tone(s.pm25) },
+          { label: 'ระดับคุณภาพอากาศ', value: qualityLabel, tone: pm25Tone(s.pm25) },
+          { label: 'คำแนะนำสุขภาพ', value: healthAdvice, tone: pm25Tone(s.pm25) },
+          { label: 'อำเภอ', value: s.district },
           { label: 'อัปเดต', value: formatTime(s.updated_at) },
         ],
       };
@@ -1468,9 +691,12 @@ export function DashboardMap({
       L.marker([s.latitude, s.longitude], { icon: stIcon, zIndexOffset: 150 })
         .on('click', (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+          if (pinHomeFromMapEvent(e)) return;
           onSelChangeRef.current(next);
         })
-        .on('mouseover', () => onSelChangeRef.current(next))
+        .on('mouseover', () => {
+          if (!isPinningRef.current) onSelChangeRef.current(next);
+        })
         .addTo(group);
     });
   }, [dashboard.pm25, layers.pm25, zoom]);
@@ -1506,9 +732,12 @@ export function DashboardMap({
       L.marker(landmark.coords, { icon, zIndexOffset: 35 })
         .on('click', (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+          if (pinHomeFromMapEvent(e)) return;
           onSelChangeRef.current(next);
         })
-        .on('mouseover', () => onSelChangeRef.current(next))
+        .on('mouseover', () => {
+          if (!isPinningRef.current) onSelChangeRef.current(next);
+        })
         .addTo(group);
     });
   }, [dashboard, layers.landmarks, zoom]);
@@ -1537,6 +766,7 @@ export function DashboardMap({
       map.removeLayer(velocityLayerRef.current);
       velocityLayerRef.current = null;
     }
+    ensureVelocityLayerGuards();
     const layer = (L as any).velocityLayer({
       displayValues: false,
       data,
@@ -1544,10 +774,10 @@ export function DashboardMap({
       maxVelocity: 10,
       velocityScale: 0.01,
       particleAge: 120,
-      particleMultiplier: 1 / 280,
-      lineWidth: 1.15,
+      particleMultiplier: 1 / 200,
+      lineWidth: 2.5,
       frameRate: 30,
-      opacity: 0.48,
+      opacity: 0.22,
       colorScale: ['#2f7ad1', '#45a6d9', '#75c7e5', '#a8dfee'],
     });
     layer.addTo(map);
@@ -1623,6 +853,7 @@ export function DashboardMap({
       })
         .on('click', (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+          if (pinHomeFromMapEvent(e)) return;
           onSelChangeRef.current({
             eyebrow: 'Space Tech · Sentinel-2 NDVI',
             title: zone.name,
@@ -1637,6 +868,7 @@ export function DashboardMap({
           });
         })
         .on('mouseover', () => {
+          if (isPinningRef.current) return;
           onSelChangeRef.current({
             eyebrow: 'Space Tech · Sentinel-2 NDVI',
             title: zone.name,
@@ -1684,13 +916,19 @@ export function DashboardMap({
     });
 
     if (nearest) {
-      L.polyline([userLocation, [(nearest as Hotspot).latitude, (nearest as Hotspot).longitude]], {
+      const d = minD;
+      const line = L.polyline([userLocation, [(nearest as Hotspot).latitude, (nearest as Hotspot).longitude]], {
         color: '#dc2626',
-        weight: 2,
-        dashArray: '4, 8',
-        opacity: 0.8,
-        interactive: false,
+        weight: 2.5,
+        dashArray: '6, 10',
+        opacity: 0.85,
       }).addTo(group);
+
+      line.bindTooltip(`${d.toFixed(1)} กม.`, {
+        permanent: true,
+        direction: 'center',
+        className: 'lf-distance-tooltip',
+      });
 
       mapRef.current?.panTo(userLocation, { animate: true });
     }
@@ -1727,7 +965,7 @@ export function DashboardMap({
   return (
     <div className="map-canvas">
       {/* Leaflet map mount point */}
-      <div ref={mapDivRef} className="map-leaflet" />
+      <div ref={mapDivRef} className={`map-leaflet${isPinningMode ? ' map-pinning' : ''}`} />
 
       {/* Wind chip button */}
       {layers.wind && (
@@ -1754,17 +992,7 @@ export function DashboardMap({
         <span><i className="fire-ic">🔥</i>จุดความร้อน</span>
         {layers.fuelRisk && <span><i className="dot dot--fuel" />ดัชนีป่าแห้ง NDVI</span>}
         {layers.hotspots && layers.wind && <span><i className="cone-ic" />ขอบเขตควันลอย</span>}
-        {layers.landmarks && <span><i className="landmark-ic" />สถานที่เสริม 60</span>}
-        {layers.landmarks && (
-          <span className="landmark-kind-key" aria-label="ประเภทสถานที่เสริม">
-            <i className="landmark-kind landmark-kind--temple">วัด</i>
-            <i className="landmark-kind landmark-kind--nature">ดอย</i>
-            <i className="landmark-kind landmark-kind--garden">สวน</i>
-            <i className="landmark-kind landmark-kind--water">น้ำ</i>
-            <i className="landmark-kind landmark-kind--activity">กิจ</i>
-            <i className="landmark-kind landmark-kind--community">ชุม</i>
-          </span>
-        )}
+        {layers.landmarks && <span><i className="landmark-ic" />แลนด์มาร์ก</span>}
         <span><i className="arrow-ic">↑</i>ทิศลม TMD</span>
       </div>
 

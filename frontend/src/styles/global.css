@@ -238,6 +238,7 @@ button {
 .ui-mode-btn:focus-visible,
 .theme-toggle-btn:focus-visible,
 .btn-gps:focus-visible,
+.btn-pin-map:focus-visible,
 .select-location:focus-visible,
 .btn-clear:focus-visible,
 .hotline-item:focus-visible {
@@ -1071,6 +1072,17 @@ button {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+  animation: hotspotPulse 2s ease-in-out infinite;
+}
+
+@keyframes hotspotPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.4));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.7));
+  }
 }
 
 .lf-hotspot__halo {
@@ -1190,6 +1202,17 @@ button {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   transition: box-shadow 0.15s ease, transform 0.12s ease;
+  animation: stationBreathe 3s ease-in-out infinite;
+}
+
+@keyframes stationBreathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
 }
 
 .lf-station:hover {
@@ -1231,6 +1254,17 @@ button {
 .lf-pm-plume {
   stroke: none !important;
   mix-blend-mode: multiply;
+  animation: plumeFade 5s ease-in-out infinite;
+}
+
+@keyframes plumeFade {
+  0%, 100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .lf-pm-plume--good {
@@ -1249,6 +1283,22 @@ button {
 }
 
 /* ── Chiang Mai landmark markers (DivIcon) ─────────────────────── */
+.lf-distance-tooltip {
+  background: rgba(30, 30, 30, 0.88) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 4px 10px !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  white-space: nowrap !important;
+}
+
+.lf-distance-tooltip::before {
+  display: none !important;
+}
+
 .lf-landmark {
   position: relative;
   display: grid;
@@ -1283,6 +1333,17 @@ button {
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
+  animation: landmarkFloat 4s ease-in-out infinite;
+}
+
+@keyframes landmarkFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
 }
 
 .lf-landmark:hover::before {
@@ -1961,16 +2022,12 @@ button {
   }
 
   .map-controls {
-    right: 12px;
-    top: auto;
-    bottom: 12px;
-    grid-template-columns: repeat(4, auto);
-    align-items: center;
-  }
-
-  /* Drop the zoom readout so the 4 buttons (incl. fullscreen) fit one row. */
-  .map-controls .zoom-readout {
-    display: none;
+    right: 10px;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    grid-template-columns: auto;
+    gap: 6px;
   }
 
   /* The fullscreen separator (border/padding) is for the vertical desktop
@@ -2654,7 +2711,7 @@ button {
 
 .personal-checker-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -2675,6 +2732,45 @@ button {
 .btn-gps:hover {
   background: #2563eb;
   transform: translateY(-1px);
+}
+
+.btn-pin-map {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 2px dashed var(--green);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--green-deep);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.btn-pin-map:hover {
+  background: rgba(22, 163, 74, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-pin-map.active {
+  border-style: solid;
+  background: rgba(22, 163, 74, 0.12);
+  animation: pinPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pinPulse {
+  0%, 100% {
+    border-color: var(--green);
+  }
+
+  50% {
+    border-color: #f97316;
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
+  }
 }
 
 .select-location {
@@ -2767,16 +2863,16 @@ button {
 
 /* Fuel Risk zones */
 .lf-fuel-zone {
-  animation: fuelBlink 4s infinite alternate;
+  animation: fuelShimmer 4s ease-in-out infinite alternate;
 }
 
-@keyframes fuelBlink {
+@keyframes fuelShimmer {
   0% {
-    fill-opacity: 0.08;
+    fill-opacity: 0.22;
     stroke-opacity: 0.45;
   }
   100% {
-    fill-opacity: 0.16;
+    fill-opacity: 0.35;
     stroke-opacity: 0.85;
   }
 }
@@ -2797,6 +2893,19 @@ button {
 
 .lf-user-home__icon {
   font-size: 1.1rem;
+  animation: homeBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes homeBounce {
+  0% {
+    transform: scale(0) translateY(8px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }
 
 .lf-user-home__pulse {
@@ -2805,18 +2914,30 @@ button {
   border-radius: 50%;
   border: 2px solid #3b82f6;
   opacity: 1;
-  animation: userRadarPulse 2s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+  animation: homePulseRing 2s ease-out infinite;
   pointer-events: none;
 }
 
-@keyframes userRadarPulse {
+@keyframes homePulseRing {
   0% {
-    transform: scale(0.65);
-    opacity: 0.95;
+    transform: scale(0.8);
+    opacity: 0.6;
   }
   100% {
-    transform: scale(1.6);
+    transform: scale(2.2);
     opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lf-hotspot,
+  .lf-station,
+  .lf-pm-plume,
+  .lf-landmark__pin,
+  .lf-user-home__icon,
+  .lf-user-home__pulse,
+  .lf-fuel-zone {
+    animation: none !important;
   }
 }
 
@@ -3174,6 +3295,47 @@ button {
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
+  min-width: min(100%, 360px);
+}
+
+.pm25-quality-bar {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 8px;
+  gap: 2px;
+}
+
+.pm25-band {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pm25-band span {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
+
+.pm25-indicator {
+  position: absolute;
+  top: -4px;
+  width: 3px;
+  height: calc(100% + 8px);
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  border-radius: 4px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+  transition: left 0.5s ease;
+  z-index: 2;
 }
 
 /* Glowing Neon Badges */
@@ -4231,3 +4393,458 @@ button {
   }
 }
 
+/* ── Batch D final dark contrast + premium motion polish ───────────── */
+[data-theme='dark'] {
+  --bg: #0f1a14;
+  --bg-card: #162018;
+  --bg-card-alt: #1a2a20;
+  --surface: var(--bg-card);
+  --surface-soft: var(--bg-card-alt);
+  --text: #e8f0eb;
+  --text-secondary: #a3b8ab;
+  --muted: #7a9484;
+  --green: #22c55e;
+  --green-deep: #4ade80;
+  --line: rgba(74, 222, 128, 0.12);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow: var(--shadow-md);
+  --glass-border: 1px solid rgba(74, 222, 128, 0.12);
+  --glass-shadow: var(--shadow-md);
+}
+
+[data-theme='dark'] .card {
+  background: var(--bg-card);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+[data-theme='dark'] .card__title {
+  color: var(--text);
+}
+
+[data-theme='dark'] .topbar {
+  background: var(--bg-card);
+  border-color: var(--line);
+}
+
+[data-theme='dark'] .topbar h1 {
+  color: var(--text);
+}
+
+[data-theme='dark'] .topbar p {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .map-controls button {
+  background: rgba(22, 32, 24, 0.92);
+  border-color: rgba(74, 222, 128, 0.15);
+  color: #a3b8ab;
+}
+
+[data-theme='dark'] .map-controls button:hover {
+  background: rgba(34, 50, 38, 0.95);
+  color: #e8f0eb;
+}
+
+[data-theme='dark'] .map-legend,
+[data-theme='dark'] .map-help {
+  background: rgba(15, 26, 20, 0.88);
+  border-color: rgba(74, 222, 128, 0.1);
+  color: #a3b8ab;
+}
+
+[data-theme='dark'] .basemap-switcher {
+  background: rgba(22, 32, 24, 0.92);
+  border-color: rgba(74, 222, 128, 0.12);
+}
+
+[data-theme='dark'] .basemap-switcher button {
+  color: #a3b8ab;
+}
+
+[data-theme='dark'] .basemap-switcher button:hover {
+  background: rgba(74, 222, 128, 0.08);
+}
+
+[data-theme='dark'] .basemap-switcher button.active {
+  background: #22c55e;
+  color: #0f1a14;
+}
+
+[data-theme='dark'] .wind-chip {
+  background: rgba(22, 32, 24, 0.92);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+[data-theme='dark'] .wind-chip__text b {
+  color: #93c5fd;
+}
+
+[data-theme='dark'] .wind-chip__text small {
+  color: #7a9ec8;
+}
+
+[data-theme='dark'] .map-detail-bar {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+[data-theme='dark'] .map-detail-bar__eyebrow {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .map-detail-bar__title {
+  color: var(--text);
+}
+
+[data-theme='dark'] .map-detail-bar__detail {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .map-inspector__stat {
+  background: rgba(22, 40, 28, 0.8);
+  border-color: rgba(74, 222, 128, 0.1);
+}
+
+[data-theme='dark'] .map-inspector__stat span {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .map-inspector__stat b {
+  color: var(--text);
+}
+
+[data-theme='dark'] .map-inspector__stat--good {
+  background: rgba(22, 101, 52, 0.25);
+}
+
+[data-theme='dark'] .map-inspector__stat--watch {
+  background: rgba(133, 77, 14, 0.25);
+}
+
+[data-theme='dark'] .map-inspector__stat--risk {
+  background: rgba(153, 27, 27, 0.3);
+}
+
+[data-theme='dark'] .zoom-readout {
+  background: rgba(22, 32, 24, 0.92);
+  border-color: var(--line);
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .date-pill,
+[data-theme='dark'] .live-pill {
+  background: rgba(22, 32, 24, 0.8);
+  border-color: var(--line);
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .summary-tile,
+[data-theme='dark'] .metric-bento-item {
+  background: var(--bg-card-alt);
+  border-color: var(--line);
+}
+
+[data-theme='dark'] .metric-bento-label {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .metric-bento-value {
+  color: var(--text);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.topbar {
+  animation: slideDown 0.5s ease-out both;
+}
+
+.card {
+  animation: fadeUp 0.6s ease-out both;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.card:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.card:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.card:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.map-stage {
+  animation: scaleIn 0.7s ease-out both;
+  animation-delay: 0.1s;
+}
+
+.brand-mark {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brand-mark:hover {
+  transform: rotate(8deg) scale(1.05);
+}
+
+.icon-button,
+.theme-toggle-btn {
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.icon-button:hover,
+.theme-toggle-btn:hover {
+  transform: scale(1.08);
+}
+
+.map-toolbar button {
+  transition: background 0.3s ease, color 0.3s ease, transform 0.15s ease;
+}
+
+.map-toolbar button:hover {
+  transform: scale(1.03);
+}
+
+.ui-mode-btn {
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ui-mode-btn.active {
+  box-shadow: 0 2px 12px rgba(15, 107, 84, 0.3);
+}
+
+.badge--glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.badge--glow-red {
+  animation: glowPulseRed 2s ease-in-out infinite;
+}
+
+.badge--glow-orange {
+  animation: glowPulseOrange 2s ease-in-out infinite;
+}
+
+.badge--glow-purple {
+  animation: glowPulsePurple 2s ease-in-out infinite;
+}
+
+@keyframes glowPulseRed {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  }
+}
+
+@keyframes glowPulseOrange {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+  }
+}
+
+@keyframes glowPulsePurple {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+  }
+}
+
+.hero-temp,
+.pm-card__value strong,
+.mini-card__value strong,
+.summary-tile__value {
+  transition: color 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topbar,
+  .card,
+  .map-stage {
+    animation: none !important;
+  }
+
+  .card:hover {
+    transform: none !important;
+  }
+
+  .badge--glow-red,
+  .badge--glow-orange,
+  .badge--glow-purple {
+    animation: none !important;
+  }
+}
+
+.map-pinning,
+.map-pinning .leaflet-container {
+  cursor: crosshair !important;
+}
+
+/* Desktop repair: keep the approved mobile layout intact, but undo the
+   low-height split-screen mode that made the desktop map feel cramped. */
+@media (min-width: 1024px) {
+  html,
+  body,
+  #root {
+    height: auto;
+    overflow: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow: visible;
+  }
+
+  .topbar,
+  .data-status,
+  .notice,
+  .map-hero,
+  .map-stage.map-hero,
+  .map-detail-bar,
+  .dashboard-container {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .map-hero,
+  .map-stage.map-hero {
+    display: flex;
+    flex-direction: column;
+    height: clamp(500px, 56vh, 700px) !important;
+    min-height: 500px !important;
+    align-self: stretch;
+    overflow: hidden;
+  }
+
+  .map-stage.map-hero .map-titlebar {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    z-index: 30;
+    width: 100%;
+    padding: 16px 18px 12px;
+    align-items: flex-start;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.9));
+    border-bottom: 1px solid rgba(24, 92, 67, 0.12);
+    box-shadow: 0 10px 24px rgba(15, 72, 53, 0.08);
+  }
+
+  .map-stage.map-hero .map-titlebar h2 {
+    max-width: min(46vw, 760px);
+    line-height: 1.15;
+  }
+
+  .map-stage.map-hero .map-toolbar {
+    max-width: min(760px, 52vw);
+    justify-content: flex-end;
+    padding: 4px;
+    gap: 5px;
+  }
+
+  .map-stage.map-hero .map-toolbar button {
+    min-height: 38px;
+    padding: 7px 13px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .map-stage.map-hero .map-canvas {
+    position: relative;
+    flex: 1 1 auto;
+    inset: auto;
+    min-height: 0;
+  }
+
+  .map-stage.map-hero .basemap-switcher {
+    display: grid;
+    top: 18px;
+    right: 18px;
+    z-index: 35;
+    grid-template-columns: repeat(4, minmax(72px, 1fr));
+    max-width: min(420px, calc(100% - 36px));
+  }
+
+  .map-stage.map-hero .basemap-switcher button {
+    min-height: 38px;
+    padding: 6px 10px;
+  }
+
+  .map-detail-bar {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .dashboard-container {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .page-foot {
+    display: block;
+  }
+}
