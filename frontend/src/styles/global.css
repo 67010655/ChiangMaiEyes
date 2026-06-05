@@ -2048,9 +2048,16 @@ button {
   }
 
   /* In fullscreen on a phone, the tapped-feature panel is the priority; legend
-     and basemap stay hidden (they return on the roomier desktop fullscreen). */
+     stays hidden, but show the basemap switcher. */
   .map-hero--fullscreen .wind-chip {
     display: none;
+  }
+
+  .map-hero--fullscreen .basemap-switcher {
+    display: grid !important;
+    top: 92px !important;
+    right: 10px !important;
+    z-index: 1100 !important;
   }
 
   /* Full-width bottom sheet for the tapped feature; move the zoom/fullscreen
