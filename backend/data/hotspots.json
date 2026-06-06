@@ -1,11 +1,29 @@
 {
-  "count": 0,
+  "count": 1,
   "density_per_100_km2": 0.0,
-  "latest_update": "2026-06-05T14:37:16.013561+07:00",
+  "latest_update": "2026-06-06T13:16:06.623917+07:00",
   "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
-  "items": [],
+  "items": [
+    {
+      "id": "HS-001",
+      "latitude": 19.78684,
+      "longitude": 99.31593,
+      "district": "ฝาง",
+      "subdistrict": "แม่คะ",
+      "landuse_type": "NRF",
+      "landuse_name": "ป่าลุ่มน้ำแม่ฝาง",
+      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+      "confidence": 90,
+      "source": "Royal Forest Department Firemap",
+      "detected_at": "2026-06-06T01:53:00+07:00",
+      "sources": [
+        "Royal Forest Department Firemap"
+      ],
+      "source_count": 1
+    }
+  ],
   "source_breakdown": {
-    "Royal Forest Department Firemap": 0,
+    "Royal Forest Department Firemap": 1,
     "GISTDA API Gateway VIIRS 1-day": 0,
     "NASA FIRMS": 0
   }

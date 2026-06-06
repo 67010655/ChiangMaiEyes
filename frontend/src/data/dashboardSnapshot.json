@@ -1,125 +1,40 @@
 {
   "hotspots": {
-    "count": 6,
-    "density_per_100_km2": 0.03,
-    "latest_update": "2026-06-05T06:24:10.244795+07:00",
+    "count": 1,
+    "density_per_100_km2": 0.0,
+    "latest_update": "2026-06-06T13:16:06.623917+07:00",
     "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
         "id": "HS-001",
-        "latitude": 18.9433,
-        "longitude": 98.96133,
-        "district": "สันทราย",
-        "subdistrict": null,
-        "landuse_type": null,
-        "landuse_name": null,
-        "satellite": "N",
-        "confidence": 75,
-        "source": "NASA FIRMS",
-        "detected_at": "2026-06-04T14:18:00+07:00",
+        "latitude": 19.78684,
+        "longitude": 99.31593,
+        "district": "ฝาง",
+        "subdistrict": "แม่คะ",
+        "landuse_type": "NRF",
+        "landuse_name": "ป่าลุ่มน้ำแม่ฝาง",
+        "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
+        "confidence": 90,
+        "source": "Royal Forest Department Firemap",
+        "detected_at": "2026-06-06T01:53:00+07:00",
         "sources": [
-          "NASA FIRMS"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-002",
-        "latitude": 19.16259,
-        "longitude": 98.93114,
-        "district": "เชียงดาว",
-        "subdistrict": null,
-        "landuse_type": null,
-        "landuse_name": null,
-        "satellite": "N",
-        "confidence": 75,
-        "source": "NASA FIRMS",
-        "detected_at": "2026-06-04T14:18:00+07:00",
-        "sources": [
-          "NASA FIRMS"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-003",
-        "latitude": 18.78291,
-        "longitude": 99.03358,
-        "district": "สันกำแพง",
-        "subdistrict": null,
-        "landuse_type": null,
-        "landuse_name": null,
-        "satellite": "N21",
-        "confidence": 75,
-        "source": "NASA FIRMS",
-        "detected_at": "2026-06-04T13:44:00+07:00",
-        "sources": [
-          "NASA FIRMS"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-004",
-        "latitude": 18.87581,
-        "longitude": 98.99537,
-        "district": "แม่ริม",
-        "subdistrict": null,
-        "landuse_type": null,
-        "landuse_name": null,
-        "satellite": "N21",
-        "confidence": 75,
-        "source": "NASA FIRMS",
-        "detected_at": "2026-06-04T13:44:00+07:00",
-        "sources": [
-          "NASA FIRMS"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-005",
-        "latitude": 18.98664,
-        "longitude": 98.89323,
-        "district": "แม่แตง",
-        "subdistrict": null,
-        "landuse_type": null,
-        "landuse_name": null,
-        "satellite": "N21",
-        "confidence": 75,
-        "source": "NASA FIRMS",
-        "detected_at": "2026-06-04T13:44:00+07:00",
-        "sources": [
-          "NASA FIRMS"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-006",
-        "latitude": 19.16201,
-        "longitude": 98.93414,
-        "district": "เชียงดาว",
-        "subdistrict": null,
-        "landuse_type": null,
-        "landuse_name": null,
-        "satellite": "N21",
-        "confidence": 75,
-        "source": "NASA FIRMS",
-        "detected_at": "2026-06-04T13:44:00+07:00",
-        "sources": [
-          "NASA FIRMS"
+          "Royal Forest Department Firemap"
         ],
         "source_count": 1
       }
     ],
     "source_breakdown": {
-      "Royal Forest Department Firemap": 0,
+      "Royal Forest Department Firemap": 1,
       "GISTDA API Gateway VIIRS 1-day": 0,
-      "NASA FIRMS": 6
+      "NASA FIRMS": 0
     }
   },
   "pm25": {
-    "current_pm25": 13.4,
+    "current_pm25": 9.9,
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-05T06:00:00+07:00",
+    "latest_update": "2026-06-06T12:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -128,9 +43,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 17.6,
+        "pm25": 13.8,
         "trend": "stable",
-        "updated_at": "2026-06-05T06:00:00+07:00"
+        "updated_at": "2026-06-06T12:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -138,48 +53,48 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 9.2,
+        "pm25": 6.0,
         "trend": "stable",
-        "updated_at": "2026-06-05T06:00:00+07:00"
+        "updated_at": "2026-06-06T12:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 2.9,
-    "wind_direction_deg": 14.3,
-    "wind_direction_text": "ทิศเหนือค่อนไปทางตะวันออก",
-    "temperature_c": 24.5,
-    "humidity_percent": 93.5,
-    "latest_update": "2026-06-05T06:21:00+07:00",
+    "wind_speed_kmh": 10.8,
+    "wind_direction_deg": 105.7,
+    "wind_direction_text": "ทิศตะวันออกค่อนไปทางใต้",
+    "temperature_c": 28.4,
+    "humidity_percent": 80.6,
+    "latest_update": "2026-06-06T13:15:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
     "station_longitude": 98.9692,
-    "pressure_hpa": 968.9,
+    "pressure_hpa": 968.6,
     "rain_15m_mm": 0.0,
-    "rain_1h_mm": 0.0,
-    "rain_today_mm": 16.4,
-    "temperature_min_today_c": 24.3,
-    "temperature_max_today_c": 37.7
+    "rain_1h_mm": 0.6,
+    "rain_today_mm": 1.0,
+    "temperature_min_today_c": 25.4,
+    "temperature_max_today_c": 29.1
   },
   "risk": {
-    "score": 4,
+    "score": 5,
     "category": "Medium",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
-      "pm25_points": 0.67,
-      "hotspot_points": 0.15,
-      "spread_points": 3.16,
-      "avg_flammability": 1.33,
-      "avg_slope_factor": 1.59,
-      "avg_history_factor": 1.25,
-      "wind_speed_kmh": 2.9,
+      "pm25_points": 0.49,
+      "hotspot_points": 0.03,
+      "spread_points": 4.0,
+      "avg_flammability": 1.5,
+      "avg_slope_factor": 1.52,
+      "avg_history_factor": 1.3,
+      "wind_speed_kmh": 10.8,
       "wind_pushes_smoke_to_city": "no"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 13 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 6 จุด และลมพัดจากทิศ ทิศเหนือค่อนไปทางตะวันออก ด้วยความเร็ว 3 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 10 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 1 จุด และลมพัดจากทิศ ทิศตะวันออกค่อนไปทางใต้ ด้วยความเร็ว 11 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 5/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
     "source": "rule-based fallback"
   }
 }
