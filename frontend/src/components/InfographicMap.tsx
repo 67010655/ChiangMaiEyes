@@ -6,7 +6,7 @@ import {
   BAND_FILL,
   BAND_FILL_SOFT,
   type DistrictMeta,
-} from './pitchData';
+} from '../data/pitchData';
 
 type Ring = number[][];
 type Geometry = {

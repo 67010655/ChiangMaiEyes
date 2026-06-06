@@ -27,8 +27,8 @@ import {
   PROVINCE_STATS,
   WORKFLOW,
   type DistrictMeta,
-} from './pitchData';
-import './pitch.css';
+} from '../data/pitchData';
+import '../styles/pitch.css';
 
 const META_BY_NAME = new Map(DISTRICT_META.map((m) => [m.name, m]));
 
