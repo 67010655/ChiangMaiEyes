@@ -1,13 +1,13 @@
 {
   "summary": {
-    "generatedAt": "2026-06-06",
+    "generatedAt": "2026-06-07",
     "province": "เชียงใหม่",
     "officialInfographicCount": 573,
     "officialInfographicAreaRai": 812848,
     "rfdCoordinatePoints": 675,
     "thaicfnetDetailedForests": 52,
-    "thaicfnetGeocodedForests": 21,
-    "detailedForestsWithFireManagement": 16,
+    "thaicfnetGeocodedForests": 52,
+    "detailedForestsWithFireManagement": 47,
     "sourceNotes": [
       "RFD KML is point geometry only; prototype boundaries are estimated buffers.",
       "Thaicfnet records provide community activity and management-plan detail for 52 Chiang Mai forests.",
@@ -19,11 +19,11 @@
       "id": "fmz-แม่แจ่ม",
       "district": "แม่แจ่ม",
       "name": "เขตจัดการไฟ อ.แม่แจ่ม",
-      "health": "Red",
-      "healthScore": 35,
+      "health": "Yellow",
+      "healthScore": 57,
       "rfdCoordinatePoints": 103,
-      "detailedForests": 1,
-      "fireManagementForests": 1,
+      "detailedForests": 5,
+      "fireManagementForests": 5,
       "estimatedAreaRai": 65312,
       "prototypeBoundary": "district polygon",
       "centroid": [
@@ -32,16 +32,16 @@
       ],
       "topActivities": [
         {
-          "name": "ลาดตระเวนในพื้นที่ป่าชุมชน",
-          "count": 1
-        },
-        {
           "name": "ทำแนวป้องกันไฟป่า",
-          "count": 1
+          "count": 5
         },
         {
           "name": "กำจัดเชื้อเพลิง, ชิงเผา",
-          "count": 1
+          "count": 5
+        },
+        {
+          "name": "ลาดตระเวนในพื้นที่ป่าชุมชน",
+          "count": 3
         }
       ],
       "geometry": {
@@ -2821,8 +2821,8 @@
       "health": "Yellow",
       "healthScore": 67,
       "rfdCoordinatePoints": 59,
-      "detailedForests": 10,
-      "fireManagementForests": 5,
+      "detailedForests": 12,
+      "fireManagementForests": 7,
       "estimatedAreaRai": 118975,
       "prototypeBoundary": "district polygon",
       "centroid": [
@@ -2831,16 +2831,16 @@
       ],
       "topActivities": [
         {
-          "name": "ทำแนวป้องกันไฟป่า",
-          "count": 5
-        },
-        {
           "name": "กำจัดเชื้อเพลิง, ชิงเผา",
-          "count": 5
+          "count": 7
         },
         {
           "name": "ลาดตระเวนในพื้นที่ป่าชุมชน",
-          "count": 4
+          "count": 6
+        },
+        {
+          "name": "ทำแนวป้องกันไฟป่า",
+          "count": 6
         }
       ],
       "geometry": {
@@ -3583,11 +3583,11 @@
       "id": "fmz-อมก๋อย",
       "district": "อมก๋อย",
       "name": "เขตจัดการไฟ อ.อมก๋อย",
-      "health": "Red",
-      "healthScore": 41,
+      "health": "Yellow",
+      "healthScore": 63,
       "rfdCoordinatePoints": 45,
-      "detailedForests": 1,
-      "fireManagementForests": 1,
+      "detailedForests": 8,
+      "fireManagementForests": 8,
       "estimatedAreaRai": 287562,
       "prototypeBoundary": "district polygon",
       "centroid": [
@@ -3597,15 +3597,15 @@
       "topActivities": [
         {
           "name": "ลาดตระเวนในพื้นที่ป่าชุมชน",
-          "count": 1
+          "count": 8
         },
         {
           "name": "ทำแนวป้องกันไฟป่า",
-          "count": 1
+          "count": 8
         },
         {
           "name": "กำจัดเชื้อเพลิง, ชิงเผา",
-          "count": 1
+          "count": 8
         }
       ],
       "geometry": {
@@ -6004,11 +6004,11 @@
       "id": "fmz-กัลยาณิวัฒนา",
       "district": "กัลยาณิวัฒนา",
       "name": "เขตจัดการไฟ อ.กัลยาณิวัฒนา",
-      "health": "Yellow",
-      "healthScore": 64,
+      "health": "Green",
+      "healthScore": 86,
       "rfdCoordinatePoints": 26,
-      "detailedForests": 1,
-      "fireManagementForests": 1,
+      "detailedForests": 6,
+      "fireManagementForests": 6,
       "estimatedAreaRai": 58482,
       "prototypeBoundary": "district polygon",
       "centroid": [
@@ -6018,15 +6018,15 @@
       "topActivities": [
         {
           "name": "ลาดตระเวนในพื้นที่ป่าชุมชน",
-          "count": 1
+          "count": 6
         },
         {
           "name": "ทำแนวป้องกันไฟป่า",
-          "count": 1
+          "count": 6
         },
         {
           "name": "กำจัดเชื้อเพลิง, ชิงเผา",
-          "count": 1
+          "count": 6
         }
       ],
       "geometry": {
@@ -7936,8 +7936,8 @@
       "health": "Green",
       "healthScore": 92,
       "rfdCoordinatePoints": 15,
-      "detailedForests": 4,
-      "fireManagementForests": 4,
+      "detailedForests": 10,
+      "fireManagementForests": 10,
       "estimatedAreaRai": 7257,
       "prototypeBoundary": "district polygon",
       "centroid": [
@@ -7947,15 +7947,15 @@
       "topActivities": [
         {
           "name": "ลาดตระเวนในพื้นที่ป่าชุมชน",
-          "count": 4
+          "count": 10
         },
         {
           "name": "ทำแนวป้องกันไฟป่า",
-          "count": 4
+          "count": 10
         },
         {
           "name": "กำจัดเชื้อเพลิง, ชิงเผา",
-          "count": 4
+          "count": 10
         }
       ],
       "geometry": {
@@ -8480,18 +8480,27 @@
       "id": "fmz-สะเมิง",
       "district": "สะเมิง",
       "name": "เขตจัดการไฟ อ.สะเมิง",
-      "health": "Yellow",
-      "healthScore": 66,
+      "health": "Green",
+      "healthScore": 90,
       "rfdCoordinatePoints": 14,
-      "detailedForests": 0,
-      "fireManagementForests": 0,
+      "detailedForests": 3,
+      "fireManagementForests": 3,
       "estimatedAreaRai": 9563,
       "prototypeBoundary": "district polygon",
       "centroid": [
         18.913048142857143,
         98.65602614285714
       ],
-      "topActivities": [],
+      "topActivities": [
+        {
+          "name": "ทำแนวป้องกันไฟป่า",
+          "count": 3
+        },
+        {
+          "name": "กำจัดเชื้อเพลิง, ชิงเผา",
+          "count": 3
+        }
+      ],
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -10745,8 +10754,8 @@
       "health": "Green",
       "healthScore": 92,
       "rfdCoordinatePoints": 9,
-      "detailedForests": 4,
-      "fireManagementForests": 4,
+      "detailedForests": 8,
+      "fireManagementForests": 8,
       "estimatedAreaRai": 6999,
       "prototypeBoundary": "district polygon",
       "centroid": [
@@ -10756,15 +10765,15 @@
       "topActivities": [
         {
           "name": "ทำแนวป้องกันไฟป่า",
+          "count": 8
+        },
+        {
+          "name": "กำจัดเชื้อเพลิง, ชิงเผา",
           "count": 4
         },
         {
           "name": "ลาดตระเวนในพื้นที่ป่าชุมชน",
           "count": 3
-        },
-        {
-          "name": "กำจัดเชื้อเพลิง, ชิงเผา",
-          "count": 1
         }
       ],
       "geometry": {

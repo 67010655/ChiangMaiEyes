@@ -1,13 +1,13 @@
 {
   "summary": {
-    "generatedAt": "2026-06-06",
+    "generatedAt": "2026-06-07",
     "province": "เชียงใหม่",
     "officialInfographicCount": 573,
     "officialInfographicAreaRai": 812848,
     "rfdCoordinatePoints": 675,
     "thaicfnetDetailedForests": 52,
-    "thaicfnetGeocodedForests": 21,
-    "detailedForestsWithFireManagement": 16,
+    "thaicfnetGeocodedForests": 52,
+    "detailedForestsWithFireManagement": 47,
     "sourceNotes": [
       "RFD KML is point geometry only; prototype boundaries are estimated buffers.",
       "Thaicfnet records provide community activity and management-plan detail for 52 Chiang Mai forests.",
@@ -24,8 +24,8 @@
       "tambon": "แม่แดด",
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
-      "lat": 18.7816,
-      "lng": 99.0064,
+      "lat": 19.03166,
+      "lng": 98.406885,
       "areaRai": 713.0,
       "estimatedBoundaryRadiusM": 603,
       "fireManagement": true,
@@ -49,6 +49,295 @@
       "committeeTotal": 15
     },
     {
+      "id": "thaicfnet-511",
+      "sourceId": 511,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยปู",
+      "village": "บ้านแม่ผาปู",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.939115,
+      "lng": 98.350677,
+      "areaRai": 4505.0,
+      "estimatedBoundaryRadiusM": 1515,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 16
+    },
+    {
+      "id": "thaicfnet-508",
+      "sourceId": 508,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตะละม้ง",
+      "village": "แม่ตะละม้ง",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.926879,
+      "lng": 98.441398,
+      "areaRai": 918.0,
+      "estimatedBoundaryRadiusM": 684,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 9
+    },
+    {
+      "id": "thaicfnet-506",
+      "sourceId": 506,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตะละเหนือ",
+      "village": "บ้านแม่ตะละเหนือ",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.915294,
+      "lng": 98.414762,
+      "areaRai": 4996.0,
+      "estimatedBoundaryRadiusM": 1595,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา",
+        "อื่นๆ"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14
+    },
+    {
+      "id": "thaicfnet-507",
+      "sourceId": 507,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตะละใต้",
+      "village": "บ้านแม่ตะละใต้",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.892097,
+      "lng": 98.375769,
+      "areaRai": 5189.0,
+      "estimatedBoundaryRadiusM": 1626,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-505",
+      "sourceId": 505,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่แดดน้อย",
+      "village": "บ้านแม่แดดน้อย",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.946796,
+      "lng": 98.412962,
+      "areaRai": 1559.0,
+      "estimatedBoundaryRadiusM": 891,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบแล้ง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-704",
+      "sourceId": 704,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านป่าเกี๊ยะใน",
+      "village": "ป่าเกี๊ยะใน",
+      "tambon": "บ่อแก้ว",
+      "amphoe": "สะเมิง",
+      "province": "เชียงใหม่",
+      "lat": 18.856095,
+      "lng": 98.53341,
+      "areaRai": 526.0,
+      "estimatedBoundaryRadiusM": 518,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2560",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-705",
+      "sourceId": 705,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านหนองคิซูใน",
+      "village": "หนองคิซูใน",
+      "tambon": "บ่อแก้ว",
+      "amphoe": "สะเมิง",
+      "province": "เชียงใหม่",
+      "lat": 18.913048142857143,
+      "lng": 98.65602614285714,
+      "areaRai": 121.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": false,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-703",
+      "sourceId": 703,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านเด่นฮ่อม",
+      "village": "บ้านเด่นฮ่อม",
+      "tambon": "บ่อแก้ว",
+      "amphoe": "สะเมิง",
+      "province": "เชียงใหม่",
+      "lat": 18.88785,
+      "lng": 98.531719,
+      "areaRai": 125.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าดิบแล้ง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-514",
+      "sourceId": 514,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านดอย",
+      "village": "บ้านดอย",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.757775,
+      "lng": 98.360918,
+      "areaRai": 720.0,
+      "estimatedBoundaryRadiusM": 606,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2560",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14
+    },
+    {
       "id": "thaicfnet-516",
       "sourceId": 516,
       "source": "Thaicfnet citizen database",
@@ -57,8 +346,8 @@
       "tambon": "ยางเปียง",
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
-      "lat": 18.775442,
-      "lng": 98.949493,
+      "lat": 17.593377,
+      "lng": 98.295373,
       "areaRai": 1764.0,
       "estimatedBoundaryRadiusM": 948,
       "fireManagement": true,
@@ -81,6 +370,322 @@
       "committeeTotal": 15
     },
     {
+      "id": "thaicfnet-520",
+      "sourceId": 520,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านยางครก",
+      "village": "บ้านยางครก",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.822074,
+      "lng": 98.446439,
+      "areaRai": 3887.0,
+      "estimatedBoundaryRadiusM": 1407,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2561",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-517",
+      "sourceId": 517,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านยางเปียง",
+      "village": "บ้านยางเปียง",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.785624,
+      "lng": 98.478088,
+      "areaRai": 1592.0,
+      "estimatedBoundaryRadiusM": 900,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14
+    },
+    {
+      "id": "thaicfnet-518",
+      "sourceId": 518,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านยางเปียงใต้",
+      "village": "บ้านยางเปียงใต้",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.711516,
+      "lng": 98.483443,
+      "areaRai": 28526.0,
+      "estimatedBoundaryRadiusM": 2600,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14
+    },
+    {
+      "id": "thaicfnet-521",
+      "sourceId": 521,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านสบลาน",
+      "village": "บ้านสบลาน",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.613039,
+      "lng": 98.407605,
+      "areaRai": 3671.0,
+      "estimatedBoundaryRadiusM": 1367,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-513",
+      "sourceId": 513,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่แฮหลวง",
+      "village": "บ้านแม่แฮหลวง/",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.59215,
+      "lng": 98.337139,
+      "areaRai": 1663.0,
+      "estimatedBoundaryRadiusM": 920,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 12
+    },
+    {
+      "id": "thaicfnet-515",
+      "sourceId": 515,
+      "source": "Thaicfnet citizen database",
+      "name": "ป่าชุมชนบ้านนาไคร้",
+      "village": "บ้านนาไคร้",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.601215,
+      "lng": 98.498629,
+      "areaRai": 934.0,
+      "estimatedBoundaryRadiusM": 690,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2561",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 9
+    },
+    {
+      "id": "thaicfnet-663",
+      "sourceId": 663,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแปกแซม",
+      "village": "แปกแซม",
+      "tambon": "เปยงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 499.0,
+      "estimatedBoundaryRadiusM": 504,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2566",
+      "forestTypes": [
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 10
+    },
+    {
+      "id": "thaicfnet-666",
+      "sourceId": 666,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านจอง",
+      "village": "เปียงหลวง",
+      "tambon": "เปียงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 16.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2566",
+      "forestTypes": [
+        "ป่าเบญจพรรณ"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14
+    },
+    {
+      "id": "thaicfnet-664",
+      "sourceId": 664,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านม่วงเครือ",
+      "village": "บ้านม่วงเครือ",
+      "tambon": "เปียงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 2000.0,
+      "estimatedBoundaryRadiusM": 1009,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2566",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 6
+    },
+    {
+      "id": "thaicfnet-665",
+      "sourceId": 665,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านเปียงหลวง",
+      "village": "บ้านเปียงหลวง",
+      "tambon": "เปียงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 1000.0,
+      "estimatedBoundaryRadiusM": 714,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2566",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 13
+    },
+    {
       "id": "thaicfnet-667",
       "sourceId": 667,
       "source": "Thaicfnet citizen database",
@@ -89,8 +694,8 @@
       "tambon": "เปียงหลวง",
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
-      "lat": 18.776093,
-      "lng": 98.949326,
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
       "areaRai": 600.0,
       "estimatedBoundaryRadiusM": 553,
       "fireManagement": true,
@@ -119,8 +724,8 @@
       "tambon": "เมืองอหง",
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
-      "lat": 18.7816,
-      "lng": 99.0064,
+      "lat": 19.587544,
+      "lng": 98.625166,
       "areaRai": 122.0,
       "estimatedBoundaryRadiusM": 450,
       "fireManagement": true,
@@ -151,8 +756,8 @@
       "tambon": "เมืองแหง",
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
-      "lat": 18.7816,
-      "lng": 99.0064,
+      "lat": 19.549714,
+      "lng": 98.624521,
       "areaRai": 734.0,
       "estimatedBoundaryRadiusM": 611,
       "fireManagement": true,
@@ -182,8 +787,8 @@
       "tambon": "เมืองแหง",
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
-      "lat": 18.7816,
-      "lng": 99.0064,
+      "lat": 19.588163,
+      "lng": 98.592982,
       "areaRai": 675.0,
       "estimatedBoundaryRadiusM": 586,
       "fireManagement": true,
@@ -205,6 +810,39 @@
       "committeeTotal": 10
     },
     {
+      "id": "thaicfnet-529",
+      "sourceId": 529,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านป่ากล้วย",
+      "village": "บ้านป่าหล้วย",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.663425,
+      "lng": 98.540026,
+      "areaRai": 1609.0,
+      "estimatedBoundaryRadiusM": 905,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
       "id": "thaicfnet-534",
       "sourceId": 534,
       "source": "Thaicfnet citizen database",
@@ -213,8 +851,8 @@
       "tambon": "แม่วิน",
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
-      "lat": 18.775442,
-      "lng": 98.949493,
+      "lat": 18.780978,
+      "lng": 98.541944,
       "areaRai": 622.0,
       "estimatedBoundaryRadiusM": 563,
       "fireManagement": true,
@@ -237,6 +875,70 @@
       "committeeTotal": 15
     },
     {
+      "id": "thaicfnet-535",
+      "sourceId": 535,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านสบวิน",
+      "village": "สบวิน",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.667209,
+      "lng": 98.706572,
+      "areaRai": 1004.0,
+      "estimatedBoundaryRadiusM": 715,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-536",
+      "sourceId": 536,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยยาว",
+      "village": "ห้วยยาว",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.645279,
+      "lng": 98.548793,
+      "areaRai": 2420.0,
+      "estimatedBoundaryRadiusM": 1110,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14
+    },
+    {
       "id": "thaicfnet-537",
       "sourceId": 537,
       "source": "Thaicfnet citizen database",
@@ -245,8 +947,8 @@
       "tambon": "แม่วิน",
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
-      "lat": 18.775442,
-      "lng": 98.949493,
+      "lat": 18.690419,
+      "lng": 98.711282,
       "areaRai": 366.0,
       "estimatedBoundaryRadiusM": 450,
       "fireManagement": true,
@@ -268,6 +970,38 @@
       "committeeTotal": 15
     },
     {
+      "id": "thaicfnet-538",
+      "sourceId": 538,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยหอย",
+      "village": "บ้านห้วบหอย",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.616121,
+      "lng": 98.645601,
+      "areaRai": 1193.0,
+      "estimatedBoundaryRadiusM": 779,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
       "id": "thaicfnet-524",
       "sourceId": 524,
       "source": "Thaicfnet citizen database",
@@ -276,8 +1010,8 @@
       "tambon": "แม่วิน",
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
-      "lat": 18.775442,
-      "lng": 98.949493,
+      "lat": 18.670199666666665,
+      "lng": 98.67012813333334,
       "areaRai": 286.0,
       "estimatedBoundaryRadiusM": 450,
       "fireManagement": true,
@@ -330,6 +1064,70 @@
       "households": 0,
       "villagesCount": 1,
       "committeeTotal": 19
+    },
+    {
+      "id": "thaicfnet-523",
+      "sourceId": 523,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่เตียน",
+      "village": "แม่เตียน",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.760265,
+      "lng": 98.550426,
+      "areaRai": 3034.0,
+      "estimatedBoundaryRadiusM": 1243,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2561",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-528",
+      "sourceId": 528,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านใหม่วังผาปูน",
+      "village": "บ้านใหม่วังผาปูน",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.684387,
+      "lng": 98.681747,
+      "areaRai": 2196.0,
+      "estimatedBoundaryRadiusM": 1058,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
     },
     {
       "id": "thaicfnet-91",
@@ -538,6 +1336,38 @@
       "committeeTotal": 15
     },
     {
+      "id": "thaicfnet-330",
+      "sourceId": 330,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านทาม่อน ม.1",
+      "village": "บ้านทาม่อน",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.641955,
+      "lng": 99.273932,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": false,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
       "id": "thaicfnet-344",
       "sourceId": 344,
       "source": "Thaicfnet citizen database",
@@ -633,6 +1463,37 @@
       "committeeTotal": 23
     },
     {
+      "id": "thaicfnet-349",
+      "sourceId": 349,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านใหม่ดอนชัย",
+      "village": "บ้านใหม่ดอนชัย",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.554461,
+      "lng": 99.300444,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 21
+    },
+    {
       "id": "thaicfnet-522",
       "sourceId": 522,
       "source": "Thaicfnet citizen database",
@@ -641,8 +1502,8 @@
       "tambon": "ท่าผา",
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
-      "lat": 18.775442,
-      "lng": 98.949493,
+      "lat": 18.490257,
+      "lng": 98.443321,
       "areaRai": 2538.0,
       "estimatedBoundaryRadiusM": 1137,
       "fireManagement": true,
@@ -665,6 +1526,133 @@
       "households": 0,
       "villagesCount": 1,
       "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-654",
+      "sourceId": 654,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแปะ",
+      "village": "ย้านแปะ",
+      "tambon": "ปางหินฝน",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.493471,
+      "lng": 98.119357,
+      "areaRai": 552.0,
+      "estimatedBoundaryRadiusM": 530,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14
+    },
+    {
+      "id": "thaicfnet-655",
+      "sourceId": 655,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตูม",
+      "village": "แม่ตูม/",
+      "tambon": "ปางหินฝน",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.545479,
+      "lng": 98.175695,
+      "areaRai": 1035.0,
+      "estimatedBoundaryRadiusM": 726,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-653",
+      "sourceId": 653,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่แฮใต้",
+      "village": "บ้านแม่แฮใต้",
+      "tambon": "ปางหินฝน",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.442205,
+      "lng": 98.154132,
+      "areaRai": 2551.0,
+      "estimatedBoundaryRadiusM": 1140,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15
+    },
+    {
+      "id": "thaicfnet-533",
+      "sourceId": 533,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านสบวาก",
+      "village": "สบวาก",
+      "tambon": "แม่นาจร",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.630433,
+      "lng": 98.38391,
+      "areaRai": 1320.0,
+      "estimatedBoundaryRadiusM": 820,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 11
     }
   ]
 }
