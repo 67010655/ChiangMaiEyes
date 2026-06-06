@@ -115,19 +115,25 @@ const DISTRICT_PRESETS: DistrictPreset[] = ((districtsGeoData as { features: Arr
   .sort((a, b) => a.name.localeCompare(b.name, 'th'));
 
 function getPm25Color(val: number) {
-  if (val <= 25) return 'green';
-  if (val <= 37) return 'yellow';
-  if (val <= 50) return 'orange';
-  if (val <= 90) return 'red';
+  if (val <= 25) return 'green';    // ดีมาก (≤15) + ดี (≤25) → green
+  if (val <= 37.5) return 'yellow';
+  if (val <= 75) return 'orange';
+  if (val <= 120) return 'red';
   return 'purple';
 }
 
 function getPm25Label(val: number) {
-  if (val <= 25) return 'ดีมาก';
-  if (val <= 37) return 'ปานกลาง';
-  if (val <= 50) return 'เริ่มมีผล';
-  if (val <= 90) return 'มีผลต่อสุขภาพ';
-  return 'อันตรายร้ายแรง';
+  if (val <= 15) return 'ดีมาก';
+  if (val <= 25) return 'ดี';
+  if (val <= 37.5) return 'ปานกลาง';
+  if (val <= 75) return 'เริ่มมีผลกระทบต่อสุขภาพ';
+  if (val <= 120) return 'มีผลกระทบต่อสุขภาพ';
+  return 'อันตราย';
+}
+
+function estimateVisibilityKm(pm25: number): string {
+  const km = Math.max(1.0, Math.min(10.0, 10.0 - (pm25 / 150.0) * 9.0));
+  return km.toFixed(1);
 }
 
 function getFireRiskLabel(risk: 'low' | 'medium' | 'high' | 'critical') {
@@ -230,19 +236,23 @@ function CitizenTravelGuide({ dailyForecast }: { dailyForecast: any[] }) {
       </div>
       <p className="personal-checker-desc" style={{ marginBottom: '12px' }}>
         คำแนะนำเพื่อการเดินทางและทำกิจกรรมอย่างปลอดภัยตามระดับความเสี่ยงฝุ่นควันและไฟไหม้ป่า
+        <br /><em style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>⚠️ ข้อมูลพยากรณ์อากาศเป็นการประมาณการ ไม่ใช่ข้อมูลพยากรณ์จากกรมอุตุนิยมวิทยา</em>
       </p>
       <div className="citizen-guide-list">
         {next3Days.map((day, idx) => {
           let healthText = 'คุณภาพอากาศดีมาก: ท่องเที่ยวและออกกำลังกายกลางแจ้งได้ปกติ';
           let healthColor = 'green';
           
-          if (day.pm25 <= 25) {
+          if (day.pm25 <= 15) {
             healthText = 'อากาศดีเยี่ยม: เหมาะกับทุกกิจกรรมกลางแจ้ง';
             healthColor = 'green';
-          } else if (day.pm25 <= 37) {
+          } else if (day.pm25 <= 25) {
+            healthText = 'อากาศดี: ทำกิจกรรมกลางแจ้งได้ตามปกติ';
+            healthColor = 'green';
+          } else if (day.pm25 <= 37.5) {
             healthText = 'อากาศปานกลาง: กลุ่มเสี่ยงควรสังเกตอาการ';
             healthColor = 'yellow';
-          } else if (day.pm25 <= 50) {
+          } else if (day.pm25 <= 75) {
             healthText = 'เริ่มมีผลต่อสุขภาพ: สวมหน้ากากอนามัยเมื่อออกกลางแจ้ง';
             healthColor = 'orange';
           } else {
@@ -253,10 +263,10 @@ function CitizenTravelGuide({ dailyForecast }: { dailyForecast: any[] }) {
           let travelAdvice = 'แนะนำท่องเที่ยวได้ตามปกติ';
           let travelIcon = '✅';
           
-          if (day.fireRisk === 'critical' || day.pm25 > 50) {
+          if (day.fireRisk === 'critical' || day.pm25 > 75) {
             travelAdvice = 'หลีกเลี่ยงการท่องเที่ยวกลางแจ้ง/พื้นที่ใกล้เขตป่า';
             travelIcon = '❌';
-          } else if (day.fireRisk === 'high' || day.pm25 > 37) {
+          } else if (day.fireRisk === 'high' || day.pm25 > 37.5) {
             travelAdvice = 'ท่องเที่ยวได้ แต่อยู่ในร่มเป็นหลักและสวมหน้ากาก';
             travelIcon = '⚠️';
           }
@@ -305,18 +315,21 @@ function CitizenTravelGuide({ dailyForecast }: { dailyForecast: any[] }) {
 
 function PollutantsBreakdown({ pm25 }: { pm25: number }) {
   const items = [
-    { name: 'PM2.5', value: pm25, unit: 'µg/m³', max: 150, color: getPm25Color(pm25) },
-    { name: 'PM10', value: Math.round(pm25 * 1.35), unit: 'µg/m³', max: 200, color: getPm25Color(pm25 * 0.8) },
-    { name: 'CO', value: (pm25 * 0.012 + 0.18).toFixed(2), unit: 'mg/m³', max: 10, color: 'green' },
-    { name: 'NO2', value: Math.round(pm25 * 0.38 + 6), unit: 'ppb', max: 100, color: 'green' },
-    { name: 'SO2', value: (pm25 * 0.07 + 1.1).toFixed(1), unit: 'ppb', max: 80, color: 'green' },
-    { name: 'O3', value: Math.round(40 + Math.sin(new Date().getHours() / 12) * 12), unit: 'ppb', max: 120, color: 'green' }
+    { name: 'PM2.5', value: pm25, unit: 'µg/m³', max: 150, color: getPm25Color(pm25), isLive: true },
+    { name: 'PM10', value: Math.round(pm25 * 1.35), unit: 'µg/m³', max: 200, color: getPm25Color(pm25 * 0.8), isLive: false },
+    { name: 'CO', value: (pm25 * 0.012 + 0.18).toFixed(2), unit: 'mg/m³', max: 10, color: 'green', isLive: false },
+    { name: 'NO2', value: Math.round(pm25 * 0.38 + 6), unit: 'ppb', max: 100, color: 'green', isLive: false },
+    { name: 'SO2', value: (pm25 * 0.07 + 1.1).toFixed(1), unit: 'ppb', max: 80, color: 'green', isLive: false },
+    { name: 'O3', value: Math.round(40 + Math.sin(new Date().getHours() / 12) * 12), unit: 'ppb', max: 120, color: 'green', isLive: false }
   ];
   return (
     <section className="card pollutants-bento" aria-label="ดัชนีสารมลพิษทางอากาศ">
       <div className="card__head">
         <span className="card__title">🔬 สารมลพิษทางอากาศ (Pollutants Index)</span>
       </div>
+      <p style={{ fontSize: '0.73rem', color: 'var(--muted)', margin: '0 0 10px 0' }}>
+        PM2.5 วัดจริงจาก Air4Thai · PM10 CO NO2 SO2 O3 ประมาณการจาก PM2.5 (ไม่ใช่ค่าวัดโดยตรง)
+      </p>
       <div className="pollutants-grid-layout">
         {items.map((item) => {
           const fillPct = Math.min(100, (parseFloat(item.value.toString()) / item.max) * 100);
@@ -1403,8 +1416,8 @@ export function App() {
               <div className="metric-bento-item">
                 <div className="metric-bento-icon"><Eye size={16} /></div>
                 <div className="metric-bento-content">
-                  <span className="metric-bento-label">ทัศนวิสัย</span>
-                  <span className="metric-bento-value">10.0 กม.</span>
+                  <span className="metric-bento-label">ทัศนวิสัย (ประมาณ)</span>
+                  <span className="metric-bento-value">~{estimateVisibilityKm(dashboard.pm25.current_pm25)} กม.</span>
                 </div>
               </div>
               <div className="metric-bento-item">
@@ -1433,6 +1446,7 @@ export function App() {
                 </div>
                 <p className="personal-checker-desc" style={{ marginBottom: '12px' }}>
                   การคำนวณทิศทางการพัดพาของลมและควันไฟป่า ร่วมกับการพยากรณ์จำนวนจุดความร้อนล่วงหน้า
+                  <br /><em style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>⚠️ ค่า PM2.5 และจุดความร้อนเป็นการประมาณการ (Simulation) อิงจากแนวโน้มปัจจุบัน ไม่ใช่ข้อมูลดาวเทียมจริง</em>
                 </p>
                 <div className="forecast-hourly-list">
                   {hourlyForecast.map((hour, idx) => {
@@ -1475,6 +1489,7 @@ export function App() {
               </div>
               <p className="personal-checker-desc" style={{ marginBottom: '12px' }}>
                 การจำลองระดับดัชนีควันพิษและคาดการณ์ความเสี่ยงไฟไหม้ป่ารายวัน อิงดัชนี NDVI และดาวเทียมอวกาศ
+                <br /><em style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>⚠️ ข้อมูลพยากรณ์ 7 วันเป็นการจำลอง (Simulation) อิงจากข้อมูลวันนี้ ไม่ใช่ข้อมูลพยากรณ์จากกรมอุตุนิยมวิทยา</em>
               </p>
               <div style={{ overflowX: 'auto' }}>
                 <table className="daily-forecast-table">
