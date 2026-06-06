@@ -5,6 +5,8 @@ import { Crosshair, Maximize2, Minimize2, Minus, Plus, Wind } from 'lucide-react
 import type { DashboardResponse, Hotspot, Pm25Station } from '../lib/types';
 import provinceGeoData from '../data/chiangmai-province.json';
 import districtsGeoData from '../data/chiangmai-districts.json';
+import communityForestData from '../data/community-forests-prototype.json';
+import fireZoneData from '../data/fire-management-zones-prototype.json';
 import { getDistanceKm, initialSelection, type MapSelection } from '../lib/mapSelection';
 import { windDestinationName } from '../lib/wind';
 import { buildWindFieldFromStation } from '../lib/windGrid';
@@ -22,6 +24,8 @@ type Props = {
     wind: boolean;
     landmarks: boolean;
     fuelRisk: boolean;
+    communityForests: boolean;
+    fireZones: boolean;
   };
   selection: MapSelection;
   onSelectionChange: (sel: MapSelection) => void;
@@ -34,6 +38,45 @@ type Props = {
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
 };
+
+type CommunityForest = {
+  id: string;
+  sourceId: number;
+  source: string;
+  name: string;
+  village: string;
+  tambon: string;
+  amphoe: string;
+  lat: number;
+  lng: number;
+  areaRai: number;
+  estimatedBoundaryRadiusM: number;
+  fireManagement: boolean;
+  fireActivities: string[];
+  managementPlan: boolean;
+  managementPlanYear: string;
+  forestTypes: string[];
+  deedTypes: string[];
+  villagesCount: number;
+  committeeTotal: number;
+};
+
+type FireManagementZone = {
+  id: string;
+  district: string;
+  name: string;
+  health: 'Green' | 'Yellow' | 'Red';
+  healthScore: number;
+  rfdCoordinatePoints: number;
+  detailedForests: number;
+  fireManagementForests: number;
+  estimatedAreaRai: number;
+  topActivities: { name: string; count: number }[];
+  geometry: GeoJSON.Geometry;
+};
+
+const COMMUNITY_FORESTS = (communityForestData as { forests: CommunityForest[] }).forests;
+const FIRE_MANAGEMENT_ZONES = (fireZoneData as { zones: FireManagementZone[] }).zones;
 
 // ─────────────────────────────────────────────
 // GeoJSON preparation (module-level, computed once)
@@ -92,6 +135,74 @@ function pm25Tone(pm25: number): 'good' | 'watch' | 'risk' {
   if (pm25 <= 25) return 'good';
   if (pm25 <= 50) return 'watch';
   return 'risk';
+}
+
+function zoneHealthColor(health: FireManagementZone['health']) {
+  if (health === 'Green') return '#16a34a';
+  if (health === 'Yellow') return '#eab308';
+  return '#dc2626';
+}
+
+function zoneHealthTone(health: FireManagementZone['health']): 'good' | 'watch' | 'risk' {
+  if (health === 'Green') return 'good';
+  if (health === 'Yellow') return 'watch';
+  return 'risk';
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('th-TH').format(value);
+}
+
+function activityLabel(activities: string[]) {
+  if (!activities.length) return 'ยังไม่มีข้อมูลกิจกรรม';
+  return activities.slice(0, 3).join(' / ');
+}
+
+function communityForestSelection(forest: CommunityForest): MapSelection {
+  const place = [
+    forest.village ? `หมู่บ้าน${forest.village}` : '',
+    forest.tambon ? `ต.${forest.tambon}` : '',
+    forest.amphoe ? `อ.${forest.amphoe}` : '',
+  ].filter(Boolean).join(' · ');
+  return {
+    eyebrow: 'ป่าชุมชน · ขอบเขตดูแลต้นแบบ',
+    title: forest.name,
+    detail: `${place || 'เชียงใหม่'} · วงขอบเขตเป็นประมาณการจากจุดพิกัดและขนาดพื้นที่ เพื่อใช้ demo การระบุผู้ดูแลและงานป้องกันไฟ`,
+    mapUrl: `https://www.google.com/maps?q=${forest.lat},${forest.lng}`,
+    sourceUrl: 'https://thaicfnet.org/database',
+    sourceLabel: 'Thaicfnet database',
+    imageKey: 'forest',
+    imageLabel: forest.name,
+    stats: [
+      { label: 'พื้นที่', value: forest.areaRai > 0 ? `${formatNumber(forest.areaRai)} ไร่` : 'ไม่ระบุ' },
+      { label: 'หมู่บ้านร่วมดูแล', value: `${forest.villagesCount || 1} หมู่บ้าน` },
+      { label: 'แผนจัดการ', value: forest.managementPlan ? `มี${forest.managementPlanYear && forest.managementPlanYear !== '0' ? ` (${forest.managementPlanYear})` : ''}` : 'ยังไม่พบข้อมูล', tone: forest.managementPlan ? 'good' : 'watch' },
+      { label: 'จัดการไฟป่า', value: forest.fireManagement ? 'มีข้อมูลกิจกรรม' : 'ยังไม่พบข้อมูล', tone: forest.fireManagement ? 'good' : 'watch' },
+      { label: 'กิจกรรม', value: activityLabel(forest.fireActivities), tone: forest.fireActivities.length ? 'good' : 'watch' },
+      { label: 'ขอบเขต demo', value: `รัศมี ~${formatNumber(forest.estimatedBoundaryRadiusM)} ม.` },
+    ],
+  };
+}
+
+function fireZoneSelection(zone: FireManagementZone): MapSelection {
+  const activities = zone.topActivities.length
+    ? zone.topActivities.map((item) => `${item.name} ${item.count}`).join(' / ')
+    : 'ยังไม่มีข้อมูลกิจกรรมจาก Thaicfnet';
+  return {
+    eyebrow: 'Fire Management Zone',
+    title: zone.name,
+    detail: `โซนจัดการไฟระดับพื้นที่ป่า ใช้รวมหลายป่าชุมชนและพื้นที่รอยต่อในอำเภอเดียวกัน เพื่อให้ชุมชน อบต. และหน่วยงานเห็นข้อมูลชุดเดียว`,
+    imageKey: 'forest',
+    imageLabel: zone.name,
+    stats: [
+      { label: 'Forest Health', value: `${zone.health} ${zone.healthScore}/100`, tone: zoneHealthTone(zone.health) },
+      { label: 'พิกัดป่าชุมชน RFD', value: `${formatNumber(zone.rfdCoordinatePoints)} จุด` },
+      { label: 'พื้นที่รวมจากจุดพิกัด', value: `${formatNumber(zone.estimatedAreaRai)} ไร่` },
+      { label: 'ข้อมูลละเอียด', value: `${formatNumber(zone.detailedForests)} แห่ง` },
+      { label: 'มีงานป้องกันไฟ', value: `${formatNumber(zone.fireManagementForests)} แห่ง`, tone: zone.fireManagementForests > 0 ? 'good' : 'watch' },
+      { label: 'กิจกรรมหลัก', value: activities, tone: zone.fireManagementForests > 0 ? 'good' : 'watch' },
+    ],
+  };
 }
 
 // Geographic plume radius in metres (scales naturally with Leaflet zoom)
@@ -358,6 +469,8 @@ export function DashboardMap({
   const landmarksLayerRef = useRef<L.LayerGroup | null>(null);
   const plumesLayerRef = useRef<L.LayerGroup | null>(null);
   const fuelRiskLayerRef = useRef<L.LayerGroup | null>(null);
+  const fireZonesLayerRef = useRef<L.LayerGroup | null>(null);
+  const communityForestsLayerRef = useRef<L.LayerGroup | null>(null);
   const userLocationLayerRef = useRef<L.LayerGroup | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const velocityLayerRef = useRef<L.Layer | null>(null);
@@ -486,7 +599,9 @@ export function DashboardMap({
     pm25LayerRef.current = L.layerGroup().addTo(map);
     landmarksLayerRef.current = L.layerGroup().addTo(map);
     plumesLayerRef.current = L.layerGroup().addTo(map);
+    fireZonesLayerRef.current = L.layerGroup().addTo(map);
     fuelRiskLayerRef.current = L.layerGroup().addTo(map);
+    communityForestsLayerRef.current = L.layerGroup().addTo(map);
     userLocationLayerRef.current = L.layerGroup().addTo(map);
 
     // Click on blank map → set user location if in pinning mode, else reset selection
@@ -523,6 +638,116 @@ export function DashboardMap({
     nextLayer.setZIndex(0);
     tileLayerRef.current = nextLayer;
   }, [baseMapId]);
+
+  // Fire Management Zones: prototype management boundary layer.
+  useEffect(() => {
+    const group = fireZonesLayerRef.current;
+    if (!group) return;
+    group.clearLayers();
+    if (!layers.fireZones) return;
+
+    FIRE_MANAGEMENT_ZONES.forEach((zone) => {
+      const color = zoneHealthColor(zone.health);
+      const feature = {
+        type: 'Feature',
+        properties: { id: zone.id, name: zone.name },
+        geometry: zone.geometry,
+      };
+      L.geoJSON(feature as any, {
+        style: {
+          color,
+          weight: zone.health === 'Red' ? 2.4 : 1.7,
+          opacity: 0.82,
+          fillColor: color,
+          fillOpacity: zone.health === 'Red' ? 0.16 : 0.1,
+          dashArray: zone.health === 'Red' ? undefined : '5, 5',
+          lineJoin: 'round',
+        },
+        onEachFeature: (_feature, layer) => {
+          layer.on({
+            click: (e: L.LeafletMouseEvent) => {
+              L.DomEvent.stopPropagation(e);
+              if (pinHomeFromMapEvent(e)) return;
+              onSelChangeRef.current(fireZoneSelection(zone));
+            },
+            mouseover: () => {
+              if (isPinningRef.current) return;
+              (layer as L.Path).setStyle({ fillOpacity: 0.24, weight: 2.8, opacity: 1 });
+              onSelChangeRef.current(fireZoneSelection(zone));
+            },
+            mouseout: () => {
+              (layer as L.Path).setStyle({
+                fillOpacity: zone.health === 'Red' ? 0.16 : 0.1,
+                weight: zone.health === 'Red' ? 2.4 : 1.7,
+                opacity: 0.82,
+              });
+            },
+          });
+        },
+      }).addTo(group);
+    });
+  }, [layers.fireZones]);
+
+  // Community forest points and estimated responsibility buffers.
+  useEffect(() => {
+    const group = communityForestsLayerRef.current;
+    if (!group) return;
+    group.clearLayers();
+    if (!layers.communityForests) return;
+
+    const tier = zoom <= 9 ? 'sm' : zoom <= 11 ? 'md' : 'lg';
+    const markerSize = tier === 'sm' ? 18 : tier === 'md' ? 23 : 29;
+
+    COMMUNITY_FORESTS.forEach((forest) => {
+      const selected = communityForestSelection(forest);
+      const boundaryColor = forest.fireManagement ? '#10b981' : '#f59e0b';
+      L.circle([forest.lat, forest.lng], {
+        radius: forest.estimatedBoundaryRadiusM,
+        color: boundaryColor,
+        weight: 1.3,
+        dashArray: '3, 5',
+        fillColor: boundaryColor,
+        fillOpacity: 0.08,
+        className: 'lf-community-forest-boundary',
+      })
+        .on('click', (e: L.LeafletMouseEvent) => {
+          L.DomEvent.stopPropagation(e);
+          if (pinHomeFromMapEvent(e)) return;
+          onSelChangeRef.current(selected);
+        })
+        .on('mouseover', () => {
+          if (!isPinningRef.current) onSelChangeRef.current(selected);
+        })
+        .addTo(group);
+
+      const labelHtml =
+        tier === 'lg'
+          ? `<span class="lf-cf__label">${forest.name}</span>`
+          : tier === 'md'
+            ? `<span class="lf-cf__label">อ.${forest.amphoe}</span>`
+            : '';
+      const icon = L.divIcon({
+        html: `<div class="lf-cf${forest.fireManagement ? ' lf-cf--active' : ''}" style="width:${markerSize}px;height:${markerSize}px">
+          <span class="lf-cf__dot"></span>
+          ${labelHtml}
+        </div>`,
+        className: 'lf-marker-wrap',
+        iconSize: [markerSize, markerSize],
+        iconAnchor: [markerSize / 2, markerSize / 2],
+      });
+
+      L.marker([forest.lat, forest.lng], { icon, zIndexOffset: 80 })
+        .on('click', (e: L.LeafletMouseEvent) => {
+          L.DomEvent.stopPropagation(e);
+          if (pinHomeFromMapEvent(e)) return;
+          onSelChangeRef.current(selected);
+        })
+        .on('mouseover', () => {
+          if (!isPinningRef.current) onSelChangeRef.current(selected);
+        })
+        .addTo(group);
+    });
+  }, [layers.communityForests, zoom]);
 
   // ── Hotspot markers (rebuild on data/toggle/zoom) ──────────────────────────
   useEffect(() => {
@@ -990,6 +1215,8 @@ export function DashboardMap({
       <div className="map-legend">
         <span><i className="dot dot--pm" />สถานีวัด PM2.5</span>
         <span><i className="fire-ic">🔥</i>จุดความร้อน</span>
+        {layers.fireZones && <span><i className="zone-ic" />Fire Management Zone</span>}
+        {layers.communityForests && <span><i className="cf-ic" />ป่าชุมชน</span>}
         {layers.fuelRisk && <span><i className="dot dot--fuel" />ดัชนีป่าแห้ง NDVI</span>}
         {layers.hotspots && layers.wind && <span><i className="cone-ic" />ขอบเขตควันลอย</span>}
         {layers.landmarks && <span><i className="landmark-ic" />แลนด์มาร์ก</span>}

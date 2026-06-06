@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpen, CalendarDays, CloudSun, Database, ExternalLink, Flame, Home, Info, MapPin, RefreshCcw, ShieldCheck, Wind, Sun, Cloud, CloudRain, AlertTriangle, Thermometer, Droplets, Eye, Compass, Phone, MessageSquare } from 'lucide-react';
+import { Award, BookOpen, CalendarDays, ClipboardList, CloudSun, Database, ExternalLink, Flame, Home, Info, MapPin, RefreshCcw, Send, ShieldCheck, Trophy, Wind, Sun, Cloud, CloudRain, AlertTriangle, Thermometer, Droplets, Eye, Compass, Phone, MessageSquare } from 'lucide-react';
 import { fetchDashboard, fetchDataStatus, fetchHistory } from './lib/api';
 import { buildDataStatusFromDashboard, getDataStatusCopy } from './lib/dataStatus';
 import { getDistanceKm, initialSelection, type MapSelection } from './lib/mapSelection';
@@ -7,6 +7,8 @@ import { riskPercent } from './lib/risk';
 import type { DashboardResponse, DataStatusResponse, HistoryResponse } from './lib/types';
 import dashboardSnapshot from './data/dashboardSnapshot.json';
 import districtsGeoData from './data/chiangmai-districts.json';
+import communityForestData from './data/community-forests-prototype.json';
+import fireZoneData from './data/fire-management-zones-prototype.json';
 import { windDestinationName, getBearing } from './lib/wind';
 import { getDistrictPhysics, calculateRateOfSpread } from './lib/firePhysics';
 
@@ -23,9 +25,47 @@ type LayerState = {
   wind: boolean;
   landmarks: boolean;
   fuelRisk: boolean;
+  communityForests: boolean;
+  fireZones: boolean;
 };
 
 const fallback = dashboardSnapshot as DashboardResponse;
+
+type CommunityForestSummary = {
+  officialInfographicCount: number;
+  officialInfographicAreaRai: number;
+  rfdCoordinatePoints: number;
+  thaicfnetDetailedForests: number;
+  thaicfnetGeocodedForests: number;
+  detailedForestsWithFireManagement: number;
+};
+
+type PrototypeZone = {
+  district: string;
+  health: 'Green' | 'Yellow' | 'Red';
+  healthScore: number;
+  rfdCoordinatePoints: number;
+  detailedForests: number;
+  fireManagementForests: number;
+  estimatedAreaRai: number;
+};
+
+type CommunityForestPrototype = {
+  id: string;
+  name: string;
+  village: string;
+  tambon: string;
+  amphoe: string;
+  areaRai: number;
+  fireManagement: boolean;
+  fireActivities: string[];
+  managementPlan: boolean;
+  committeeTotal: number;
+};
+
+const communityForestSummary = (communityForestData as { summary: CommunityForestSummary }).summary;
+const communityForests = (communityForestData as { forests: CommunityForestPrototype[] }).forests;
+const prototypeZones = (fireZoneData as { zones: PrototypeZone[] }).zones;
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
@@ -47,9 +87,53 @@ function formatCurrentDate(value: Date) {
   }).format(value);
 }
 
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('th-TH').format(value);
+}
+
 function formatTime(value: string) {
   return new Intl.DateTimeFormat('th-TH', { timeStyle: 'short' }).format(new Date(value));
 }
+
+function weeklyForestScore(forest: CommunityForestPrototype) {
+  const activityScore = Math.min(36, forest.fireActivities.length * 12);
+  const planScore = forest.managementPlan ? 18 : 0;
+  const fireScore = forest.fireManagement ? 16 : 0;
+  const committeeScore = Math.min(12, Math.round((forest.committeeTotal || 0) / 2));
+  const areaScore = forest.areaRai > 0 ? Math.min(8, Math.round(forest.areaRai / 180)) : 0;
+  return Math.min(100, 28 + activityScore + planScore + fireScore + committeeScore + areaScore);
+}
+
+function forestScoreReason(forest: CommunityForestPrototype) {
+  const reasons = [
+    forest.managementPlan ? 'มีแผนจัดการ' : '',
+    forest.fireActivities.includes('ลาดตระเวนในพื้นที่ป่าชุมชน') ? 'ลาดตระเวน' : '',
+    forest.fireActivities.includes('ทำแนวป้องกันไฟป่า') ? 'แนวกันไฟ' : '',
+    forest.fireActivities.some((item) => item.includes('เชื้อเพลิง')) ? 'ลดเชื้อเพลิง' : '',
+  ].filter(Boolean);
+  return reasons.length ? reasons.join(' · ') : 'รอข้อมูลกิจกรรมจากชุมชน';
+}
+
+const dataConnectorCandidates = [
+  {
+    title: 'PM2.5 + โรคที่เกี่ยวข้อง จ.เชียงใหม่',
+    source: 'สำนักงานสาธารณสุขจังหวัดเชียงใหม่ / data.go.th',
+    use: 'เสริม proof ว่าพื้นที่ที่ลดไฟได้ ช่วยลดผลกระทบสุขภาพ/ฝุ่นในพื้นที่ได้อย่างไร',
+    url: 'https://www.data.go.th/dataset/pm2-5',
+  },
+  {
+    title: 'ข้อมูลการใช้ที่ดิน',
+    source: 'กรมพัฒนาที่ดิน / data.go.th',
+    use: 'ช่วยแยกพื้นที่เกษตร ข้าวโพด ป่า และพื้นที่รอยต่อ เพื่อปรับ Boundary Risk ให้แม่นขึ้น',
+    url: 'https://www.data.go.th/en/dataset/landuse1',
+  },
+  {
+    title: 'ที่ตั้งและสภาพทั่วไปของหมู่บ้าน 76 จังหวัด',
+    source: 'ฐานข้อมูล GIS หมู่บ้าน / data.go.th',
+    use: 'จับคู่ป่าชุมชนกับหมู่บ้านรับผิดชอบ และใช้คำนวณระยะจากชุมชนถึง boundary risk',
+    url: 'https://www.data.go.th/dataset/gis-01',
+  },
+] as const;
 
 function getRiskTone(score: number) {
   if (score <= 3) return 'low';
@@ -854,7 +938,15 @@ export function App() {
   const [history, setHistory] = useState<HistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [layers, setLayers] = useState<LayerState>({ hotspots: true, pm25: true, wind: true, landmarks: false, fuelRisk: true });
+  const [layers, setLayers] = useState<LayerState>({
+    hotspots: true,
+    pm25: true,
+    wind: true,
+    landmarks: false,
+    fuelRisk: true,
+    communityForests: true,
+    fireZones: true,
+  });
   const [note, setNote] = useState<'pm' | 'risk' | null>(null);
   const [mapSelection, setMapSelection] = useState<MapSelection>(initialSelection);
   const [now, setNow] = useState(() => new Date());
@@ -1008,10 +1100,33 @@ export function App() {
   }, [dashboard]);
 
   const riskTone = getRiskTone(dashboard.risk.score);
-  const allOn = layers.hotspots && layers.pm25 && layers.wind;
+  const topCommunityZones = useMemo(
+    () =>
+      [...prototypeZones]
+        .sort((a, b) => a.healthScore - b.healthScore || b.rfdCoordinatePoints - a.rfdCoordinatePoints)
+        .slice(0, 4),
+    [],
+  );
+  const weeklyForestRanking = useMemo(
+    () =>
+      [...communityForests]
+        .map((forest) => ({ forest, score: weeklyForestScore(forest), reason: forestScoreReason(forest) }))
+        .sort((a, b) => b.score - a.score || a.forest.name.localeCompare(b.forest.name, 'th'))
+        .slice(0, 5),
+    [],
+  );
+  const allOn = layers.hotspots && layers.pm25 && layers.wind && layers.communityForests && layers.fireZones;
   const toggleLayer = (key: keyof LayerState) => setLayers((current) => ({ ...current, [key]: !current[key] }));
   const toggleNote = (key: 'pm' | 'risk') => setNote((current) => (current === key ? null : key));
-  const setAll = () => setLayers({ hotspots: true, pm25: true, wind: true, landmarks: false, fuelRisk: true });
+  const setAll = () => setLayers({
+    hotspots: true,
+    pm25: true,
+    wind: true,
+    landmarks: false,
+    fuelRisk: true,
+    communityForests: true,
+    fireZones: true,
+  });
 
   const pm25Time = formatTime(dashboard.pm25.latest_update);
   const weatherTime = formatTime(dashboard.weather.latest_update);
@@ -1173,6 +1288,12 @@ export function App() {
             <button type="button" className={layers.wind ? 'active' : ''} onClick={() => toggleLayer('wind')}>
               ลม
             </button>
+            <button type="button" className={layers.fireZones ? 'active' : ''} onClick={() => toggleLayer('fireZones')}>
+              เขตจัดการไฟ
+            </button>
+            <button type="button" className={layers.communityForests ? 'active' : ''} onClick={() => toggleLayer('communityForests')}>
+              ป่าชุมชน
+            </button>
             <button type="button" className={layers.landmarks ? 'active' : ''} onClick={() => toggleLayer('landmarks')}>
               สถานที่เสริม
             </button>
@@ -1198,6 +1319,147 @@ export function App() {
             onToggleFullscreen={() => setMapFullscreen((prev) => !prev)}
           />
         </Suspense>
+      </section>
+
+      <section className="community-command-strip" aria-label="Community Forest Fire Management prototype">
+        <div className="community-command-strip__header">
+          <span className="community-command-strip__eyebrow">Community Forest Command Center</span>
+          <strong>จากแผนที่ hotspot ไปสู่ระบบดูแลป่าร่วมกัน</strong>
+          <p>คลิกที่เขตจัดการไฟหรือป่าชุมชนบนแผนที่ เพื่อดูว่าใครดูแลพื้นที่นี้ มีข้อมูลกิจกรรมอะไรแล้ว และพื้นที่ไหนควรลงแรงก่อน</p>
+        </div>
+        <div className="community-command-strip__metrics">
+          <div>
+            <span>ป่าชุมชนตาม infographic</span>
+            <b>{formatNumber(communityForestSummary.officialInfographicCount)}</b>
+            <small>{formatNumber(communityForestSummary.officialInfographicAreaRai)} ไร่</small>
+          </div>
+          <div>
+            <span>พิกัดกรมป่าไม้</span>
+            <b>{formatNumber(communityForestSummary.rfdCoordinatePoints)}</b>
+            <small>จุดป่าชุมชนในเชียงใหม่</small>
+          </div>
+          <div>
+            <span>Thaicfnet records</span>
+            <b>{formatNumber(communityForestSummary.thaicfnetDetailedForests)}</b>
+            <small>{formatNumber(communityForestSummary.thaicfnetGeocodedForests)} จุดมีพิกัดสำหรับ marker</small>
+          </div>
+          <div>
+            <span>มีข้อมูลจัดการไฟ</span>
+            <b>{formatNumber(communityForestSummary.detailedForestsWithFireManagement)}</b>
+            <small>ใช้เป็น proof of action</small>
+          </div>
+        </div>
+        <div className="community-command-strip__zones">
+          {topCommunityZones.map((zone) => (
+            <div key={zone.district} className={`community-zone-pill community-zone-pill--${zone.health.toLowerCase()}`}>
+              <span>อ.{zone.district}</span>
+              <b>{zone.healthScore}/100</b>
+              <small>{formatNumber(zone.rfdCoordinatePoints)} จุด · {formatNumber(zone.estimatedAreaRai)} ไร่</small>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="community-action-grid" aria-label="Weekly ranking and village reporting workflow">
+        <div className="community-action-panel community-action-panel--league">
+          <div className="community-action-panel__head">
+            <span className="community-action-panel__icon"><Trophy size={18} /></span>
+            <div>
+              <span>Weekly Forest League</span>
+              <strong>อันดับป่าชุมชนที่มีหลักฐานจัดการดีที่สุด</strong>
+            </div>
+          </div>
+          <div className="forest-ranking-list">
+            {weeklyForestRanking.map((item, index) => (
+              <button
+                key={item.forest.id}
+                type="button"
+                className="forest-ranking-row"
+                onClick={() => setMapSelection({
+                  eyebrow: 'Weekly Forest League',
+                  title: `อันดับ ${index + 1}: ${item.forest.name}`,
+                  detail: `${item.reason} · คะแนนนี้เป็น prototype จากข้อมูลแผนจัดการและกิจกรรมที่ชุมชนบันทึกไว้`,
+                  stats: [
+                    { label: 'คะแนนสัปดาห์นี้', value: `${item.score}/100`, tone: item.score >= 80 ? 'good' : 'watch' },
+                    { label: 'อำเภอ', value: item.forest.amphoe || 'ไม่ระบุ' },
+                    { label: 'ตำบล', value: item.forest.tambon || 'ไม่ระบุ' },
+                    { label: 'กิจกรรมที่พบ', value: item.forest.fireActivities.length ? item.forest.fireActivities.join(' / ') : 'รอข้อมูล' },
+                  ],
+                })}
+              >
+                <span className="forest-ranking-row__rank">{index + 1}</span>
+                <span className="forest-ranking-row__main">
+                  <b>{item.forest.name}</b>
+                  <small>อ.{item.forest.amphoe || 'ไม่ระบุ'} · {item.reason}</small>
+                </span>
+                <span className="forest-ranking-row__score">{item.score}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="community-action-panel community-action-panel--form">
+          <div className="community-action-panel__head">
+            <span className="community-action-panel__icon"><ClipboardList size={18} /></span>
+            <div>
+              <span>Village Report Intake</span>
+              <strong>Google Form → หลักฐานกิจกรรม → คะแนนบนเว็บ</strong>
+            </div>
+          </div>
+          <div className="report-flow">
+            {[
+              ['1', 'เลือกป่าชุมชน', 'ใช้ dropdown จากฐานป่าชุมชน/หมู่บ้าน'],
+              ['2', 'บันทึกกิจกรรม', 'ลาดตระเวน แนวกันไฟ ลดเชื้อเพลิง ประชุม'],
+              ['3', 'แนบรูป + พิกัด', 'ให้มือถือเก็บเวลาและตำแหน่งเป็น proof'],
+              ['4', 'ขึ้น dashboard', 'ระบบอัปเดต activity log และ weekly ranking'],
+            ].map(([step, title, text]) => (
+              <div key={step} className="report-flow__step">
+                <span>{step}</span>
+                <b>{title}</b>
+                <small>{text}</small>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="report-flow__cta"
+            onClick={() => setMapSelection({
+              eyebrow: 'Google Form Intake',
+              title: 'ฟอร์มชาวบ้านสำหรับบันทึกกิจกรรมป้องกันไฟ',
+              detail: 'Prototype นี้ใช้ Google Form เป็นทางเข้าข้อมูล เพราะชาวบ้านคุ้นมือ ใช้ง่ายบนมือถือ แล้วให้เว็บดึง Google Sheet/API มาคำนวณ proof และ ranking รายสัปดาห์',
+              stats: [
+                { label: 'ฟิลด์ขั้นต่ำ', value: 'ป่า / กิจกรรม / วันที่ / รูป / พิกัด' },
+                { label: 'ผลลัพธ์บนเว็บ', value: 'Activity log + คะแนน ranking' },
+                { label: 'ประโยชน์', value: 'เปลี่ยนงานภาคสนามเป็นหลักฐานที่โชว์ได้', tone: 'good' },
+              ],
+            })}
+          >
+            <Send size={15} />
+            ดู flow การส่งข้อมูล
+          </button>
+        </div>
+
+        <div className="community-action-panel community-action-panel--data">
+          <div className="community-action-panel__head">
+            <span className="community-action-panel__icon"><Database size={18} /></span>
+            <div>
+              <span>Open Data Connectors</span>
+              <strong>ชุดข้อมูลภาครัฐที่ต่อยอดได้ทันที</strong>
+            </div>
+          </div>
+          <div className="data-connector-list">
+            {dataConnectorCandidates.map((item) => (
+              <a key={item.title} href={item.url} target="_blank" rel="noreferrer" className="data-connector-row">
+                <span>
+                  <b>{item.title}</b>
+                  <small>{item.source}</small>
+                </span>
+                <em>{item.use}</em>
+                <ExternalLink size={14} />
+              </a>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Personal Checker & Stats — citizen-only. The "my home" self-check
