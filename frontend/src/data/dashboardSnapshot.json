@@ -60,15 +60,15 @@
     "temperature_max_today_c": 33.1
   },
   "risk": {
-    "score": 1,
+    "score": 2,
     "category": "Low",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
-      "pm25_points": 0.33,
+      "pm25_points": 0.55,
       "hotspot_points": 0.0,
-      "spread_points": 0.68,
+      "spread_points": 1.89,
       "avg_flammability": 1.2,
-      "avg_slope_factor": 1.2,
+      "avg_slope_factor": 1.0,
       "avg_history_factor": 1.2,
       "wind_speed_kmh": 4.7,
       "wind_pushes_smoke_to_city": "no"
@@ -76,7 +76,7 @@
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 11 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก ไม่พบจุดความร้อนในช่วงฤดูฝน และลมพัดจากทิศตะวันออก ด้วยความเร็ว 5 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 1/10 ระดับ Low คุณภาพอากาศดีมาก เหมาะสำหรับกิจกรรมกลางแจ้งทุกประเภท",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 11 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศตะวันออก ด้วยความเร็ว 5 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 2/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
     "source": "rule-based fallback"
   }
 }
