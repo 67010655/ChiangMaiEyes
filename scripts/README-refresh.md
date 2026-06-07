@@ -55,6 +55,38 @@ Know immediately when the PC goes offline or the refresh breaks.
    ```
 5. The refresh script pings the URL automatically on each successful run.
 
+### 4. (Optional) Email proximity alerts
+
+Lets users pin a location on the map, log in with a magic-link email, and get
+emailed when a new hotspot appears inside their chosen radius (10/25/50 km).
+
+**Requires:**
+1. A Supabase project (free tier) — already provisioned at
+   `https://zskizogquupkneubcayc.supabase.co` with the `alert_subscriptions` /
+   `alert_notifications` tables and Row Level Security set up.
+2. A free [Resend](https://resend.com) account (3,000 emails/month free).
+
+**Setup:**
+1. Frontend `.env` (or Vercel env): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+   (the **publishable**/anon key — safe to expose client-side).
+2. `backend/.env` (refresh worker only — never the Vercel backend):
+   ```
+   SUPABASE_URL=https://zskizogquupkneubcayc.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=<service_role key from Supabase → Settings → API>
+   RESEND_API_KEY=<your Resend API key>
+   RESEND_FROM_EMAIL=ChiangMaiEyes <onboarding@resend.dev>
+   ```
+   ⚠️ The **service_role** key bypasses Row Level Security — keep it only in the
+   refresh worker's `.env`, never in the frontend or Vercel backend env vars.
+3. That's it — `refresh_snapshot.py` checks subscriptions against today's
+   reconciled hotspots after every run and emails matches via Resend. Sent
+   matches are recorded in `alert_notifications` so the same fire isn't emailed
+   twice.
+
+If any of the three keys (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+`RESEND_API_KEY`) are missing, alert checking is skipped silently — the rest of
+the refresh behaves exactly as before.
+
 ## Notes
 - The task needs this PC on and online; if it's off at an update burst, the next
   30-minute run catches up.

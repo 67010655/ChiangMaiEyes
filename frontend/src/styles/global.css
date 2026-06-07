@@ -3214,6 +3214,146 @@ button {
   background: rgba(239, 68, 68, 0.08);
 }
 
+/* ── Email alert subscription card ── */
+
+.alert-subscribe {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.alert-subscribe__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alert-subscribe__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.alert-subscribe__email {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+}
+
+.alert-subscribe__email input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.alert-subscribe__email-display {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--green-deep);
+}
+
+.alert-subscribe__radius-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.alert-subscribe__radius-label select {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.alert-subscribe__hint {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.alert-subscribe__message {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--green-deep);
+}
+
+.alert-subscribe__message--error {
+  color: #ef4444;
+}
+
+.alert-subscribe__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alert-subscribe__list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 0.76rem;
+  color: var(--text);
+}
+
+.alert-subscribe__list li span {
+  flex: 1;
+}
+
+.alert-subscribe__list-icon {
+  color: var(--muted);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--green-deep);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* ── Leaflet Custom Visual Elements ── */
 
 /* Plume vector animations */

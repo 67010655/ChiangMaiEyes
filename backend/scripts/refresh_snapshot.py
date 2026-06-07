@@ -28,6 +28,7 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_DIR = BACKEND_DIR.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
+from app.alerts import check_and_send_alerts
 from app.config import get_settings
 from app.models import DashboardResponse, HotspotResponse
 from app.providers.hotspot_provider import fetch_live_hotspots
@@ -129,6 +130,12 @@ def main() -> int:
     write_json(frontend_data, "dashboardSnapshot.json", dashboard.model_dump())
 
     logger.info("Wrote dashboardSnapshot.json (hotspot_count=%d)", hotspots.count)
+
+    # Email anyone subscribed near a newly-seen hotspot (no-op if unconfigured).
+    try:
+        check_and_send_alerts(settings, hotspots)
+    except Exception as exc:  # noqa: BLE001 — alerts must never block the refresh
+        logger.warning("Alert check failed (non-fatal): %s", exc)
 
     # Ping heartbeat monitor so an external service (healthchecks.io) knows the
     # refresh ran successfully. If no ping arrives for 3+ hours the service sends

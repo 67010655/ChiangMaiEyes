@@ -26,6 +26,15 @@ class Settings(BaseSettings):
     # Get a free URL at https://healthchecks.io and set HEALTHCHECK_URL in .env.
     healthcheck_url: str | None = None
 
+    # Email proximity alerts: refresh_snapshot.py checks pinned-location
+    # subscriptions (stored in Supabase) against today's hotspots and emails
+    # matches via Resend. All three must be set for alerts to run; the refresh
+    # otherwise behaves exactly as before (alerts are entirely additive).
+    supabase_url: str | None = None
+    supabase_service_role_key: str | None = None
+    resend_api_key: str | None = None
+    resend_from_email: str = "ChiangMaiEyes <onboarding@resend.dev>"
+
     @property
     def allowed_origins(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]

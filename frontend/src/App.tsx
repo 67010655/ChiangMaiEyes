@@ -18,6 +18,9 @@ const DashboardMap = lazy(() =>
 const AiAdvisor = lazy(() =>
   import('./components/AiAdvisor').then((module) => ({ default: module.AiAdvisor })),
 );
+const AlertSubscribe = lazy(() =>
+  import('./components/AlertSubscribe').then((module) => ({ default: module.AlertSubscribe })),
+);
 
 type LayerState = {
   hotspots: boolean;
@@ -1543,6 +1546,10 @@ export function App() {
             </div>
           )}
         </section>
+
+        <Suspense fallback={null}>
+          <AlertSubscribe pinnedLocation={userLocation} />
+        </Suspense>
 
         {/* Fire hotspots card */}
         <section className="card mini-card mini-card--hotspots">
