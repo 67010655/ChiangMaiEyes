@@ -22,6 +22,8 @@ import logging
 import sys
 from pathlib import Path
 
+import httpx
+
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_DIR = BACKEND_DIR.parent
 sys.path.insert(0, str(BACKEND_DIR))
@@ -127,6 +129,17 @@ def main() -> int:
     write_json(frontend_data, "dashboardSnapshot.json", dashboard.model_dump())
 
     logger.info("Wrote dashboardSnapshot.json (hotspot_count=%d)", hotspots.count)
+
+    # Ping heartbeat monitor so an external service (healthchecks.io) knows the
+    # refresh ran successfully. If no ping arrives for 3+ hours the service sends
+    # an alert email. Set HEALTHCHECK_URL=https://hc-ping.com/<uuid> in .env.
+    if settings.healthcheck_url:
+        try:
+            httpx.get(settings.healthcheck_url, timeout=10.0)
+            logger.info("Heartbeat pinged: %s", settings.healthcheck_url)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Heartbeat ping failed (non-fatal): %s", exc)
+
     return 0
 
 

@@ -230,6 +230,12 @@ def fetch_forest_firemap_hotspots(target_date: datetime.date | None = None) -> l
 # comparable rather than undercounting (SNPP alone is often empty for a day).
 NASA_VIIRS_SOURCES = ("VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT", "VIIRS_NOAA21_NRT")
 
+# MODIS (Terra + Aqua) has different pass times from VIIRS, so it fills gaps
+# between VIIRS overpasses. Resolution is 1 km (vs VIIRS 375 m) and confidence
+# is reported as an integer 0–100 rather than H/N/L.
+NASA_MODIS_SOURCES = ("MODIS_NRT",)
+MODIS_SOURCE_LABEL = "NASA FIRMS MODIS"
+
 
 def _nasa_detected_at(acq_date: str | None, acq_time: str | int | None) -> str:
     # NASA acq_date/acq_time are UTC; convert to Bangkok so the day matches RFD.
@@ -245,11 +251,25 @@ def _nasa_detected_at(acq_date: str | None, acq_time: str | int | None) -> str:
         return f"{fallback_date}T00:00:00+07:00"
 
 
+def _viirs_confidence(conf_raw: str) -> int:
+    return 90 if conf_raw == "h" else 75 if conf_raw == "n" else 50
+
+
+def _modis_confidence(conf_raw: str) -> int:
+    try:
+        val = int(conf_raw)
+        return 90 if val >= 80 else 75 if val >= 50 else 50
+    except (ValueError, TypeError):
+        return 75
+
+
 def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
     # NASA FIRMS Area API bounding box for Chiang Mai (west, south, east, north).
     bbox = "97.25,17.35,99.68,20.28"
     hotspots: list[Hotspot] = []
     idx = 0
+
+    # VIIRS sources (H/N/L confidence)
     for src in NASA_VIIRS_SOURCES:
         url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/1"
         logger.info("Fetching hotspots from NASA FIRMS %s", src)
@@ -266,20 +286,52 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
                 lat = float(row["latitude"])
                 lon = float(row["longitude"])
                 conf_raw = str(row.get("confidence", "n")).lower()
-                confidence = 90 if conf_raw == "h" else 75 if conf_raw == "n" else 50
                 idx += 1
                 hotspots.append(Hotspot(
                     id=f"HS-NASA-{idx:03d}",
                     latitude=lat,
                     longitude=lon,
                     district=estimate_district(lat, lon),
-                    confidence=confidence,
+                    confidence=_viirs_confidence(conf_raw),
                     source="NASA FIRMS",
                     detected_at=_nasa_detected_at(row.get("acq_date"), row.get("acq_time")),
                     satellite=row.get("satellite") or src,
                 ))
             except Exception as ex:
-                logger.warning("Error parsing NASA FIRMS hotspot row: %s", ex)
+                logger.warning("Error parsing NASA FIRMS VIIRS hotspot row: %s", ex)
+                continue
+
+    # MODIS sources (integer 0–100 confidence; Terra + Aqua pass at different times
+    # from VIIRS, reducing the gap between overpasses).
+    for src in NASA_MODIS_SOURCES:
+        url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/1"
+        logger.info("Fetching hotspots from NASA FIRMS %s", src)
+        try:
+            response = httpx.get(url, timeout=15.0)
+            response.raise_for_status()
+        except Exception as ex:
+            logger.warning("NASA FIRMS %s fetch failed: %s", src, ex)
+            continue
+
+        reader = csv.DictReader(response.content.decode("utf-8").splitlines())
+        for row in reader:
+            try:
+                lat = float(row["latitude"])
+                lon = float(row["longitude"])
+                conf_raw = str(row.get("confidence", "50"))
+                idx += 1
+                hotspots.append(Hotspot(
+                    id=f"HS-MODIS-{idx:03d}",
+                    latitude=lat,
+                    longitude=lon,
+                    district=estimate_district(lat, lon),
+                    confidence=_modis_confidence(conf_raw),
+                    source=MODIS_SOURCE_LABEL,
+                    detected_at=_nasa_detected_at(row.get("acq_date"), row.get("acq_time")),
+                    satellite=row.get("satellite") or src,
+                ))
+            except Exception as ex:
+                logger.warning("Error parsing NASA FIRMS MODIS hotspot row: %s", ex)
                 continue
 
     return hotspots
@@ -303,12 +355,15 @@ def fetch_hotspot_history(map_key: str, days: int = 5) -> list[tuple[str, int]]:
     # Build every (satellite, 5-day window) request up front, then fetch them with
     # bounded concurrency — a 30-day window is up to 18 calls and sequential would
     # blow the request timeout.
+    # Include MODIS alongside VIIRS: Terra + Aqua pass at different times, so
+    # counting both reduces the chance of missing a fire in the trend data.
+    all_sources = (*NASA_VIIRS_SOURCES, *NASA_MODIS_SOURCES)
     urls: list[str] = []
     window_start = earliest
     while window_start <= today:
         chunk = min(5, (today - window_start).days + 1)  # ≤5-day API limit
         start_str = window_start.isoformat()
-        for src in NASA_VIIRS_SOURCES:
+        for src in all_sources:
             urls.append(f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{chunk}/{start_str}")
         window_start += datetime.timedelta(days=5)
 
@@ -367,8 +422,9 @@ def merge_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
 RECONCILE_RADIUS_M = 750.0
 
 # When several sources report the same fire, keep the richest record as the
-# representative: RFD carries district/subdistrict/landuse, GISTDA next, NASA last.
-_SOURCE_PRIORITY = {FOREST_FIREMAP_SOURCE: 0, GISTDA_VIIRS_SOURCE: 1, "NASA FIRMS": 2}
+# representative: RFD carries district/subdistrict/landuse, GISTDA next, NASA VIIRS,
+# then MODIS (lower resolution, 1 km vs 375 m).
+_SOURCE_PRIORITY = {FOREST_FIREMAP_SOURCE: 0, GISTDA_VIIRS_SOURCE: 1, "NASA FIRMS": 2, MODIS_SOURCE_LABEL: 3}
 
 
 def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -458,7 +514,29 @@ def fetch_live_hotspots(gistda_key: str | None = None, nasa_key: str | None = No
     if gistda_key:
         _try(GISTDA_VIIRS_SOURCE, lambda: fetch_gistda_hotspots(gistda_key))
     if nasa_key:
-        _try("NASA FIRMS", lambda: fetch_nasa_firms_hotspots(nasa_key))
+        # fetch_nasa_firms_hotspots queries VIIRS + MODIS in one call; split by
+        # source label so reconciliation tracks each sensor type separately.
+        try:
+            results = fetch_nasa_firms_hotspots(nasa_key)
+            viirs = [h for h in results if h.source == "NASA FIRMS"]
+            modis = [h for h in results if h.source == MODIS_SOURCE_LABEL]
+            if viirs:
+                viirs_clipped = filter_to_province(viirs)
+                hotspot_groups.append(viirs_clipped)
+                sources.append("NASA FIRMS")
+                source_breakdown["NASA FIRMS"] = len(viirs_clipped)
+                logger.info("Loaded %d hotspots from NASA FIRMS VIIRS", len(viirs_clipped))
+            if modis:
+                modis_clipped = filter_to_province(modis)
+                hotspot_groups.append(modis_clipped)
+                sources.append(MODIS_SOURCE_LABEL)
+                source_breakdown[MODIS_SOURCE_LABEL] = len(modis_clipped)
+                logger.info("Loaded %d hotspots from %s", len(modis_clipped), MODIS_SOURCE_LABEL)
+            if not viirs and not modis:
+                fetch_errors.append("NASA FIRMS: returned no hotspots")
+        except Exception as e:  # noqa: BLE001
+            fetch_errors.append(f"NASA FIRMS: {e}")
+            logger.error("NASA FIRMS fetch failed: %s", e)
 
     if not hotspot_groups:
         raise Exception(f"Failed to fetch live hotspots: {'; '.join(fetch_errors)}")

@@ -1,4 +1,4 @@
-# Hourly hotspot refresh — run from a Thailand network (RFD blocks foreign IPs).
+# 30-minute hotspot refresh — run from a Thailand network (RFD blocks foreign IPs).
 #
 # Fetches + reconciles RFD/GISTDA/NASA and, ONLY when the reconciled hotspot
 # set actually changed, commits the snapshot and pushes. The push triggers

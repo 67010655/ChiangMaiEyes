@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.3-70b-versatile"
     gistda_api_key: str | None = None
     nasa_firms_map_key: str | None = None
+    # healthchecks.io (or compatible) ping URL — called after each successful
+    # refresh so an uptime monitor can alert if the Windows PC goes offline.
+    # Get a free URL at https://healthchecks.io and set HEALTHCHECK_URL in .env.
+    healthcheck_url: str | None = None
 
     @property
     def allowed_origins(self) -> list[str]:
