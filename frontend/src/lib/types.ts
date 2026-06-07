@@ -109,12 +109,89 @@ export type SummaryResponse = {
   source: string;
 };
 
+export type AnnualHotspotStats = {
+  this_year_count: number;
+  last_year_count: number;
+  change_percent: number;
+  source: string;
+};
+
+export type DroughtZone = {
+  id: string;
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  soil_moisture_percent: number;
+  drought_index: number;
+  trend: 'improving' | 'stable' | 'drying';
+  risk_level: 'low' | 'medium' | 'high' | 'critical';
+};
+
+export type LanduseBreakdownItem = {
+  landuse_type: string;
+  label: string;
+  count: number;
+  percent: number;
+};
+
+export type WeeklyForestScoreBreakdown = {
+  management: number;
+  prevention: number;
+  utilization: number;
+  ecological_outcome: number;
+};
+
+export type WeeklyForestRankingEntry = {
+  forest_id: string;
+  forest_name: string;
+  village: string;
+  tambon: string;
+  amphoe: string;
+  latitude: number;
+  longitude: number;
+  total_score: number;
+  rank: number;
+  report_count: number;
+  last_report_at: string;
+  score_breakdown: WeeklyForestScoreBreakdown;
+  reasons: string[];
+};
+
+export type WeeklyForestLeagueResponse = {
+  week_id: string;
+  scoring_window: string;
+  scheduled_recompute: string;
+  rate_limit_rule: string;
+  ranking: WeeklyForestRankingEntry[];
+};
+
+export type LocalizedPrediction = {
+  id: string;
+  locationName: string;
+  latitude: number;
+  longitude: number;
+  forecastType: 'dust' | 'fire';
+  severity: 'watch' | 'high' | 'critical';
+  reason_for_prediction: string;
+  lead_time_hours: number;
+};
+
+export type OperationalIntelligenceResponse = {
+  annual_hotspot_stats: AnnualHotspotStats;
+  drought_zones: DroughtZone[];
+  landuse_breakdown: LanduseBreakdownItem[];
+  weekly_forest_league: WeeklyForestLeagueResponse;
+  localizedPredictions: LocalizedPrediction[];
+  source_notes: string[];
+};
+
 export type DashboardResponse = {
   hotspots: HotspotResponse;
   pm25: Pm25Response;
   weather: WeatherResponse;
   risk: RiskResponse;
   summary: SummaryResponse;
+  intelligence?: OperationalIntelligenceResponse | null;
 };
 
 export type DataStatusResponse = {

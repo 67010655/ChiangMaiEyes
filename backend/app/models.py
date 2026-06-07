@@ -121,12 +121,89 @@ class SummaryResponse(BaseModel):
     source: str
 
 
+class AnnualHotspotStats(BaseModel):
+    this_year_count: int
+    last_year_count: int
+    change_percent: float
+    source: str
+
+
+class DroughtZone(BaseModel):
+    id: str
+    location_name: str
+    latitude: float
+    longitude: float
+    soil_moisture_percent: float
+    drought_index: float
+    trend: Literal["improving", "stable", "drying"]
+    risk_level: Literal["low", "medium", "high", "critical"]
+
+
+class LanduseBreakdownItem(BaseModel):
+    landuse_type: str
+    label: str
+    count: int
+    percent: float
+
+
+class WeeklyForestScoreBreakdown(BaseModel):
+    management: int
+    prevention: int
+    utilization: int
+    ecological_outcome: int
+
+
+class WeeklyForestRankingEntry(BaseModel):
+    forest_id: str
+    forest_name: str
+    village: str
+    tambon: str
+    amphoe: str
+    latitude: float
+    longitude: float
+    total_score: int
+    rank: int
+    report_count: int
+    last_report_at: str
+    score_breakdown: WeeklyForestScoreBreakdown
+    reasons: list[str] = Field(default_factory=list)
+
+
+class WeeklyForestLeagueResponse(BaseModel):
+    week_id: str
+    scoring_window: str
+    scheduled_recompute: str
+    rate_limit_rule: str
+    ranking: list[WeeklyForestRankingEntry] = Field(default_factory=list)
+
+
+class LocalizedPrediction(BaseModel):
+    id: str
+    locationName: str
+    latitude: float
+    longitude: float
+    forecastType: Literal["dust", "fire"]
+    severity: Literal["watch", "high", "critical"]
+    reason_for_prediction: str
+    lead_time_hours: int = 12
+
+
+class OperationalIntelligenceResponse(BaseModel):
+    annual_hotspot_stats: AnnualHotspotStats
+    drought_zones: list[DroughtZone] = Field(default_factory=list)
+    landuse_breakdown: list[LanduseBreakdownItem] = Field(default_factory=list)
+    weekly_forest_league: WeeklyForestLeagueResponse
+    localizedPredictions: list[LocalizedPrediction] = Field(default_factory=list)
+    source_notes: list[str] = Field(default_factory=list)
+
+
 class DashboardResponse(BaseModel):
     hotspots: HotspotResponse
     pm25: Pm25Response
     weather: WeatherResponse
     risk: RiskResponse
     summary: SummaryResponse
+    intelligence: OperationalIntelligenceResponse | None = None
 
 
 class DataStatusResponse(BaseModel):

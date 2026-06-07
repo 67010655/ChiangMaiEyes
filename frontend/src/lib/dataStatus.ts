@@ -14,7 +14,7 @@ function formatBreakdown(sourceBreakdown?: Record<string, number>) {
 }
 
 export function getDataStatusCopy(status: DataStatusResponse) {
-  const modeLabel = status.mode === 'local-refresh-snapshot' ? 'Snapshot จากเครื่องไทย' : 'Live backend';
+  const modeLabel = status.mode === 'local-refresh-snapshot' ? 'ข้อมูลสำรองจากเครื่องไทย' : 'ข้อมูลสดจากเซิร์ฟเวอร์';
   const detail = status.vercel_fetches_rfd_directly
     ? 'Vercel backend ดึงข้อมูลจาก upstream ได้โดยตรง'
     : 'Vercel ไม่ได้ดึง RFD สดโดยตรง ข้อมูลมาจาก refresh worker บนเครื่องไทยแล้ว push snapshot ขึ้น production';

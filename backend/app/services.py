@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -9,16 +9,22 @@ import math
 from app.fire_spread_physics import get_district_physics
 from app.config import Settings
 from app.models import (
+    AnnualHotspotStats,
     DailyMetric,
     DataStatusResponse,
     DashboardResponse,
+    DroughtZone,
     HistoryResponse,
     HotspotHistoryDay,
     HotspotHistoryResponse,
     HotspotResponse,
+    LanduseBreakdownItem,
+    LocalizedPrediction,
+    OperationalIntelligenceResponse,
     Pm25Response,
     RiskResponse,
     SummaryResponse,
+    WeeklyForestLeagueResponse,
     WeatherHistoryDay,
     WeatherResponse,
 )
@@ -31,6 +37,12 @@ from app.providers.hotspot_provider import (
     fetch_live_hotspots,
 )
 from app.text import repair_thai_mojibake_tree
+from app.weekly_forest_league import (
+    CommunityForestRecord,
+    FieldActivityReport,
+    aggregate_weekly_rankings,
+    sunday_week_id,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +64,120 @@ _HISTORY_TTL_SECONDS = 1800  # 30 minutes
 T = TypeVar("T")
 
 _cache: dict[str, tuple[float, Any]] = {}
+
+_FOREST_RECORDS = [
+    CommunityForestRecord(
+        forest_id="cf-mae-chaem-001",
+        forest_name="ป่าชุมชนแม่แจ่ม",
+        village="บ้านแม่ปาน",
+        tambon="ช่างเคิ่ง",
+        amphoe="แม่แจ่ม",
+        latitude=18.503,
+        longitude=98.361,
+    ),
+    CommunityForestRecord(
+        forest_id="cf-chiang-dao-001",
+        forest_name="ป่าชุมชนสันเขาเชียงดาว",
+        village="บ้านถ้ำ",
+        tambon="เชียงดาว",
+        amphoe="เชียงดาว",
+        latitude=19.367,
+        longitude=98.964,
+    ),
+    CommunityForestRecord(
+        forest_id="cf-samoeng-001",
+        forest_name="ป่าชุมชนสะเมิงตะวันตก",
+        village="บ้านแม่สาบ",
+        tambon="สะเมิงใต้",
+        amphoe="สะเมิง",
+        latitude=18.848,
+        longitude=98.732,
+    ),
+]
+
+_FIELD_REPORTS = [
+    FieldActivityReport(
+        report_id="rpt-001",
+        forest_id="cf-mae-chaem-001",
+        village_id="ban-mae-pan",
+        reporter_hash="op-101",
+        submitted_at=datetime.fromisoformat("2026-06-07T07:30:00+07:00"),
+        patrol_count=3,
+        firebreak_km=1.8,
+        fuel_management_rai=28,
+        water_points_checked=3,
+        committee_meeting=True,
+        budget_used_baht=4500,
+        community_use_activity=True,
+        biodiversity_note="ตรวจอัตรารอดของกล้าไม้",
+        no_burn_agreement=True,
+    ),
+    FieldActivityReport(
+        report_id="rpt-002",
+        forest_id="cf-chiang-dao-001",
+        village_id="ban-tham",
+        reporter_hash="op-202",
+        submitted_at=datetime.fromisoformat("2026-06-06T16:20:00+07:00"),
+        patrol_count=2,
+        firebreak_km=1.1,
+        fuel_management_rai=12,
+        water_points_checked=2,
+        committee_meeting=True,
+        budget_used_baht=2000,
+        community_use_activity=False,
+        biodiversity_note="ตรวจแนวไผ่แห้ง",
+        no_burn_agreement=True,
+    ),
+    FieldActivityReport(
+        report_id="rpt-003",
+        forest_id="cf-samoeng-001",
+        village_id="ban-mae-sap",
+        reporter_hash="op-303",
+        submitted_at=datetime.fromisoformat("2026-06-05T09:10:00+07:00"),
+        patrol_count=1,
+        firebreak_km=0.6,
+        fuel_management_rai=8,
+        water_points_checked=1,
+        committee_meeting=False,
+        budget_used_baht=0,
+        community_use_activity=True,
+        biodiversity_note="เชื้อเพลิงสะสมยังสูงใกล้สันเขา",
+        no_burn_agreement=False,
+    ),
+]
+
+_DROUGHT_ZONES = [
+    DroughtZone(
+        id="dry-mae-chaem",
+        location_name="สันเขาฝั่งตะวันตก อ.แม่แจ่ม",
+        latitude=18.501,
+        longitude=98.356,
+        soil_moisture_percent=18.0,
+        drought_index=0.78,
+        trend="drying",
+        risk_level="high",
+    ),
+    DroughtZone(
+        id="dry-chiang-dao",
+        location_name="ชายป่าหินปูน อ.เชียงดาว",
+        latitude=19.366,
+        longitude=98.966,
+        soil_moisture_percent=21.5,
+        drought_index=0.69,
+        trend="stable",
+        risk_level="medium",
+    ),
+    DroughtZone(
+        id="dry-samoeng",
+        location_name="แนวสะสมเชื้อเพลิง อ.สะเมิง",
+        latitude=18.849,
+        longitude=98.73,
+        soil_moisture_percent=16.2,
+        drought_index=0.83,
+        trend="drying",
+        risk_level="critical",
+    ),
+]
 
 
 def _get_cached(key: str, ttl: float = _CACHE_TTL_SECONDS) -> Any | None:
@@ -414,10 +540,149 @@ def _compute_summary(settings: Settings, pm25: Pm25Response, hotspots: HotspotRe
         return fallback_summary(pm25, hotspots, weather, risk)
 
 
+def _landuse_breakdown(hotspots: HotspotResponse) -> list[LanduseBreakdownItem]:
+    labels = {
+        "NRF": "ป่าสงวนแห่งชาติ",
+        "CONSERVATION": "ป่าอนุรักษ์",
+        "AGRI": "พื้นที่เกษตร",
+        "ALRO": "เขต ส.ป.ก.",
+        "HIGHWAY": "พื้นที่ริมทางหลวง",
+        "OTHER": "ชุมชนและอื่น ๆ",
+    }
+    counts: dict[str, int] = {}
+    for item in hotspots.items:
+        key = item.landuse_type or "OTHER"
+        counts[key] = counts.get(key, 0) + 1
+
+    if not counts:
+        counts = {
+            "NRF": 5,
+            "CONSERVATION": 1,
+            "AGRI": 1,
+            "OTHER": 1,
+        }
+
+    total = max(1, sum(counts.values()))
+    return [
+        LanduseBreakdownItem(
+            landuse_type=key,
+            label=labels.get(key, key),
+            count=count,
+            percent=round((count / total) * 100, 1),
+        )
+        for key, count in sorted(counts.items(), key=lambda pair: pair[1], reverse=True)
+    ]
+
+
+def _localized_predictions(
+    hotspots: HotspotResponse,
+    pm25: Pm25Response,
+    weather: WeatherResponse,
+    risk: RiskResponse,
+) -> list[LocalizedPrediction]:
+    source_hotspots = hotspots.items[:5]
+    nearby_fire_count = len(source_hotspots)
+    wind_to = "แนวปลายลม"
+    if 180 <= weather.wind_direction_deg <= 330:
+        wind_to = "หุบเขาเชียงใหม่"
+
+    base_pm = round(pm25.current_pm25)
+    smoke_severity = "critical" if base_pm >= 75 or risk.score >= 8 else "high" if base_pm >= 37 or risk.score >= 6 else "watch"
+    fire_severity = "critical" if hotspots.count >= 50 else "high" if hotspots.count >= 10 else "watch"
+
+    return [
+        LocalizedPrediction(
+            id="pred-smoke-mae-chaem",
+            locationName="บ้านแม่ปาน อ.แม่แจ่ม",
+            latitude=18.503,
+            longitude=98.361,
+            forecastType="dust",
+            severity=smoke_severity,
+            reason_for_prediction=(
+                f"PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม "
+                f"{weather.wind_speed_kmh:.1f} กม./ชม. พาควันไปทาง{wind_to} "
+                f"มีจุดความร้อนใกล้เคียง {nearby_fire_count} จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า"
+            ),
+            lead_time_hours=12,
+        ),
+        LocalizedPrediction(
+            id="pred-fire-samoeng",
+            locationName="บ้านแม่สาบ อ.สะเมิง",
+            latitude=18.849,
+            longitude=98.73,
+            forecastType="fire",
+            severity=fire_severity,
+            reason_for_prediction=(
+                "ต้องเฝ้าระวังไฟลามมากขึ้น เพราะแนวเชื้อเพลิงสะเมิงมีความชื้นดินต่ำ "
+                "ใบไม้แห้งสะสม และรายงานชุมชนยังพบงานจัดการเชื้อเพลิงค้างอยู่ในสัปดาห์นี้"
+            ),
+            lead_time_hours=24,
+        ),
+        LocalizedPrediction(
+            id="pred-smoke-chiang-dao",
+            locationName="บ้านถ้ำ อ.เชียงดาว",
+            latitude=19.367,
+            longitude=98.964,
+            forecastType="dust",
+            severity="watch" if smoke_severity == "watch" else "high",
+            reason_for_prediction=(
+                f"ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม {weather.wind_direction_deg:.0f} องศา "
+                "พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน"
+            ),
+            lead_time_hours=12,
+        ),
+    ]
+
+
+def get_operational_intelligence(
+    hotspots: HotspotResponse,
+    pm25: Pm25Response,
+    weather: WeatherResponse,
+    risk: RiskResponse,
+) -> OperationalIntelligenceResponse:
+    today = datetime.now().date()
+    week_start = today - timedelta(days=(today.weekday() + 1) % 7)
+    ranking = aggregate_weekly_rankings(_FOREST_RECORDS, _FIELD_REPORTS, week_start)
+    this_year = max(43731, hotspots.count * 120)
+    last_year = 51280
+    change = round(((this_year - last_year) / last_year) * 100, 1)
+    return OperationalIntelligenceResponse(
+        annual_hotspot_stats=AnnualHotspotStats(
+            this_year_count=this_year,
+            last_year_count=last_year,
+            change_percent=change,
+            source="ข้อมูลจำลองแนว GISTDA/TAMFIRE สำหรับเทียบจุดความร้อนสะสมรายปี",
+        ),
+        drought_zones=_DROUGHT_ZONES,
+        landuse_breakdown=_landuse_breakdown(hotspots),
+        weekly_forest_league=WeeklyForestLeagueResponse(
+            week_id=sunday_week_id(today),
+            scoring_window=f"{week_start.isoformat()} to {(week_start + timedelta(days=6)).isoformat()}",
+            scheduled_recompute="คำนวณใหม่ทุกวันอาทิตย์ 23:55 น. เวลาไทย และรีเฟรชรายคืนเพื่ออัปเดตคะแนนย้อนหลัง 7 วัน",
+            rate_limit_rule="รับรายงานกิจกรรมภาคสนามได้ 1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน",
+            ranking=ranking,
+        ),
+        localizedPredictions=_localized_predictions(hotspots, pm25, weather, risk),
+        source_notes=[
+            "ชั้นข้อมูลรอยไหม้และความถี่การไหม้สามารถเปลี่ยนเป็น GISTDA API Gateway WMS/WMTS ได้เมื่อมี API key",
+            "ข้อมูลภัยแล้งและความชื้นดินยังเป็นตัวชี้วัดจำลองแนว TAMFIRE ระหว่างรอ feed สาธารณะที่เสถียร",
+            "อันดับรายสัปดาห์ใช้ 4 มิติ: การจัดการ การป้องกัน การใช้ประโยชน์ และผลลัพธ์เชิงนิเวศ",
+        ],
+    )
+
+
 def get_dashboard(settings: Settings) -> DashboardResponse:
     hotspots = get_hotspots(settings)
     pm25 = get_pm25(settings)
     weather = get_weather(settings)
     risk = calculate_risk(pm25, hotspots, weather)
     summary = get_summary(settings, pm25, hotspots, weather, risk)
-    return DashboardResponse(hotspots=hotspots, pm25=pm25, weather=weather, risk=risk, summary=summary)
+    intelligence = get_operational_intelligence(hotspots, pm25, weather, risk)
+    return DashboardResponse(
+        hotspots=hotspots,
+        pm25=pm25,
+        weather=weather,
+        risk=risk,
+        summary=summary,
+        intelligence=intelligence,
+    )

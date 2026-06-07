@@ -32,6 +32,7 @@ from app.providers.hotspot_provider import fetch_live_hotspots
 from app.services import (
     calculate_risk,
     fallback_summary,
+    get_operational_intelligence,
     get_pm25,
     get_weather,
     write_json,
@@ -120,8 +121,14 @@ def main() -> int:
     weather = get_weather(settings)
     risk = calculate_risk(pm25, hotspots, weather)
     summary = fallback_summary(pm25, hotspots, weather, risk)
+    intelligence = get_operational_intelligence(hotspots, pm25, weather, risk)
     dashboard = DashboardResponse(
-        hotspots=hotspots, pm25=pm25, weather=weather, risk=risk, summary=summary
+        hotspots=hotspots,
+        pm25=pm25,
+        weather=weather,
+        risk=risk,
+        summary=summary,
+        intelligence=intelligence,
     )
     frontend_data = REPO_DIR / "frontend" / "src" / "data"
     write_json(frontend_data, "dashboardSnapshot.json", dashboard.model_dump())

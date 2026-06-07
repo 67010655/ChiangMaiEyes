@@ -21,7 +21,7 @@ describe('getDataStatusCopy', () => {
   test('explains the local snapshot refresh mode', () => {
     const copy = getDataStatusCopy(status);
 
-    expect(copy.modeLabel).toBe('Snapshot จากเครื่องไทย');
+    expect(copy.modeLabel).toBe('ข้อมูลสำรองจากเครื่องไทย');
     expect(copy.ageLabel).toBe('36 นาที');
     expect(copy.breakdownLabel).toBe('Royal Forest Department Firemap 14 · NASA FIRMS 8');
     expect(copy.detail).toContain('Vercel ไม่ได้ดึง RFD สดโดยตรง');

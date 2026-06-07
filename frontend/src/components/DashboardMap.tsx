@@ -1,114 +1,213 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
-import 'leaflet-velocity';
-import { Crosshair, Maximize2, Minimize2, Minus, Plus, Wind } from 'lucide-react';
-import type { DashboardResponse, Hotspot, Pm25Station } from '../lib/types';
-import provinceGeoData from '../data/chiangmai-province.json';
-import districtsGeoData from '../data/chiangmai-districts.json';
-import communityForestData from '../data/community-forests-prototype.json';
-import fireZoneData from '../data/fire-management-zones-prototype.json';
-import { getDistanceKm, initialSelection, type MapSelection } from '../lib/mapSelection';
-import { windDestinationName } from '../lib/wind';
-import { buildWindFieldFromStation } from '../lib/windGrid';
-import { getDistrictPhysics } from '../lib/firePhysics';
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import L from "leaflet";
+
+import "leaflet-velocity";
+
+import {
+  Crosshair,
+  Maximize2,
+  Minimize2,
+  Minus,
+  Plus,
+  Wind,
+} from "lucide-react";
+
+import type { DashboardResponse, Hotspot, Pm25Station } from "../lib/types";
+
+import provinceGeoData from "../data/chiangmai-province.json";
+
+import districtsGeoData from "../data/chiangmai-districts.json";
+
+import communityForestData from "../data/community-forests-prototype.json";
+
+import fireZoneData from "../data/fire-management-zones-prototype.json";
+
+import {
+  getDistanceKm,
+  initialSelection,
+  type MapSelection,
+} from "../lib/mapSelection";
+
+import { windDestinationName } from "../lib/wind";
+
+import { buildWindFieldFromStation } from "../lib/windGrid";
+
+import { getDistrictPhysics } from "../lib/firePhysics";
 
 // ─────────────────────────────────────────────
+
 // Types
+
 // ─────────────────────────────────────────────
 
 type Props = {
   dashboard: DashboardResponse;
+
   layers: {
     hotspots: boolean;
+
     pm25: boolean;
+
     wind: boolean;
+
     landmarks: boolean;
+
     fuelRisk: boolean;
+
     communityForests: boolean;
+
     fireZones: boolean;
+
+    predictions: boolean;
   };
+
   selection: MapSelection;
+
   onSelectionChange: (sel: MapSelection) => void;
-  uiMode?: 'citizen' | 'authority';
-  theme?: 'light' | 'dark';
+
+  theme?: "light" | "dark";
+
   userLocation?: [number, number] | null;
+
   onMapClick?: (coords: [number, number]) => void;
+
   isPinningMode?: boolean;
+
   onPinningModeChange?: (v: boolean) => void;
+
   isFullscreen?: boolean;
+
   onToggleFullscreen?: () => void;
+
+  hoveredDistrict?: string | null;
 };
 
 type CommunityForest = {
   id: string;
+
   sourceId: number;
+
   source: string;
+
   name: string;
+
   village: string;
+
   tambon: string;
+
   amphoe: string;
+
   lat: number;
+
   lng: number;
+
   areaRai: number;
+
   estimatedBoundaryRadiusM: number;
+
   fireManagement: boolean;
+
   fireActivities: string[];
+
   managementPlan: boolean;
+
   managementPlanYear: string;
+
   forestTypes: string[];
+
   deedTypes: string[];
+
   villagesCount: number;
+
   committeeTotal: number;
 };
 
 type FireManagementZone = {
   id: string;
+
   district: string;
+
   name: string;
-  health: 'Green' | 'Yellow' | 'Red';
+
+  health: "Green" | "Yellow" | "Red";
+
   healthScore: number;
+
   rfdCoordinatePoints: number;
+
   detailedForests: number;
+
   fireManagementForests: number;
+
   estimatedAreaRai: number;
+
   topActivities: { name: string; count: number }[];
+
   geometry: GeoJSON.Geometry;
 };
 
-const COMMUNITY_FORESTS = (communityForestData as { forests: CommunityForest[] }).forests;
-const FIRE_MANAGEMENT_ZONES = (fireZoneData as { zones: FireManagementZone[] }).zones;
+const COMMUNITY_FORESTS = (
+  communityForestData as { forests: CommunityForest[] }
+).forests;
+
+const FIRE_MANAGEMENT_ZONES = (fireZoneData as { zones: FireManagementZone[] })
+  .zones;
 
 // ─────────────────────────────────────────────
+
 // GeoJSON preparation (module-level, computed once)
+
 // ─────────────────────────────────────────────
 
 // Province boundary: raw Polygon geometry { type, coordinates }
-const provinceCoordsRaw = (provinceGeoData as { type: string; coordinates: number[][][] }).coordinates[0];
+
+const provinceCoordsRaw = (
+  provinceGeoData as { type: string; coordinates: number[][][] }
+).coordinates[0];
 
 // World-minus-CM mask — dims everything outside the province
+
 const maskFeature = {
-  type: 'Feature',
+  type: "Feature",
+
   geometry: {
-    type: 'Polygon',
+    type: "Polygon",
+
     coordinates: [
       // outer ring: whole visible world in Web Mercator
-      [[-180, -85.05], [180, -85.05], [180, 85.05], [-180, 85.05], [-180, -85.05]],
+
+      [
+        [-180, -85.05],
+        [180, -85.05],
+        [180, 85.05],
+        [-180, 85.05],
+        [-180, -85.05],
+      ],
+
       // inner ring: CM province → creates the transparent "window"
+
       provinceCoordsRaw,
     ],
   },
+
   properties: {},
 };
 
 // Province fill + border
+
 const provinceFeature = {
-  type: 'Feature',
+  type: "Feature",
+
   geometry: provinceGeoData,
+
   properties: {},
 };
 
 // ─────────────────────────────────────────────
+
 // Helper functions
+
 // ─────────────────────────────────────────────
 
 function formatPm25(v: number) {
@@ -120,107 +219,204 @@ function pm25ValueLabel(v: number) {
 }
 
 function formatTime(value: string) {
-  return new Intl.DateTimeFormat('th-TH', { timeStyle: 'short' }).format(new Date(value));
+  return new Intl.DateTimeFormat("th-TH", { timeStyle: "short" }).format(
+    new Date(value),
+  );
 }
 
 function pm25Color(pm25: number): string {
-  if (pm25 <= 25) return '#16a34a';
-  if (pm25 <= 37) return '#eab308';
-  if (pm25 <= 50) return '#f97316';
-  if (pm25 <= 90) return '#dc2626';
-  return '#7c3aed';
+  if (pm25 <= 25) return "#16a34a";
+
+  if (pm25 <= 37) return "#eab308";
+
+  if (pm25 <= 50) return "#f97316";
+
+  if (pm25 <= 90) return "#dc2626";
+
+  return "#7c3aed";
 }
 
-function pm25Tone(pm25: number): 'good' | 'watch' | 'risk' {
-  if (pm25 <= 25) return 'good';
-  if (pm25 <= 50) return 'watch';
-  return 'risk';
+function pm25Tone(pm25: number): "good" | "watch" | "risk" {
+  if (pm25 <= 25) return "good";
+
+  if (pm25 <= 50) return "watch";
+
+  return "risk";
 }
 
-function zoneHealthColor(health: FireManagementZone['health']) {
-  if (health === 'Green') return '#16a34a';
-  if (health === 'Yellow') return '#eab308';
-  return '#dc2626';
+function zoneHealthColor(health: FireManagementZone["health"]) {
+  if (health === "Green") return "#16a34a";
+
+  if (health === "Yellow") return "#eab308";
+
+  return "#dc2626";
 }
 
-function zoneHealthTone(health: FireManagementZone['health']): 'good' | 'watch' | 'risk' {
-  if (health === 'Green') return 'good';
-  if (health === 'Yellow') return 'watch';
-  return 'risk';
+function zoneHealthTone(
+  health: FireManagementZone["health"],
+): "good" | "watch" | "risk" {
+  if (health === "Green") return "good";
+
+  if (health === "Yellow") return "watch";
+
+  return "risk";
 }
 
 function formatNumber(value: number) {
-  return new Intl.NumberFormat('th-TH').format(value);
+  return new Intl.NumberFormat("th-TH").format(value);
 }
 
 function activityLabel(activities: string[]) {
-  if (!activities.length) return 'ยังไม่มีข้อมูลกิจกรรม';
-  return activities.slice(0, 3).join(' / ');
+  if (!activities.length) return "ยังไม่มีข้อมูลกิจกรรม";
+
+  return activities.slice(0, 3).join(" / ");
 }
 
 function communityForestSelection(forest: CommunityForest): MapSelection {
   const place = [
-    forest.village ? `หมู่บ้าน${forest.village}` : '',
-    forest.tambon ? `ต.${forest.tambon}` : '',
-    forest.amphoe ? `อ.${forest.amphoe}` : '',
-  ].filter(Boolean).join(' · ');
+    forest.village ? `หมู่บ้าน${forest.village}` : "",
+
+    forest.tambon ? `ต.${forest.tambon}` : "",
+
+    forest.amphoe ? `อ.${forest.amphoe}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return {
-    eyebrow: 'ป่าชุมชน · ขอบเขตดูแลต้นแบบ',
+    eyebrow: "ป่าชุมชน · ขอบเขตดูแลต้นแบบ",
+
     title: forest.name,
-    detail: `${place || 'เชียงใหม่'} · วงขอบเขตเป็นประมาณการจากจุดพิกัดและขนาดพื้นที่ เพื่อใช้ demo การระบุผู้ดูแลและงานป้องกันไฟ`,
+
+    detail: `${place || "เชียงใหม่"} · วงขอบเขตเป็นประมาณการจากจุดพิกัดและขนาดพื้นที่ เพื่อใช้ demo การระบุผู้ดูแลและงานป้องกันไฟ`,
+
     mapUrl: `https://www.google.com/maps?q=${forest.lat},${forest.lng}`,
-    sourceUrl: 'https://thaicfnet.org/database',
-    sourceLabel: 'Thaicfnet database',
-    imageKey: 'forest',
+
+    sourceUrl: "https://thaicfnet.org/database",
+
+    sourceLabel: "Thaicfnet database",
+
+    imageKey: "forest",
+
     imageLabel: forest.name,
+
     stats: [
-      { label: 'พื้นที่', value: forest.areaRai > 0 ? `${formatNumber(forest.areaRai)} ไร่` : 'ไม่ระบุ' },
-      { label: 'หมู่บ้านร่วมดูแล', value: `${forest.villagesCount || 1} หมู่บ้าน` },
-      { label: 'แผนจัดการ', value: forest.managementPlan ? `มี${forest.managementPlanYear && forest.managementPlanYear !== '0' ? ` (${forest.managementPlanYear})` : ''}` : 'ยังไม่พบข้อมูล', tone: forest.managementPlan ? 'good' : 'watch' },
-      { label: 'จัดการไฟป่า', value: forest.fireManagement ? 'มีข้อมูลกิจกรรม' : 'ยังไม่พบข้อมูล', tone: forest.fireManagement ? 'good' : 'watch' },
-      { label: 'กิจกรรม', value: activityLabel(forest.fireActivities), tone: forest.fireActivities.length ? 'good' : 'watch' },
-      { label: 'ขอบเขต demo', value: `รัศมี ~${formatNumber(forest.estimatedBoundaryRadiusM)} ม.` },
+      {
+        label: "พื้นที่",
+        value:
+          forest.areaRai > 0
+            ? `${formatNumber(forest.areaRai)} ไร่`
+            : "ไม่ระบุ",
+      },
+
+      {
+        label: "หมู่บ้านร่วมดูแล",
+        value: `${forest.villagesCount || 1} หมู่บ้าน`,
+      },
+
+      {
+        label: "แผนจัดการ",
+        value: forest.managementPlan
+          ? `มี${forest.managementPlanYear && forest.managementPlanYear !== "0" ? ` (${forest.managementPlanYear})` : ""}`
+          : "ยังไม่พบข้อมูล",
+        tone: forest.managementPlan ? "good" : "watch",
+      },
+
+      {
+        label: "จัดการไฟป่า",
+        value: forest.fireManagement ? "มีข้อมูลกิจกรรม" : "ยังไม่พบข้อมูล",
+        tone: forest.fireManagement ? "good" : "watch",
+      },
+
+      {
+        label: "กิจกรรม",
+        value: activityLabel(forest.fireActivities),
+        tone: forest.fireActivities.length ? "good" : "watch",
+      },
+
+      {
+        label: "ขอบเขต demo",
+        value: `รัศมี ~${formatNumber(forest.estimatedBoundaryRadiusM)} ม.`,
+      },
     ],
   };
 }
 
 function fireZoneSelection(zone: FireManagementZone): MapSelection {
   const activities = zone.topActivities.length
-    ? zone.topActivities.map((item) => `${item.name} ${item.count}`).join(' / ')
-    : 'ยังไม่มีข้อมูลกิจกรรมจาก Thaicfnet';
+    ? zone.topActivities.map((item) => `${item.name} ${item.count}`).join(" / ")
+    : "ยังไม่มีข้อมูลกิจกรรมจาก Thaicfnet";
+
   return {
-    eyebrow: 'Fire Management Zone',
+    eyebrow: "เขตจัดการไฟ",
+
     title: zone.name,
+
     detail: `โซนจัดการไฟระดับพื้นที่ป่า ใช้รวมหลายป่าชุมชนและพื้นที่รอยต่อในอำเภอเดียวกัน เพื่อให้ชุมชน อบต. และหน่วยงานเห็นข้อมูลชุดเดียว`,
-    imageKey: 'forest',
+
+    imageKey: "forest",
+
     imageLabel: zone.name,
+
     stats: [
-      { label: 'Forest Health', value: `${zone.health} ${zone.healthScore}/100`, tone: zoneHealthTone(zone.health) },
-      { label: 'พิกัดป่าชุมชน RFD', value: `${formatNumber(zone.rfdCoordinatePoints)} จุด` },
-      { label: 'พื้นที่รวมจากจุดพิกัด', value: `${formatNumber(zone.estimatedAreaRai)} ไร่` },
-      { label: 'ข้อมูลละเอียด', value: `${formatNumber(zone.detailedForests)} แห่ง` },
-      { label: 'มีงานป้องกันไฟ', value: `${formatNumber(zone.fireManagementForests)} แห่ง`, tone: zone.fireManagementForests > 0 ? 'good' : 'watch' },
-      { label: 'กิจกรรมหลัก', value: activities, tone: zone.fireManagementForests > 0 ? 'good' : 'watch' },
+      {
+        label: "สุขภาพป่า",
+        value: `${zone.health} ${zone.healthScore}/100`,
+        tone: zoneHealthTone(zone.health),
+      },
+
+      {
+        label: "พิกัดป่าชุมชน RFD",
+        value: `${formatNumber(zone.rfdCoordinatePoints)} จุด`,
+      },
+
+      {
+        label: "พื้นที่รวมจากจุดพิกัด",
+        value: `${formatNumber(zone.estimatedAreaRai)} ไร่`,
+      },
+
+      {
+        label: "ข้อมูลละเอียด",
+        value: `${formatNumber(zone.detailedForests)} แห่ง`,
+      },
+
+      {
+        label: "มีงานป้องกันไฟ",
+        value: `${formatNumber(zone.fireManagementForests)} แห่ง`,
+        tone: zone.fireManagementForests > 0 ? "good" : "watch",
+      },
+
+      {
+        label: "กิจกรรมหลัก",
+        value: activities,
+        tone: zone.fireManagementForests > 0 ? "good" : "watch",
+      },
     ],
   };
 }
 
 // Geographic plume radius in metres (scales naturally with Leaflet zoom)
+
 function plumeRadiusMeters(pm25: number): number {
   return 4000 + (Math.min(pm25, 120) / 120) * 13000;
 }
 
 function stationImageKey(s: Pm25Station) {
-  if (s.id === 'CM-O23') return 'bhubing';
-  if (s.id === 'CM-O70') return 'chiangdao';
-  if (s.id === 'CM-O71') return 'maechaem';
-  if (s.id === 'CM-O69') return 'hot';
-  if (s.id === 'CM-36T') return 'school';
-  return 'city';
+  if (s.id === "CM-O23") return "bhubing";
+
+  if (s.id === "CM-O70") return "chiangdao";
+
+  if (s.id === "CM-O71") return "maechaem";
+
+  if (s.id === "CM-O69") return "hot";
+
+  if (s.id === "CM-36T") return "school";
+
+  return "city";
 }
 
 function hotspotImageKey(h: Hotspot) {
-  return h.landuse_type && h.landuse_type !== 'OTHER' ? 'forest' : 'hotspot';
+  return h.landuse_type && h.landuse_type !== "OTHER" ? "forest" : "hotspot";
 }
 
 function hotspotPlaceTitle(h: Hotspot) {
@@ -229,87 +425,142 @@ function hotspotPlaceTitle(h: Hotspot) {
 
 function hotspotLocation(h: Hotspot) {
   return [
-    h.subdistrict ? `ต.${h.subdistrict}` : '',
-    h.district ? `อ.${h.district}` : '',
+    h.subdistrict ? `ต.${h.subdistrict}` : "",
+
+    h.district ? `อ.${h.district}` : "",
   ]
+
     .filter(Boolean)
-    .join(' ');
+
+    .join(" ");
 }
 
 function shortSourceName(source: string): string {
-  if (source.startsWith('Royal Forest')) return 'กรมป่าไม้';
-  if (source.startsWith('GISTDA')) return 'GISTDA';
-  if (source.startsWith('NASA')) return 'NASA';
+  if (source.startsWith("Royal Forest")) return "กรมป่าไม้";
+
+  if (source.startsWith("GISTDA")) return "GISTDA";
+
+  if (source.startsWith("NASA")) return "NASA";
+
   return source;
 }
 
 function hotspotSourcesLabel(h: Hotspot): string {
-  const list = (h.sources && h.sources.length ? h.sources : [h.source]).map(shortSourceName);
-  return Array.from(new Set(list)).join(' + ');
+  const list = (h.sources && h.sources.length ? h.sources : [h.source]).map(
+    shortSourceName,
+  );
+
+  return Array.from(new Set(list)).join(" + ");
 }
 
-function hotspotStats(h: Hotspot): MapSelection['stats'] {
+function hotspotStats(h: Hotspot): MapSelection["stats"] {
   const sourceCount = h.source_count ?? (h.sources?.length || 1);
+
   const phys = getDistrictPhysics(h.district);
+
   const slopeEffect = Math.exp(0.0693 * phys.slope_deg) / 4.0;
 
   return [
-    { label: 'Confidence', value: `${h.confidence}%`, tone: h.confidence >= 80 ? 'risk' : 'watch' },
     {
-      label: 'ยืนยันโดย',
-      value: `${hotspotSourcesLabel(h)}${sourceCount > 1 ? ` (${sourceCount} แหล่ง)` : ''}`,
-      tone: sourceCount > 1 ? 'risk' : undefined,
+      label: "Confidence",
+      value: `${h.confidence}%`,
+      tone: h.confidence >= 80 ? "risk" : "watch",
     },
-    { label: 'ประเภทพื้นที่', value: h.landuse_name || h.landuse_type || 'ไม่ระบุ' },
-    { label: 'สภาพเชื้อเพลิง', value: phys.forest_type },
-    { 
-      label: 'ความชันภูมิประเทศ', 
+
+    {
+      label: "ยืนยันโดย",
+
+      value: `${hotspotSourcesLabel(h)}${sourceCount > 1 ? ` (${sourceCount} แหล่ง)` : ""}`,
+
+      tone: sourceCount > 1 ? "risk" : undefined,
+    },
+
+    {
+      label: "ประเภทพื้นที่",
+      value: h.landuse_name || h.landuse_type || "ไม่ระบุ",
+    },
+
+    { label: "สภาพเชื้อเพลิง", value: phys.forest_type },
+
+    {
+      label: "ความชันภูมิประเทศ",
+
       value: `${phys.slope_deg}° (ลามเร็ว ${slopeEffect.toFixed(1)}x)`,
-      tone: phys.slope_deg >= 25 ? 'risk' : 'watch'
+
+      tone: phys.slope_deg >= 25 ? "risk" : "watch",
     },
-    { label: 'ประวัติไฟป่า', value: phys.history_level, tone: phys.history_multiplier >= 1.3 ? 'risk' : 'watch' },
-    { label: 'ดาวเทียม', value: h.satellite || 'VIIRS' },
-    { label: 'เวลา', value: formatTime(h.detected_at) },
+
+    {
+      label: "ประวัติไฟป่า",
+      value: phys.history_level,
+      tone: phys.history_multiplier >= 1.3 ? "risk" : "watch",
+    },
+
+    { label: "ดาวเทียม", value: h.satellite || "VIIRS" },
+
+    { label: "เวลา", value: formatTime(h.detected_at) },
   ];
 }
 
 const BASEMAPS = [
   {
-    id: 'standard',
-    label: 'ถนน',
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+    id: "standard",
+
+    label: "ถนน",
+
+    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+
     maxZoom: 19,
   },
+
   {
-    id: 'light',
-    label: 'มินิมอล',
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    id: "light",
+
+    label: "มินิมอล",
+
+    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+
+    attribution: "&copy; OpenStreetMap &copy; CARTO",
+
     maxZoom: 20,
   },
+
   {
-    id: 'terrain',
-    label: 'ภูมิประเทศ',
-    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenTopoMap &copy; OpenStreetMap',
+    id: "terrain",
+
+    label: "ภูมิประเทศ",
+
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+
+    attribution: "&copy; OpenTopoMap &copy; OpenStreetMap",
+
     maxZoom: 17,
   },
+
   {
-    id: 'satellite',
-    label: 'ดาวเทียม',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri',
+    id: "satellite",
+
+    label: "ดาวเทียม",
+
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+
+    attribution: "Tiles &copy; Esri",
+
     maxZoom: 19,
   },
 ] as const;
 
-type BaseMapId = (typeof BASEMAPS)[number]['id'];
+type BaseMapId = (typeof BASEMAPS)[number]["id"];
 
 function createBaseTileLayer(id: BaseMapId) {
   const basemap = BASEMAPS.find((item) => item.id === id) ?? BASEMAPS[0];
+
   return L.tileLayer(basemap.url, {
     maxZoom: basemap.maxZoom,
+
     attribution: basemap.attribution,
   });
 }
@@ -318,31 +569,47 @@ let velocityLayerGuardsInstalled = false;
 
 function ensureVelocityLayerGuards() {
   if (velocityLayerGuardsInstalled) return;
+
   const canvasLayer = (L as any).CanvasLayer?.prototype;
+
   if (!canvasLayer) return;
 
   const drawLayer = canvasLayer.drawLayer;
+
   const onLayerDidMove = canvasLayer._onLayerDidMove;
+
   const onLayerDidResize = canvasLayer._onLayerDidResize;
 
-  canvasLayer.drawLayer = function guardedDrawLayer(this: { _map?: L.Map | null; _canvas?: HTMLCanvasElement | null; _frame?: unknown }) {
+  canvasLayer.drawLayer = function guardedDrawLayer(this: {
+    _map?: L.Map | null;
+    _canvas?: HTMLCanvasElement | null;
+    _frame?: unknown;
+  }) {
     if (!this._map || !this._canvas) {
       this._frame = null;
+
       return;
     }
+
     return drawLayer.call(this);
   };
 
-  canvasLayer._onLayerDidMove = function guardedOnLayerDidMove(this: { _map?: L.Map | null; _canvas?: HTMLCanvasElement | null }) {
+  canvasLayer._onLayerDidMove = function guardedOnLayerDidMove(this: {
+    _map?: L.Map | null;
+    _canvas?: HTMLCanvasElement | null;
+  }) {
     if (!this._map || !this._canvas) return;
+
     return onLayerDidMove.call(this);
   };
 
   canvasLayer._onLayerDidResize = function guardedOnLayerDidResize(
     this: { _canvas?: HTMLCanvasElement | null },
+
     resizeEvent: { newSize?: { x: number; y: number } },
   ) {
     if (!this._canvas || !resizeEvent?.newSize) return;
+
     return onLayerDidResize.call(this, resizeEvent);
   };
 
@@ -350,809 +617,1710 @@ function ensureVelocityLayerGuards() {
 }
 
 const CHIANG_MAI_LANDMARKS = [
-  { id: 'doi-suthep', name: 'วัดพระธาตุดอยสุเทพ', category: 'วัด', mood: 'วัฒนธรรม', area: 'อ.เมือง', bestFor: 'แลนด์มาร์กคู่เมืองเชียงใหม่', featured: true, coords: [18.8049, 98.9218] as [number, number] },
-  { id: 'tha-phae', name: 'ประตูท่าแพ', category: 'เมืองเก่า', mood: 'วัฒนธรรม', area: 'อ.เมือง', bestFor: 'ใจกลางเมืองเก่าเชียงใหม่', featured: true, coords: [18.7876, 98.9935] as [number, number] },
-  { id: 'nimman', name: 'ถนนนิมมานเหมินทร์', category: 'ไลฟ์สไตล์', mood: 'เดินเล่น', area: 'อ.เมือง', bestFor: 'ย่านคาเฟ่และไลฟ์สไตล์', featured: true, coords: [18.7992, 98.9680] as [number, number] },
-  { id: 'doi-inthanon', name: 'อุทยานแห่งชาติดอยอินทนนท์', category: 'ธรรมชาติ', mood: 'ธรรมชาติ', area: 'อ.จอมทอง', bestFor: 'ยอดดอยสูงสุดในไทย', featured: true, coords: [18.5875, 98.4864] as [number, number] },
-  { id: 'angkaew', name: 'อ่างแก้ว มช.', category: 'ธรรมชาติ', mood: 'ธรรมชาติ', area: 'อ.เมือง', bestFor: 'อ่างเก็บน้ำสวยกลางมหาวิทยาลัย', featured: true, coords: [18.8027, 98.9533] as [number, number] },
-  { id: 'chedi-luang', name: 'วัดเจดีย์หลวง', category: 'วัด', mood: 'วัฒนธรรม', area: 'อ.เมือง', bestFor: 'เจดีย์โบราณใจกลางเมือง', featured: true, coords: [18.7863, 98.9862] as [number, number] },
-  { id: 'sirikitbotanic', name: 'สวนพฤกษศาสตร์สิริกิติ์', category: 'สวน', mood: 'ดอกไม้', area: 'อ.แม่ริม', bestFor: 'สวนพฤกษศาสตร์ระดับชาติ', featured: true, coords: [18.8968, 98.8600] as [number, number] },
-  { id: 'mon-cham', name: 'ม่อนแจ่ม', category: 'ธรรมชาติ', mood: 'ธรรมชาติ', area: 'อ.แม่ริม', bestFor: 'วิวภูเขาและจุดชมทะเลหมอก', featured: true, coords: [18.9358, 98.8224] as [number, number] },
+  {
+    id: "doi-suthep",
+    name: "วัดพระธาตุดอยสุเทพ",
+    category: "วัด",
+    mood: "วัฒนธรรม",
+    area: "อ.เมือง",
+    bestFor: "แลนด์มาร์กคู่เมืองเชียงใหม่",
+    featured: true,
+    coords: [18.8049, 98.9218] as [number, number],
+  },
+
+  {
+    id: "tha-phae",
+    name: "ประตูท่าแพ",
+    category: "เมืองเก่า",
+    mood: "วัฒนธรรม",
+    area: "อ.เมือง",
+    bestFor: "ใจกลางเมืองเก่าเชียงใหม่",
+    featured: true,
+    coords: [18.7876, 98.9935] as [number, number],
+  },
+
+  {
+    id: "nimman",
+    name: "ถนนนิมมานเหมินทร์",
+    category: "ไลฟ์สไตล์",
+    mood: "เดินเล่น",
+    area: "อ.เมือง",
+    bestFor: "ย่านคาเฟ่และไลฟ์สไตล์",
+    featured: true,
+    coords: [18.7992, 98.968] as [number, number],
+  },
+
+  {
+    id: "doi-inthanon",
+    name: "อุทยานแห่งชาติดอยอินทนนท์",
+    category: "ธรรมชาติ",
+    mood: "ธรรมชาติ",
+    area: "อ.จอมทอง",
+    bestFor: "ยอดดอยสูงสุดในไทย",
+    featured: true,
+    coords: [18.5875, 98.4864] as [number, number],
+  },
+
+  {
+    id: "angkaew",
+    name: "อ่างแก้ว มช.",
+    category: "ธรรมชาติ",
+    mood: "ธรรมชาติ",
+    area: "อ.เมือง",
+    bestFor: "อ่างเก็บน้ำสวยกลางมหาวิทยาลัย",
+    featured: true,
+    coords: [18.8027, 98.9533] as [number, number],
+  },
+
+  {
+    id: "chedi-luang",
+    name: "วัดเจดีย์หลวง",
+    category: "วัด",
+    mood: "วัฒนธรรม",
+    area: "อ.เมือง",
+    bestFor: "เจดีย์โบราณใจกลางเมือง",
+    featured: true,
+    coords: [18.7863, 98.9862] as [number, number],
+  },
+
+  {
+    id: "sirikitbotanic",
+    name: "สวนพฤกษศาสตร์สิริกิติ์",
+    category: "สวน",
+    mood: "ดอกไม้",
+    area: "อ.แม่ริม",
+    bestFor: "สวนพฤกษศาสตร์ระดับชาติ",
+    featured: true,
+    coords: [18.8968, 98.86] as [number, number],
+  },
+
+  {
+    id: "mon-cham",
+    name: "ม่อนแจ่ม",
+    category: "ธรรมชาติ",
+    mood: "ธรรมชาติ",
+    area: "อ.แม่ริม",
+    bestFor: "วิวภูเขาและจุดชมทะเลหมอก",
+    featured: true,
+    coords: [18.9358, 98.8224] as [number, number],
+  },
 ] as const;
 
 export const DRY_FOREST_ZONES = [
   {
-    name: 'เขตอุทยานแห่งชาติดอยสุเทพ-ปุย',
-    center: [18.81, 98.90],
+    name: "เขตอุทยานแห่งชาติดอยสุเทพ-ปุย",
+
+    center: [18.81, 98.9],
+
     radius: 7000,
+
     ndvi: 0.28,
-    status: 'แห้งแล้งจัด (เสี่ยงไฟไหม้สูง)',
+
+    status: "แห้งแล้งจัด (เสี่ยงไฟไหม้สูง)",
   },
+
   {
-    name: 'เขตอุทยานแห่งชาติดอยอินทนนท์',
+    name: "เขตอุทยานแห่งชาติดอยอินทนนท์",
+
     center: [18.54, 98.52],
+
     radius: 9500,
+
     ndvi: 0.35,
-    status: 'แห้งปานกลาง',
+
+    status: "แห้งปานกลาง",
   },
+
   {
-    name: 'เขตรักษาพันธุ์สัตว์ป่าเชียงดาว',
-    center: [19.40, 98.88],
+    name: "เขตรักษาพันธุ์สัตว์ป่าเชียงดาว",
+
+    center: [19.4, 98.88],
+
     radius: 8000,
+
     ndvi: 0.22,
-    status: 'วิกฤตความชื้นต่ำ',
+
+    status: "วิกฤตความชื้นต่ำ",
   },
+
   {
-    name: 'เขตป่าสงวนแห่งชาติแม่แจ่ม',
-    center: [18.50, 98.37],
+    name: "เขตป่าสงวนแห่งชาติแม่แจ่ม",
+
+    center: [18.5, 98.37],
+
     radius: 11000,
+
     ndvi: 0.25,
-    status: 'แห้งแล้งจัด (เสี่ยงไฟไหม้สูง)',
+
+    status: "แห้งแล้งจัด (เสี่ยงไฟไหม้สูง)",
   },
+
   {
-    name: 'เขตป่าต้นน้ำศรีลันนา (แม่แตง)',
+    name: "เขตป่าต้นน้ำศรีลันนา (แม่แตง)",
+
     center: [19.16, 99.04],
+
     radius: 7500,
+
     ndvi: 0.32,
-    status: 'แห้งปานกลาง',
+
+    status: "แห้งปานกลาง",
   },
 ];
 
 type ChiangMaiLandmark = (typeof CHIANG_MAI_LANDMARKS)[number];
-type LandmarkKind = 'temple' | 'nature' | 'garden' | 'water' | 'activity' | 'community';
+
+type LandmarkKind =
+  | "temple"
+  | "nature"
+  | "garden"
+  | "water"
+  | "activity"
+  | "community";
 
 function landmarkKind(landmark: ChiangMaiLandmark): LandmarkKind {
   const text = `${landmark.name} ${landmark.category} ${landmark.mood}`;
-  if (text.includes('วัด') || text.includes('เมืองเก่า') || text.includes('วัฒนธรรม')) return 'temple';
-  if (text.includes('สวน') || text.includes('ดอกไม้') || text.includes('เกษตร')) return 'garden';
-  if (text.includes('น้ำพุร้อน') || text.includes('อ่าง') || text.includes('น้ำ')) return 'water';
-  if (text.includes('กิจกรรม') || text.includes('แอดเวนเจอร์') || text.includes('ไลฟ์สไตล์') || text.includes('เดินเล่น')) return 'activity';
-  if (text.includes('ชุมชน') || text.includes('นาขั้นบันได')) return 'community';
-  return 'nature';
+
+  if (
+    text.includes("วัด") ||
+    text.includes("เมืองเก่า") ||
+    text.includes("วัฒนธรรม")
+  )
+    return "temple";
+
+  if (text.includes("สวน") || text.includes("ดอกไม้") || text.includes("เกษตร"))
+    return "garden";
+
+  if (
+    text.includes("น้ำพุร้อน") ||
+    text.includes("อ่าง") ||
+    text.includes("น้ำ")
+  )
+    return "water";
+
+  if (
+    text.includes("กิจกรรม") ||
+    text.includes("แอดเวนเจอร์") ||
+    text.includes("ไลฟ์สไตล์") ||
+    text.includes("เดินเล่น")
+  )
+    return "activity";
+
+  if (text.includes("ชุมชน") || text.includes("นาขั้นบันได"))
+    return "community";
+
+  return "nature";
 }
 
 function landmarkKindLabel(kind: LandmarkKind) {
   return {
-    temple: 'วัด',
-    nature: 'ดอย',
-    garden: 'สวน',
-    water: 'น้ำ',
-    activity: 'กิจ',
-    community: 'ชุม',
+    temple: "🛕",
+
+    nature: "⛰️",
+
+    garden: "🌸",
+
+    water: "⛲",
+
+    activity: "☕",
+
+    community: "🌾",
   }[kind];
 }
 
-function landmarkSelection(landmark: ChiangMaiLandmark, dashboard: DashboardResponse): MapSelection {
+function landmarkSelection(
+  landmark: ChiangMaiLandmark,
+  dashboard: DashboardResponse,
+): MapSelection {
   const pm25 = dashboard.pm25.current_pm25;
+
   const kind = landmarkKind(landmark);
+
   return {
     eyebrow: `สถานที่เสริม · ${landmark.category} · ${landmark.area}`,
+
     title: landmark.name,
+
     detail: `${landmark.bestFor} (${landmark.category}, ${landmark.area}) ใช้เป็นบริบทเสริมเมื่อประเมินผลกระทบต่อพื้นที่ท่องเที่ยวและชุมชนใกล้เคียง`,
+
     mapUrl: `https://www.google.com/maps?q=${landmark.coords[0]},${landmark.coords[1]}`,
-    imageKey: 'landmark',
+
+    imageKey: "landmark",
+
     imageLabel: landmark.name,
+
     stats: [
-      { label: 'ประเภท', value: landmarkKindLabel(kind) },
-      { label: 'จุดเด่น', value: landmark.bestFor },
-      { label: 'PM2.5 วันนี้', value: formatPm25(pm25), tone: pm25Tone(pm25) },
-      { label: 'ลม', value: `ไป${windDestinationName(dashboard.weather.wind_direction_deg)}` },
+      { label: "ประเภท", value: landmarkKindLabel(kind) },
+
+      { label: "จุดเด่น", value: landmark.bestFor },
+
+      { label: "PM2.5 วันนี้", value: formatPm25(pm25), tone: pm25Tone(pm25) },
+
+      {
+        label: "ลม",
+        value: `ไป${windDestinationName(dashboard.weather.wind_direction_deg)}`,
+      },
     ],
   };
 }
 
 // ─────────────────────────────────────────────
+
 // Initial / default selection
+
 // ─────────────────────────────────────────────
 
 // Component
+
 // ─────────────────────────────────────────────
+
+function createPopupHtml(
+  category: string,
+
+  title: string,
+
+  detail: string,
+
+  stats: Array<{ label: string; value: any; tone?: "good" | "watch" | "risk" }>,
+
+  mapUrl?: string,
+
+  sourceLabel?: string,
+
+  sourceUrl?: string,
+) {
+  const statsHtml =
+    stats && stats.length > 0
+      ? `<div class="map-popup-stats-grid">
+
+        ${stats
+          .map((s) => {
+            const toneClass = s.tone ? `map-popup-stat-item--${s.tone}` : "";
+
+            return `
+
+            <div class="map-popup-stat-item ${toneClass}">
+
+              <span class="map-popup-stat-label">${s.label}</span>
+
+              <strong class="map-popup-stat-value">${s.value}</strong>
+
+            </div>
+
+          `;
+          })
+          .join("")}
+
+       </div>`
+      : "";
+
+  const linksHtml =
+    mapUrl || sourceUrl
+      ? `<div class="map-popup-links">
+
+        ${mapUrl ? `<a class="map-popup-link" href="${mapUrl}" target="_blank" rel="noreferrer">📍 Google Maps</a>` : ""}
+
+        ${sourceUrl ? `<a class="map-popup-link secondary" href="${sourceUrl}" target="_blank" rel="noreferrer">📖 ${sourceLabel || "แหล่งอ้างอิง"}</a>` : ""}
+
+       </div>`
+      : "";
+
+  return `
+
+    <div class="map-popup-card">
+
+      <div class="map-popup-header">
+
+        <span class="map-popup-eyebrow">${category}</span>
+
+      </div>
+
+      <h3 class="map-popup-title">${title}</h3>
+
+      <p class="map-popup-detail">${detail}</p>
+
+      ${statsHtml}
+
+      ${linksHtml}
+
+    </div>
+
+  `;
+}
 
 export function DashboardMap({
   dashboard,
+
   layers,
+
   selection,
+
   onSelectionChange,
-  uiMode,
+
   theme,
+
   userLocation,
+
   onMapClick,
+
   isPinningMode,
+
   onPinningModeChange,
+
   isFullscreen,
+
   onToggleFullscreen,
+
+  hoveredDistrict,
 }: Props) {
   const mapDivRef = useRef<HTMLDivElement>(null);
+
   const mapRef = useRef<L.Map | null>(null);
+
+  const districtsLayerRef = useRef<L.GeoJSON | null>(null);
+
+  const isTransitioningRef = useRef(false);
+  const selectionRef = useRef(selection);
+  useEffect(() => {
+    selectionRef.current = selection;
+  }, [selection]);
+
   const hotspotsLayerRef = useRef<L.LayerGroup | null>(null);
+
   const pm25LayerRef = useRef<L.LayerGroup | null>(null);
+
   const landmarksLayerRef = useRef<L.LayerGroup | null>(null);
+
   const plumesLayerRef = useRef<L.LayerGroup | null>(null);
+
   const fuelRiskLayerRef = useRef<L.LayerGroup | null>(null);
+
   const fireZonesLayerRef = useRef<L.LayerGroup | null>(null);
+
   const communityForestsLayerRef = useRef<L.LayerGroup | null>(null);
+
+  const predictionsLayerRef = useRef<L.LayerGroup | null>(null);
+
   const userLocationLayerRef = useRef<L.LayerGroup | null>(null);
+
   const tileLayerRef = useRef<L.TileLayer | null>(null);
+
   const velocityLayerRef = useRef<L.Layer | null>(null);
 
   const [windParticlesOn, setWindParticlesOn] = useState(false);
 
   const onSelChangeRef = useRef(onSelectionChange);
+
   const onMapClickRef = useRef(onMapClick);
+
   const isPinningRef = useRef(false);
+
   const onPinningChangeRef = useRef(onPinningModeChange);
+
+  // ── Marker focus click-lock ───────────────────────────────────────────────
+  // While a marker's spotlight/popup is open, ignore clicks on every other
+  // marker and on empty map areas. The user must close via the popup's ×
+  // or the detail bar's close button (both reset selection to initialSelection).
+  const isSelectionLocked = () => {
+    const s = selectionRef.current;
+    return !!s && s.title !== initialSelection.title;
+  };
+
+  const selectMarker = (next: MapSelection, sourceLayer?: L.Layer) => {
+    if (isSelectionLocked()) {
+      // Leaflet's bindPopup click handler runs before ours and may have
+      // already opened this layer's own popup — close it so the locked
+      // focus popup remains the only one visible.
+      (sourceLayer as L.Layer & { closePopup?: () => void })?.closePopup?.();
+
+      return;
+    }
+
+    onSelChangeRef.current(next);
+  };
 
   useEffect(() => {
     onSelChangeRef.current = onSelectionChange;
+
     onMapClickRef.current = onMapClick;
+
     isPinningRef.current = isPinningMode ?? false;
+
     onPinningChangeRef.current = onPinningModeChange;
   });
 
   // Zoom level as React state — triggers marker rebuild only on tier boundary crossings
+
   const [zoom, setZoom] = useState(9);
-  const [baseMapId, setBaseMapId] = useState<BaseMapId>('standard');
+
+  const [baseMapId, setBaseMapId] = useState<BaseMapId>("standard");
 
   const pinHomeFromMapEvent = (e: L.LeafletMouseEvent) => {
     if (!isPinningRef.current || !onMapClickRef.current) return false;
+
     onMapClickRef.current([e.latlng.lat, e.latlng.lng]);
+
     onPinningChangeRef.current?.(false);
+
     return true;
   };
 
   // ── Initialise Leaflet map (once) ──────────────────────────────────────────
+
   useEffect(() => {
     if (!mapDivRef.current || mapRef.current) return;
 
     const map = L.map(mapDivRef.current, {
       center: [18.78, 98.98],
+
       zoom: 9,
+
       minZoom: 7,
+
       maxZoom: 14,
+
       // Pan limit: CM + surrounding provinces (Mae Hong Son, Chiang Rai, Phayao, Lampang, Lamphun, Tak)
-      maxBounds: L.latLngBounds([[16.8, 96.6], [21.2, 101.4]]),
+
+      maxBounds: L.latLngBounds([
+        [16.8, 96.6],
+        [21.2, 101.4],
+      ]),
+
       maxBoundsViscosity: 0.85,
+
       zoomControl: false, // we render our own buttons
+
       touchZoom: true,
+
       // tap: false handled below via CSS touch-action
+
       doubleClickZoom: true,
+
       scrollWheelZoom: true,
     });
 
-    tileLayerRef.current = createBaseTileLayer('standard').addTo(map);
+    tileLayerRef.current = createBaseTileLayer("standard").addTo(map);
 
     // Leaflet built-in scale bar (replaces our static "20 km")
-    L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
+
+    L.control.scale({ imperial: false, position: "bottomleft" }).addTo(map);
 
     // ── Static layers ─────────────────────────────────────────────────────────
 
     // 1. World-minus-CM mask (dim surrounding area)
+
     L.geoJSON(maskFeature as any, {
       style: {
-        color: 'transparent',
+        color: "transparent",
+
         weight: 0,
-        fillColor: '#0d1a15',
+
+        fillColor: "#0d1a15",
+
         fillOpacity: 0.24,
       },
+
       interactive: false,
     }).addTo(map);
 
     // 2. CM province fill (subtle green tint) + strong border
+
     L.geoJSON(provinceFeature as any, {
       style: {
-        color: '#0f6b54',
+        color: "#0f6b54",
+
         weight: 2.5,
+
         opacity: 0.9,
-        fillColor: '#22c55e',
+
+        fillColor: "#22c55e",
+
         fillOpacity: 0.05,
-        lineJoin: 'round',
+
+        lineJoin: "round",
       },
+
       interactive: false,
     }).addTo(map);
 
     // 3. District boundaries (thin, hover highlight, clickable)
-    L.geoJSON(districtsGeoData as any, {
+
+    districtsLayerRef.current = L.geoJSON(districtsGeoData as any, {
       style: {
-        color: '#6aab7a',
+        color: "#6aab7a",
+
         weight: 0.8,
+
         opacity: 0.45,
-        fillColor: 'transparent',
+
+        fillColor: "transparent",
+
         fillOpacity: 0,
       },
+
       onEachFeature: (feature, layer) => {
-        const nameTh: string = feature.properties?.nameTh || feature.properties?.name || '';
+        const nameTh: string =
+          feature.properties?.nameTh || feature.properties?.name || "";
+
+        layer.bindTooltip(nameTh, {
+          sticky: true,
+          className: "district-tooltip",
+        });
+
         layer.on({
           click: (e: L.LeafletMouseEvent) => {
             L.DomEvent.stopPropagation(e);
-            if (pinHomeFromMapEvent(e)) return;
-            onSelChangeRef.current({
-              eyebrow: 'อำเภอ',
-              title: nameTh,
-              detail: 'คลิกจุดข้อมูลเพื่อดูสถานะ PM2.5 หรือจุดความร้อน',
-              imageKey: 'district',
-              imageLabel: nameTh,
-              stats: [
-                { label: 'จังหวัด', value: 'เชียงใหม่' },
-                { label: 'ชั้นข้อมูล', value: 'ขอบเขตอำเภอ' },
-              ],
+          },
+
+          mouseover: (e: L.LeafletMouseEvent) => {
+            const l = layer as L.Path;
+
+            l.setStyle({
+              color: "#10b981",
+
+              weight: 3.5,
+
+              opacity: 0.9,
+
+              fillColor: "#10b981",
+
+              fillOpacity: 0.15,
+            });
+
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+              l.bringToFront();
+            }
+          },
+
+          mouseout: () => {
+            (layer as L.Path).setStyle({
+              color: "#6aab7a",
+
+              weight: 0.8,
+
+              opacity: 0.45,
+
+              fillColor: "transparent",
+
+              fillOpacity: 0,
             });
           },
-          mouseover: () => (layer as L.Path).setStyle({ fillOpacity: 0.08, opacity: 0.8 }),
-          mouseout: () => (layer as L.Path).setStyle({ fillOpacity: 0, opacity: 0.45 }),
         });
       },
     }).addTo(map);
 
     // 4. Province title label (DivIcon — fixed pixel size, doesn't scale)
+
     L.marker([18.6, 98.6], {
       icon: L.divIcon({
         html: '<span class="province-title-label">เชียงใหม่</span>',
-        className: '',
+
+        className: "",
+
         iconSize: [160, 40],
+
         iconAnchor: [80, 20],
       }),
+
       interactive: false,
     }).addTo(map);
 
     // ── Dynamic layer groups ───────────────────────────────────────────────────
+
     hotspotsLayerRef.current = L.layerGroup().addTo(map);
+
     pm25LayerRef.current = L.layerGroup().addTo(map);
+
     landmarksLayerRef.current = L.layerGroup().addTo(map);
+
     plumesLayerRef.current = L.layerGroup().addTo(map);
+
     fireZonesLayerRef.current = L.layerGroup().addTo(map);
+
     fuelRiskLayerRef.current = L.layerGroup().addTo(map);
+
     communityForestsLayerRef.current = L.layerGroup().addTo(map);
+
+    predictionsLayerRef.current = L.layerGroup().addTo(map);
+
     userLocationLayerRef.current = L.layerGroup().addTo(map);
 
     // Click on blank map → set user location if in pinning mode, else reset selection
-    map.on('click', (e: L.LeafletMouseEvent) => {
+
+    map.on("click", (e: L.LeafletMouseEvent) => {
       if (isPinningRef.current && onMapClickRef.current) {
         onMapClickRef.current([e.latlng.lat, e.latlng.lng]);
+
         onPinningChangeRef.current?.(false);
-      } else {
+      } else if (!isSelectionLocked()) {
         onSelChangeRef.current(initialSelection);
       }
     });
 
+    // Clean selection on popup close (if not transitioning to another marker)
+
+    map.on("popupclose", () => {
+      setTimeout(() => {
+        if (isTransitioningRef.current) return;
+
+        if (isSelectionLocked()) return;
+
+        let hasOpenPopup = false;
+
+        map.eachLayer((layer) => {
+          if (layer instanceof L.Popup) {
+            hasOpenPopup = true;
+          }
+        });
+
+        if (!hasOpenPopup) {
+          onSelChangeRef.current(initialSelection);
+        }
+      }, 50);
+    });
+
     // Track zoom for React re-renders (controls zoom readout + marker tier)
-    map.on('zoomend', () => setZoom(map.getZoom()));
+
+    map.on("zoomend", () => setZoom(map.getZoom()));
 
     mapRef.current = map;
 
     return () => {
       map.remove();
+
       mapRef.current = null;
+
       tileLayerRef.current = null;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Basemap switching ─────────────────────────────────────────────────────
+
   useEffect(() => {
     const map = mapRef.current;
+
     if (!map) return;
+
     if (tileLayerRef.current) {
       map.removeLayer(tileLayerRef.current);
     }
+
     const nextLayer = createBaseTileLayer(baseMapId);
+
     nextLayer.addTo(map);
+
     nextLayer.setZIndex(0);
+
     tileLayerRef.current = nextLayer;
   }, [baseMapId]);
 
   // Fire Management Zones: prototype management boundary layer.
+
   useEffect(() => {
     const group = fireZonesLayerRef.current;
+
     if (!group) return;
+
     group.clearLayers();
+
     if (!layers.fireZones) return;
 
     FIRE_MANAGEMENT_ZONES.forEach((zone) => {
       const color = zoneHealthColor(zone.health);
+
       const feature = {
-        type: 'Feature',
+        type: "Feature",
+
         properties: { id: zone.id, name: zone.name },
+
         geometry: zone.geometry,
       };
+
       L.geoJSON(feature as any, {
         style: {
           color,
-          weight: zone.health === 'Red' ? 2.4 : 1.7,
+          weight: zone.health === "Red" ? 2.4 : 1.7,
           opacity: 0.82,
           fillColor: color,
-          fillOpacity: zone.health === 'Red' ? 0.16 : 0.1,
-          dashArray: zone.health === 'Red' ? undefined : '5, 5',
-          lineJoin: 'round',
-        },
-        onEachFeature: (_feature, layer) => {
-          layer.on({
-            click: (e: L.LeafletMouseEvent) => {
-              L.DomEvent.stopPropagation(e);
-              if (pinHomeFromMapEvent(e)) return;
-              onSelChangeRef.current(fireZoneSelection(zone));
-            },
-            mouseover: () => {
-              if (isPinningRef.current) return;
-              (layer as L.Path).setStyle({ fillOpacity: 0.24, weight: 2.8, opacity: 1 });
-              onSelChangeRef.current(fireZoneSelection(zone));
-            },
-            mouseout: () => {
-              (layer as L.Path).setStyle({
-                fillOpacity: zone.health === 'Red' ? 0.16 : 0.1,
-                weight: zone.health === 'Red' ? 2.4 : 1.7,
-                opacity: 0.82,
-              });
-            },
-          });
+          fillOpacity: zone.health === "Red" ? 0.16 : 0.1,
+          dashArray: zone.health === "Red" ? undefined : "5, 5",
+          lineJoin: "round",
         },
       }).addTo(group);
     });
   }, [layers.fireZones]);
 
   // Community forest points and estimated responsibility buffers.
+
   useEffect(() => {
     const group = communityForestsLayerRef.current;
+
     if (!group) return;
+
     group.clearLayers();
+
     if (!layers.communityForests) return;
 
-    const tier = zoom <= 9 ? 'sm' : zoom <= 11 ? 'md' : 'lg';
-    const markerSize = tier === 'sm' ? 18 : tier === 'md' ? 23 : 29;
+    const tier = zoom <= 9 ? "sm" : zoom <= 11 ? "md" : "lg";
+
+    const markerSize = tier === "sm" ? 18 : tier === "md" ? 23 : 29;
 
     COMMUNITY_FORESTS.forEach((forest) => {
       const selected = communityForestSelection(forest);
-      const boundaryColor = forest.fireManagement ? '#10b981' : '#f59e0b';
+
+      const boundaryColor = forest.fireManagement ? "#10b981" : "#f59e0b";
+
       L.circle([forest.lat, forest.lng], {
         radius: forest.estimatedBoundaryRadiusM,
+
         color: boundaryColor,
+
         weight: 1.3,
-        dashArray: '3, 5',
+
+        dashArray: "3, 5",
+
         fillColor: boundaryColor,
+
         fillOpacity: 0.08,
-        className: 'lf-community-forest-boundary',
+
+        className: "lf-community-forest-boundary",
       })
-        .on('click', (e: L.LeafletMouseEvent) => {
+
+        .bindPopup(
+          createPopupHtml(
+            selected.eyebrow,
+            selected.title,
+            selected.detail,
+            selected.stats || [],
+            selected.mapUrl,
+            selected.sourceLabel,
+            selected.sourceUrl,
+          ),
+          { maxWidth: 340, minWidth: 300, className: "map-custom-popup" },
+        )
+
+        .on("click", (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+
           if (pinHomeFromMapEvent(e)) return;
-          onSelChangeRef.current(selected);
+
+          selectMarker(selected, e.target);
         })
-        .on('mouseover', () => {
-          if (!isPinningRef.current) onSelChangeRef.current(selected);
+
+        .on("mouseover", () => {
+          if (!isPinningRef.current) selectMarker(selected);
         })
+
         .addTo(group);
 
       const labelHtml =
-        tier === 'lg'
+        tier === "lg"
           ? `<span class="lf-cf__label">${forest.name}</span>`
-          : tier === 'md'
+          : tier === "md"
             ? `<span class="lf-cf__label">อ.${forest.amphoe}</span>`
-            : '';
+            : "";
+
       const icon = L.divIcon({
-        html: `<div class="lf-cf${forest.fireManagement ? ' lf-cf--active' : ''}" style="width:${markerSize}px;height:${markerSize}px">
-          <span class="lf-cf__dot"></span>
+        html: `<div class="lf-cf${forest.fireManagement ? " lf-cf--active" : ""}" style="width:${markerSize}px;height:${markerSize}px;display:flex;align-items:center;justify-content:center;font-size:${Math.round(markerSize * 0.72)}px">
+
+          🌳
+
           ${labelHtml}
+
         </div>`,
-        className: 'lf-marker-wrap',
+
+        className: "lf-marker-wrap",
+
         iconSize: [markerSize, markerSize],
+
         iconAnchor: [markerSize / 2, markerSize / 2],
       });
 
       L.marker([forest.lat, forest.lng], { icon, zIndexOffset: 80 })
-        .on('click', (e: L.LeafletMouseEvent) => {
+
+        .bindPopup(
+          createPopupHtml(
+            selected.eyebrow,
+            selected.title,
+            selected.detail,
+            selected.stats || [],
+            selected.mapUrl,
+            selected.sourceLabel,
+            selected.sourceUrl,
+          ),
+          { maxWidth: 340, minWidth: 300, className: "map-custom-popup" },
+        )
+
+        .on("click", (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+
           if (pinHomeFromMapEvent(e)) return;
-          onSelChangeRef.current(selected);
+
+          selectMarker(selected, e.target);
         })
-        .on('mouseover', () => {
-          if (!isPinningRef.current) onSelChangeRef.current(selected);
+
+        .on("mouseover", () => {
+          if (!isPinningRef.current) selectMarker(selected);
         })
+
         .addTo(group);
     });
   }, [layers.communityForests, zoom]);
 
   // ── Hotspot markers (rebuild on data/toggle/zoom) ──────────────────────────
+
   useEffect(() => {
     const group = hotspotsLayerRef.current;
+
     if (!group) return;
+
     group.clearLayers();
+
     if (!layers.hotspots) return;
 
     // Zoom tiers (matches Leaflet tile-zoom levels):
+
     //   sm  ≤ 9  → icon only, no label
+
     //   md 10–11 → icon + abbreviated district name
+
     //   lg ≥ 12  → icon + full district·subdistrict
-    const tier = zoom <= 9 ? 'sm' : zoom <= 11 ? 'md' : 'lg';
-    const size = tier === 'sm' ? 20 : tier === 'md' ? 26 : 34;
+
+    const tier = zoom <= 9 ? "sm" : zoom <= 11 ? "md" : "lg";
+
+    const size = tier === "sm" ? 20 : tier === "md" ? 26 : 34;
 
     dashboard.hotspots.items.forEach((h) => {
-      const isForest = h.landuse_type && h.landuse_type !== 'OTHER';
+      const isForest = h.landuse_type && h.landuse_type !== "OTHER";
+
       const labelHtml =
-        tier !== 'sm' && h.district
+        tier !== "sm" && h.district
           ? `<span class="lf-hotspot__label">${
-              tier === 'lg' && h.subdistrict
+              tier === "lg" && h.subdistrict
                 ? `อ.${h.district} · ต.${h.subdistrict}`
                 : `อ.${h.district}`
             }</span>`
-          : '';
+          : "";
 
       const icon = L.divIcon({
-        html: `<div class="lf-hotspot${isForest ? ' lf-hotspot--forest' : ''}" style="width:${size}px;height:${size}px">
+        html: `<div class="lf-hotspot${isForest ? " lf-hotspot--forest" : ""}" style="width:${size}px;height:${size}px">
+
           <div class="lf-hotspot__halo"></div>
+
           <span class="lf-hotspot__fire" aria-hidden="true" style="font-size:${Math.round(size * 0.72)}px"></span>
+
           ${labelHtml}
+
         </div>`,
-        className: 'lf-marker-wrap',
+
+        className: "lf-marker-wrap",
+
         iconSize: [size, size],
+
         iconAnchor: [size / 2, size / 2],
       });
 
+      const loc = hotspotLocation(h);
+
+      const selection: MapSelection = {
+        eyebrow: "จุดความร้อน",
+
+        title: hotspotPlaceTitle(h),
+
+        detail: `${loc ? `${loc} · ` : ""}ตรวจพบ ${formatTime(h.detected_at)} · ${h.source}`,
+
+        mapUrl: `https://www.google.com/maps?q=${h.latitude},${h.longitude}`,
+
+        imageKey: hotspotImageKey(h),
+
+        imageLabel: hotspotPlaceTitle(h),
+
+        stats: hotspotStats(h),
+      };
+
+      const popupContent = createPopupHtml(
+        selection.eyebrow,
+
+        selection.title,
+
+        selection.detail,
+
+        selection.stats || [],
+
+        selection.mapUrl,
+
+        selection.sourceLabel,
+
+        selection.sourceUrl,
+      );
+
       L.marker([h.latitude, h.longitude], { icon, zIndexOffset: 100 })
-        .on('click', (e: L.LeafletMouseEvent) => {
+
+        .bindPopup(popupContent, {
+          maxWidth: 340,
+          minWidth: 300,
+          className: "map-custom-popup",
+        })
+
+        .on("click", (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+
           if (pinHomeFromMapEvent(e)) return;
+
+          selectMarker(selection, e.target);
+        })
+
+        .on("mouseover", () => {
+          if (isPinningRef.current || isSelectionLocked()) return;
+
           const loc = hotspotLocation(h);
+
           onSelChangeRef.current({
-            eyebrow: 'จุดความร้อน',
+            eyebrow: "จุดความร้อน",
+
             title: hotspotPlaceTitle(h),
-            detail: `${loc ? `${loc} · ` : ''}ตรวจพบ ${formatTime(h.detected_at)} · ${h.source}`,
+
+            detail: `${loc ? `${loc} · ` : ""}ตรวจพบ ${formatTime(h.detected_at)} · ${h.source}`,
+
             mapUrl: `https://www.google.com/maps?q=${h.latitude},${h.longitude}`,
+
             imageKey: hotspotImageKey(h),
+
             imageLabel: hotspotPlaceTitle(h),
+
             stats: hotspotStats(h),
           });
         })
-        .on('mouseover', () => {
-          if (isPinningRef.current) return;
-          const loc = hotspotLocation(h);
-          onSelChangeRef.current({
-            eyebrow: 'จุดความร้อน',
-            title: hotspotPlaceTitle(h),
-            detail: `${loc ? `${loc} · ` : ''}ตรวจพบ ${formatTime(h.detected_at)} · ${h.source}`,
-            mapUrl: `https://www.google.com/maps?q=${h.latitude},${h.longitude}`,
-            imageKey: hotspotImageKey(h),
-            imageLabel: hotspotPlaceTitle(h),
-            stats: hotspotStats(h),
-          });
-        })
+
         .addTo(group);
     });
   }, [dashboard.hotspots.items, layers.hotspots, zoom]);
 
+  useEffect(() => {
+    const group = predictionsLayerRef.current;
+
+    if (!group) return;
+
+    group.clearLayers();
+
+    if (!layers.predictions) return;
+
+    const predictions = dashboard.intelligence?.localizedPredictions ?? [];
+
+    predictions.forEach((prediction) => {
+      const isFire = prediction.forecastType === "fire";
+      const icon = L.divIcon({
+        html: `<div class="lf-prediction lf-prediction--${prediction.severity} lf-prediction--${prediction.forecastType}">
+          <span class="lf-prediction__pulse"></span>
+          <span class="lf-prediction__glyph">${isFire ? "ฟ" : "ฝ"}</span>
+        </div>`,
+        className: "lf-marker-wrap",
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+      });
+
+      const selection: MapSelection = {
+        eyebrow: "คาดการณ์รายพื้นที่",
+        title: prediction.locationName,
+        detail: prediction.reason_for_prediction,
+        lat: prediction.latitude,
+        lng: prediction.longitude,
+        mapUrl: `https://www.google.com/maps?q=${prediction.latitude},${prediction.longitude}`,
+        imageKey: isFire ? "hotspot" : "wind",
+        imageLabel: prediction.locationName,
+        stats: [
+          {
+            label: "ประเภทคาดการณ์",
+            value: `${prediction.forecastType === "fire" ? "ไฟป่า" : "ฝุ่น"} +${prediction.lead_time_hours} ชม.`,
+            tone: prediction.severity === "watch" ? "watch" : "risk",
+          },
+          {
+            label: "ระดับ",
+            value:
+              prediction.severity === "critical"
+                ? "วิกฤต"
+                : prediction.severity === "high"
+                  ? "สูง"
+                  : prediction.severity === "watch"
+                    ? "เฝ้าระวัง"
+                    : prediction.severity,
+            tone: prediction.severity === "watch" ? "watch" : "risk",
+          },
+        ],
+      };
+
+      L.marker([prediction.latitude, prediction.longitude], {
+        icon,
+        zIndexOffset: 220,
+      })
+        .bindPopup(
+          createPopupHtml(
+            selection.eyebrow,
+            selection.title,
+            selection.detail,
+            selection.stats || [],
+            selection.mapUrl,
+            selection.sourceLabel,
+            selection.sourceUrl,
+          ),
+          { maxWidth: 360, minWidth: 300, className: "map-custom-popup" },
+        )
+        .on("click", (e: L.LeafletMouseEvent) => {
+          L.DomEvent.stopPropagation(e);
+
+          if (pinHomeFromMapEvent(e)) return;
+
+          selectMarker(selection, e.target);
+        })
+        .on("mouseover", () => {
+          if (isPinningRef.current || isSelectionLocked()) return;
+
+          onSelChangeRef.current(selection);
+        })
+        .addTo(group);
+    });
+  }, [dashboard.intelligence?.localizedPredictions, layers.predictions]);
+
   // ── PM2.5 markers (rebuild on data/toggle/zoom) ────────────────────────────
+
   useEffect(() => {
     const group = pm25LayerRef.current;
+
     if (!group) return;
+
     group.clearLayers();
+
     if (!layers.pm25) return;
 
-    const tier = zoom <= 9 ? 'sm' : zoom <= 11 ? 'md' : 'lg';
-    const size = tier === 'sm' ? 28 : tier === 'md' ? 36 : 44;
+    const tier = zoom <= 9 ? "sm" : zoom <= 11 ? "md" : "lg";
+
+    const size = tier === "sm" ? 28 : tier === "md" ? 36 : 44;
+
     const currentPm25 = dashboard.pm25.current_pm25;
 
     // Plume circles use L.circle (radius in metres) → scale naturally with zoom
+
     L.circle([18.78, 98.6], {
       radius: plumeRadiusMeters(currentPm25) * 1.35,
+
       className: `lf-pm-plume lf-pm-plume--${pm25Tone(currentPm25)}`,
+
       interactive: false,
     }).addTo(group);
 
     dashboard.pm25.stations.forEach((s) => {
       L.circle([s.latitude, s.longitude], {
         radius: plumeRadiusMeters(s.pm25),
+
         className: `lf-pm-plume lf-pm-plume--${pm25Tone(s.pm25)}`,
+
         interactive: false,
       }).addTo(group);
     });
 
     // Province aggregate station (slightly larger marker)
+
     const aggSize = Math.round(size * 1.35);
+
     const aggLabelHtml =
-      tier !== 'sm' ? `<span class="lf-station__label">เฉลี่ยจังหวัด</span>` : '';
+      tier !== "sm"
+        ? `<span class="lf-station__label">เฉลี่ยจังหวัด</span>`
+        : "";
+
     const aggSel: MapSelection = {
-      eyebrow: 'ค่าเฉลี่ยจังหวัด',
-      title: 'PM2.5 เชียงใหม่',
+      eyebrow: "ค่าเฉลี่ยจังหวัด",
+
+      title: "PM2.5 เชียงใหม่",
+
       detail: `${formatPm25(currentPm25)} · ${dashboard.pm25.category} · อัปเดต ${formatTime(dashboard.pm25.latest_update)}`,
-      imageKey: 'province',
-      imageLabel: 'Chiang Mai province',
+
+      imageKey: "province",
+
+      imageLabel: "Chiang Mai province",
+
       stats: [
-        { label: 'PM2.5 เฉลี่ย', value: formatPm25(currentPm25), tone: pm25Tone(currentPm25) },
-        { label: 'สถานี', value: `${dashboard.pm25.stations.length} จุด` },
+        {
+          label: "PM2.5 เฉลี่ย",
+          value: formatPm25(currentPm25),
+          tone: pm25Tone(currentPm25),
+        },
+
+        { label: "สถานี", value: `${dashboard.pm25.stations.length} จุด` },
       ],
     };
 
     const aggIcon = L.divIcon({
       html: `<div class="lf-station lf-station--agg" style="background:${pm25Color(currentPm25)};width:${aggSize}px;height:${aggSize}px">
+
         <span class="lf-station__value">${pm25ValueLabel(currentPm25)}</span>
+
         ${aggLabelHtml}
+
       </div>`,
-      className: 'lf-marker-wrap',
+
+      className: "lf-marker-wrap",
+
       iconSize: [aggSize, aggSize],
+
       iconAnchor: [aggSize / 2, aggSize / 2],
     });
+
     L.marker([18.78, 98.6], { icon: aggIcon, zIndexOffset: 200 })
-      .on('click', (e: L.LeafletMouseEvent) => {
+
+      .bindPopup(
+        createPopupHtml(
+          aggSel.eyebrow,
+          aggSel.title,
+          aggSel.detail,
+          aggSel.stats || [],
+          aggSel.mapUrl,
+          aggSel.sourceLabel,
+          aggSel.sourceUrl,
+        ),
+        { maxWidth: 340, minWidth: 300, className: "map-custom-popup" },
+      )
+
+      .on("click", (e: L.LeafletMouseEvent) => {
         L.DomEvent.stopPropagation(e);
+
         if (pinHomeFromMapEvent(e)) return;
-        onSelChangeRef.current(aggSel);
+
+        selectMarker(aggSel, e.target);
       })
-      .on('mouseover', () => {
-        if (!isPinningRef.current) onSelChangeRef.current(aggSel);
+
+      .on("mouseover", () => {
+        if (!isPinningRef.current) selectMarker(aggSel);
       })
+
       .addTo(group);
 
     // Individual station markers
+
     dashboard.pm25.stations.forEach((s) => {
-      const stName =
-        tier === 'lg' ? (s.name.trim() || s.id) : s.district || '';
+      const stName = tier === "lg" ? s.name.trim() || s.id : s.district || "";
+
       const stLabelHtml =
-        tier !== 'sm' && stName
+        tier !== "sm" && stName
           ? `<span class="lf-station__label">${stName}</span>`
-          : '';
-      const qualityLabel = s.pm25 <= 25 ? 'ดีมาก' : s.pm25 <= 37 ? 'ดี' : s.pm25 <= 50 ? 'ปานกลาง' : s.pm25 <= 90 ? 'เริ่มมีผลกระทบ' : 'อันตราย';
-      const healthAdvice = s.pm25 <= 37 ? 'ปลอดภัยสำหรับทุกคน' : s.pm25 <= 50 ? 'กลุ่มเสี่ยงควรระวัง' : 'หลีกเลี่ยงกิจกรรมกลางแจ้ง';
+          : "";
+
+      const qualityLabel =
+        s.pm25 <= 25
+          ? "ดีมาก"
+          : s.pm25 <= 37
+            ? "ดี"
+            : s.pm25 <= 50
+              ? "ปานกลาง"
+              : s.pm25 <= 90
+                ? "เริ่มมีผลกระทบ"
+                : "อันตราย";
+
+      const healthAdvice =
+        s.pm25 <= 37
+          ? "ปลอดภัยสำหรับทุกคน"
+          : s.pm25 <= 50
+            ? "กลุ่มเสี่ยงควรระวัง"
+            : "หลีกเลี่ยงกิจกรรมกลางแจ้ง";
+
       const next: MapSelection = {
-        eyebrow: 'สถานีวัด PM2.5',
+        eyebrow: "สถานีวัด PM2.5",
+
         title: s.name.trim() || s.id,
+
         detail: `${formatPm25(s.pm25)} · ${qualityLabel} · อัปเดต ${formatTime(s.updated_at)} · ${s.district}`,
+
         imageKey: stationImageKey(s),
+
         imageLabel: s.name.trim() || s.id,
+
         stats: [
-          { label: 'PM2.5', value: formatPm25(s.pm25), tone: pm25Tone(s.pm25) },
-          { label: 'ระดับคุณภาพอากาศ', value: qualityLabel, tone: pm25Tone(s.pm25) },
-          { label: 'คำแนะนำสุขภาพ', value: healthAdvice, tone: pm25Tone(s.pm25) },
-          { label: 'อำเภอ', value: s.district },
-          { label: 'อัปเดต', value: formatTime(s.updated_at) },
+          { label: "PM2.5", value: formatPm25(s.pm25), tone: pm25Tone(s.pm25) },
+
+          {
+            label: "ระดับคุณภาพอากาศ",
+            value: qualityLabel,
+            tone: pm25Tone(s.pm25),
+          },
+
+          {
+            label: "คำแนะนำสุขภาพ",
+            value: healthAdvice,
+            tone: pm25Tone(s.pm25),
+          },
+
+          { label: "อำเภอ", value: s.district },
+
+          { label: "อัปเดต", value: formatTime(s.updated_at) },
         ],
       };
 
       const stIcon = L.divIcon({
         html: `<div class="lf-station" style="background:${pm25Color(s.pm25)};width:${size}px;height:${size}px">
+
           <span class="lf-station__value">${pm25ValueLabel(s.pm25)}</span>
+
           ${stLabelHtml}
+
         </div>`,
-        className: 'lf-marker-wrap',
+
+        className: "lf-marker-wrap",
+
         iconSize: [size, size],
+
         iconAnchor: [size / 2, size / 2],
       });
+
+      const popupContent = createPopupHtml(
+        next.eyebrow,
+
+        next.title,
+
+        next.detail,
+
+        next.stats || [],
+
+        next.mapUrl,
+
+        next.sourceLabel,
+
+        next.sourceUrl,
+      );
+
       L.marker([s.latitude, s.longitude], { icon: stIcon, zIndexOffset: 150 })
-        .on('click', (e: L.LeafletMouseEvent) => {
+
+        .bindPopup(popupContent, {
+          maxWidth: 340,
+          minWidth: 300,
+          className: "map-custom-popup",
+        })
+
+        .on("click", (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+
           if (pinHomeFromMapEvent(e)) return;
-          onSelChangeRef.current(next);
+
+          selectMarker(next, e.target);
         })
-        .on('mouseover', () => {
-          if (!isPinningRef.current) onSelChangeRef.current(next);
+
+        .on("mouseover", () => {
+          if (!isPinningRef.current) selectMarker(next);
         })
+
         .addTo(group);
     });
   }, [dashboard.pm25, layers.pm25, zoom]);
 
   // ── Chiang Mai landmarks (tourism layer) ───────────────────────────────────
+
   useEffect(() => {
     const group = landmarksLayerRef.current;
+
     if (!group) return;
+
     group.clearLayers();
+
     if (!layers.landmarks) return;
 
-    const tier = zoom <= 8 ? 'sm' : zoom <= 10 ? 'md' : 'lg';
-    const size = tier === 'sm' ? 16 : tier === 'md' ? 21 : 27;
+    const tier = zoom <= 8 ? "sm" : zoom <= 10 ? "md" : "lg";
+
+    const size = tier === "sm" ? 16 : tier === "md" ? 21 : 27;
 
     CHIANG_MAI_LANDMARKS.forEach((landmark) => {
-      const showLabel = tier === 'lg' || (tier === 'md' && zoom >= 10 && 'featured' in landmark && landmark.featured);
+      const showLabel =
+        tier === "lg" ||
+        (tier === "md" &&
+          zoom >= 10 &&
+          "featured" in landmark &&
+          landmark.featured);
+
       const kind = landmarkKind(landmark);
-      const labelHtml =
-        showLabel
-          ? `<span class="lf-landmark__label">${landmark.name}</span>`
-          : '';
+
+      const labelHtml = showLabel
+        ? `<span class="lf-landmark__label">${landmark.name}</span>`
+        : "";
+
       const icon = L.divIcon({
         html: `<div class="lf-landmark lf-landmark--${kind}" style="width:${size}px;height:${size}px">
+
           <span class="lf-landmark__pin">${landmarkKindLabel(kind)}</span>
+
           ${labelHtml}
+
         </div>`,
-        className: 'lf-marker-wrap',
+
+        className: "lf-marker-wrap",
+
         iconSize: [size, size],
+
         iconAnchor: [size / 2, size / 2],
       });
+
       const next = landmarkSelection(landmark, dashboard);
 
       L.marker(landmark.coords, { icon, zIndexOffset: 35 })
-        .on('click', (e: L.LeafletMouseEvent) => {
+
+        .bindPopup(
+          createPopupHtml(
+            next.eyebrow,
+            next.title,
+            next.detail,
+            next.stats || [],
+            next.mapUrl,
+            next.sourceLabel,
+            next.sourceUrl,
+          ),
+          { maxWidth: 340, minWidth: 300, className: "map-custom-popup" },
+        )
+
+        .on("click", (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+
           if (pinHomeFromMapEvent(e)) return;
-          onSelChangeRef.current(next);
+
+          selectMarker(next, e.target);
         })
-        .on('mouseover', () => {
-          if (!isPinningRef.current) onSelChangeRef.current(next);
+
+        .on("mouseover", () => {
+          if (!isPinningRef.current) selectMarker(next);
         })
+
         .addTo(group);
     });
   }, [dashboard, layers.landmarks, zoom]);
 
   // ── Windy-style wind particles from the current TMD AWS station reading ───
+
   useEffect(() => {
     const map = mapRef.current;
+
     if (!map) return;
 
     // Tear down when the layer is toggled off.
+
     if (!layers.wind) {
       if (velocityLayerRef.current) {
         map.removeLayer(velocityLayerRef.current);
+
         velocityLayerRef.current = null;
       }
+
       setWindParticlesOn(false);
+
       return;
     }
 
     const data = buildWindFieldFromStation(
       dashboard.weather.wind_speed_kmh,
+
       dashboard.weather.wind_direction_deg,
+
       dashboard.weather.latest_update,
     );
+
     if (velocityLayerRef.current) {
       map.removeLayer(velocityLayerRef.current);
+
       velocityLayerRef.current = null;
     }
+
     ensureVelocityLayerGuards();
+
     const layer = (L as any).velocityLayer({
       displayValues: false,
+
       data,
+
       minVelocity: 0,
+
       maxVelocity: 10,
+
       velocityScale: 0.01,
+
       particleAge: 120,
+
       particleMultiplier: 1 / 200,
+
       lineWidth: 2.5,
+
       frameRate: 30,
+
       opacity: 0.22,
-      colorScale: ['#2f7ad1', '#45a6d9', '#75c7e5', '#a8dfee'],
+
+      colorScale: ["#2f7ad1", "#45a6d9", "#75c7e5", "#a8dfee"],
     });
+
     layer.addTo(map);
+
     velocityLayerRef.current = layer;
+
     setWindParticlesOn(true);
 
     return () => {
       if (velocityLayerRef.current && mapRef.current) {
         mapRef.current.removeLayer(velocityLayerRef.current);
+
         velocityLayerRef.current = null;
       }
     };
-  }, [dashboard.weather.latest_update, dashboard.weather.wind_direction_deg, dashboard.weather.wind_speed_kmh, layers.wind]);
+  }, [
+    dashboard.weather.latest_update,
+    dashboard.weather.wind_direction_deg,
+    dashboard.weather.wind_speed_kmh,
+    layers.wind,
+  ]);
 
   // ── Plume vectors (rebuild on data/toggle/wind change) ──────────────────────
+
   useEffect(() => {
     const group = plumesLayerRef.current;
+
     if (!group) return;
+
     group.clearLayers();
+
     if (!layers.hotspots || !layers.wind) return;
 
     const windDir = dashboard.weather.wind_direction_deg;
+
     const windSpeed = dashboard.weather.wind_speed_kmh;
-    
+
     // Meteorological wind angle (coming from). Convert to blowing towards:
+
     const blowingTowardsRad = ((windDir + 180) * Math.PI) / 180;
-    
+
     // Plume length (approx 4km to 20km)
-    const length = 0.025 + Math.min(0.09, (windSpeed / 32) * 0.09); 
+
+    const length = 0.025 + Math.min(0.09, (windSpeed / 32) * 0.09);
+
     const spreadHalfRad = 0.3; // ~17 degrees spread on each side
 
     dashboard.hotspots.items.forEach((h) => {
       const lat0 = h.latitude;
+
       const lng0 = h.longitude;
 
       const angle1 = blowingTowardsRad - spreadHalfRad;
+
       const angle2 = blowingTowardsRad + spreadHalfRad;
+
       const latScale = Math.cos((lat0 * Math.PI) / 180);
 
       const lat1 = lat0 + length * Math.cos(angle1);
+
       const lng1 = lng0 + (length * Math.sin(angle1)) / latScale;
 
       const lat2 = lat0 + length * Math.cos(angle2);
+
       const lng2 = lng0 + (length * Math.sin(angle2)) / latScale;
 
-      L.polygon([[lat0, lng0], [lat1, lng1], [lat2, lng2]], {
-        color: '#f97316',
-        weight: 1,
-        fillColor: '#f97316',
-        fillOpacity: 0.16,
-        className: 'lf-smoke-plume',
-        interactive: false,
-      }).addTo(group);
+      L.polygon(
+        [
+          [lat0, lng0],
+          [lat1, lng1],
+          [lat2, lng2],
+        ],
+        {
+          color: "#f97316",
+
+          weight: 1,
+
+          fillColor: "#f97316",
+
+          fillOpacity: 0.16,
+
+          className: "lf-smoke-plume",
+
+          interactive: false,
+        },
+      ).addTo(group);
     });
-  }, [dashboard.hotspots.items, dashboard.weather.wind_direction_deg, dashboard.weather.wind_speed_kmh, layers.hotspots, layers.wind]);
+  }, [
+    dashboard.hotspots.items,
+    dashboard.weather.wind_direction_deg,
+    dashboard.weather.wind_speed_kmh,
+    layers.hotspots,
+    layers.wind,
+  ]);
 
   // ── Sentinel NDVI Fuel Load Layer ──────────────────────────────────────────
+
   useEffect(() => {
     const group = fuelRiskLayerRef.current;
+
     if (!group) return;
+
     group.clearLayers();
+
     if (!layers.fuelRisk) return;
 
     DRY_FOREST_ZONES.forEach((zone) => {
       L.circle(zone.center as [number, number], {
         radius: zone.radius,
-        color: zone.ndvi <= 0.25 ? '#dc2626' : '#eab308',
+
+        color: zone.ndvi <= 0.25 ? "#dc2626" : "#eab308",
+
         weight: 1.5,
-        dashArray: '4, 6',
-        fillColor: '#dc2626',
+
+        dashArray: "4, 6",
+
+        fillColor: "#dc2626",
+
         fillOpacity: 0.12,
-        className: 'lf-fuel-zone',
+
+        className: "lf-fuel-zone",
       })
-        .on('click', (e: L.LeafletMouseEvent) => {
+
+        .on("click", (e: L.LeafletMouseEvent) => {
           L.DomEvent.stopPropagation(e);
+
           if (pinHomeFromMapEvent(e)) return;
-          onSelChangeRef.current({
-            eyebrow: 'ดัชนีอ้างอิง NDVI · ค่าเฉลี่ยฤดูแล้ง (ไม่ใช่ Live Satellite)',
+
+          selectMarker({
+            eyebrow:
+              "ดัชนีอ้างอิง NDVI · ค่าเฉลี่ยฤดูแล้ง (ไม่ใช่ Live Satellite)",
+
             title: zone.name,
+
             detail: `วิเคราะห์พื้นที่ป่าสงวนจากดัชนีความแห้งแล้ง (NDVI) พบสภาพ ${zone.status} · ค่า NDVI เป็นค่าอ้างอิงเฉลี่ยช่วงฤดูแล้ง ไม่ใช่ค่าดาวเทียมแบบ Real-time`,
-            imageKey: 'forest',
+
+            imageKey: "forest",
+
             imageLabel: zone.name,
+
             stats: [
-              { label: 'ดัชนี NDVI (อ้างอิง)', value: zone.ndvi.toString(), tone: zone.ndvi <= 0.25 ? 'risk' : 'watch' },
-              { label: 'ระดับความแห้ง', value: zone.ndvi <= 0.25 ? 'แห้งแล้งวิกฤต' : 'แห้งแล้งปานกลาง' },
-              { label: 'สถานะเชื้อเพลิง', value: 'มีเศษใบไม้แห้งหนาแน่น (ค่าเฉลี่ยฤดูแล้ง)', tone: 'risk' },
+              {
+                label: "ดัชนี NDVI (อ้างอิง)",
+                value: zone.ndvi.toString(),
+                tone: zone.ndvi <= 0.25 ? "risk" : "watch",
+              },
+
+              {
+                label: "ระดับความแห้ง",
+                value: zone.ndvi <= 0.25 ? "แห้งแล้งวิกฤต" : "แห้งแล้งปานกลาง",
+              },
+
+              {
+                label: "สถานะเชื้อเพลิง",
+                value: "มีเศษใบไม้แห้งหนาแน่น (ค่าเฉลี่ยฤดูแล้ง)",
+                tone: "risk",
+              },
+            ],
+          }, e.target);
+        })
+
+        .on("mouseover", () => {
+          if (isPinningRef.current || isSelectionLocked()) return;
+
+          onSelChangeRef.current({
+            eyebrow:
+              "ดัชนีอ้างอิง NDVI · ค่าเฉลี่ยฤดูแล้ง (ไม่ใช่ Live Satellite)",
+
+            title: zone.name,
+
+            detail: `วิเคราะห์พื้นที่ป่าสงวนจากดัชนีความแห้งแล้ง (NDVI) พบสภาพ ${zone.status} · ค่า NDVI เป็นค่าอ้างอิงเฉลี่ยช่วงฤดูแล้ง ไม่ใช่ค่าดาวเทียมแบบ Real-time`,
+
+            imageKey: "forest",
+
+            imageLabel: zone.name,
+
+            stats: [
+              {
+                label: "ดัชนี NDVI (อ้างอิง)",
+                value: zone.ndvi.toString(),
+                tone: zone.ndvi <= 0.25 ? "risk" : "watch",
+              },
+
+              {
+                label: "ระดับความแห้ง",
+                value: zone.ndvi <= 0.25 ? "แห้งแล้งวิกฤต" : "แห้งแล้งปานกลาง",
+              },
+
+              {
+                label: "สถานะเชื้อเพลิง",
+                value: "มีเศษใบไม้แห้งหนาแน่น (ค่าเฉลี่ยฤดูแล้ง)",
+                tone: "risk",
+              },
             ],
           });
         })
-        .on('mouseover', () => {
-          if (isPinningRef.current) return;
-          onSelChangeRef.current({
-            eyebrow: 'ดัชนีอ้างอิง NDVI · ค่าเฉลี่ยฤดูแล้ง (ไม่ใช่ Live Satellite)',
-            title: zone.name,
-            detail: `วิเคราะห์พื้นที่ป่าสงวนจากดัชนีความแห้งแล้ง (NDVI) พบสภาพ ${zone.status} · ค่า NDVI เป็นค่าอ้างอิงเฉลี่ยช่วงฤดูแล้ง ไม่ใช่ค่าดาวเทียมแบบ Real-time`,
-            imageKey: 'forest',
-            imageLabel: zone.name,
-            stats: [
-              { label: 'ดัชนี NDVI (อ้างอิง)', value: zone.ndvi.toString(), tone: zone.ndvi <= 0.25 ? 'risk' : 'watch' },
-              { label: 'ระดับความแห้ง', value: zone.ndvi <= 0.25 ? 'แห้งแล้งวิกฤต' : 'แห้งแล้งปานกลาง' },
-              { label: 'สถานะเชื้อเพลิง', value: 'มีเศษใบไม้แห้งหนาแน่น (ค่าเฉลี่ยฤดูแล้ง)', tone: 'risk' },
-            ],
-          });
-        })
+
         .addTo(group);
     });
   }, [layers.fuelRisk]);
 
   // ── User location marker and nearest hotspot link line ────────────────────
+
   useEffect(() => {
     const group = userLocationLayerRef.current;
+
     if (!group) return;
+
     group.clearLayers();
+
     if (!userLocation) return;
 
     const userIcon = L.divIcon({
       html: `<div class="lf-user-home">
+
         <span class="lf-user-home__pulse"></span>
+
         <span class="lf-user-home__icon">🏠</span>
+
       </div>`,
-      className: 'lf-marker-wrap',
+
+      className: "lf-marker-wrap",
+
       iconSize: [38, 38],
+
       iconAnchor: [19, 19],
     });
 
     L.marker(userLocation, { icon: userIcon, zIndexOffset: 300 }).addTo(group);
 
     let nearest: Hotspot | null = null;
+
     let minD = Infinity;
+
     dashboard.hotspots.items.forEach((h) => {
-      const d = getDistanceKm(userLocation[0], userLocation[1], h.latitude, h.longitude);
+      const d = getDistanceKm(
+        userLocation[0],
+        userLocation[1],
+        h.latitude,
+        h.longitude,
+      );
+
       if (d < minD) {
         minD = d;
+
         nearest = h;
       }
     });
 
     if (nearest) {
       const d = minD;
-      const line = L.polyline([userLocation, [(nearest as Hotspot).latitude, (nearest as Hotspot).longitude]], {
-        color: '#dc2626',
-        weight: 2.5,
-        dashArray: '6, 10',
-        opacity: 0.85,
-      }).addTo(group);
+
+      const line = L.polyline(
+        [
+          userLocation,
+          [(nearest as Hotspot).latitude, (nearest as Hotspot).longitude],
+        ],
+        {
+          color: "#dc2626",
+
+          weight: 2.5,
+
+          dashArray: "6, 10",
+
+          opacity: 0.85,
+        },
+      ).addTo(group);
 
       line.bindTooltip(`${d.toFixed(1)} กม.`, {
         permanent: true,
-        direction: 'center',
-        className: 'lf-distance-tooltip',
+
+        direction: "center",
+
+        className: "lf-distance-tooltip",
       });
 
       mapRef.current?.panTo(userLocation, { animate: true });
@@ -1160,67 +2328,322 @@ export function DashboardMap({
   }, [userLocation, dashboard.hotspots.items]);
 
   // ── Zoom controls ─────────────────────────────────────────────────────────
+
   const handleZoomIn = useCallback(() => mapRef.current?.zoomIn(), []);
+
   const handleZoomOut = useCallback(() => mapRef.current?.zoomOut(), []);
+
   const handleReset = useCallback(() => {
     mapRef.current?.setView([18.78, 98.98], 9, { animate: true });
+
     onSelectionChange(initialSelection);
   }, [onSelectionChange]);
 
   // ── Wind ──────────────────────────────────────────────────────────────────
+
   const windRotation = dashboard.weather.wind_direction_deg + 180;
+
   const windSpeed = dashboard.weather.wind_speed_kmh;
+
   const windSourceText = dashboard.weather.wind_direction_text;
-  const windDestinationText = windDestinationName(dashboard.weather.wind_direction_deg);
+
+  const windDestinationText = windDestinationName(
+    dashboard.weather.wind_direction_deg,
+  );
 
   const windSelection: MapSelection = {
-    eyebrow: 'ทิศทางลม',
+    eyebrow: "ทิศทางลม",
+
     title: `ไปทาง${windDestinationText}`,
+
     detail: `${windSpeed} km/h · ลมมาจาก${windSourceText} แล้วพัดไปทาง${windDestinationText} · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
-    imageKey: 'wind',
-    imageLabel: 'Wind layer',
+
+    imageKey: "wind",
+
+    imageLabel: "Wind layer",
+
     stats: [
-      { label: 'ความเร็ว', value: `${windSpeed} km/h` },
-      { label: 'มาจาก', value: windSourceText },
-      { label: 'ไปทาง', value: windDestinationText },
+      { label: "ความเร็ว", value: `${windSpeed} km/h` },
+
+      { label: "มาจาก", value: windSourceText },
+
+      { label: "ไปทาง", value: windDestinationText },
     ],
   };
 
+  // ── Focus Centering & Selection Highlight Pulse Indicator ─────────────────
+
+  const selectionHighlightRef = useRef<L.Marker | null>(null);
+
+  const activePopupRef = useRef<L.Popup | null>(null);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map) return;
+
+    if (selectionHighlightRef.current) {
+      map.removeLayer(selectionHighlightRef.current);
+
+      selectionHighlightRef.current = null;
+    }
+
+    if (activePopupRef.current) {
+      map.closePopup(activePopupRef.current);
+
+      activePopupRef.current = null;
+    }
+
+    if (!selection || selection.title === initialSelection.title) {
+      return;
+    }
+
+    // Attempt to extract lat/lng from mapUrl if not explicitly provided
+
+    let lat = selection.lat;
+
+    let lng = selection.lng;
+
+    if (lat === undefined || lng === undefined) {
+      if (selection.mapUrl) {
+        const match = selection.mapUrl.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+
+        if (match) {
+          lat = parseFloat(match[1]);
+
+          lng = parseFloat(match[2]);
+        }
+      }
+    }
+
+    if (lat !== undefined && lng !== undefined) {
+      isTransitioningRef.current = true;
+
+      // Pan map to selection, zooming in to level 15
+      const targetZoom = 15;
+      map.setView([lat, lng], targetZoom, { animate: true });
+
+      const pulseIcon = L.divIcon({
+        html: `<div class="selected-marker-focus-container">
+
+                 <div class="selected-marker-focus-glow"></div>
+
+                 <div class="selected-marker-pulse">
+
+                   <div class="pulse-ring-selected"></div>
+
+                 </div>
+
+               </div>`,
+
+        className: "lf-selection-pulse-wrap",
+
+        iconSize: [40, 40],
+
+        iconAnchor: [20, 20],
+      });
+
+      const highlightMarker = L.marker([lat, lng], {
+        icon: pulseIcon,
+
+        zIndexOffset: 10000,
+
+        interactive: false,
+      }).addTo(map);
+
+      selectionHighlightRef.current = highlightMarker;
+
+      // Programmatically open the Leaflet popup at the focused coordinates
+
+      const popupContent = createPopupHtml(
+        selection.eyebrow || "ข้อมูล",
+
+        selection.title,
+
+        selection.detail || "",
+
+        selection.stats || [],
+
+        selection.mapUrl,
+
+        selection.sourceLabel,
+
+        selection.sourceUrl,
+      );
+
+      const popup = L.popup({
+        maxWidth: 340,
+
+        minWidth: 300,
+
+        className: "map-custom-popup",
+
+        closeOnClick: false,
+      })
+
+        .setLatLng([lat, lng])
+
+        .setContent(popupContent);
+
+      const timer = setTimeout(() => {
+        popup.openOn(map);
+
+        activePopupRef.current = popup;
+
+        isTransitioningRef.current = false;
+      }, 200);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [selection]);
+
+  // ── Highlight District Boundary on Hover ─────────────────────────────────
+
+  useEffect(() => {
+    const layerGroup = districtsLayerRef.current;
+
+    if (!layerGroup) return;
+
+    layerGroup.eachLayer((layer: any) => {
+      const feature = layer.feature;
+
+      const nameTh =
+        feature.properties?.nameTh || feature.properties?.name || "";
+
+      const cleanNameTh = nameTh.replace("อำเภอ", "").replace("อ.", "").trim();
+
+      const cleanHovered = hoveredDistrict
+        ? hoveredDistrict.replace("อำเภอ", "").replace("อ.", "").trim()
+        : "";
+
+      if (hoveredDistrict && cleanNameTh === cleanHovered) {
+        layer.setStyle({
+          color: "#10b981",
+
+          weight: 3.5,
+
+          opacity: 0.9,
+
+          fillColor: "#10b981",
+
+          fillOpacity: 0.15,
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+          layer.bringToFront();
+        }
+      } else {
+        layer.setStyle({
+          color: "#6aab7a",
+
+          weight: 0.8,
+
+          opacity: 0.45,
+
+          fillColor: "transparent",
+
+          fillOpacity: 0,
+        });
+      }
+    });
+  }, [hoveredDistrict]);
+
   // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="map-canvas">
       {/* Leaflet map mount point */}
-      <div ref={mapDivRef} className={`map-leaflet${isPinningMode ? ' map-pinning' : ''}`} />
+
+      <div
+        ref={mapDivRef}
+        className={`map-leaflet${isPinningMode ? " map-pinning" : ""}`}
+      />
 
       {/* Wind chip button */}
+
       {layers.wind && (
         <button
           type="button"
-          className={`wind-chip${windParticlesOn ? '' : ' wind-chip--loading'}`}
+          className={`wind-chip${windParticlesOn ? "" : " wind-chip--loading"}`}
           onClick={() => onSelectionChange(windSelection)}
           aria-label={`ลมไปทาง${windDestinationText} ${windSpeed} km/h`}
         >
-          <span className="wind-chip__compass" style={{ transform: `rotate(${windRotation}deg)` }}>
+          <span
+            className="wind-chip__compass"
+            style={{ transform: `rotate(${windRotation}deg)` }}
+          >
             <Wind size={15} />
           </span>
+
           <span className="wind-chip__text">
             <b>ไป{windDestinationText}</b>
+
             <small>{windSpeed} km/h</small>
           </span>
         </button>
       )}
 
-      <div className="map-help">ลากเพื่อเลื่อน · เลื่อนเมาส์เพื่อซูม · คลิกจุดข้อมูล</div>
+      <div className="map-help">
+        ลากเพื่อเลื่อน · เลื่อนเมาส์เพื่อซูม · คลิกจุดข้อมูล
+      </div>
 
       <div className="map-legend">
-        <span><i className="dot dot--pm" />สถานีวัด PM2.5</span>
-        <span><i className="fire-ic">🔥</i>จุดความร้อน</span>
-        {layers.fireZones && <span><i className="zone-ic" />Fire Management Zone</span>}
-        {layers.communityForests && <span><i className="cf-ic" />ป่าชุมชน</span>}
-        {layers.fuelRisk && <span><i className="dot dot--fuel" />ดัชนีป่าแห้ง NDVI</span>}
-        {layers.hotspots && layers.wind && <span><i className="cone-ic" />ขอบเขตควันลอย</span>}
-        {layers.landmarks && <span><i className="landmark-ic" />แลนด์มาร์ก</span>}
-        <span><i className="arrow-ic">↑</i>ทิศลม TMD</span>
+        <span>
+          <i className="dot dot--pm" />
+          สถานีวัด PM2.5
+        </span>
+
+        <span>
+          <i className="fire-ic">🔥</i>จุดความร้อน
+        </span>
+
+        {layers.fireZones && (
+          <span>
+            <i className="zone-ic" />
+            เขตจัดการไฟ
+          </span>
+        )}
+
+        {layers.communityForests && (
+          <span>
+            <i className="cf-ic" />
+            ป่าชุมชน
+          </span>
+        )}
+
+        {layers.fuelRisk && (
+          <span>
+            <i className="dot dot--fuel" />
+            ดัชนีป่าแห้ง NDVI
+          </span>
+        )}
+
+        {layers.predictions && (
+          <span>
+            <i className="prediction-ic" />
+            คาดการณ์ AI
+          </span>
+        )}
+
+        {layers.hotspots && layers.wind && (
+          <span>
+            <i className="cone-ic" />
+            ขอบเขตควันลอย
+          </span>
+        )}
+
+        {layers.landmarks && (
+          <span>
+            <i className="landmark-ic" />
+            แลนด์มาร์ก
+          </span>
+        )}
+
+        <span>
+          <i className="arrow-ic">↑</i>ทิศลม TMD
+        </span>
       </div>
 
       <div className="basemap-switcher" aria-label="เลือกพื้นแผนที่">
@@ -1228,7 +2651,7 @@ export function DashboardMap({
           <button
             key={basemap.id}
             type="button"
-            className={baseMapId === basemap.id ? 'active' : ''}
+            className={baseMapId === basemap.id ? "active" : ""}
             onClick={() => setBaseMapId(basemap.id)}
           >
             {basemap.label}
@@ -1238,23 +2661,33 @@ export function DashboardMap({
 
       <div className="map-controls">
         <span className="zoom-readout">ซูม {zoom}</span>
+
         <button type="button" aria-label="ขยาย" onClick={handleZoomIn}>
           <Plus size={18} />
         </button>
+
         <button type="button" aria-label="ย่อ" onClick={handleZoomOut}>
           <Minus size={18} />
         </button>
-        <button type="button" aria-label="กลับสู่มุมมองเริ่มต้น" onClick={handleReset}>
+
+        <button
+          type="button"
+          aria-label="กลับสู่มุมมองเริ่มต้น"
+          onClick={handleReset}
+        >
           <Crosshair size={18} />
         </button>
+
         {onToggleFullscreen && (
           <button
             type="button"
-            aria-label={isFullscreen ? 'ย่อแผนที่' : 'ขยายแผนที่เต็มจอ'}
-            className={`map-fullscreen-btn${isFullscreen ? ' active' : ''}`}
+            aria-label={isFullscreen ? "ย่อแผนที่" : "ขยายแผนที่เต็มจอ"}
+            className={`map-fullscreen-btn${isFullscreen ? " active" : ""}`}
             onClick={() => {
               onToggleFullscreen();
+
               // Give Leaflet a frame to pick up the new container size
+
               setTimeout(() => mapRef.current?.invalidateSize(), 120);
             }}
           >
@@ -1264,20 +2697,30 @@ export function DashboardMap({
       </div>
 
       {/* Fullscreen-only: the map-detail-bar lives outside the map, so in
+
           fullscreen we surface the tapped feature's info on the map itself. */}
+
       {isFullscreen && (
         <div className="map-fs-detail" aria-live="polite">
-          {selection.eyebrow && <span className="map-fs-detail__eyebrow">{selection.eyebrow}</span>}
+          {selection.eyebrow && (
+            <span className="map-fs-detail__eyebrow">{selection.eyebrow}</span>
+          )}
+
           <strong className="map-fs-detail__title">{selection.title}</strong>
-          {selection.detail && <p className="map-fs-detail__text">{selection.detail}</p>}
+
+          {selection.detail && (
+            <p className="map-fs-detail__text">{selection.detail}</p>
+          )}
+
           {selection.stats && selection.stats.length > 0 && (
             <div className="map-fs-detail__stats">
               {selection.stats.slice(0, 6).map((stat) => (
                 <div
                   key={`${stat.label}-${stat.value}`}
-                  className={`map-fs-stat${stat.tone ? ` map-fs-stat--${stat.tone}` : ''}`}
+                  className={`map-fs-stat${stat.tone ? ` map-fs-stat--${stat.tone}` : ""}`}
                 >
                   <span>{stat.label}</span>
+
                   <b>{stat.value}</b>
                 </div>
               ))}
@@ -1288,5 +2731,3 @@ export function DashboardMap({
     </div>
   );
 }
-
-

@@ -8,6 +8,8 @@ export type MapSelection = {
   imageKey?: string;
   imageLabel?: string;
   stats?: { label: string; value: string; tone?: 'good' | 'watch' | 'risk' }[];
+  lat?: number;
+  lng?: number;
 };
 
 export function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {

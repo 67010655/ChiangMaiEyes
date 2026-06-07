@@ -89,7 +89,7 @@
     "drought_zones": [
       {
         "id": "dry-mae-chaem",
-        "location_name": "Mae Chaem western ridge",
+        "location_name": "สันเขาฝั่งตะวันตก อ.แม่แจ่ม",
         "latitude": 18.501,
         "longitude": 98.356,
         "soil_moisture_percent": 18.0,
@@ -99,7 +99,7 @@
       },
       {
         "id": "dry-chiang-dao",
-        "location_name": "Chiang Dao limestone forest edge",
+        "location_name": "ชายป่าหินปูน อ.เชียงดาว",
         "latitude": 19.366,
         "longitude": 98.966,
         "soil_moisture_percent": 21.5,
@@ -109,7 +109,7 @@
       },
       {
         "id": "dry-samoeng",
-        "location_name": "Samoeng fuel accumulation belt",
+        "location_name": "แนวสะสมเชื้อเพลิง อ.สะเมิง",
         "latitude": 18.849,
         "longitude": 98.73,
         "soil_moisture_percent": 16.2,
@@ -121,25 +121,25 @@
     "landuse_breakdown": [
       {
         "landuse_type": "NRF",
-        "label": "National reserved forest",
+        "label": "ป่าสงวนแห่งชาติ",
         "count": 5,
         "percent": 62.5
       },
       {
         "landuse_type": "CONSERVATION",
-        "label": "Protected forest",
+        "label": "ป่าอนุรักษ์",
         "count": 1,
         "percent": 12.5
       },
       {
         "landuse_type": "AGRI",
-        "label": "Agricultural land",
+        "label": "พื้นที่เกษตร",
         "count": 1,
         "percent": 12.5
       },
       {
         "landuse_type": "OTHER",
-        "label": "Community/other",
+        "label": "ชุมชนและอื่น ๆ",
         "count": 1,
         "percent": 12.5
       }
@@ -152,10 +152,10 @@
       "ranking": [
         {
           "forest_id": "cf-mae-chaem-001",
-          "forest_name": "Mae Chaem Community Forest",
-          "village": "Ban Mae Pan",
+          "forest_name": "ป่าชุมชนแม่แจ่ม",
+          "village": "บ้านแม่ปาน",
           "tambon": "Chang Khoeng",
-          "amphoe": "Mae Chaem",
+          "amphoe": "แม่แจ่ม",
           "latitude": 18.503,
           "longitude": 98.361,
           "total_score": 91,
@@ -169,10 +169,10 @@
             "ecological_outcome": 20
           },
           "reasons": [
-            "firebreak",
-            "fuel management",
-            "no-burn agreement",
-            "patrol"
+            "แนวกันไฟ",
+            "จัดการเชื้อเพลิง",
+            "ข้อตกลงงดเผา",
+            "ลาดตระเวน"
           ]
         }
       ]
@@ -180,39 +180,39 @@
     "localizedPredictions": [
       {
         "id": "pred-smoke-mae-chaem",
-        "locationName": "Ban Mae Pan, Mae Chaem",
+        "locationName": "บ้านแม่ปาน อ.แม่แจ่ม",
         "latitude": 18.503,
         "longitude": 98.361,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "PM2.5 may rise near Ban Mae Pan within 12 hours because wind at 3.6 km/h is moving smoke toward downwind corridor, with 0 nearby hotspot(s) and valley terrain limiting ventilation.",
+        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 3.6 กม./ชม. พาควันไปทางแนวปลายลม มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
         "lead_time_hours": 12
       },
       {
         "id": "pred-fire-samoeng",
-        "locationName": "Ban Mae Sap, Samoeng",
+        "locationName": "บ้านแม่สาบ อ.สะเมิง",
         "latitude": 18.849,
         "longitude": 98.73,
         "forecastType": "fire",
         "severity": "watch",
-        "reason_for_prediction": "Fire spread watch is elevated because the Samoeng fuel belt has low soil moisture, dry leaf litter, and community reports show fuel management is incomplete this week.",
+        "reason_for_prediction": "ต้องเฝ้าระวังไฟลามมากขึ้น เพราะแนวเชื้อเพลิงสะเมิงมีความชื้นดินต่ำ ใบไม้แห้งสะสม และรายงานชุมชนยังพบงานจัดการเชื้อเพลิงค้างอยู่ในสัปดาห์นี้",
         "lead_time_hours": 24
       },
       {
         "id": "pred-smoke-chiang-dao",
-        "locationName": "Ban Tham, Chiang Dao",
+        "locationName": "บ้านถ้ำ อ.เชียงดาว",
         "latitude": 19.367,
         "longitude": 98.964,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "Smoke pooling is possible around Ban Tham because wind direction 143 degrees can push smoke along the ridge, while limestone valley topography slows dispersion overnight.",
+        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 143 องศาพาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
         "lead_time_hours": 12
       }
     ],
     "source_notes": [
-      "Burn scar and burn frequency can be replaced with GISTDA API Gateway WMS/WMTS when an API key is configured.",
-      "Drought and soil moisture are mocked from TAMFIRE-style indicators until a stable public feed is wired.",
-      "Weekly ranking follows four RFD-inspired dimensions: management, prevention, utilization, ecological outcome."
+      "ชั้นข้อมูลรอยไหม้และความถี่การไหม้สามารถเปลี่ยนเป็น GISTDA API Gateway WMS/WMTS ได้เมื่อมี API key",
+      "ข้อมูลภัยแล้งและความชื้นดินยังเป็นตัวชี้วัดจำลองแนว TAMFIRE ระหว่างรอ feed สาธารณะที่เสถียร",
+      "อันดับรายสัปดาห์ใช้ 4 มิติ: การจัดการ การป้องกัน การใช้ประโยชน์ และผลลัพธ์เชิงนิเวศ"
     ]
   }
 }

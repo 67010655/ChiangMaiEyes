@@ -46,7 +46,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "พิธีไหว้ดงเซ้ง (มิถุนายน)"
+      ],
+      "uniquePlants": "ก่อ สน ทะโล้ จำปี",
+      "uniqueAnimals": "กระรอก ไก่ฟ้า ไก่ป่า",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-511",
@@ -79,7 +90,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 16
+      "committeeTotal": 16,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "สัก เต็ง รัง พลวง ก่อ สน",
+      "uniqueAnimals": "เก้ง หมูป่า อีเห็น แลน กระรอก กระต่าย ไก่ป่า  นก",
+      "uniqueWatersources": "ห้วยผาปู",
+      "committeeMale": 16,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรียง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-508",
@@ -112,7 +134,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 9
+      "committeeTotal": 9,
+      "traditions": [
+        "พิธีไหว้ดงเซ้ง (มิถุนายน)"
+      ],
+      "uniquePlants": "เต็ง รัง ก่อ ทะโล้ สน",
+      "uniqueAnimals": "หมูป่า กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "ห้วยแม่ตะละ",
+      "committeeMale": 9,
+      "committeeFemale": 0,
+      "ethnicity": "ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-506",
@@ -145,7 +178,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 14
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ก่อ สน ประดู่ กล้วยป่า",
+      "uniqueAnimals": "หมูป่า  กระรอก นก ปลา",
+      "uniqueWatersources": "ห้วยแม่ตะละ",
+      "committeeMale": 13,
+      "committeeFemale": 1,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-507",
@@ -178,7 +222,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง ก่อ ประดู่ สน",
+      "uniqueAnimals": "หมูป่า เก้ง กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "ห้วแม่ตะละ",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรียง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-505",
@@ -211,7 +266,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "ก่อ เต็ง รัง ประดู่",
+      "uniqueAnimals": "หมูป่า กระรอก เก้ง อีเห็น นก",
+      "uniqueWatersources": "ห้วยแม่แดด",
+      "committeeMale": 12,
+      "committeeFemale": 3,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-704",
@@ -242,7 +308,16 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "ก่อ จำปี",
+      "uniqueAnimals": "กระต่าย ไก่ป่า กระรอก นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ม้ง/ปกากะญอ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-705",
@@ -272,7 +347,16 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "สน ก่อ",
+      "uniqueAnimals": "นก",
+      "uniqueWatersources": "",
+      "committeeMale": 11,
+      "committeeFemale": 4,
+      "ethnicity": "ปกากะญอ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-703",
@@ -302,7 +386,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "สน ก่อ",
+      "uniqueAnimals": "กระต่ายป่า ไก่ป่า กระรอก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ปกากะญอ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-514",
@@ -335,7 +430,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 14
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "ตึง แงะ ไผ่ ก่อ",
+      "uniqueAnimals": "กระรอก กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 2,
+      "ethnicity": "กะเหรี่ยง/ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-516",
@@ -367,7 +473,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)",
+        "สืบชะตาป่า"
+      ],
+      "uniquePlants": "เต็ง รัง สน ประดู่ สัก",
+      "uniqueAnimals": "นก ไก่ป่า กระรอก กระแต กระต่าย",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-520",
@@ -400,7 +518,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "บวชป่า (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "เต็ง รัง สน ประดู่ พะยอม สัก แดง",
+      "uniqueAnimals": "กระรอก กระแต กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-517",
@@ -432,7 +562,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 14
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "ก่อ เต็ง รัง ประดู่",
+      "uniqueAnimals": "กระรอก กระแต อีเห็น ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 2,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-518",
@@ -465,7 +606,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 14
+      "committeeTotal": 14,
+      "traditions": [
+        "สืบชะตาป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "เต็ง รัง ก่อ สน พลวง ไผ่",
+      "uniqueAnimals": "หมูป่า เก้ง อีเห็น กระรอก กระแต ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 2,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-521",
@@ -497,7 +650,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สัก ประดู่ แดง เต็ง รัง มะเดื่ิอ",
+      "uniqueAnimals": "ไก่ป่า นก หนู กระรอก กระแต กระต่าย หมูป่า เก้ง",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-513",
@@ -529,7 +694,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 12
+      "committeeTotal": 12,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "เต็ง รัง พลวง ประดู่ มะค่โบง",
+      "uniqueAnimals": "กวางป่า เก้ง หมูป่า อีเห็น กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง/ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-515",
@@ -562,7 +738,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 9
+      "committeeTotal": 9,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)",
+        "สืบชะตามแม่น้ำ"
+      ],
+      "uniquePlants": "ตึง แงะ เปา ก่อ ประดู่",
+      "uniqueAnimals": "กวางป่า เก้ง หมูป่า แลน กระรอก กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "ห้วยไคร้",
+      "committeeMale": 5,
+      "committeeFemale": 4,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-663",
@@ -592,7 +780,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 10
+      "committeeTotal": 10,
+      "traditions": [
+        "เลี้ยงเจ้าป่าเจ้าเขา (พฤษภาคม)",
+        "กินวอปีใหม่ (ธันวาคม)"
+      ],
+      "uniquePlants": "นางพญาเสือโครง ก่อ สน",
+      "uniqueAnimals": "หมูป่า หมาไน เก้ง อีเห็น ตะกวด ไก่ป่า กระรอก นก",
+      "uniqueWatersources": "",
+      "committeeMale": 10,
+      "committeeFemale": 0,
+      "ethnicity": "ลาหู่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-666",
@@ -621,7 +821,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 14
+      "committeeTotal": 14,
+      "traditions": [
+        "ปอยส่างลอง/ (มีนาคม)"
+      ],
+      "uniquePlants": "",
+      "uniqueAnimals": "",
+      "uniqueWatersources": "",
+      "committeeMale": 13,
+      "committeeFemale": 1,
+      "ethnicity": "ไทยใหญ่/จีนฮ่อ/คนพื้นเมือง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-664",
@@ -652,7 +863,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 6
+      "committeeTotal": 6,
+      "traditions": [
+        "บวชป่า (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง พลวง สน ก่อ ไผ่",
+      "uniqueAnimals": "นก ไก่ป่า กระรอก หมูป่า เก้ง อีเห็น",
+      "uniqueWatersources": "",
+      "committeeMale": 6,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง/ไทยใหญ่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-665",
@@ -683,7 +905,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 13
+      "committeeTotal": 13,
+      "traditions": [
+        "บวชป่า (พฤษภาคม)",
+        "ปอยส่างลอง (มีนาคม)"
+      ],
+      "uniquePlants": "สนเขา  เต็ง รัง มะค่า รักดอกแดง ไผ่",
+      "uniqueAnimals": "นก ไก่ป่า กระรอก กระแต",
+      "uniqueWatersources": "",
+      "committeeMale": 10,
+      "committeeFemale": 3,
+      "ethnicity": "คนพื้นเมือง/ไทยใหญ่/ลีซู/ลาหู",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-667",
@@ -713,7 +947,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "ปอยส่างลอง (มีนาคม)"
+      ],
+      "uniquePlants": "สน พลวง เต็ง รัง ไผ่",
+      "uniqueAnimals": "นก ไก่ป่า",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 3,
+      "ethnicity": "คนพื้นเมือง/ไทยใหญ่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-502",
@@ -745,7 +990,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 16
+      "committeeTotal": 16,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สน พลวง ก่อ",
+      "uniqueAnimals": "กระรอก กระต่าย นก",
+      "uniqueWatersources": "",
+      "committeeMale": 11,
+      "committeeFemale": 5,
+      "ethnicity": "คนพื้นเมือง/ไทยใหย่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-500",
@@ -776,7 +1032,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 20
+      "committeeTotal": 20,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง พลวง ไผ่",
+      "uniqueAnimals": "เก้ง ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 16,
+      "committeeFemale": 4,
+      "ethnicity": "ชนพื้นเมือง/ไทยใหญ่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-501",
@@ -807,7 +1074,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 10
+      "committeeTotal": 10,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง ก่อ สัก แดง",
+      "uniqueAnimals": "กระรอก ไก่ป่า หมูป่า เก้ง อีเห็น นก",
+      "uniqueWatersources": "",
+      "committeeMale": 10,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง/กะเหรี่ยง/ไทยใหญ่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-529",
@@ -840,7 +1118,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "สัก ตะเคียน เต็ง รัง ก่อ สน ทะโล้ มณฑาดอย",
+      "uniqueAnimals": "หมูป่า เก้ง ไก่ป่า ไก่ฟ้า กระรอก อีเห็น นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-534",
@@ -872,7 +1162,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "พิธีไหว้ดงเซ้ง (มิถุนายน)"
+      ],
+      "uniquePlants": "ก่อ สน สัก",
+      "uniqueAnimals": "เก้ง หมูป่า กระรอก ไก่ป่า  นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-535",
@@ -904,7 +1205,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีฝาย (มิถุนายน)",
+        "สืบชะตาแม่น้ำ (กรกฎาคม)"
+      ],
+      "uniquePlants": "สัก ประดู่ มะค่า แดง ตะแบก เต็ง รัง",
+      "uniqueAnimals": "เก้ง หมาป่า กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 14,
+      "committeeFemale": 1,
+      "ethnicity": "",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-536",
@@ -936,7 +1249,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 14
+      "committeeTotal": 14,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ก่อ สน จำปี จำปาป่า",
+      "uniqueAnimals": "ลิง เก้ง หมูป่า กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 13,
+      "committeeFemale": 1,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-537",
@@ -967,7 +1292,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ประดู่ แดง สัก",
+      "uniqueAnimals": "กระรอก กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-538",
@@ -999,7 +1335,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ทะโล้ ประดู่ ก่อ สน แดง",
+      "uniqueAnimals": "หมูป่า เก้ง แลน ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-524",
@@ -1031,7 +1378,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 14
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (มีนาคม)"
+      ],
+      "uniquePlants": "สัก พลวง เต็ง รัง  ไผ่",
+      "uniqueAnimals": "ไก่ป่า กระรอก หนู นก",
+      "uniqueWatersources": "",
+      "committeeMale": 14,
+      "committeeFemale": 0,
+      "ethnicity": "คนพิ้นเมือง/กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-526",
@@ -1063,7 +1422,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 19
+      "committeeTotal": 19,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "สัก เต็ง รัง ก่อ ประดู่",
+      "uniqueAnimals": "หมูป่า เก้ง ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 9,
+      "committeeFemale": 10,
+      "ethnicity": "กะเหรี่ยง/และคนพื้นเมือง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-523",
@@ -1095,7 +1466,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (มีนาคม)"
+      ],
+      "uniquePlants": "สน ก่อ ทะโล้ จำปี รัก เติม มะขามป้อม",
+      "uniqueAnimals": "เก้ง หมูป่า ชะนี กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง/กะเหรี่นง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-528",
@@ -1127,7 +1510,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "สัก แดง ประดู่ มะค่า เต็งรัง",
+      "uniqueAnimals": "หมูป่า อีเห็น กระรอก กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "ห้วบโป่ง ห้วยเป้า ห้วยริน",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-91",
@@ -1156,7 +1551,16 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "ยาง",
+      "uniqueAnimals": "หมูป่า ไก่ป่า เก้ง",
+      "uniqueWatersources": "",
+      "committeeMale": 14,
+      "committeeFemale": 1,
+      "ethnicity": "กะเหรี่ยงสะกอ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-284",
@@ -1184,7 +1588,16 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "สัก พะยูง ยางนา",
+      "uniqueAnimals": "",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 3,
+      "ethnicity": "ไทย",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-79",
@@ -1211,7 +1624,16 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "ตะเคียน",
+      "uniqueAnimals": "หมูป่า",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 3,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-104",
@@ -1241,7 +1663,16 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "เหียง ก่อ ยาง ตะเคียน เต็ง รัง",
+      "uniqueAnimals": "",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กระเหรี่ยงแม่ต๋ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-285",
@@ -1269,7 +1700,16 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 12
+      "committeeTotal": 12,
+      "traditions": [],
+      "uniquePlants": "ยาง ตะเคียน เต็ง รัง ประดู่",
+      "uniqueAnimals": "กระรอก อีเห็น หมูป่า หมาป่า นกยูง",
+      "uniqueWatersources": "ห้วย",
+      "committeeMale": 9,
+      "committeeFemale": 3,
+      "ethnicity": "ไทย",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-345",
@@ -1301,7 +1741,24 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (มีนาคม)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ ยางฮี่ แดง สัก ประดู่ ตะแบก เต็ง รัง เหียง กระยาเลย",
+      "uniqueAnimals": "",
+      "uniqueWatersources": "ห้วยแม่แทน",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ไทยยวน/หรือคนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
     },
     {
       "id": "thaicfnet-348",
@@ -1333,7 +1790,24 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (มีนาคม)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ มะม่วงป่า สัก ประดู่ เกล็ด เหียง มะเดื่อ มะกอก แฟน เปา ติ้ว คอแลน",
+      "uniqueAnimals": "หมูป่า หมาป่า ตุ่น ตะกวด กระรอก อีเห็น ไก่ป่า บ่างแจ๊ะ งู ตัวนิ่ม",
+      "uniqueWatersources": "ลำห้วยป่ากล้วย",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
     },
     {
       "id": "thaicfnet-330",
@@ -1365,7 +1839,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)",
+        "สืบชะตาป่า"
+      ],
+      "uniquePlants": "สัก แดง เต็ง รัง พลวง",
+      "uniqueAnimals": "ไก่ป่า หมูป่า กระรอก แลน นก",
+      "uniqueWatersources": "ประปาภูเขา",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "-",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-344",
@@ -1397,7 +1883,24 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 20
+      "committeeTotal": 20,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาป่า"
+      ],
+      "uniquePlants": "ยางใหญ่ มะม่วงป่า สัก ประดู่ เกล็ด เหียง มะเดื่อ มะกอก เปา ติ้ว คอแลน",
+      "uniqueAnimals": "หมูป่า ตะกวด กระรอก อีเห็น ไก่ป่า งู",
+      "uniqueWatersources": "ห้วยแม่บอนบก ห้วยหวายฝาด",
+      "committeeMale": 20,
+      "committeeFemale": 0,
+      "ethnicity": "",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
     },
     {
       "id": "thaicfnet-347",
@@ -1428,7 +1931,24 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "สืบชะตาป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ แดง สัก ประดู่ ตะแบก เต็ง รัง เหียง มะขามป้อม ติ้ว กระพี้ควาย มะตูม กายาเลย",
+      "uniqueAnimals": "เก้ง หมูป่า วอก(ชะนี) งู ตัวนิ่ม อีเห็น ไก่ป่า เม่น นกยูง ตะกวด",
+      "uniqueWatersources": "บ่อเก็บน้ำดิบห้วยเขียดขาป๊อด",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
     },
     {
       "id": "thaicfnet-346",
@@ -1460,7 +1980,24 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 23
+      "committeeTotal": 23,
+      "traditions": [
+        "สืบชะตาป่า (มีนาคม)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ มะม่วงป่า สัก ประดู่ เกล็ด เหียง มะเดื่อ มะกอก แฟน เปา ติ้ว คอแลน",
+      "uniqueAnimals": "หมูป่า หมาป่า ตุ่น ตะกวด กระรอก อีเห็น ไก่ป่า บ่าง งู ตัวนิ่ม",
+      "uniqueWatersources": "",
+      "committeeMale": 23,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
     },
     {
       "id": "thaicfnet-349",
@@ -1491,7 +2028,24 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 21
+      "committeeTotal": 21,
+      "traditions": [
+        "บวชป่า (มีนาคม)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ มะม่วงป่า สัก ประดู่ เกล็ด เหียง มะเดื่อ มะกอก แฟน เปา ติ้ว คอแลน",
+      "uniqueAnimals": "หมูป่า หมาป่า ตุ่น ตะกวด กระรอก อีเห็น ไก่ป่า บ่างแจ๊ะ งู ตัวนิ่ม",
+      "uniqueWatersources": "อ่างเก็บน้ำห้วยต้นเดื่อ",
+      "committeeMale": 21,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
     },
     {
       "id": "thaicfnet-522",
@@ -1525,7 +2079,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "เต็ง รัง ประดู่ ยอป่า แดง ก่อ จำปาป่า",
+      "uniqueAnimals": "เก้ง หมูป่า ชะนี ลิง กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ปกากะยอ/หรือกะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-654",
@@ -1557,7 +2123,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 14
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สัก แดง เต็ง รัง ก่อ",
+      "uniqueAnimals": "หมูป่า ไก่ป่า กระรอก กระแต นก",
+      "uniqueWatersources": "",
+      "committeeMale": 14,
+      "committeeFemale": 0,
+      "ethnicity": "ลั้วะ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-655",
@@ -1588,7 +2165,18 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง สะเดา ไผ่",
+      "uniqueAnimals": "หมูป่า เก้ง ไก่ป่า กระรอก กระแต นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-653",
@@ -1620,7 +2208,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 15
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สัก จำปี ไผ่ มะม่วงป่า",
+      "uniqueAnimals": "หมูป่า เก้ง ชะนี ไก่ป่า กระต่ายป่า กระรอก กระแต",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     },
     {
       "id": "thaicfnet-533",
@@ -1652,7 +2252,19 @@
       ],
       "households": 0,
       "villagesCount": 1,
-      "committeeTotal": 11
+      "committeeTotal": 11,
+      "traditions": [
+        "สืบชะตาแม่น้ำ (มิถุนายน)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สัก ประดู่ มะค่า สะแก ตะเคียน เต็ง รัง ไผ่",
+      "uniqueAnimals": "เก้ง หมูป่า หมาป่า กระรอก กระต่าย นกยูง ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 11,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง/กะเหี่นง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
     }
   ]
 }
