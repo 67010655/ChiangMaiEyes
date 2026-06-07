@@ -6946,3 +6946,176 @@ button {
 .page-foot > span:not(.page-foot__sources-th):not(.page-foot__product-th) {
   display: none !important;
 }
+
+/* ==========================================================================
+
+   Mobile Portrait — Operator Dashboard (≤768px)
+
+   The desktop/browser layout above this width is untouched. Below it, the
+   side-by-side "ribbon tabs + map" layout (built for a wide screen) gets
+   re-stacked for one-thumb use on a phone:
+     1) the map leads as a fixed-height hero — it's what people check first
+     2) the info panel follows full-width, with the vertical tab ribbon
+        turned into a horizontal swipeable strip
+     3) floating map chrome (layer toggles, basemap, wind, zoom) is
+        decluttered and repositioned so it doesn't blanket the short canvas
+
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* ── 1. Stack map above the info panel ───────────────────────────────── */
+  .main-content-layout {
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+
+  .map-stage-wrapper {
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    align-self: auto !important;
+    order: -1 !important;
+    height: clamp(300px, 46vh, 440px) !important;
+    min-height: 300px !important;
+    border-radius: var(--radius) !important;
+  }
+
+  /* The map markup comes after the sidebar in the DOM (it's the part of the
+     screen the toggle button needs to reach), but on a phone people check
+     "what's happening on the map" before drilling into the panel below. */
+  .sidebar-container {
+    order: 1 !important;
+  }
+
+  .main-content-layout .map-stage,
+  .map-stage.map-hero {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  /* Collapsing the panel only makes sense beside a map, not above/below it */
+  .sidebar-toggle-btn {
+    display: none !important;
+  }
+
+  /* ── 2. Sidebar → full-width panel with a horizontal tab strip ───────── */
+  .sidebar-container,
+  .sidebar-container.collapsed {
+    width: 100% !important;
+    flex-direction: column !important;
+    border-right: none !important;
+    border-radius: var(--radius) !important;
+    overflow: visible !important;
+  }
+
+  .sidebar-container.collapsed .sidebar-panel-content {
+    width: 100% !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .sidebar-panel-content {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .sidebar-body {
+    max-height: none !important;
+    padding: 14px !important;
+  }
+
+  .sidebar-tabs {
+    flex-direction: row !important;
+    width: 100% !important;
+    height: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--line) !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 8px !important;
+    gap: 6px !important;
+  }
+
+  .sidebar-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-tab-btn {
+    flex: 0 0 auto !important;
+    flex-direction: row !important;
+    width: auto !important;
+    min-height: 44px !important;
+    padding: 10px 16px !important;
+    font-size: 0.8rem !important;
+    white-space: nowrap !important;
+  }
+
+  /* ── 3. Floating map chrome: trim for a shorter portrait canvas ──────── */
+  /* Touch users pinch-to-zoom and pan natively, so the desktop hint text,
+     on-canvas zoom buttons, legend and scale bar would only crowd a map
+     that's already short — wind + basemap move to the top corners and the
+     layer toggles become one swipeable pill strip along the bottom edge. */
+  .map-help,
+  .map-legend,
+  .map-scale,
+  .map-controls {
+    display: none !important;
+  }
+
+  .wind-chip {
+    top: 14px !important;
+    left: 14px !important;
+    bottom: auto !important;
+    max-width: calc(100% - 150px);
+    padding: 6px 12px 6px 8px !important;
+  }
+
+  .basemap-switcher {
+    top: 14px !important;
+    right: 14px !important;
+    bottom: auto !important;
+    grid-template-columns: repeat(2, minmax(54px, 1fr)) !important;
+    gap: 4px !important;
+    padding: 4px !important;
+  }
+
+  .basemap-switcher button {
+    min-height: 32px !important;
+    font-size: 0.64rem !important;
+  }
+
+  .map-layer-selector {
+    top: auto !important;
+    bottom: 12px !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px !important;
+    padding: 8px !important;
+    border-radius: 999px !important;
+    max-height: 54px !important;
+  }
+
+  .map-layer-selector::-webkit-scrollbar {
+    display: none;
+  }
+
+  .layer-selector-title,
+  .layer-divider {
+    display: none !important;
+  }
+
+  .layer-btn {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    white-space: nowrap !important;
+    padding: 9px 14px !important;
+    font-size: 0.74rem !important;
+  }
+}
