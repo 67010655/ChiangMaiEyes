@@ -1,11 +1,47 @@
 {
-  "count": 0,
-  "density_per_100_km2": 0.0,
-  "latest_update": "2026-06-07T14:01:07.875071+07:00",
-  "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
-  "items": [],
+  "count": 2,
+  "density_per_100_km2": 0.01,
+  "latest_update": "2026-06-08T19:15:20.085152+07:00",
+  "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
+  "items": [
+    {
+      "id": "HS-001",
+      "latitude": 18.48269,
+      "longitude": 98.35485,
+      "district": "แม่แจ่ม",
+      "subdistrict": "ท่าผา",
+      "landuse_type": "F000",
+      "landuse_name": "พื้นที่ป่า",
+      "satellite": "N21",
+      "confidence": 75,
+      "source": "GISTDA Disaster STAC VIIRS 3-day",
+      "detected_at": "2026-06-06T13:05:00+07:00",
+      "sources": [
+        "GISTDA Disaster STAC VIIRS 3-day"
+      ],
+      "source_count": 1
+    },
+    {
+      "id": "HS-002",
+      "latitude": 19.78684,
+      "longitude": 99.31593,
+      "district": "ฝาง",
+      "subdistrict": "แม่คะ",
+      "landuse_type": "O000",
+      "landuse_name": "อื่น ๆ",
+      "satellite": "N21",
+      "confidence": 75,
+      "source": "GISTDA Disaster STAC VIIRS 3-day",
+      "detected_at": "2026-06-06T01:53:00+07:00",
+      "sources": [
+        "GISTDA Disaster STAC VIIRS 3-day"
+      ],
+      "source_count": 1
+    }
+  ],
   "source_breakdown": {
     "Royal Forest Department Firemap": 0,
+    "GISTDA Disaster STAC VIIRS 3-day": 2,
     "GISTDA API Gateway VIIRS 1-day": 0,
     "NASA FIRMS": 0
   }

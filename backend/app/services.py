@@ -269,7 +269,11 @@ def get_hotspots(settings: Settings) -> HotspotResponse:
     if cached is not None:
         return cached
     try:
-        response = fetch_live_hotspots(settings.gistda_api_key, settings.nasa_firms_map_key)
+        response = fetch_live_hotspots(
+            settings.gistda_api_key,
+            settings.nasa_firms_map_key,
+            settings.gistda_disaster_api_key,
+        )
         response = HotspotResponse(**repair_thai_mojibake_tree(response.model_dump()))
         # RFD (Royal Forest Department) is the authoritative, full-coverage source.
         # Infrastructure it blocks (e.g. Vercel's datacenter) only gets partial live
