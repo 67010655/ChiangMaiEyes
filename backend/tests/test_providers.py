@@ -6,7 +6,9 @@ from app.providers.weather_provider import fetch_live_weather, get_wind_directio
 from app.providers.pm25_provider import fetch_live_pm25, get_pm25_category_and_color
 from app.providers.hotspot_provider import (
     BANGKOK_TZ,
+    GISTDA_DISASTER_SOURCE,
     fetch_hotspot_history,
+    fetch_gistda_disaster_hotspots,
     fetch_live_hotspots,
     estimate_district,
     fetch_forest_firemap_hotspots,
@@ -350,6 +352,105 @@ def test_fetch_live_hotspots_gistda_success(mock_get):
     assert response.items[0].district == "แม่ริม"
     assert response.items[0].confidence == 90
     assert response.items[0].detected_at == "2026-05-31T14:30:00+07:00"
+
+
+@patch("httpx.get")
+def test_fetch_gistda_disaster_hotspots_success(mock_get):
+    stac_resp = MagicMock()
+    stac_resp.json.return_value = {
+        "features": [
+            {
+                "assets": {
+                    "data": {
+                        "href": "https://vallaris.dragonfly.gistda.or.th/core/api/features/viirs_3days/items"
+                    }
+                }
+            }
+        ]
+    }
+
+    asset_resp = MagicMock()
+    asset_resp.json.return_value = {
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [98.35485, 18.48269]},
+                "properties": {
+                    "pv_idn": 50,
+                    "ap_tn": "Mae Chaem",
+                    "tb_tn": "Tha Pha",
+                    "th_date": "2026-06-06T00:00:00",
+                    "th_time": "1305",
+                    "satellite": "N21",
+                    "confidence": "nominal",
+                    "lu_hp_name": "Forest area",
+                    "lu_name": "National reserved forest",
+                    "lu_hp": "forest",
+                },
+            },
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [100.54, 13.78]},
+                "properties": {
+                    "pv_idn": 10,
+                    "ap_tn": "Phaya Thai",
+                    "th_date": "2026-06-06T00:00:00",
+                    "th_time": "1305",
+                },
+            },
+        ]
+    }
+    mock_get.side_effect = [stac_resp, asset_resp]
+
+    hotspots = fetch_gistda_disaster_hotspots("gistda_disaster_key")
+
+    assert len(hotspots) == 1
+    assert hotspots[0].source == GISTDA_DISASTER_SOURCE
+    assert hotspots[0].latitude == 18.48269
+    assert hotspots[0].longitude == 98.35485
+    assert hotspots[0].district == "Mae Chaem"
+    assert hotspots[0].subdistrict == "Tha Pha"
+    assert hotspots[0].landuse_type == "forest"
+    assert hotspots[0].landuse_name == "Forest area"
+    assert hotspots[0].satellite == "N21"
+    assert hotspots[0].confidence == 75
+    assert hotspots[0].detected_at == "2026-06-06T13:05:00+07:00"
+
+
+@patch("httpx.get")
+def test_fetch_live_hotspots_uses_gistda_disaster_when_rfd_empty(mock_get):
+    forest_resp = MagicMock()
+    forest_resp.json.return_value = {"hotspot": []}
+
+    stac_resp = MagicMock()
+    stac_resp.json.return_value = {
+        "features": [{"assets": {"data": {"href": "https://example.test/gistda/features"}}}]
+    }
+
+    asset_resp = MagicMock()
+    asset_resp.json.return_value = {
+        "features": [
+            {
+                "geometry": {"coordinates": [98.35485, 18.48269]},
+                "properties": {
+                    "pv_idn": 50,
+                    "ap_tn": "Mae Chaem",
+                    "th_date": "2026-06-06T00:00:00",
+                    "th_time": "1305",
+                    "confidence": "high",
+                },
+            }
+        ]
+    }
+    mock_get.side_effect = [forest_resp, stac_resp, asset_resp]
+
+    response = fetch_live_hotspots(gistda_disaster_key="gistda_disaster_key")
+
+    assert response.count == 1
+    assert response.source_breakdown["Royal Forest Department Firemap"] == 0
+    assert response.source_breakdown[GISTDA_DISASTER_SOURCE] == 1
+    assert response.items[0].sources == [GISTDA_DISASTER_SOURCE]
+    assert response.items[0].confidence == 90
 
 @patch("httpx.get")
 def test_fetch_live_hotspots_raises_when_forest_blocked_and_backups_empty(mock_get):

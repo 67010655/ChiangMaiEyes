@@ -60,6 +60,10 @@ def filter_to_province(hotspots: list[Hotspot]) -> list[Hotspot]:
         logger.info("Clipped %d hotspot(s) outside Chiang Mai province", dropped)
     return kept
 GISTDA_VIIRS_SOURCE = "GISTDA API Gateway VIIRS 1-day"
+GISTDA_DISASTER_SOURCE = "GISTDA Disaster STAC VIIRS 3-day"
+GISTDA_DISASTER_STAC_URL = "https://vallaris.dragonfly.gistda.or.th/core/api/stac/1.0/fire/search"
+GISTDA_DISASTER_COLLECTION = "viirs_3days"
+CHIANG_MAI_BBOX = "97.25,17.35,99.68,20.28"
 FOREST_FIREMAP_SOURCE = "Royal Forest Department Firemap"
 FOREST_FIREMAP_URL = "https://wildfire.forest.go.th/firemap/getdb.php"
 BANGKOK_TZ = datetime.timezone(datetime.timedelta(hours=7))
@@ -158,6 +162,116 @@ def fetch_gistda_hotspots(api_key: str) -> list[Hotspot]:
             logger.warning("Error parsing GISTDA API Gateway hotspot feature: %s", ex)
             continue
             
+    return hotspots
+
+
+def _confidence_from_raw(raw: object) -> int:
+    conf_raw = str(raw or "nominal").lower()
+    if conf_raw in ("high", "h"):
+        return 90
+    if conf_raw in ("low", "l"):
+        return 50
+    return 75
+
+
+def _gistda_detected_at(properties: dict) -> str:
+    th_date = properties.get("th_date") or properties.get("date")
+    th_time = properties.get("th_time") or properties.get("th_time_") or "0000"
+    if th_date:
+        return format_forest_detected_at(str(th_date), th_time)
+    return _nasa_detected_at(properties.get("acq_date"), properties.get("acq_time"))
+
+
+def _is_chiang_mai_feature(properties: dict) -> bool:
+    province_id = str(properties.get("pv_idn") or properties.get("pv_code") or "").strip()
+    if province_id == "50":
+        return True
+    province = str(properties.get("pv_tn") or properties.get("pv_en") or "").strip().lower()
+    return province in {"\u0e40\u0e0a\u0e35\u0e22\u0e07\u0e43\u0e2b\u0e21\u0e48", "chiang mai"}
+
+
+def _iter_gistda_asset_hrefs(stac: dict) -> list[str]:
+    hrefs: list[str] = []
+    for feature in stac.get("features", []):
+        assets = feature.get("assets", {})
+        data = assets.get("data") if isinstance(assets, dict) else None
+        href = data.get("href") if isinstance(data, dict) else None
+        if href:
+            hrefs.append(str(href))
+    return hrefs
+
+
+def _get_gistda_json(url: str | httpx.URL, *, params: dict | None = None, timeout: float) -> dict:
+    last_error: Exception | None = None
+    for attempt in range(2):
+        try:
+            response = httpx.get(url, params=params, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except (httpx.TimeoutException, httpx.HTTPStatusError) as ex:
+            last_error = ex
+            if attempt == 1:
+                break
+            logger.warning("Retrying GISTDA Disaster request after error: %s", ex)
+    raise last_error or RuntimeError("GISTDA Disaster request failed")
+
+
+def fetch_gistda_disaster_hotspots(
+    api_key: str,
+    collection: str = GISTDA_DISASTER_COLLECTION,
+) -> list[Hotspot]:
+    """Fetch the same VIIRS STAC layer used by disaster.gistda.or.th/fire."""
+    logger.info("Fetching hotspots from GISTDA Disaster STAC %s", collection)
+    stac = _get_gistda_json(
+        GISTDA_DISASTER_STAC_URL,
+        params={"collections": collection, "api_key": api_key},
+        timeout=30.0,
+    )
+    hrefs = _iter_gistda_asset_hrefs(stac)
+
+    hotspots: list[Hotspot] = []
+    idx = 1
+    for href in hrefs:
+        asset_url = httpx.URL(href).copy_merge_params({"bbox": CHIANG_MAI_BBOX, "limit": "10000"})
+        asset = _get_gistda_json(
+            asset_url,
+            timeout=30.0,
+        )
+        for feature in asset.get("features", []):
+            try:
+                properties = feature.get("properties", {})
+                if not _is_chiang_mai_feature(properties):
+                    continue
+                coords = (feature.get("geometry") or {}).get("coordinates") or []
+                lon = float(coords[0] if len(coords) >= 2 else properties.get("longitude"))
+                lat = float(coords[1] if len(coords) >= 2 else properties.get("latitude"))
+                district = str(properties.get("ap_tn") or "").strip() or estimate_district(lat, lon)
+                subdistrict = str(properties.get("tb_tn") or "").strip() or None
+                landuse_name = (
+                    str(properties.get("lu_hp_name") or properties.get("lu_name") or "").strip()
+                    or None
+                )
+                landuse_type = str(properties.get("lu_hp") or properties.get("lu_code") or "").strip() or None
+                hotspots.append(
+                    Hotspot(
+                        id=f"HS-GISTDA-DISASTER-{idx:03d}",
+                        latitude=lat,
+                        longitude=lon,
+                        district=district,
+                        subdistrict=subdistrict,
+                        landuse_type=landuse_type,
+                        landuse_name=landuse_name,
+                        satellite=properties.get("satellite") or properties.get("instrument") or "VIIRS",
+                        confidence=_confidence_from_raw(properties.get("confidence") or properties.get("f_alarm")),
+                        source=GISTDA_DISASTER_SOURCE,
+                        detected_at=_gistda_detected_at(properties),
+                    )
+                )
+                idx += 1
+            except Exception as ex:
+                logger.warning("Error parsing GISTDA Disaster STAC hotspot feature: %s", ex)
+                continue
+
     return hotspots
 
 def format_forest_detected_at(date_value: str | None, time_value: str | int | None) -> str:
@@ -368,7 +482,12 @@ RECONCILE_RADIUS_M = 750.0
 
 # When several sources report the same fire, keep the richest record as the
 # representative: RFD carries district/subdistrict/landuse, GISTDA next, NASA last.
-_SOURCE_PRIORITY = {FOREST_FIREMAP_SOURCE: 0, GISTDA_VIIRS_SOURCE: 1, "NASA FIRMS": 2}
+_SOURCE_PRIORITY = {
+    FOREST_FIREMAP_SOURCE: 0,
+    GISTDA_DISASTER_SOURCE: 1,
+    GISTDA_VIIRS_SOURCE: 2,
+    "NASA FIRMS": 3,
+}
 
 
 def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -432,7 +551,11 @@ def reconcile_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
         )
     return reconciled
 
-def fetch_live_hotspots(gistda_key: str | None = None, nasa_key: str | None = None) -> HotspotResponse:
+def fetch_live_hotspots(
+    gistda_key: str | None = None,
+    nasa_key: str | None = None,
+    gistda_disaster_key: str | None = None,
+) -> HotspotResponse:
     # Always query every available source so we can cross-reference them, rather
     # than stopping at the first that responds. Each source is best-effort.
     hotspot_groups: list[list[Hotspot]] = []
@@ -455,6 +578,8 @@ def fetch_live_hotspots(gistda_key: str | None = None, nasa_key: str | None = No
             logger.error("%s fetch failed: %s", label, e)
 
     _try(FOREST_FIREMAP_SOURCE, fetch_forest_firemap_hotspots)
+    if gistda_disaster_key:
+        _try(GISTDA_DISASTER_SOURCE, lambda: fetch_gistda_disaster_hotspots(gistda_disaster_key))
     if gistda_key:
         _try(GISTDA_VIIRS_SOURCE, lambda: fetch_gistda_hotspots(gistda_key))
     if nasa_key:

@@ -4,6 +4,11 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+DEFAULT_GISTDA_DISASTER_API_KEY = (
+    "yZz5eESM7vN9gJjTYco5af31iNytEKNO8TaqWqGjI7Cu5Xckb8eLQoeAfg5hT0az"
+)
+
+
 class Settings(BaseSettings):
     # Absolute path so the keys load no matter the working directory (the app
     # runs from backend/, the hourly refresh task runs from the repo root).
@@ -20,6 +25,7 @@ class Settings(BaseSettings):
     groq_api_key: str | None = None
     groq_model: str = "llama-3.3-70b-versatile"
     gistda_api_key: str | None = None
+    gistda_disaster_api_key: str | None = DEFAULT_GISTDA_DISASTER_API_KEY
     nasa_firms_map_key: str | None = None
 
     @property
