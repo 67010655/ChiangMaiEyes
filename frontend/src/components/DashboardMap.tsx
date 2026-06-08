@@ -10,7 +10,6 @@ import {
   Minimize2,
   Minus,
   Plus,
-  Wind,
 } from "lucide-react";
 
 import type { DashboardResponse, Hotspot, Pm25Station } from "../lib/types";
@@ -1007,8 +1006,6 @@ export function DashboardMap({
 
   const velocityLayerRef = useRef<L.Layer | null>(null);
 
-  const [windParticlesOn, setWindParticlesOn] = useState(false);
-
   const onSelChangeRef = useRef(onSelectionChange);
 
   const onMapClickRef = useRef(onMapClick);
@@ -1101,10 +1098,6 @@ export function DashboardMap({
 
     tileLayerRef.current = createBaseTileLayer("standard").addTo(map);
 
-    // Leaflet built-in scale bar (replaces our static "20 km")
-
-    L.control.scale({ imperial: false, position: "bottomleft" }).addTo(map);
-
     // ── Static layers ─────────────────────────────────────────────────────────
 
     // 1. World-minus-CM mask (dim surrounding area)
@@ -1161,11 +1154,6 @@ export function DashboardMap({
       onEachFeature: (feature, layer) => {
         const nameTh: string =
           feature.properties?.nameTh || feature.properties?.name || "";
-
-        layer.bindTooltip(nameTh, {
-          sticky: true,
-          className: "district-tooltip",
-        });
 
         layer.on({
           click: (e: L.LeafletMouseEvent) => {
@@ -1407,10 +1395,6 @@ export function DashboardMap({
           selectMarker(selected, e.target);
         })
 
-        .on("mouseover", () => {
-          if (!isPinningRef.current) selectMarker(selected);
-        })
-
         .addTo(group);
 
       const labelHtml =
@@ -1457,10 +1441,6 @@ export function DashboardMap({
           if (pinHomeFromMapEvent(e)) return;
 
           selectMarker(selected, e.target);
-        })
-
-        .on("mouseover", () => {
-          if (!isPinningRef.current) selectMarker(selected);
         })
 
         .addTo(group);
@@ -1570,28 +1550,6 @@ export function DashboardMap({
           selectMarker(selection, e.target);
         })
 
-        .on("mouseover", () => {
-          if (isPinningRef.current || isSelectionLocked()) return;
-
-          const loc = hotspotLocation(h);
-
-          onSelChangeRef.current({
-            eyebrow: "จุดความร้อน",
-
-            title: hotspotPlaceTitle(h),
-
-            detail: `${loc ? `${loc} · ` : ""}ตรวจพบ ${formatTime(h.detected_at)} · ${h.source}`,
-
-            mapUrl: `https://www.google.com/maps?q=${h.latitude},${h.longitude}`,
-
-            imageKey: hotspotImageKey(h),
-
-            imageLabel: hotspotPlaceTitle(h),
-
-            stats: hotspotStats(h),
-          });
-        })
-
         .addTo(group);
     });
   }, [dashboard.hotspots.items, layers.hotspots, zoom]);
@@ -1671,11 +1629,6 @@ export function DashboardMap({
           if (pinHomeFromMapEvent(e)) return;
 
           selectMarker(selection, e.target);
-        })
-        .on("mouseover", () => {
-          if (isPinningRef.current || isSelectionLocked()) return;
-
-          onSelChangeRef.current(selection);
         })
         .addTo(group);
     });
@@ -1788,10 +1741,6 @@ export function DashboardMap({
         selectMarker(aggSel, e.target);
       })
 
-      .on("mouseover", () => {
-        if (!isPinningRef.current) selectMarker(aggSel);
-      })
-
       .addTo(group);
 
     // Individual station markers
@@ -1902,10 +1851,6 @@ export function DashboardMap({
           selectMarker(next, e.target);
         })
 
-        .on("mouseover", () => {
-          if (!isPinningRef.current) selectMarker(next);
-        })
-
         .addTo(group);
     });
   }, [dashboard.pm25, layers.pm25, zoom]);
@@ -1980,10 +1925,6 @@ export function DashboardMap({
           selectMarker(next, e.target);
         })
 
-        .on("mouseover", () => {
-          if (!isPinningRef.current) selectMarker(next);
-        })
-
         .addTo(group);
     });
   }, [dashboard, layers.landmarks, zoom]);
@@ -2003,8 +1944,6 @@ export function DashboardMap({
 
         velocityLayerRef.current = null;
       }
-
-      setWindParticlesOn(false);
 
       return;
     }
@@ -2052,8 +1991,6 @@ export function DashboardMap({
     layer.addTo(map);
 
     velocityLayerRef.current = layer;
-
-    setWindParticlesOn(true);
 
     return () => {
       if (velocityLayerRef.current && mapRef.current) {
@@ -2208,42 +2145,6 @@ export function DashboardMap({
           }, e.target);
         })
 
-        .on("mouseover", () => {
-          if (isPinningRef.current || isSelectionLocked()) return;
-
-          onSelChangeRef.current({
-            eyebrow:
-              "ดัชนีอ้างอิง NDVI · ค่าเฉลี่ยฤดูแล้ง (ไม่ใช่ Live Satellite)",
-
-            title: zone.name,
-
-            detail: `วิเคราะห์พื้นที่ป่าสงวนจากดัชนีความแห้งแล้ง (NDVI) พบสภาพ ${zone.status} · ค่า NDVI เป็นค่าอ้างอิงเฉลี่ยช่วงฤดูแล้ง ไม่ใช่ค่าดาวเทียมแบบ Real-time`,
-
-            imageKey: "forest",
-
-            imageLabel: zone.name,
-
-            stats: [
-              {
-                label: "ดัชนี NDVI (อ้างอิง)",
-                value: zone.ndvi.toString(),
-                tone: zone.ndvi <= 0.25 ? "risk" : "watch",
-              },
-
-              {
-                label: "ระดับความแห้ง",
-                value: zone.ndvi <= 0.25 ? "แห้งแล้งวิกฤต" : "แห้งแล้งปานกลาง",
-              },
-
-              {
-                label: "สถานะเชื้อเพลิง",
-                value: "มีเศษใบไม้แห้งหนาแน่น (ค่าเฉลี่ยฤดูแล้ง)",
-                tone: "risk",
-              },
-            ],
-          });
-        })
-
         .addTo(group);
     });
   }, [layers.fuelRisk]);
@@ -2315,14 +2216,6 @@ export function DashboardMap({
         },
       ).addTo(group);
 
-      line.bindTooltip(`${d.toFixed(1)} กม.`, {
-        permanent: true,
-
-        direction: "center",
-
-        className: "lf-distance-tooltip",
-      });
-
       mapRef.current?.panTo(userLocation, { animate: true });
     }
   }, [userLocation, dashboard.hotspots.items]);
@@ -2338,38 +2231,6 @@ export function DashboardMap({
 
     onSelectionChange(initialSelection);
   }, [onSelectionChange]);
-
-  // ── Wind ──────────────────────────────────────────────────────────────────
-
-  const windRotation = dashboard.weather.wind_direction_deg + 180;
-
-  const windSpeed = dashboard.weather.wind_speed_kmh;
-
-  const windSourceText = dashboard.weather.wind_direction_text;
-
-  const windDestinationText = windDestinationName(
-    dashboard.weather.wind_direction_deg,
-  );
-
-  const windSelection: MapSelection = {
-    eyebrow: "ทิศทางลม",
-
-    title: `ไปทาง${windDestinationText}`,
-
-    detail: `${windSpeed} km/h · ลมมาจาก${windSourceText} แล้วพัดไปทาง${windDestinationText} · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
-
-    imageKey: "wind",
-
-    imageLabel: "Wind layer",
-
-    stats: [
-      { label: "ความเร็ว", value: `${windSpeed} km/h` },
-
-      { label: "มาจาก", value: windSourceText },
-
-      { label: "ไปทาง", value: windDestinationText },
-    ],
-  };
 
   // ── Focus Centering & Selection Highlight Pulse Indicator ─────────────────
 
@@ -2561,91 +2422,6 @@ export function DashboardMap({
         className={`map-leaflet${isPinningMode ? " map-pinning" : ""}`}
       />
 
-      {/* Wind chip button */}
-
-      {layers.wind && (
-        <button
-          type="button"
-          className={`wind-chip${windParticlesOn ? "" : " wind-chip--loading"}`}
-          onClick={() => onSelectionChange(windSelection)}
-          aria-label={`ลมไปทาง${windDestinationText} ${windSpeed} km/h`}
-        >
-          <span
-            className="wind-chip__compass"
-            style={{ transform: `rotate(${windRotation}deg)` }}
-          >
-            <Wind size={15} />
-          </span>
-
-          <span className="wind-chip__text">
-            <b>ไป{windDestinationText}</b>
-
-            <small>{windSpeed} km/h</small>
-          </span>
-        </button>
-      )}
-
-      <div className="map-help">
-        ลากเพื่อเลื่อน · เลื่อนเมาส์เพื่อซูม · คลิกจุดข้อมูล
-      </div>
-
-      <div className="map-legend">
-        <span>
-          <i className="dot dot--pm" />
-          สถานีวัด PM2.5
-        </span>
-
-        <span>
-          <i className="fire-ic">🔥</i>จุดความร้อน
-        </span>
-
-        {layers.fireZones && (
-          <span>
-            <i className="zone-ic" />
-            เขตจัดการไฟ
-          </span>
-        )}
-
-        {layers.communityForests && (
-          <span>
-            <i className="cf-ic" />
-            ป่าชุมชน
-          </span>
-        )}
-
-        {layers.fuelRisk && (
-          <span>
-            <i className="dot dot--fuel" />
-            ดัชนีป่าแห้ง NDVI
-          </span>
-        )}
-
-        {layers.predictions && (
-          <span>
-            <i className="prediction-ic" />
-            คาดการณ์ AI
-          </span>
-        )}
-
-        {layers.hotspots && layers.wind && (
-          <span>
-            <i className="cone-ic" />
-            ขอบเขตควันลอย
-          </span>
-        )}
-
-        {layers.landmarks && (
-          <span>
-            <i className="landmark-ic" />
-            แลนด์มาร์ก
-          </span>
-        )}
-
-        <span>
-          <i className="arrow-ic">↑</i>ทิศลม TMD
-        </span>
-      </div>
-
       <div className="basemap-switcher" aria-label="เลือกพื้นแผนที่">
         {BASEMAPS.map((basemap) => (
           <button
@@ -2660,8 +2436,6 @@ export function DashboardMap({
       </div>
 
       <div className="map-controls">
-        <span className="zoom-readout">ซูม {zoom}</span>
-
         <button type="button" aria-label="ขยาย" onClick={handleZoomIn}>
           <Plus size={18} />
         </button>
@@ -2695,39 +2469,6 @@ export function DashboardMap({
           </button>
         )}
       </div>
-
-      {/* Fullscreen-only: the map-detail-bar lives outside the map, so in
-
-          fullscreen we surface the tapped feature's info on the map itself. */}
-
-      {isFullscreen && (
-        <div className="map-fs-detail" aria-live="polite">
-          {selection.eyebrow && (
-            <span className="map-fs-detail__eyebrow">{selection.eyebrow}</span>
-          )}
-
-          <strong className="map-fs-detail__title">{selection.title}</strong>
-
-          {selection.detail && (
-            <p className="map-fs-detail__text">{selection.detail}</p>
-          )}
-
-          {selection.stats && selection.stats.length > 0 && (
-            <div className="map-fs-detail__stats">
-              {selection.stats.slice(0, 6).map((stat) => (
-                <div
-                  key={`${stat.label}-${stat.value}`}
-                  className={`map-fs-stat${stat.tone ? ` map-fs-stat--${stat.tone}` : ""}`}
-                >
-                  <span>{stat.label}</span>
-
-                  <b>{stat.value}</b>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

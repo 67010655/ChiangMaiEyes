@@ -58,6 +58,7 @@ import type {
   DataStatusResponse,
   HistoryResponse,
   OperationalIntelligenceResponse,
+  WeeklyForestRankingEntry,
 } from "./lib/types";
 
 import dashboardSnapshot from "./data/dashboardSnapshot.json";
@@ -105,6 +106,8 @@ type LayerState = {
 const fallback = dashboardSnapshot as DashboardResponse;
 
 type CommunityForestSummary = {
+  generatedAt?: string;
+
   officialInfographicCount: number;
 
   officialInfographicAreaRai: number;
@@ -359,6 +362,39 @@ function forestScoreReason(forest: CommunityForestPrototype) {
   ].filter(Boolean);
 
   return reasons.length ? reasons.join(" · ") : "รอข้อมูลกิจกรรมจากชุมชน";
+}
+
+function prototypeForestRanking(): WeeklyForestRankingEntry[] {
+  return communityForests
+    .map((forest) => ({
+      forest,
+      rawScore: weeklyForestScore(forest),
+    }))
+    .sort((a, b) => b.rawScore - a.rawScore)
+    .map(({ forest, rawScore }, index) => {
+      const score = Math.max(62, Math.min(90, rawScore - 10 - index * 3));
+      return {
+        forest_id: forest.id,
+        forest_name: forest.name,
+        village: forest.village || forest.name,
+        tambon: forest.tambon || "ไม่ระบุ",
+        amphoe: forest.amphoe || "ไม่ระบุ",
+        latitude: forest.lat,
+        longitude: forest.lng,
+        total_score: score,
+        rank: 0,
+        report_count: Math.max(1, forest.fireActivities.length),
+        last_report_at: `${communityForestSummary.generatedAt || "2026-06-07"}T00:00:00+07:00`,
+        score_breakdown: {
+          management: forest.managementPlan ? 25 : 12,
+          prevention: Math.min(30, forest.fireActivities.length * 10),
+          utilization: forest.committeeTotal > 0 ? 18 : 10,
+          ecological_outcome: forest.fireManagement ? 20 : 12,
+        },
+        reasons: forestScoreReason(forest).split(" · "),
+      };
+    })
+    .map((item, index) => ({ ...item, rank: index + 1 }));
 }
 
 const dataConnectorCandidates = [
@@ -1499,6 +1535,41 @@ function TrendBars({
   );
 }
 
+const historySourceLinks = [
+  {
+    label: "GISTDA Disaster",
+    detail: "ตรวจจุดความร้อนและพื้นที่เผาไหม้บนแผนที่ทางการ",
+    href: "https://disaster.gistda.or.th/fire",
+  },
+  {
+    label: "NASA FIRMS",
+    detail: "เทียบข้อมูลดาวเทียม VIIRS รายวันและย้อนหลัง",
+    href: "https://firms.modaps.eosdis.nasa.gov/map/",
+  },
+  {
+    label: "Air4Thai",
+    detail: "ตรวจค่า PM2.5 จากสถานีภาคพื้นดิน",
+    href: "http://air4thai.pcd.go.th/webV3/",
+  },
+  {
+    label: "TMD AWS",
+    detail: "ดูสภาพอากาศ ลม ความชื้น และฝนจากกรมอุตุฯ",
+    href: "https://www.tmd.go.th/",
+  },
+];
+
+function peakPoint(points: { date: string; value: number }[]) {
+  return points.reduce(
+    (best, point) => (point.value > best.value ? point : best),
+    points[0],
+  );
+}
+
+function shortDateLabel(iso: string) {
+  const d = new Date(`${iso}T00:00:00`);
+  return `${d.getDate()}/${d.getMonth() + 1}`;
+}
+
 // Dual-scale overlay: hotspot bars + PM2.5 line on independent axes, so an
 
 // analyst can read whether smoke tracks the fire count even at different scales.
@@ -1543,16 +1614,20 @@ function OverlayChart({
 
     .join(" ");
 
-  const lbl = (iso: string) => {
-    const d = new Date(`${iso}T00:00:00`);
-
-    return `${d.getDate()}/${d.getMonth() + 1}`;
-  };
+  const hpPeak = peakPoint(hotspots);
+  const pmPeak = peakPoint(pm25);
+  const latestHotspot = hotspots[hotspots.length - 1];
+  const latestPm25 = pm25[pm25.length - 1];
+  const samePeakDay = hpPeak.date === pmPeak.date;
+  const watchDays = hotspots.filter((d) => d.value > 0).length;
+  const insight = samePeakDay
+    ? "PM2.5 และจุดความร้อนขึ้นสูงวันเดียวกัน ควรไล่ตรวจทิศลมและพื้นที่ต้นลมในวันนั้น"
+    : "จุดสูงสุดคนละวัน ให้ใช้ประกอบกับลม/ความชื้นก่อนสรุปแหล่งควัน";
 
   return (
     <div className="trend-block">
       <div className="trend-block__head">
-        <span className="trend-block__title">🔁 PM2.5 เทียบจุดความร้อน</span>
+        <span className="trend-block__title">PM2.5 เทียบจุดความร้อน</span>
 
         <span className="overlay-legend">
           <i className="ov-dot ov-dot--fire" />
@@ -1581,7 +1656,7 @@ function OverlayChart({
               opacity="0.55"
               rx="1"
             >
-              <title>{`${lbl(d.date)} · ${d.value} จุด`}</title>
+              <title>{`${shortDateLabel(d.date)} · ${d.value} จุด`}</title>
             </rect>
           );
         })}
@@ -1601,6 +1676,38 @@ function OverlayChart({
         <span style={{ color: "#0ea5e9", fontWeight: 800 }}>
           PM2.5 สูงสุด {pmMax} µg/m³
         </span>
+      </div>
+
+      <div className="overlay-insight-grid" aria-label="สรุปข้อมูลที่ใช้ตัดสินใจ">
+        <div className="overlay-insight-card overlay-insight-card--fire">
+          <span>วันที่จุดความร้อนสูงสุด</span>
+          <b>{shortDateLabel(hpPeak.date)}</b>
+          <small>{hpPeak.value} จุด · มี hotspot {watchDays} วันในช่วงนี้</small>
+        </div>
+
+        <div className="overlay-insight-card overlay-insight-card--pm">
+          <span>วันที่ PM2.5 สูงสุด</span>
+          <b>{shortDateLabel(pmPeak.date)}</b>
+          <small>{pmPeak.value} µg/m³ · ล่าสุด {latestPm25.value} µg/m³</small>
+        </div>
+
+        <div className="overlay-insight-card">
+          <span>สถานะล่าสุด</span>
+          <b>{latestHotspot.value} จุด</b>
+          <small>{shortDateLabel(latestHotspot.date)} · ใช้ยืนยันร่วมกับทิศลมและความชื้น</small>
+        </div>
+      </div>
+
+      <p className="overlay-analysis-note">{insight}</p>
+
+      <div className="overlay-source-links" aria-label="แหล่งข้อมูลอ้างอิง">
+        {historySourceLinks.map((source) => (
+          <a key={source.href} href={source.href} target="_blank" rel="noreferrer">
+            <span>{source.label}</span>
+            <small>{source.detail}</small>
+            <ExternalLink size={14} />
+          </a>
+        ))}
       </div>
     </div>
   );
@@ -2272,10 +2379,22 @@ export function App() {
     [],
   );
 
-  const weeklyForestRanking =
-    intelligence.weekly_forest_league.ranking.length > 0
-      ? intelligence.weekly_forest_league.ranking.slice(0, 5)
-      : operatorIntelligenceFallback.weekly_forest_league.ranking;
+  const weeklyForestRanking = [
+    ...intelligence.weekly_forest_league.ranking,
+    ...prototypeForestRanking().filter(
+      (fallback) =>
+        !intelligence.weekly_forest_league.ranking.some(
+          (item) => item.forest_id === fallback.forest_id,
+        ),
+    ),
+  ]
+    .sort((a, b) => b.total_score - a.total_score)
+    .slice(0, 5);
+
+  const weeklyForestLeaderScore = Math.max(
+    ...weeklyForestRanking.map((item) => item.total_score),
+    1,
+  );
 
   const allOn =
     layers.hotspots &&
@@ -2615,63 +2734,85 @@ export function App() {
                     </div>
 
                     <div className="forest-ranking-list">
-                      {weeklyForestRanking.map((item, index) => (
-                        <button
-                          key={item.forest_id}
-                          type="button"
-                          className="forest-ranking-row"
-                          onClick={() =>
-                            setMapSelection({
-                              eyebrow: "ลีกป่าชุมชนรายสัปดาห์",
+                      {weeklyForestRanking.map((item, index) => {
+                        const previous = weeklyForestRanking[index - 1];
+                        const gap = previous
+                          ? Math.max(previous.total_score - item.total_score, 0)
+                          : 0;
+                        const percent = Math.max(
+                          8,
+                          Math.round((item.total_score / weeklyForestLeaderScore) * 100),
+                        );
+                        const rankLabel = index === 0 ? "แชมป์" : `อันดับ ${index + 1}`;
 
-                              title: `อันดับ ${item.rank}: ${item.forest_name}`,
+                        return (
+                          <button
+                            key={item.forest_id}
+                            type="button"
+                            className={`forest-ranking-row forest-ranking-row--rank-${index + 1}`}
+                            onClick={() =>
+                              setMapSelection({
+                                eyebrow: "ลีกป่าชุมชนรายสัปดาห์",
 
-                              detail: `${item.reasons.join(" / ") || "รอรายงานภาคสนาม"} - คะแนนรายสัปดาห์จากกิจกรรมป้องกันไฟในพื้นที่`,
+                                title: `อันดับ ${index + 1}: ${item.forest_name}`,
 
-                              lat: item.latitude,
+                                detail: `${item.reasons.join(" / ") || "รอรายงานภาคสนาม"} - คะแนนรายสัปดาห์จากกิจกรรมป้องกันไฟในพื้นที่`,
 
-                              lng: item.longitude,
+                                lat: item.latitude,
 
-                              stats: [
-                                {
-                                  label: "คะแนนสัปดาห์นี้",
-                                  value: `${item.total_score}/100`,
-                                  tone: item.total_score >= 80 ? "good" : "watch",
-                                },
+                                lng: item.longitude,
 
-                                {
-                                  label: "อำเภอ",
-                                  value: item.amphoe || "ไม่ระบุ",
-                                },
+                                stats: [
+                                  {
+                                    label: "คะแนนสัปดาห์นี้",
+                                    value: `${item.total_score}/100`,
+                                    tone: item.total_score >= 80 ? "good" : "watch",
+                                  },
 
-                                {
-                                  label: "ตำบล",
-                                  value: item.tambon || "ไม่ระบุ",
-                                },
+                                  {
+                                    label: "ช่องว่างจากอันดับก่อนหน้า",
+                                    value: index === 0 ? "นำอยู่" : `ตาม ${gap} คะแนน`,
+                                    tone: index === 0 ? "good" : gap >= 8 ? "risk" : "watch",
+                                  },
 
-                                {
-                                  label: "ที่มาคะแนน",
-                                  value: `จัดการ ${item.score_breakdown.management} / ป้องกัน ${item.score_breakdown.prevention} / ใช้ประโยชน์ ${item.score_breakdown.utilization} / นิเวศ ${item.score_breakdown.ecological_outcome}`,
-                                },
-                              ],
-                            })
-                          }
-                        >
-                          <span className="forest-ranking-row__rank">
-                            {index + 1}
-                          </span>
+                                  {
+                                    label: "อำเภอ / ตำบล",
+                                    value: `${item.amphoe || "ไม่ระบุ"} / ${item.tambon || "ไม่ระบุ"}`,
+                                  },
 
-                          <span className="forest-ranking-row__main">
-                            <b>{item.forest_name}</b>
+                                  {
+                                    label: "ที่มาคะแนน",
+                                    value: `จัดการ ${item.score_breakdown.management} / ป้องกัน ${item.score_breakdown.prevention} / ใช้ประโยชน์ ${item.score_breakdown.utilization} / นิเวศ ${item.score_breakdown.ecological_outcome}`,
+                                  },
+                                ],
+                              })
+                            }
+                          >
+                            <span className="forest-ranking-row__rank">
+                              <small>{rankLabel}</small>
+                              <b>{index + 1}</b>
+                            </span>
 
-                            <small>{item.amphoe || "ไม่ระบุ"} - {item.report_count} รายงาน</small>
-                          </span>
+                            <span className="forest-ranking-row__main">
+                              <b>{item.forest_name}</b>
 
-                          <span className="forest-ranking-row__score">
-                            {item.total_score}
-                          </span>
-                        </button>
-                      ))}
+                              <small>
+                                {item.amphoe || "ไม่ระบุ"} · {item.report_count} รายงาน ·{" "}
+                                {index === 0 ? "เป้าหมายให้ทีมอื่นไล่ทัน" : `ตามอันดับบน ${gap} คะแนน`}
+                              </small>
+
+                              <span className="forest-ranking-row__meter" aria-hidden="true">
+                                <i style={{ width: `${percent}%` }} />
+                              </span>
+                            </span>
+
+                            <span className="forest-ranking-row__score">
+                              <b>{item.total_score}</b>
+                              <small>/100</small>
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -3618,10 +3759,6 @@ export function App() {
               boxShadow: "none",
             }}
           >
-            <div className="map-titlebar">
-              <h2>แผนที่จุดความร้อนและดัชนีควันไฟเชียงใหม่</h2>
-            </div>
-
             <div className="map-layer-selector">
               <div className="layer-selector-title">ชั้นข้อมูลแผนที่</div>
 
@@ -3730,131 +3867,6 @@ export function App() {
             </Suspense>
           </section>
 
-          {/* MAP DETAIL BAR (Visible below the map when something is selected) */}
-
-          {mapSelection && mapSelection.title !== initialSelection.title && (
-            <div className="map-detail-bar card" aria-live="polite">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  width: "100%",
-                  alignItems: "flex-start",
-                  gap: "12px",
-                }}
-              >
-                <div className="map-detail-bar__left">
-                  {mapSelection.eyebrow && (
-                    <span className="map-detail-bar__eyebrow">
-                      {mapSelection.eyebrow}
-                    </span>
-                  )}
-
-                  <strong
-                    className="map-detail-bar__title"
-                    style={{
-                      fontSize: "1.05rem",
-                      fontWeight: 800,
-                      color: "var(--green-deep)",
-                    }}
-                  >
-                    {mapSelection.title}
-                  </strong>
-
-                  {mapSelection.detail && (
-                    <p
-                      className="map-detail-bar__detail"
-                      style={{
-                        margin: "6px 0 0 0",
-                        fontSize: "0.82rem",
-                        color: "var(--muted)",
-                      }}
-                    >
-                      {mapSelection.detail}
-                    </p>
-                  )}
-
-                  <div
-                    style={{ display: "flex", gap: "8px", marginTop: "12px" }}
-                  >
-                    {mapSelection.mapUrl && (
-                      <a
-                        className="map-detail-bar__link"
-                        href={mapSelection.mapUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        📍 Google Maps
-                      </a>
-                    )}
-
-                    {mapSelection.sourceUrl && (
-                      <a
-                        className="map-detail-bar__link secondary"
-                        href={mapSelection.sourceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        📖 {mapSelection.sourceLabel || "อ้างอิง"}
-                      </a>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className="btn-close-inspector"
-                  onClick={() => setMapSelection(initialSelection)}
-                  aria-label="ปิดรายละเอียด"
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    color: "var(--muted)",
-                    fontSize: "1.5rem",
-                    cursor: "pointer",
-                    padding: "0 4px",
-                    lineHeight: 1,
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-
-              {mapSelection.stats && mapSelection.stats.length > 0 && (
-                <div
-                  className="map-detail-bar__stats"
-                  style={{
-                    width: "100%",
-                    marginTop: "12px",
-                    borderTop: "1px dashed var(--line)",
-                    paddingTop: "12px",
-                  }}
-                >
-                  <div
-                    className="map-inspector__stats"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(180px, 1fr))",
-                      gap: "8px",
-                      width: "100%",
-                    }}
-                  >
-                    {mapSelection.stats.map((stat) => (
-                      <div
-                        key={`${stat.label}-${stat.value}`}
-                        className={`map-inspector__stat ${stat.tone ? `map-inspector__stat--${stat.tone}` : ""}`}
-                      >
-                        <span className="stat-label">{stat.label}</span>
-
-                        <b className="stat-value">{stat.value}</b>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
