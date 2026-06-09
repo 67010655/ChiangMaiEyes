@@ -1,30 +1,29 @@
 {
   "count": 1,
   "density_per_100_km2": 0.0,
-  "latest_update": "2026-06-09T15:24:09.653261+07:00",
+  "latest_update": "2026-06-10T00:24:09.791628+07:00",
   "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
   "items": [
     {
       "id": "HS-001",
       "latitude": 20.05484,
       "longitude": 99.46784,
-      "district": "แม่อาย",
-      "subdistrict": "ท่าตอน",
-      "landuse_type": "NRF",
-      "landuse_name": "ป่าลุ่มน้ำแม่ฝาง",
-      "satellite": "SNPP/NOAA-20/NOAA-21 VIIRS",
-      "confidence": 90,
-      "source": "Royal Forest Department Firemap",
+      "district": "ฝาง",
+      "subdistrict": null,
+      "landuse_type": null,
+      "landuse_name": null,
+      "satellite": "N20",
+      "confidence": 75,
+      "source": "NASA FIRMS",
       "detected_at": "2026-06-09T13:01:00+07:00",
       "sources": [
-        "Royal Forest Department Firemap",
         "NASA FIRMS"
       ],
-      "source_count": 2
+      "source_count": 1
     }
   ],
   "source_breakdown": {
-    "Royal Forest Department Firemap": 1,
+    "Royal Forest Department Firemap": 0,
     "GISTDA API Gateway VIIRS 1-day": 0,
     "NASA FIRMS": 1
   }
