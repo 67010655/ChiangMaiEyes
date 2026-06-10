@@ -2,7 +2,7 @@
   "hotspots": {
     "count": 4,
     "density_per_100_km2": 0.02,
-    "latest_update": "2026-06-10T18:24:11.454019+07:00",
+    "latest_update": "2026-06-10T19:24:07.577034+07:00",
     "source": "Royal Forest Department Firemap + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [
       {
@@ -85,11 +85,11 @@
     }
   },
   "pm25": {
-    "current_pm25": 10.1,
+    "current_pm25": 9.9,
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-10T18:00:00+07:00",
+    "latest_update": "2026-06-10T19:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -100,7 +100,7 @@
         "longitude": 98.96978,
         "pm25": 13.0,
         "trend": "stable",
-        "updated_at": "2026-06-10T18:00:00+07:00"
+        "updated_at": "2026-06-10T19:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -108,27 +108,27 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 7.1,
+        "pm25": 6.9,
         "trend": "stable",
-        "updated_at": "2026-06-10T18:00:00+07:00"
+        "updated_at": "2026-06-10T19:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 2.9,
-    "wind_direction_deg": 135.1,
+    "wind_speed_kmh": 5.0,
+    "wind_direction_deg": 134.9,
     "wind_direction_text": "ทิศตะวันออกเฉียงใต้",
-    "temperature_c": 27.7,
-    "humidity_percent": 76.6,
-    "latest_update": "2026-06-10T18:23:00+07:00",
+    "temperature_c": 25.3,
+    "humidity_percent": 92.7,
+    "latest_update": "2026-06-10T19:23:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
     "station_longitude": 98.9692,
-    "pressure_hpa": 969.7,
-    "rain_15m_mm": 0.0,
-    "rain_1h_mm": 0.0,
-    "rain_today_mm": 0.2,
+    "pressure_hpa": 970.5,
+    "rain_15m_mm": 0.4,
+    "rain_1h_mm": 1.2,
+    "rain_today_mm": 1.4,
     "temperature_min_today_c": 24.3,
     "temperature_max_today_c": 35.4
   },
@@ -137,19 +137,19 @@
     "category": "Medium",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
-      "pm25_points": 0.51,
+      "pm25_points": 0.49,
       "hotspot_points": 0.1,
-      "spread_points": 3.01,
+      "spread_points": 3.36,
       "avg_flammability": 1.43,
       "avg_slope_factor": 1.39,
       "avg_history_factor": 1.27,
-      "wind_speed_kmh": 2.9,
+      "wind_speed_kmh": 5.0,
       "wind_pushes_smoke_to_city": "no"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 10 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 4 จุด และลมพัดจากทิศ ทิศตะวันออกเฉียงใต้ ด้วยความเร็ว 3 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 10 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 4 จุด และลมพัดจากทิศ ทิศตะวันออกเฉียงใต้ ด้วยความเร็ว 5 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
     "source": "rule-based fallback"
   },
   "intelligence": {
@@ -240,7 +240,7 @@
         "longitude": 98.361,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 2.9 กม./ชม. พาควันไปทางแนวปลายลม มีจุดความร้อนใกล้เคียง 4 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
+        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 5.0 กม./ชม. พาควันไปทางแนวปลายลม มีจุดความร้อนใกล้เคียง 4 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
         "lead_time_hours": 12
       },
       {
