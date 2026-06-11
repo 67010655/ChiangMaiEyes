@@ -7124,9 +7124,19 @@ button {
 .map-help,
 .map-legend,
 .zoom-readout,
-.wind-chip,
 .map-fs-detail {
   display: none !important;
+}
+
+.wind-chip {
+  left: 14px !important;
+  bottom: 14px !important;
+  min-width: 132px !important;
+  padding: 8px 10px 8px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14) !important;
+  backdrop-filter: blur(12px) !important;
 }
 
 .map-layer-selector {
@@ -7384,5 +7394,11 @@ button {
     right: 12px !important;
     top: 12px !important;
     bottom: auto !important;
+  }
+
+  .wind-chip {
+    left: 12px !important;
+    bottom: 76px !important;
+    min-width: 118px !important;
   }
 }

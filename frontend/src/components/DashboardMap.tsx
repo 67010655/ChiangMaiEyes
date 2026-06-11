@@ -10,6 +10,7 @@ import {
   Minimize2,
   Minus,
   Plus,
+  Wind,
 } from "lucide-react";
 
 import type { DashboardResponse, Hotspot, Pm25Station } from "../lib/types";
@@ -2232,6 +2233,25 @@ export function DashboardMap({
     onSelectionChange(initialSelection);
   }, [onSelectionChange]);
 
+  const windSpeed = dashboard.weather.wind_speed_kmh;
+  const windSourceText = dashboard.weather.wind_direction_text;
+  const windDestinationText = windDestinationName(
+    dashboard.weather.wind_direction_deg,
+  );
+  const windRotation = dashboard.weather.wind_direction_deg + 180;
+  const windSelection: MapSelection = {
+    eyebrow: "ทิศทางลม",
+    title: `ไปทาง${windDestinationText}`,
+    detail: `${windSpeed} km/h · ลมมาจาก${windSourceText} แล้วพัดไปทาง${windDestinationText} · อัปเดต ${formatTime(dashboard.weather.latest_update)}`,
+    imageKey: "wind",
+    imageLabel: "Wind layer",
+    stats: [
+      { label: "ความเร็ว", value: `${windSpeed} km/h` },
+      { label: "มาจาก", value: windSourceText },
+      { label: "ไปทาง", value: windDestinationText },
+    ],
+  };
+
   // ── Focus Centering & Selection Highlight Pulse Indicator ─────────────────
 
   const selectionHighlightRef = useRef<L.Marker | null>(null);
@@ -2421,6 +2441,27 @@ export function DashboardMap({
         ref={mapDivRef}
         className={`map-leaflet${isPinningMode ? " map-pinning" : ""}`}
       />
+
+      {layers.wind && (
+        <button
+          type="button"
+          className="wind-chip"
+          onClick={() => onSelectionChange(windSelection)}
+          aria-label={`ลมไปทาง${windDestinationText} ${windSpeed} km/h`}
+        >
+          <span
+            className="wind-chip__compass"
+            style={{ transform: `rotate(${windRotation}deg)` }}
+          >
+            <Wind size={15} />
+          </span>
+
+          <span className="wind-chip__text">
+            <b>ไป{windDestinationText}</b>
+            <small>{windSpeed} km/h</small>
+          </span>
+        </button>
+      )}
 
       <div className="basemap-switcher" aria-label="เลือกพื้นแผนที่">
         {BASEMAPS.map((basemap) => (
