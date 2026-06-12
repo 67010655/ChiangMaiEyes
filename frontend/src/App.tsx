@@ -2531,6 +2531,52 @@ export function App() {
   );
 
   const aqiGlowClass = `badge--glow badge--glow-${dashboard.pm25.color}`;
+  const situationItems = [
+    {
+      key: "pm25",
+      label: "PM2.5",
+      value: `${Math.round(dashboard.pm25.current_pm25)} µg/m³`,
+      detail: getPm25Label(dashboard.pm25.current_pm25),
+      tone: dashboard.pm25.color,
+      onClick: () => {
+        setActiveTab("aqi");
+        setSidebarOpen(true);
+      },
+    },
+    {
+      key: "hotspots",
+      label: "จุดความร้อน",
+      value: formatNumber(dashboard.hotspots.count),
+      detail: `${dashboard.hotspots.density_per_100_km2.toFixed(1)}/100 กม²`,
+      tone: dashboard.hotspots.count > 0 ? "hot" : "green",
+      onClick: () => {
+        setActiveTab("fire_weather");
+        setSidebarOpen(true);
+      },
+    },
+    {
+      key: "wind",
+      label: "ลม",
+      value: `ไป${windDestinationText}`,
+      detail: `${Math.round(dashboard.weather.wind_speed_kmh)} km/h`,
+      tone: "blue",
+      onClick: () => {
+        setActiveTab("fire_weather");
+        setSidebarOpen(true);
+      },
+    },
+    {
+      key: "risk",
+      label: "ความเสี่ยง",
+      value: `${dashboard.risk.score}/10`,
+      detail: riskLabelTh[riskTone],
+      tone: riskTone,
+      onClick: () => {
+        setActiveTab("overview");
+        setSidebarOpen(true);
+      },
+    },
+  ];
 
   return (
     <div className="app-shell" data-ui-mode="operator">
@@ -2564,6 +2610,24 @@ export function App() {
               <span className="brand-sep">|</span>จังหวัดเชียงใหม่
             </p>
           </div>
+        </div>
+
+        <div className="situation-strip" aria-label="สรุปสถานการณ์ปัจจุบัน">
+          {situationItems.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={`situation-chip situation-chip--${item.tone}`}
+              onClick={item.onClick}
+            >
+              <span className="situation-chip__dot" aria-hidden />
+              <span className="situation-chip__copy">
+                <span className="situation-chip__label">{item.label}</span>
+                <strong>{item.value}</strong>
+              </span>
+              <span className="situation-chip__detail">{item.detail}</span>
+            </button>
+          ))}
         </div>
 
         <div className="topbar__actions">
@@ -3759,16 +3823,20 @@ export function App() {
               boxShadow: "none",
             }}
           >
-            <div className="map-layer-selector">
+            <div
+              className="map-layer-selector command-layer-strip"
+              aria-label="ชั้นข้อมูลแผนที่"
+            >
               <div className="layer-selector-title">ชั้นข้อมูลแผนที่</div>
 
               <button
                 type="button"
                 className={`layer-btn ${allOn ? "active" : ""}`}
                 onClick={setAll}
+                aria-pressed={allOn}
               >
                 <span className="layer-dot layer-dot--all" />
-                แสดงทั้งหมด
+                <span>ทั้งหมด</span>
               </button>
 
               <hr className="layer-divider" />
@@ -3777,73 +3845,81 @@ export function App() {
                 type="button"
                 className={`layer-btn ${layers.pm25 ? "active" : ""}`}
                 onClick={() => toggleLayer("pm25")}
+                aria-pressed={layers.pm25}
               >
                 <span className="layer-dot layer-dot--pm" />
-                PM2.5
+                <span>PM2.5</span>
               </button>
 
               <button
                 type="button"
                 className={`layer-btn ${layers.hotspots ? "active" : ""}`}
                 onClick={() => toggleLayer("hotspots")}
+                aria-pressed={layers.hotspots}
               >
                 <span className="layer-dot layer-dot--hot" />
-                จุดความร้อน
+                <span>จุดความร้อน</span>
               </button>
 
               <button
                 type="button"
                 className={`layer-btn ${layers.wind ? "active" : ""}`}
                 onClick={() => toggleLayer("wind")}
+                aria-pressed={layers.wind}
               >
                 <span className="layer-dot layer-dot--wind" />
-                กระแสลม
+                <span>ลม</span>
               </button>
 
               <button
                 type="button"
                 className={`layer-btn ${layers.fireZones ? "active" : ""}`}
                 onClick={() => toggleLayer("fireZones")}
+                aria-pressed={layers.fireZones}
               >
                 <span className="layer-dot layer-dot--zone" />
-                เขตจัดการไฟ
+                <span>เขตไฟ</span>
               </button>
 
               <button
                 type="button"
                 className={`layer-btn ${layers.communityForests ? "active" : ""}`}
                 onClick={() => toggleLayer("communityForests")}
+                aria-pressed={layers.communityForests}
               >
                 <span className="layer-dot layer-dot--forest" />
-                ป่าชุมชน
+                <span>ป่าชุมชน</span>
               </button>
 
               <button
                 type="button"
                 className={`layer-btn ${layers.landmarks ? "active" : ""}`}
                 onClick={() => toggleLayer("landmarks")}
+                aria-pressed={layers.landmarks}
               >
                 <span className="layer-dot layer-dot--landmark" />
-                สถานที่สำคัญ
+                <span>สถานที่</span>
               </button>
 
               <button
                 type="button"
                 className={`layer-btn ${layers.fuelRisk ? "active" : ""}`}
                 onClick={() => toggleLayer("fuelRisk")}
+                aria-pressed={layers.fuelRisk}
               >
                 <span className="layer-dot layer-dot--fuel" />
 
-                เชื้อเพลิงป่า / NDVI
+                <span>NDVI</span>
               </button>
 
               <button
                 type="button"
                 className={`layer-btn ${layers.predictions ? "active" : ""}`}
                 onClick={() => toggleLayer("predictions")}
+                aria-pressed={layers.predictions}
               >
                 <span className="layer-dot layer-dot--prediction" />
-                คาดการณ์ AI
+                <span>AI</span>
               </button>
             </div>
 
