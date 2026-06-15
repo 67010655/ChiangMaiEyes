@@ -1,109 +1,23 @@
 {
   "hotspots": {
-    "count": 5,
-    "density_per_100_km2": 0.02,
-    "latest_update": "2026-06-12T16:24:14.046449+07:00",
+    "count": 0,
+    "density_per_100_km2": 0.0,
+    "latest_update": "2026-06-15T12:26:59.513389+07:00",
     "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
-    "items": [
-      {
-        "id": "HS-001",
-        "latitude": 20.05484,
-        "longitude": 99.46784,
-        "district": "แม่อาย",
-        "subdistrict": "ท่าตอน",
-        "landuse_type": "A999",
-        "landuse_name": "เกษตรอื่น ๆ",
-        "satellite": "N20",
-        "confidence": 75,
-        "source": "GISTDA Disaster STAC VIIRS 3-day",
-        "detected_at": "2026-06-09T13:01:00+07:00",
-        "sources": [
-          "GISTDA Disaster STAC VIIRS 3-day"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-002",
-        "latitude": 19.73984,
-        "longitude": 99.29868,
-        "district": "ไชยปราการ",
-        "subdistrict": "แม่ทะลบ",
-        "landuse_type": "A202",
-        "landuse_name": "ข้าวโพดและไร่หมุนเวียน",
-        "satellite": "N",
-        "confidence": 75,
-        "source": "GISTDA Disaster STAC VIIRS 3-day",
-        "detected_at": "2026-06-10T14:05:00+07:00",
-        "sources": [
-          "GISTDA Disaster STAC VIIRS 3-day"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-003",
-        "latitude": 19.81441,
-        "longitude": 99.26777,
-        "district": "ฝาง",
-        "subdistrict": "แม่คะ",
-        "landuse_type": "A202",
-        "landuse_name": "ข้าวโพดและไร่หมุนเวียน",
-        "satellite": "N",
-        "confidence": 75,
-        "source": "GISTDA Disaster STAC VIIRS 3-day",
-        "detected_at": "2026-06-10T14:05:00+07:00",
-        "sources": [
-          "GISTDA Disaster STAC VIIRS 3-day"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-004",
-        "latitude": 19.81452,
-        "longitude": 99.26703,
-        "district": "ฝาง",
-        "subdistrict": "แม่คะ",
-        "landuse_type": "A202",
-        "landuse_name": "ข้าวโพดและไร่หมุนเวียน",
-        "satellite": "N",
-        "confidence": 75,
-        "source": "GISTDA Disaster STAC VIIRS 3-day",
-        "detected_at": "2026-06-10T14:05:00+07:00",
-        "sources": [
-          "GISTDA Disaster STAC VIIRS 3-day"
-        ],
-        "source_count": 1
-      },
-      {
-        "id": "HS-005",
-        "latitude": 19.81499,
-        "longitude": 99.27074,
-        "district": "ฝาง",
-        "subdistrict": "แม่คะ",
-        "landuse_type": "A999",
-        "landuse_name": "เกษตรอื่น ๆ",
-        "satellite": "N",
-        "confidence": 75,
-        "source": "GISTDA Disaster STAC VIIRS 3-day",
-        "detected_at": "2026-06-10T14:05:00+07:00",
-        "sources": [
-          "GISTDA Disaster STAC VIIRS 3-day"
-        ],
-        "source_count": 1
-      }
-    ],
+    "items": [],
     "source_breakdown": {
       "Royal Forest Department Firemap": 0,
-      "GISTDA Disaster STAC VIIRS 3-day": 5,
+      "GISTDA Disaster STAC VIIRS 3-day": 0,
       "GISTDA API Gateway VIIRS 1-day": 0,
       "NASA FIRMS": 0
     }
   },
   "pm25": {
-    "current_pm25": 9.1,
+    "current_pm25": 9.6,
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-12T16:00:00+07:00",
+    "latest_update": "2026-06-15T12:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -112,9 +26,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 12.1,
+        "pm25": 11.2,
         "trend": "stable",
-        "updated_at": "2026-06-12T16:00:00+07:00"
+        "updated_at": "2026-06-15T12:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -122,48 +36,48 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 6.0,
+        "pm25": 8.0,
         "trend": "stable",
-        "updated_at": "2026-06-12T16:00:00+07:00"
+        "updated_at": "2026-06-15T12:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 11.5,
-    "wind_direction_deg": 203.5,
-    "wind_direction_text": "ทิศใต้ค่อนไปทางตะวันตก",
-    "temperature_c": 33.3,
-    "humidity_percent": 55.5,
-    "latest_update": "2026-06-12T16:23:00+07:00",
+    "wind_speed_kmh": 6.8,
+    "wind_direction_deg": 178.5,
+    "wind_direction_text": "ทิศใต้",
+    "temperature_c": 31.1,
+    "humidity_percent": 62.1,
+    "latest_update": "2026-06-15T12:26:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
     "station_longitude": 98.9692,
-    "pressure_hpa": 971.4,
+    "pressure_hpa": 971.7,
     "rain_15m_mm": 0.0,
     "rain_1h_mm": 0.0,
     "rain_today_mm": 0.0,
-    "temperature_min_today_c": 24.4,
-    "temperature_max_today_c": 34.5
+    "temperature_min_today_c": 25.9,
+    "temperature_max_today_c": 32.3
   },
   "risk": {
-    "score": 5,
-    "category": "Medium",
+    "score": 3,
+    "category": "Low",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
-      "pm25_points": 0.45,
-      "hotspot_points": 0.12,
-      "spread_points": 4.0,
-      "avg_flammability": 1.38,
-      "avg_slope_factor": 1.31,
-      "avg_history_factor": 1.26,
-      "wind_speed_kmh": 11.5,
-      "wind_pushes_smoke_to_city": "yes"
+      "pm25_points": 0.48,
+      "hotspot_points": 0.0,
+      "spread_points": 2.09,
+      "avg_flammability": 1.2,
+      "avg_slope_factor": 1.0,
+      "avg_history_factor": 1.2,
+      "wind_speed_kmh": 6.8,
+      "wind_pushes_smoke_to_city": "no"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 9 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 5 จุด และลมพัดจากทิศ ทิศใต้ค่อนไปทางตะวันตก ด้วยความเร็ว 12 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 5/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 10 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศใต้ ด้วยความเร็ว 7 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 3/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
     "source": "rule-based fallback"
   },
   "intelligence": {
@@ -207,50 +121,36 @@
     ],
     "landuse_breakdown": [
       {
-        "landuse_type": "A202",
-        "label": "A202",
-        "count": 3,
-        "percent": 60.0
+        "landuse_type": "NRF",
+        "label": "ป่าสงวนแห่งชาติ",
+        "count": 5,
+        "percent": 62.5
       },
       {
-        "landuse_type": "A999",
-        "label": "A999",
-        "count": 2,
-        "percent": 40.0
+        "landuse_type": "CONSERVATION",
+        "label": "ป่าอนุรักษ์",
+        "count": 1,
+        "percent": 12.5
+      },
+      {
+        "landuse_type": "AGRI",
+        "label": "พื้นที่เกษตร",
+        "count": 1,
+        "percent": 12.5
+      },
+      {
+        "landuse_type": "OTHER",
+        "label": "ชุมชนและอื่น ๆ",
+        "count": 1,
+        "percent": 12.5
       }
     ],
     "weekly_forest_league": {
-      "week_id": "2026-06-07",
-      "scoring_window": "2026-06-07 to 2026-06-13",
+      "week_id": "2026-06-14",
+      "scoring_window": "2026-06-14 to 2026-06-20",
       "scheduled_recompute": "คำนวณใหม่ทุกวันอาทิตย์ 23:55 น. เวลาไทย และรีเฟรชรายคืนเพื่ออัปเดตคะแนนย้อนหลัง 7 วัน",
       "rate_limit_rule": "รับรายงานกิจกรรมภาคสนามได้ 1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน",
-      "ranking": [
-        {
-          "forest_id": "cf-mae-chaem-001",
-          "forest_name": "ป่าชุมชนแม่แจ่ม",
-          "village": "บ้านแม่ปาน",
-          "tambon": "ช่างเคิ่ง",
-          "amphoe": "แม่แจ่ม",
-          "latitude": 18.503,
-          "longitude": 98.361,
-          "total_score": 91,
-          "rank": 1,
-          "report_count": 1,
-          "last_report_at": "2026-06-07T07:30:00+07:00",
-          "score_breakdown": {
-            "management": 21,
-            "prevention": 30,
-            "utilization": 20,
-            "ecological_outcome": 20
-          },
-          "reasons": [
-            "ข้อตกลงงดเผา",
-            "จัดการเชื้อเพลิง",
-            "ลาดตระเวน",
-            "แนวกันไฟ"
-          ]
-        }
-      ]
+      "ranking": []
     },
     "localizedPredictions": [
       {
@@ -260,7 +160,7 @@
         "longitude": 98.361,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 11.5 กม./ชม. พาควันไปทางหุบเขาเชียงใหม่ มีจุดความร้อนใกล้เคียง 5 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
+        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 6.8 กม./ชม. พาควันไปทางแนวปลายลม มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
         "lead_time_hours": 12
       },
       {
@@ -280,7 +180,7 @@
         "longitude": 98.964,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 204 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
+        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 178 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
         "lead_time_hours": 12
       }
     ],
