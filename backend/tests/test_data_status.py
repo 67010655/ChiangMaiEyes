@@ -70,6 +70,10 @@ def test_data_status_reports_snapshot_freshness(tmp_path: Path):
     assert status.source_breakdown["Royal Forest Department Firemap"] == 14
     assert status.local_refresh_required is True
     assert status.vercel_fetches_rfd_directly is False
+    assert status.data_quality["hotspots"].source_mode == "LIVE"
+    assert status.data_quality["hotspots"].age_minutes == 60
+    assert status.data_quality["ndvi"].source_mode == "PROTOTYPE"
+    assert status.data_quality["community_forests"].source_mode == "PROTOTYPE"
 
 
 def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path):
@@ -93,3 +97,6 @@ def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path):
     assert body["hotspot_latest_update"] == "2026-06-03T00:19:27+07:00"
     assert isinstance(body["hotspot_age_minutes"], int)
     assert body["vercel_fetches_rfd_directly"] is False
+    assert body["data_quality"]["hotspots"]["source_mode"] == "UNAVAILABLE"
+    assert body["data_quality"]["hotspots"]["is_stale"] is True
+    assert body["data_quality"]["fire_zones"]["source_mode"] == "PROTOTYPE"

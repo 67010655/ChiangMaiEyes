@@ -43,6 +43,49 @@ class AdvisorUnavailable(RuntimeError):
     pass
 
 
+def fallback_daily_briefing(dashboard: DashboardResponse) -> str:
+    hotspot_quality = dashboard.data_quality.get("hotspots")
+    freshness = ""
+    if hotspot_quality and hotspot_quality.age_minutes is not None:
+        freshness = f" ข้อมูลจุดความร้อนตรวจล่าสุดประมาณ {hotspot_quality.age_minutes} นาทีที่แล้ว"
+    return (
+        f"ขณะนี้ PM2.5 เฉลี่ย {dashboard.pm25.current_pm25:.0f} µg/m³ "
+        f"อยู่ในระดับ{dashboard.pm25.category} พบจุดความร้อน {dashboard.hotspots.count} จุด "
+        f"และลมพัดไปทาง{dashboard.weather.wind_direction_text}ด้วยความเร็ว {dashboard.weather.wind_speed_kmh:.0f} km/h "
+        f"คะแนนความเสี่ยงอยู่ที่ {dashboard.risk.score}/10 ระดับ {dashboard.risk.category}.{freshness} "
+        "คำตอบนี้มาจากระบบประเมินพื้นฐาน ไม่ใช่โมเดล AI สด"
+    )
+
+
+def fallback_chat_reply(dashboard: DashboardResponse, user_message: str) -> str:
+    lowered = user_message.lower()
+    if any(word in lowered for word in ["pm", "ฝุ่น", "อากาศ", "air"]):
+        focus = (
+            f"PM2.5 ล่าสุด {dashboard.pm25.current_pm25:.0f} µg/m³ "
+            f"ระดับ{dashboard.pm25.category} จาก {dashboard.pm25.source}"
+        )
+    elif any(word in lowered for word in ["ไฟ", "hotspot", "จุด"]):
+        focus = (
+            f"พบจุดความร้อน {dashboard.hotspots.count} จุด "
+            f"แหล่งข้อมูล {dashboard.hotspots.source}"
+        )
+    elif any(word in lowered for word in ["ลม", "wind", "ควัน"]):
+        focus = (
+            f"ลม {dashboard.weather.wind_speed_kmh:.0f} km/h "
+            f"ทิศ{dashboard.weather.wind_direction_text} จาก {dashboard.weather.source}"
+        )
+    else:
+        focus = (
+            f"ภาพรวมตอนนี้ PM2.5 {dashboard.pm25.current_pm25:.0f} µg/m³, "
+            f"จุดความร้อน {dashboard.hotspots.count} จุด, "
+            f"ความเสี่ยง {dashboard.risk.score}/10"
+        )
+    return (
+        f"{focus}. ตอนนี้โมเดล AI สดไม่พร้อมใช้งาน จึงตอบจากกฎพื้นฐานและข้อมูลบน dashboard เท่านั้น "
+        "ใช้เป็นคำแนะนำเบื้องต้น และตรวจเวลาข้อมูลล่าสุดก่อนตัดสินใจภาคสนาม"
+    )
+
+
 def _dashboard_context(dashboard: DashboardResponse) -> str:
     # Get top 10 highest confidence hotspots
     hotspots = [

@@ -56,6 +56,7 @@ import { riskPercent } from "./lib/risk";
 
 import type {
   DashboardResponse,
+  DataQualityMetadata,
   DataStatusResponse,
   HistoryResponse,
   OperationalIntelligenceResponse,
@@ -285,6 +286,23 @@ function sourceDisplayLabel(value: string) {
     .replace("NASA FIRMS", "NASA FIRMS")
     .replace("Air4Thai Live API", "Air4Thai สด")
     .replace("Thai Meteorological Department AWS", "สถานีอุตุนิยมวิทยาไทย");
+}
+
+function truthModeLabel(mode?: DataQualityMetadata["source_mode"]) {
+  if (mode === "LIVE") return "LIVE";
+  if (mode === "DERIVED") return "DERIVED";
+  if (mode === "PROTOTYPE") return "PROTOTYPE";
+  if (mode === "UNAVAILABLE") return "UNAVAILABLE";
+  return "CHECK";
+}
+
+function qualityAgeLabel(quality?: DataQualityMetadata) {
+  if (!quality) return "";
+  if (typeof quality.age_minutes !== "number") return "ยังไม่ใช่ข้อมูลสด";
+  if (quality.age_minutes < 60) return `${quality.age_minutes} นาที`;
+  const hours = Math.floor(quality.age_minutes / 60);
+  const rest = quality.age_minutes % 60;
+  return rest ? `${hours} ชม. ${rest} นาที` : `${hours} ชม.`;
 }
 
 function formatDateTime(value: string) {
@@ -2460,6 +2478,17 @@ export function App() {
 
   const dataStatusCopy = dataStatus ? getDataStatusCopy(dataStatus) : null;
   const dataFreshness = dataStatus ? getDataFreshnessState(dataStatus) : null;
+  const quality = dataStatus?.data_quality ?? dashboard.data_quality ?? {};
+  const qualityItems = [
+    quality.hotspots,
+    quality.pm25,
+    quality.weather,
+    quality.risk,
+    quality.ndvi,
+    quality.fire_zones,
+    quality.community_forests,
+    quality.predictions,
+  ].filter(Boolean) as DataQualityMetadata[];
 
   const spreadWatchLevel =
     dashboard.hotspots.count >= 30 || windFactor > 0
@@ -2540,6 +2569,7 @@ export function App() {
       value: `${Math.round(dashboard.pm25.current_pm25)} µg/m³`,
       detail: getPm25Label(dashboard.pm25.current_pm25),
       tone: dashboard.pm25.color,
+      quality: quality.pm25,
       onClick: () => {
         setActiveTab("aqi");
         setSidebarOpen(true);
@@ -2551,6 +2581,7 @@ export function App() {
       value: formatNumber(dashboard.hotspots.count),
       detail: `${dashboard.hotspots.density_per_100_km2.toFixed(1)}/100 กม²`,
       tone: dashboard.hotspots.count > 0 ? "hot" : "green",
+      quality: quality.hotspots,
       onClick: () => {
         setActiveTab("fire_weather");
         setSidebarOpen(true);
@@ -2562,6 +2593,7 @@ export function App() {
       value: `ไป${windDestinationText}`,
       detail: `${Math.round(dashboard.weather.wind_speed_kmh)} km/h`,
       tone: "blue",
+      quality: quality.weather,
       onClick: () => {
         setActiveTab("fire_weather");
         setSidebarOpen(true);
@@ -2573,6 +2605,7 @@ export function App() {
       value: `${dashboard.risk.score}/10`,
       detail: riskLabelTh[riskTone],
       tone: riskTone,
+      quality: quality.risk,
       onClick: () => {
         setActiveTab("overview");
         setSidebarOpen(true);
@@ -2627,7 +2660,14 @@ export function App() {
                 <span className="situation-chip__label">{item.label}</span>
                 <strong>{item.value}</strong>
               </span>
-              <span className="situation-chip__detail">{item.detail}</span>
+              <span className="situation-chip__detail">
+                {item.detail}
+                {item.quality && (
+                  <span className={`truth-badge truth-badge--${item.quality.source_mode.toLowerCase()}`}>
+                    {truthModeLabel(item.quality.source_mode)}
+                  </span>
+                )}
+              </span>
             </button>
           ))}
         </div>
@@ -2731,6 +2771,24 @@ export function App() {
             <span>PM2.5 {dataFreshness.pm25AgeLabel}</span>
             <span>ลม/อากาศ {dataFreshness.weatherAgeLabel}</span>
           </div>
+        </div>
+      )}
+
+      {qualityItems.length > 0 && (
+        <div className="trust-strip" aria-label="สถานะความจริงของชุดข้อมูล">
+          {qualityItems.map((item) => (
+            <span
+              key={item.label}
+              className={`quality-chip quality-chip--${item.source_mode.toLowerCase()}`}
+              title={`${item.source}: ${item.note}`}
+            >
+              <b>{truthModeLabel(item.source_mode)}</b>
+              {item.label}
+              {item.source_mode !== "PROTOTYPE" && (
+                <small>{qualityAgeLabel(item)}</small>
+              )}
+            </span>
+          ))}
         </div>
       )}
 
@@ -3951,6 +4009,7 @@ export function App() {
                 <span className="layer-dot layer-dot--fuel" />
 
                 <span>NDVI</span>
+                <span className="layer-truth-badge">PROTOTYPE</span>
               </button>
 
               <button
@@ -3961,6 +4020,7 @@ export function App() {
               >
                 <span className="layer-dot layer-dot--prediction" />
                 <span>AI</span>
+                <span className="layer-truth-badge">DERIVED</span>
               </button>
             </div>
 

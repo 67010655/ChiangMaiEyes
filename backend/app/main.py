@@ -1,7 +1,13 @@
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.advisor import AdvisorUnavailable, chat_with_advisor, generate_daily_briefing
+from app.advisor import (
+    AdvisorUnavailable,
+    chat_with_advisor,
+    fallback_chat_reply,
+    fallback_daily_briefing,
+    generate_daily_briefing,
+)
 from app.config import Settings, get_settings
 from app.models import (
     AdvisorBriefingRequest,
@@ -103,9 +109,13 @@ def advisor_briefing(
 ) -> AdvisorResponse:
     try:
         text = generate_daily_briefing(settings, request.dashboard)
-        return AdvisorResponse(text=text, source="Groq AI")
+        return AdvisorResponse(text=text, source="Groq AI", source_mode="LIVE")
     except AdvisorUnavailable as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return AdvisorResponse(
+            text=fallback_daily_briefing(request.dashboard),
+            source=f"rule-based fallback ({exc})",
+            source_mode="DERIVED",
+        )
 
 
 @app.post("/api/advisor/chat", response_model=AdvisorResponse)
@@ -115,6 +125,10 @@ def advisor_chat(
 ) -> AdvisorResponse:
     try:
         text = chat_with_advisor(settings, request.dashboard, request.history, request.user_message)
-        return AdvisorResponse(text=text, source="Groq AI")
+        return AdvisorResponse(text=text, source="Groq AI", source_mode="LIVE")
     except AdvisorUnavailable as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        return AdvisorResponse(
+            text=fallback_chat_reply(request.dashboard, request.user_message),
+            source=f"rule-based fallback ({exc})",
+            source_mode="DERIVED",
+        )

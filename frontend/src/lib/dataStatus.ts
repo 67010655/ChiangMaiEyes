@@ -105,6 +105,7 @@ export function buildDataStatusFromDashboard(dashboard: DashboardResponse, now =
     source_breakdown: dashboard.hotspots.source_breakdown,
     local_refresh_required: true,
     vercel_fetches_rfd_directly: false,
+    data_quality: dashboard.data_quality,
     notes: [],
   };
 }

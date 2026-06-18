@@ -121,6 +121,21 @@ class SummaryResponse(BaseModel):
     source: str
 
 
+SourceMode = Literal["LIVE", "DERIVED", "PROTOTYPE", "UNAVAILABLE"]
+
+
+class DataQualityMetadata(BaseModel):
+    label: str
+    source: str
+    source_mode: SourceMode
+    latest_update: str | None = None
+    checked_at: str | None = None
+    age_minutes: int | None = None
+    confidence: float = Field(ge=0, le=1)
+    is_stale: bool = False
+    note: str
+
+
 class AnnualHotspotStats(BaseModel):
     this_year_count: int
     last_year_count: int
@@ -204,6 +219,7 @@ class DashboardResponse(BaseModel):
     risk: RiskResponse
     summary: SummaryResponse
     intelligence: OperationalIntelligenceResponse | None = None
+    data_quality: dict[str, DataQualityMetadata] = Field(default_factory=dict)
 
 
 class DataStatusResponse(BaseModel):
@@ -221,6 +237,7 @@ class DataStatusResponse(BaseModel):
     source_breakdown: dict[str, int] = Field(default_factory=dict)
     local_refresh_required: bool
     vercel_fetches_rfd_directly: bool
+    data_quality: dict[str, DataQualityMetadata] = Field(default_factory=dict)
     notes: list[str] = Field(default_factory=list)
 
 
@@ -242,3 +259,4 @@ class AdvisorChatRequest(BaseModel):
 class AdvisorResponse(BaseModel):
     text: str
     source: str
+    source_mode: SourceMode = "LIVE"

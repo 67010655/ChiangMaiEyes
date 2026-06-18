@@ -1,4 +1,4 @@
-import type { DashboardResponse } from './types';
+import type { DashboardResponse, SourceMode } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -12,9 +12,16 @@ export type ChatMessage = {
 type AdvisorResponse = {
   text: string;
   source: string;
+  source_mode?: SourceMode;
 };
 
-async function postAdvisor(path: string, body: unknown): Promise<string> {
+export type AdvisorResult = {
+  text: string;
+  source: string;
+  sourceMode: SourceMode;
+};
+
+async function postAdvisor(path: string, body: unknown): Promise<AdvisorResult> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 25_000);
 
@@ -34,13 +41,17 @@ async function postAdvisor(path: string, body: unknown): Promise<string> {
     }
 
     const data = (await response.json()) as AdvisorResponse;
-    return data.text;
+    return {
+      text: data.text,
+      source: data.source,
+      sourceMode: data.source_mode ?? 'LIVE',
+    };
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-export function generateDailyBriefing(dashboard: DashboardResponse): Promise<string> {
+export function generateDailyBriefing(dashboard: DashboardResponse): Promise<AdvisorResult> {
   return postAdvisor('/api/advisor/briefing', { dashboard });
 }
 
@@ -48,7 +59,7 @@ export function chatWithAdvisor(
   dashboard: DashboardResponse,
   history: ChatMessage[],
   userMessage: string,
-): Promise<string> {
+): Promise<AdvisorResult> {
   return postAdvisor('/api/advisor/chat', {
     dashboard,
     history,

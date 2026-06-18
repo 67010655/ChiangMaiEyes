@@ -392,6 +392,113 @@ button {
   color: #991b1b;
 }
 
+.trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(20, 83, 45, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-sm);
+}
+
+.quality-chip,
+.truth-badge,
+.layer-truth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  border: 1px solid rgba(15, 107, 84, 0.14);
+  border-radius: 999px;
+  background: #f6faf7;
+  color: #26483b;
+  font-size: 0.66rem;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.quality-chip {
+  min-height: 28px;
+  padding: 5px 9px;
+}
+
+.quality-chip b,
+.truth-badge,
+.layer-truth-badge {
+  font-size: 0.58rem;
+  letter-spacing: 0;
+}
+
+.quality-chip small {
+  color: #60766b;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.truth-badge {
+  padding: 4px 8px;
+}
+
+.layer-truth-badge {
+  max-width: 72px;
+  padding: 3px 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.54rem !important;
+}
+
+.quality-chip--live,
+.truth-badge--live {
+  border-color: rgba(22, 163, 74, 0.22);
+  background: #ecfdf3;
+  color: #0f6b54;
+}
+
+.quality-chip--derived,
+.truth-badge--derived {
+  border-color: rgba(59, 130, 246, 0.22);
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.quality-chip--prototype,
+.truth-badge--prototype {
+  border-color: rgba(234, 179, 8, 0.34);
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.quality-chip--unavailable,
+.truth-badge--unavailable {
+  border-color: rgba(220, 38, 38, 0.28);
+  background: #fff1f2;
+  color: #991b1b;
+}
+
+.ai-briefing__header {
+  gap: 8px;
+}
+
+.ai-briefing__title {
+  min-width: 0;
+}
+
+.ai-briefing__source {
+  margin-top: 8px;
+  padding: 7px 9px;
+  border: 1px solid rgba(234, 179, 8, 0.28);
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #7c2d12;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 /* ---------- Layout ---------- */
 
 /* Stats panel: sits below the map */
@@ -7550,6 +7657,9 @@ button {
   grid-column: 2;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .situation-chip--yellow .situation-chip__dot,

@@ -46,7 +46,7 @@ def _dashboard_payload() -> dict:
     }
 
 
-def test_advisor_briefing_returns_503_when_backend_key_missing():
+def test_advisor_briefing_returns_rule_based_fallback_when_backend_key_missing():
     def override_settings() -> Settings:
         return Settings(groq_api_keys=None)
 
@@ -59,5 +59,8 @@ def test_advisor_briefing_returns_503_when_backend_key_missing():
     finally:
         app.dependency_overrides.clear()
 
-    assert response.status_code == 503
-    assert "GROQ_API_KEYS" in response.json()["detail"]
+    assert response.status_code == 200
+    body = response.json()
+    assert body["source_mode"] == "DERIVED"
+    assert "rule-based fallback" in body["source"]
+    assert "ไม่ใช่โมเดล AI สด" in body["text"]

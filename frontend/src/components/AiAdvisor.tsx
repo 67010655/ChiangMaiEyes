@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, Sparkles, X } from 'lucide-react';
-import type { DashboardResponse } from '../lib/types';
+import type { DashboardResponse, SourceMode } from '../lib/types';
 import { chatWithAdvisor, generateDailyBriefing, type ChatMessage } from '../lib/gemini';
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
 
 export function AiAdvisor({ dashboard }: Props) {
   const [briefing, setBriefing] = useState<string | null>(null);
+  const [briefingSource, setBriefingSource] = useState<{ source: string; mode: SourceMode } | null>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
   const [quotaError, setQuotaError] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -23,13 +24,18 @@ export function AiAdvisor({ dashboard }: Props) {
     let cancelled = false;
     setBriefingLoading(true);
     generateDailyBriefing(dashboard)
-      .then((text) => {
-        if (!cancelled) setBriefing(text);
+      .then((result) => {
+        if (!cancelled) {
+          setBriefing(result.text);
+          setBriefingSource({ source: result.source, mode: result.sourceMode });
+          setQuotaError(result.sourceMode === 'UNAVAILABLE');
+        }
       })
       .catch((err: Error) => {
         if (!cancelled) {
           if (err.message === 'QUOTA_EXCEEDED' || err.message === 'ADVISOR_UNAVAILABLE') setQuotaError(true);
           setBriefing(null);
+          setBriefingSource(null);
         }
       })
       .finally(() => {
@@ -65,7 +71,7 @@ export function AiAdvisor({ dashboard }: Props) {
 
     try {
       const reply = await chatWithAdvisor(dashboard, messages, text);
-      setMessages((prev) => [...prev, { role: 'model', text: reply }]);
+      setMessages((prev) => [...prev, { role: 'model', text: reply.text }]);
     } catch (err) {
       const isQuota = err instanceof Error && err.message === 'QUOTA_EXCEEDED';
       setMessages((prev) => [
@@ -103,6 +109,11 @@ export function AiAdvisor({ dashboard }: Props) {
         <div className="ai-briefing__header">
           <Sparkles size={16} className="ai-briefing__icon" />
           <span className="ai-briefing__title">สรุปสถานการณ์วันนี้ โดยคุณเชียงใหม่</span>
+          {briefingSource && (
+            <span className={`truth-badge truth-badge--${briefingSource.mode.toLowerCase()}`}>
+              {briefingSource.mode === 'LIVE' ? 'AI สด' : 'Fallback'}
+            </span>
+          )}
         </div>
         {briefingLoading ? (
           <div className="ai-briefing__loading">
@@ -110,7 +121,14 @@ export function AiAdvisor({ dashboard }: Props) {
             <span>กำลังวิเคราะห์ข้อมูล...</span>
           </div>
         ) : briefing ? (
-          <div className="ai-briefing__text">{briefing}</div>
+          <>
+            <div className="ai-briefing__text">{briefing}</div>
+            {briefingSource?.mode !== 'LIVE' && (
+              <div className="ai-briefing__source">
+                ตอบจากระบบประเมินพื้นฐาน เพราะโมเดล AI สดไม่พร้อมใช้งาน
+              </div>
+            )}
+          </>
         ) : quotaError ? (
           <div className="ai-briefing__text ai-briefing__text--fallback">
             ระบบที่ปรึกษายังไม่พร้อมใช้งานชั่วคราว แต่ข้อมูลหลักบน dashboard ยังใช้งานได้ตามปกติ
@@ -186,7 +204,7 @@ export function AiAdvisor({ dashboard }: Props) {
                         setMessages([userMsg]);
                         setSending(true);
                         chatWithAdvisor(dashboard, [], q)
-                          .then((reply) => setMessages((prev) => [...prev, { role: 'model', text: reply }]))
+                          .then((reply) => setMessages((prev) => [...prev, { role: 'model', text: reply.text }]))
                           .catch((err) =>
                             setMessages((prev) => [
                               ...prev,

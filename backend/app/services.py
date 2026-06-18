@@ -11,6 +11,7 @@ from app.config import Settings
 from app.models import (
     AnnualHotspotStats,
     DailyMetric,
+    DataQualityMetadata,
     DataStatusResponse,
     DashboardResponse,
     DroughtZone,
@@ -24,6 +25,7 @@ from app.models import (
     Pm25Response,
     RiskResponse,
     SummaryResponse,
+    SourceMode,
     WeeklyForestLeagueResponse,
     WeatherHistoryDay,
     WeatherResponse,
@@ -226,33 +228,180 @@ def _age_minutes(current_time: datetime, updated_at: str) -> int:
     return round(age_seconds / 60)
 
 
+def _data_quality(
+    *,
+    label: str,
+    source: str,
+    source_mode: SourceMode,
+    latest_update: str | None,
+    checked_at: str,
+    age_minutes: int | None,
+    confidence: float,
+    stale_after_minutes: int,
+    note: str,
+) -> DataQualityMetadata:
+    return DataQualityMetadata(
+        label=label,
+        source=source,
+        source_mode=source_mode,
+        latest_update=latest_update,
+        checked_at=checked_at,
+        age_minutes=age_minutes,
+        confidence=confidence,
+        is_stale=age_minutes is not None and age_minutes > stale_after_minutes,
+        note=note,
+    )
+
+
+def _build_data_quality(
+    hotspots: HotspotResponse,
+    pm25: Pm25Response,
+    weather: WeatherResponse,
+    *,
+    checked_at: str | None = None,
+) -> dict[str, DataQualityMetadata]:
+    current_time = _parse_datetime(checked_at) if checked_at else datetime.now(tz=_parse_datetime(hotspots.latest_update).tzinfo)
+    checked_at = checked_at or current_time.isoformat()
+    hotspot_age = _age_minutes(current_time, hotspots.latest_update)
+    pm25_age = _age_minutes(current_time, pm25.latest_update)
+    weather_age = _age_minutes(current_time, weather.latest_update)
+
+    return {
+        "hotspots": _data_quality(
+            label="Hotspot",
+            source=hotspots.source,
+            source_mode="LIVE" if not hotspot_age > 180 else "UNAVAILABLE",
+            latest_update=hotspots.latest_update,
+            checked_at=checked_at,
+            age_minutes=hotspot_age,
+            confidence=0.9 if not hotspot_age > 180 else 0.35,
+            stale_after_minutes=180,
+            note=(
+                "Snapshot refreshed from Thailand because RFD blocks some serverless infrastructure."
+                if FOREST_FIREMAP_SOURCE in (hotspots.source_breakdown or {}) or "Royal Forest" in hotspots.source
+                else "Best-effort satellite feed without RFD confirmation."
+            ),
+        ),
+        "pm25": _data_quality(
+            label="PM2.5",
+            source=pm25.source,
+            source_mode="LIVE" if not pm25_age > 180 else "UNAVAILABLE",
+            latest_update=pm25.latest_update,
+            checked_at=checked_at,
+            age_minutes=pm25_age,
+            confidence=0.92 if not pm25_age > 180 else 0.4,
+            stale_after_minutes=180,
+            note="Station reading from configured air-quality provider.",
+        ),
+        "weather": _data_quality(
+            label="Wind and weather",
+            source=weather.source,
+            source_mode="LIVE" if not weather_age > 180 else "UNAVAILABLE",
+            latest_update=weather.latest_update,
+            checked_at=checked_at,
+            age_minutes=weather_age,
+            confidence=0.9 if not weather_age > 180 else 0.4,
+            stale_after_minutes=180,
+            note="Weather station reading used for wind direction and smoke movement.",
+        ),
+        "risk": _data_quality(
+            label="Risk score",
+            source="ChiangMaiEyes deterministic formula",
+            source_mode="DERIVED",
+            latest_update=max(hotspots.latest_update, pm25.latest_update, weather.latest_update, key=_parse_datetime),
+            checked_at=checked_at,
+            age_minutes=max(hotspot_age, pm25_age, weather_age),
+            confidence=0.72,
+            stale_after_minutes=180,
+            note="Calculated from PM2.5, hotspot count, wind, and fire-spread factors. It is not an official warning.",
+        ),
+        "summary": _data_quality(
+            label="Situation summary",
+            source="AI when available, otherwise rule-based fallback",
+            source_mode="DERIVED",
+            latest_update=max(hotspots.latest_update, pm25.latest_update, weather.latest_update, key=_parse_datetime),
+            checked_at=checked_at,
+            age_minutes=max(hotspot_age, pm25_age, weather_age),
+            confidence=0.68,
+            stale_after_minutes=180,
+            note="Narrative generated from dashboard data. Trust the source timestamps over the wording.",
+        ),
+        "ndvi": _data_quality(
+            label="NDVI",
+            source="Prototype dry-forest reference zones",
+            source_mode="PROTOTYPE",
+            latest_update=None,
+            checked_at=checked_at,
+            age_minutes=None,
+            confidence=0.25,
+            stale_after_minutes=0,
+            note="Reference layer only. Not live Sentinel/GISTDA NDVI yet.",
+        ),
+        "fire_zones": _data_quality(
+            label="Fire management zones",
+            source="Prototype community-forest geometry",
+            source_mode="PROTOTYPE",
+            latest_update=None,
+            checked_at=checked_at,
+            age_minutes=None,
+            confidence=0.35,
+            stale_after_minutes=0,
+            note="Planning layer for demo and review, not an official boundary dataset.",
+        ),
+        "community_forests": _data_quality(
+            label="Community forest league",
+            source="Seed field reports and prototype community-forest records",
+            source_mode="PROTOTYPE",
+            latest_update=None,
+            checked_at=checked_at,
+            age_minutes=None,
+            confidence=0.4,
+            stale_after_minutes=0,
+            note="Ranking is from sample/seed reports until a verified reporting database is connected.",
+        ),
+        "predictions": _data_quality(
+            label="Localized predictions",
+            source="Rule-based estimate from dashboard inputs",
+            source_mode="DERIVED",
+            latest_update=max(hotspots.latest_update, pm25.latest_update, weather.latest_update, key=_parse_datetime),
+            checked_at=checked_at,
+            age_minutes=max(hotspot_age, pm25_age, weather_age),
+            confidence=0.55,
+            stale_after_minutes=180,
+            note="Derived estimate for situational review, not an official forecast.",
+        ),
+    }
+
+
 def get_data_status(settings: Settings, now: str | None = None) -> DataStatusResponse:
-    hotspots = read_json(settings.cache_dir, "hotspots.json")
-    pm25 = read_json(settings.cache_dir, "pm25.json")
-    weather = read_json(settings.cache_dir, "weather.json")
+    hotspots = HotspotResponse(**read_json(settings.cache_dir, "hotspots.json"))
+    pm25 = Pm25Response(**read_json(settings.cache_dir, "pm25.json"))
+    weather = WeatherResponse(**read_json(settings.cache_dir, "weather.json"))
     latest_update = max(
-        hotspots["latest_update"],
-        pm25["latest_update"],
-        weather["latest_update"],
+        hotspots.latest_update,
+        pm25.latest_update,
+        weather.latest_update,
         key=_parse_datetime,
     )
     current_time = _parse_datetime(now) if now else datetime.now(tz=_parse_datetime(latest_update).tzinfo)
+    checked_at = current_time.isoformat()
 
     return DataStatusResponse(
         mode="local-refresh-snapshot",
         latest_update=latest_update,
         snapshot_age_minutes=_age_minutes(current_time, latest_update),
-        hotspot_latest_update=hotspots["latest_update"],
-        hotspot_age_minutes=_age_minutes(current_time, hotspots["latest_update"]),
-        pm25_latest_update=pm25["latest_update"],
-        pm25_age_minutes=_age_minutes(current_time, pm25["latest_update"]),
-        weather_latest_update=weather["latest_update"],
-        weather_age_minutes=_age_minutes(current_time, weather["latest_update"]),
-        hotspot_count=hotspots["count"],
-        source=hotspots["source"],
-        source_breakdown=hotspots.get("source_breakdown", {}),
+        hotspot_latest_update=hotspots.latest_update,
+        hotspot_age_minutes=_age_minutes(current_time, hotspots.latest_update),
+        pm25_latest_update=pm25.latest_update,
+        pm25_age_minutes=_age_minutes(current_time, pm25.latest_update),
+        weather_latest_update=weather.latest_update,
+        weather_age_minutes=_age_minutes(current_time, weather.latest_update),
+        hotspot_count=hotspots.count,
+        source=hotspots.source,
+        source_breakdown=hotspots.source_breakdown,
         local_refresh_required=True,
         vercel_fetches_rfd_directly=False,
+        data_quality=_build_data_quality(hotspots, pm25, weather, checked_at=checked_at),
         notes=[
             "RFD blocks non-Thai infrastructure, so this deployment serves the latest local refresh snapshot.",
             "The Windows startup launcher and hourly task refresh data from this PC, then push changed snapshots to Vercel.",
@@ -697,6 +846,7 @@ def get_dashboard(settings: Settings) -> DashboardResponse:
     risk = calculate_risk(pm25, hotspots, weather)
     summary = get_summary(settings, pm25, hotspots, weather, risk)
     intelligence = get_operational_intelligence(hotspots, pm25, weather, risk)
+    data_quality = _build_data_quality(hotspots, pm25, weather)
     return DashboardResponse(
         hotspots=hotspots,
         pm25=pm25,
@@ -704,4 +854,5 @@ def get_dashboard(settings: Settings) -> DashboardResponse:
         risk=risk,
         summary=summary,
         intelligence=intelligence,
+        data_quality=data_quality,
     )

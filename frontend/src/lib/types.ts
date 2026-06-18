@@ -109,6 +109,20 @@ export type SummaryResponse = {
   source: string;
 };
 
+export type SourceMode = 'LIVE' | 'DERIVED' | 'PROTOTYPE' | 'UNAVAILABLE';
+
+export type DataQualityMetadata = {
+  label: string;
+  source: string;
+  source_mode: SourceMode;
+  latest_update?: string | null;
+  checked_at?: string | null;
+  age_minutes?: number | null;
+  confidence: number;
+  is_stale: boolean;
+  note: string;
+};
+
 export type AnnualHotspotStats = {
   this_year_count: number;
   last_year_count: number;
@@ -192,6 +206,7 @@ export type DashboardResponse = {
   risk: RiskResponse;
   summary: SummaryResponse;
   intelligence?: OperationalIntelligenceResponse | null;
+  data_quality?: Record<string, DataQualityMetadata>;
 };
 
 export type DataStatusResponse = {
@@ -209,5 +224,6 @@ export type DataStatusResponse = {
   source_breakdown?: Record<string, number>;
   local_refresh_required: boolean;
   vercel_fetches_rfd_directly: boolean;
+  data_quality?: Record<string, DataQualityMetadata>;
   notes: string[];
 };
