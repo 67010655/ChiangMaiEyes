@@ -305,6 +305,18 @@ function qualityAgeLabel(quality?: DataQualityMetadata) {
   return rest ? `${hours} ชม. ${rest} นาที` : `${hours} ชม.`;
 }
 
+function qualityDisplayLabel(label: string) {
+  const labels: Record<string, string> = {
+    "Wind and weather": "ลม/อากาศ",
+    "Risk score": "ความเสี่ยง",
+    "Fire management zones": "เขตไฟ",
+    "Community forest league": "ป่าชุมชน",
+    "Localized predictions": "AI ประเมิน",
+    "Situation summary": "สรุป",
+  };
+  return labels[label] ?? label;
+}
+
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("th-TH", {
     dateStyle: "medium",
@@ -2783,7 +2795,7 @@ export function App() {
               title={`${item.source}: ${item.note}`}
             >
               <b>{truthModeLabel(item.source_mode)}</b>
-              {item.label}
+              {qualityDisplayLabel(item.label)}
               {item.source_mode !== "PROTOTYPE" && (
                 <small>{qualityAgeLabel(item)}</small>
               )}
