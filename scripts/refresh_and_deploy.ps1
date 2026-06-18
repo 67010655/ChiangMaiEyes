@@ -40,6 +40,15 @@ function Run-PythonRefresh {
   }
 }
 
+function Run-BackendProductionDeploy {
+  Log 'refresh: deploying backend production'
+  cmd.exe /d /c "npx.cmd vercel@latest deploy . --project backend --prod --yes >> ""$log"" 2>>&1"
+  if ($LASTEXITCODE -ne 0) {
+    throw "vercel backend deploy exited $LASTEXITCODE"
+  }
+  Log 'refresh: backend production deployed'
+}
+
 $dataFiles = @(
   'backend/data/hotspots.json',
   'backend/data/pm25.json',
@@ -58,8 +67,9 @@ try {
   Log 'refresh: data changed — commit + push'
   git add $dataFiles
   git commit -m 'chore: refresh hotspot snapshot (RFD/NASA reconciliation)'
-  git push
-  Log 'refresh: pushed (Vercel will auto-deploy)'
+  git push origin HEAD:codex/production-wind-chip
+  Log 'refresh: pushed snapshot branch'
+  Run-BackendProductionDeploy
 }
 catch {
   Log "refresh: ERROR $_"
