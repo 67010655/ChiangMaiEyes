@@ -1,11 +1,17 @@
 import { describe, expect, test } from 'vitest';
-import { buildDataStatusFromDashboard, getDataStatusCopy } from './dataStatus';
+import { buildDataStatusFromDashboard, getDataFreshnessState, getDataStatusCopy } from './dataStatus';
 import type { DashboardResponse, DataStatusResponse } from './types';
 
 const status: DataStatusResponse = {
   mode: 'local-refresh-snapshot',
   latest_update: '2026-06-03T00:43:25+07:00',
   snapshot_age_minutes: 36,
+  hotspot_latest_update: '2026-06-03T00:19:27+07:00',
+  hotspot_age_minutes: 36,
+  pm25_latest_update: '2026-06-03T00:00:00+07:00',
+  pm25_age_minutes: 43,
+  weather_latest_update: '2026-06-03T00:43:25+07:00',
+  weather_age_minutes: 0,
   hotspot_count: 18,
   source: 'Royal Forest Department Firemap + NASA FIRMS',
   source_breakdown: {
@@ -25,6 +31,20 @@ describe('getDataStatusCopy', () => {
     expect(copy.ageLabel).toBe('36 นาที');
     expect(copy.breakdownLabel).toBe('Royal Forest Department Firemap 14 · NASA FIRMS 8');
     expect(copy.detail).toContain('Vercel ไม่ได้ดึง RFD สดโดยตรง');
+  });
+});
+
+describe('getDataFreshnessState', () => {
+  test('uses hotspot age rather than the freshest source age', () => {
+    const copy = getDataFreshnessState({
+      ...status,
+      snapshot_age_minutes: 5,
+      hotspot_age_minutes: 240,
+    });
+
+    expect(copy.level).toBe('stale');
+    expect(copy.title).toContain('ห้ามถือว่า realtime');
+    expect(copy.hotspotAgeMinutes).toBe(240);
   });
 });
 
@@ -65,6 +85,10 @@ describe('buildDataStatusFromDashboard', () => {
 
     expect(derived.latest_update).toBe('2026-06-03T00:43:25+07:00');
     expect(derived.snapshot_age_minutes).toBe(30);
+    expect(derived.hotspot_latest_update).toBe('2026-06-03T00:19:27+07:00');
+    expect(derived.hotspot_age_minutes).toBe(54);
+    expect(derived.pm25_age_minutes).toBe(73);
+    expect(derived.weather_age_minutes).toBe(30);
     expect(derived.hotspot_count).toBe(18);
     expect(derived.vercel_fetches_rfd_directly).toBe(false);
   });

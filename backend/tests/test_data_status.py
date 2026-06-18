@@ -60,6 +60,12 @@ def test_data_status_reports_snapshot_freshness(tmp_path: Path):
     assert status.mode == "local-refresh-snapshot"
     assert status.latest_update == "2026-06-03T00:43:25+07:00"
     assert status.snapshot_age_minutes == 36
+    assert status.hotspot_latest_update == "2026-06-03T00:19:27+07:00"
+    assert status.hotspot_age_minutes == 60
+    assert status.pm25_latest_update == "2026-06-03T00:00:00+07:00"
+    assert status.pm25_age_minutes == 79
+    assert status.weather_latest_update == "2026-06-03T00:43:25+07:00"
+    assert status.weather_age_minutes == 36
     assert status.hotspot_count == 18
     assert status.source_breakdown["Royal Forest Department Firemap"] == 14
     assert status.local_refresh_required is True
@@ -84,4 +90,6 @@ def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path):
     body = response.json()
     assert body["mode"] == "local-refresh-snapshot"
     assert body["hotspot_count"] == 18
+    assert body["hotspot_latest_update"] == "2026-06-03T00:19:27+07:00"
+    assert isinstance(body["hotspot_age_minutes"], int)
     assert body["vercel_fetches_rfd_directly"] is False

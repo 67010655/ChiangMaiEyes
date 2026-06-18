@@ -42,6 +42,7 @@ import { fetchDashboard, fetchDataStatus, fetchHistory } from "./lib/api";
 
 import {
   buildDataStatusFromDashboard,
+  getDataFreshnessState,
   getDataStatusCopy,
 } from "./lib/dataStatus";
 
@@ -2458,6 +2459,7 @@ export function App() {
   );
 
   const dataStatusCopy = dataStatus ? getDataStatusCopy(dataStatus) : null;
+  const dataFreshness = dataStatus ? getDataFreshnessState(dataStatus) : null;
 
   const spreadWatchLevel =
     dashboard.hotspots.count >= 30 || windFactor > 0
@@ -2664,18 +2666,24 @@ export function App() {
             </div>
           </div>
 
-          <div className="live-pill">
+          <div className={`live-pill ${dataFreshness ? `live-pill--${dataFreshness.level}` : ""}`}>
             <span className="live-dot" />
 
             <div>
-              <strong>{loading ? "กำลังอัปเดต" : "อัปเดตล่าสุด"}</strong>
+              <strong>{loading ? "กำลังอัปเดต" : dataFreshness?.label ?? "อัปเดตล่าสุด"}</strong>
 
               <span className="live-pill__full">
-                {formatDateTime(updatedAt)}
+                {dataFreshness
+                  ? `${dataFreshness.hotspotAgeLabel} · ${formatDateTime(dataFreshness.hotspotLatestUpdate)}`
+                  : formatDateTime(updatedAt)}
               </span>
 
               <span className="live-pill__short">
-                {loading ? "กำลังอัปเดต" : `อัปเดต ${formatTime(updatedAt)}`}
+                {loading
+                  ? "กำลังอัปเดต"
+                  : dataFreshness
+                    ? `${dataFreshness.label} ${dataFreshness.hotspotAgeLabel}`
+                    : `อัปเดต ${formatTime(updatedAt)}`}
               </span>
             </div>
           </div>
@@ -2692,6 +2700,39 @@ export function App() {
       </header>
 
       {error && <div className="notice">{error}</div>}
+
+      {dataStatus && dataStatusCopy && dataFreshness && (
+        <div
+          className={`data-status data-status--${dataFreshness.level}`}
+          role={dataFreshness.level === "stale" ? "alert" : "status"}
+        >
+          <span className="data-status__icon" aria-hidden>
+            {dataFreshness.level === "fresh" ? (
+              <ShieldCheck size={18} />
+            ) : (
+              <AlertTriangle size={18} />
+            )}
+          </span>
+
+          <div className="data-status__main">
+            <span className="data-status__label">
+              สถานะความสดของข้อมูล Hotspot
+            </span>
+            <strong>{dataFreshness.title}</strong>
+            <p>
+              ตรวจ hotspot ล่าสุดเมื่อ {formatDateTime(dataFreshness.hotspotLatestUpdate)}
+              {" · "}อายุข้อมูล {dataFreshness.hotspotAgeLabel}
+              {" · "}จำนวน {formatNumber(dataStatus.hotspot_count)} จุด
+            </p>
+          </div>
+
+          <div className="data-status__meta">
+            <span>{dataStatusCopy.modeLabel}</span>
+            <span>PM2.5 {dataFreshness.pm25AgeLabel}</span>
+            <span>ลม/อากาศ {dataFreshness.weatherAgeLabel}</span>
+          </div>
+        </div>
+      )}
 
       <div className="main-content-layout">
         {/* LEFT COLLAPSIBLE SIDEBAR */}

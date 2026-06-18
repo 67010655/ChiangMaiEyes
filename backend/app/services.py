@@ -221,6 +221,11 @@ def _parse_datetime(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
+def _age_minutes(current_time: datetime, updated_at: str) -> int:
+    age_seconds = max(0, (current_time - _parse_datetime(updated_at)).total_seconds())
+    return round(age_seconds / 60)
+
+
 def get_data_status(settings: Settings, now: str | None = None) -> DataStatusResponse:
     hotspots = read_json(settings.cache_dir, "hotspots.json")
     pm25 = read_json(settings.cache_dir, "pm25.json")
@@ -232,12 +237,17 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
         key=_parse_datetime,
     )
     current_time = _parse_datetime(now) if now else datetime.now(tz=_parse_datetime(latest_update).tzinfo)
-    age_seconds = max(0, (current_time - _parse_datetime(latest_update)).total_seconds())
 
     return DataStatusResponse(
         mode="local-refresh-snapshot",
         latest_update=latest_update,
-        snapshot_age_minutes=round(age_seconds / 60),
+        snapshot_age_minutes=_age_minutes(current_time, latest_update),
+        hotspot_latest_update=hotspots["latest_update"],
+        hotspot_age_minutes=_age_minutes(current_time, hotspots["latest_update"]),
+        pm25_latest_update=pm25["latest_update"],
+        pm25_age_minutes=_age_minutes(current_time, pm25["latest_update"]),
+        weather_latest_update=weather["latest_update"],
+        weather_age_minutes=_age_minutes(current_time, weather["latest_update"]),
         hotspot_count=hotspots["count"],
         source=hotspots["source"],
         source_breakdown=hotspots.get("source_breakdown", {}),

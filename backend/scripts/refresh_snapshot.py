@@ -102,8 +102,9 @@ def main() -> int:
             logger.error("No existing hotspot snapshot and live fetch failed — aborting.")
             return 1
 
-    # --- Idempotency check for hotspots.json ---
-    # Write only when the reconciled set actually changed.
+    # --- Idempotency check for hotspot geometry ---
+    # Always write hotspots.json after a successful fetch so latest_update means
+    # "last checked", even when the reconciled hotspot set is unchanged.
     new_dump = hotspots.model_dump()
     existing_path = settings.cache_dir / "hotspots.json"
     hotspots_changed = True
@@ -111,13 +112,12 @@ def main() -> int:
         try:
             old = json.loads(existing_path.read_text(encoding="utf-8"))
             if _hotspot_fingerprint(old.get("items", [])) == _hotspot_fingerprint(new_dump["items"]):
-                logger.info("Hotspots unchanged (%d) — keeping existing hotspot fallback.", hotspots.count)
+                logger.info("Hotspots unchanged (%d); refreshing hotspot timestamp.", hotspots.count)
                 hotspots_changed = False
         except Exception as exc:  # noqa: BLE001 — comparison is best-effort
             logger.warning("Could not compare with existing snapshot: %s", exc)
 
-    if hotspots_changed:
-        write_json(settings.cache_dir, "hotspots.json", new_dump)
+    write_json(settings.cache_dir, "hotspots.json", new_dump)
 
     # --- Always refresh PM2.5, weather, and the full dashboardSnapshot ---
     # These have their own update cadence and should refresh on every run

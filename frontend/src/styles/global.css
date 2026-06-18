@@ -205,6 +205,16 @@ button {
   animation: live-pulse 2.4s ease-in-out infinite;
 }
 
+.live-pill--watch .live-dot {
+  background: var(--amber);
+  box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.18);
+}
+
+.live-pill--stale .live-dot {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.18);
+}
+
 @keyframes live-pulse {
   0%,
   100% {
@@ -345,6 +355,41 @@ button {
   font-size: 0.74rem;
   font-weight: 700;
   text-align: right;
+}
+
+.data-status--fresh {
+  border-color: rgba(22, 163, 74, 0.24);
+  background: #f2fbf5;
+}
+
+.data-status--watch {
+  border-color: rgba(234, 179, 8, 0.42);
+  background: #fffbeb;
+}
+
+.data-status--stale {
+  border-color: rgba(220, 38, 38, 0.36);
+  background: #fff1f2;
+}
+
+.data-status--watch .data-status__icon {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.data-status--stale .data-status__icon {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.data-status--watch .data-status__label,
+.data-status--watch .data-status__main strong {
+  color: #92400e;
+}
+
+.data-status--stale .data-status__label,
+.data-status--stale .data-status__main strong {
+  color: #991b1b;
 }
 
 /* ---------- Layout ---------- */
@@ -7665,6 +7710,16 @@ button {
   .topbar__actions {
     grid-column: auto;
     justify-content: space-between;
+  }
+
+  .data-status {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .data-status__meta {
+    grid-column: 1 / -1;
+    align-items: flex-start;
+    text-align: left;
   }
 
   .date-pill {

@@ -210,6 +210,12 @@ class DataStatusResponse(BaseModel):
     mode: Literal["local-refresh-snapshot", "live-backend"]
     latest_update: str
     snapshot_age_minutes: int
+    hotspot_latest_update: str
+    hotspot_age_minutes: int
+    pm25_latest_update: str
+    pm25_age_minutes: int
+    weather_latest_update: str
+    weather_age_minutes: int
     hotspot_count: int
     source: str
     source_breakdown: dict[str, int] = Field(default_factory=dict)

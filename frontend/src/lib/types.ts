@@ -198,6 +198,12 @@ export type DataStatusResponse = {
   mode: 'local-refresh-snapshot' | 'live-backend';
   latest_update: string;
   snapshot_age_minutes: number;
+  hotspot_latest_update?: string;
+  hotspot_age_minutes?: number;
+  pm25_latest_update?: string;
+  pm25_age_minutes?: number;
+  weather_latest_update?: string;
+  weather_age_minutes?: number;
   hotspot_count: number;
   source: string;
   source_breakdown?: Record<string, number>;
