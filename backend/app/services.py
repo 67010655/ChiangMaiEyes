@@ -657,6 +657,11 @@ def get_operational_intelligence(
     today = datetime.now().date()
     week_start = today - timedelta(days=(today.weekday() + 1) % 7)
     ranking = aggregate_weekly_rankings(_FOREST_RECORDS, _FIELD_REPORTS, week_start)
+    ranking_week_start = week_start
+    if not ranking and _FIELD_REPORTS:
+        latest_report_day = max(report.submitted_at.date() for report in _FIELD_REPORTS)
+        ranking_week_start = latest_report_day - timedelta(days=(latest_report_day.weekday() + 1) % 7)
+        ranking = aggregate_weekly_rankings(_FOREST_RECORDS, _FIELD_REPORTS, ranking_week_start)
     this_year = max(43731, hotspots.count * 120)
     last_year = 51280
     change = round(((this_year - last_year) / last_year) * 100, 1)
@@ -670,8 +675,8 @@ def get_operational_intelligence(
         drought_zones=_DROUGHT_ZONES,
         landuse_breakdown=_landuse_breakdown(hotspots),
         weekly_forest_league=WeeklyForestLeagueResponse(
-            week_id=sunday_week_id(today),
-            scoring_window=f"{week_start.isoformat()} to {(week_start + timedelta(days=6)).isoformat()}",
+            week_id=sunday_week_id(ranking_week_start),
+            scoring_window=f"{ranking_week_start.isoformat()} to {(ranking_week_start + timedelta(days=6)).isoformat()}",
             scheduled_recompute="คำนวณใหม่ทุกวันอาทิตย์ 23:55 น. เวลาไทย และรีเฟรชรายคืนเพื่ออัปเดตคะแนนย้อนหลัง 7 วัน",
             rate_limit_rule="รับรายงานกิจกรรมภาคสนามได้ 1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน",
             ranking=ranking,

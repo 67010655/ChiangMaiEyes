@@ -502,56 +502,81 @@ function hotspotStats(h: Hotspot): MapSelection["stats"] {
   ];
 }
 
-const BASEMAPS = [
-  {
-    id: "standard",
+// MapTiler key (publishable, client-side). When present we serve crisp,
+// retina, label-rich vendor tiles; otherwise we fall back to raw OSM/Esri so
+// the map still renders without a key.
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
 
-    label: "ถนน",
+const MAPTILER_ATTRIBUTION =
+  '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
 
-    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+function maptilerUrl(style: string, ext: "jpg" | "png") {
+  // {r} → "@2x" on retina screens (Leaflet substitutes automatically)
+  return `https://api.maptiler.com/maps/${style}/{z}/{x}/{y}{r}.${ext}?key=${MAPTILER_KEY}`;
+}
 
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
-
-    maxZoom: 19,
-  },
-
-  {
-    id: "light",
-
-    label: "มินิมอล",
-
-    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-
-    attribution: "&copy; OpenStreetMap &copy; CARTO",
-
-    maxZoom: 20,
-  },
-
-  {
-    id: "terrain",
-
-    label: "ภูมิประเทศ",
-
-    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-
-    attribution: "&copy; OpenTopoMap &copy; OpenStreetMap",
-
-    maxZoom: 17,
-  },
-
-  {
-    id: "satellite",
-
-    label: "ดาวเทียม",
-
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-
-    attribution: "Tiles &copy; Esri",
-
-    maxZoom: 19,
-  },
-] as const;
+const BASEMAPS = MAPTILER_KEY
+  ? ([
+      {
+        id: "satellite",
+        label: "ดาวเทียม",
+        url: maptilerUrl("hybrid", "jpg"),
+        attribution: MAPTILER_ATTRIBUTION,
+        maxZoom: 20,
+      },
+      {
+        id: "standard",
+        label: "ถนน",
+        url: maptilerUrl("streets-v2", "png"),
+        attribution: MAPTILER_ATTRIBUTION,
+        maxZoom: 20,
+      },
+      {
+        id: "light",
+        label: "มินิมอล",
+        url: maptilerUrl("dataviz", "png"),
+        attribution: MAPTILER_ATTRIBUTION,
+        maxZoom: 20,
+      },
+      {
+        id: "terrain",
+        label: "ภูมิประเทศ",
+        url: maptilerUrl("outdoor-v2", "png"),
+        attribution: MAPTILER_ATTRIBUTION,
+        maxZoom: 20,
+      },
+    ] as const)
+  : ([
+      {
+        id: "satellite",
+        label: "ดาวเทียม",
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attribution: "Tiles &copy; Esri",
+        maxZoom: 19,
+      },
+      {
+        id: "standard",
+        label: "ถนน",
+        url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
+        maxZoom: 19,
+      },
+      {
+        id: "light",
+        label: "มินิมอล",
+        url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+        attribution: "&copy; OpenStreetMap &copy; CARTO",
+        maxZoom: 20,
+      },
+      {
+        id: "terrain",
+        label: "ภูมิประเทศ",
+        url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+        attribution: "&copy; OpenTopoMap &copy; OpenStreetMap",
+        maxZoom: 17,
+      },
+    ] as const);
 
 type BaseMapId = (typeof BASEMAPS)[number]["id"];
 
@@ -1051,7 +1076,7 @@ export function DashboardMap({
 
   const [zoom, setZoom] = useState(9);
 
-  const [baseMapId, setBaseMapId] = useState<BaseMapId>("standard");
+  const [baseMapId, setBaseMapId] = useState<BaseMapId>("satellite");
 
   const pinHomeFromMapEvent = (e: L.LeafletMouseEvent) => {
     if (!isPinningRef.current || !onMapClickRef.current) return false;
@@ -1075,7 +1100,7 @@ export function DashboardMap({
 
       minZoom: 7,
 
-      maxZoom: 14,
+      maxZoom: 18,
 
       // Pan limit: CM + surrounding provinces (Mae Hong Son, Chiang Rai, Phayao, Lampang, Lamphun, Tak)
 
@@ -1097,7 +1122,7 @@ export function DashboardMap({
       scrollWheelZoom: true,
     });
 
-    tileLayerRef.current = createBaseTileLayer("standard").addTo(map);
+    tileLayerRef.current = createBaseTileLayer("satellite").addTo(map);
 
     // ── Static layers ─────────────────────────────────────────────────────────
 
