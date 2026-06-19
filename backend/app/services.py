@@ -421,7 +421,7 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
         notes=[
             "Hotspots use the latest Thailand refresh snapshot because RFD blocks some serverless infrastructure.",
             "PM2.5 and wind/weather are fetched live by the backend when upstream providers are reachable.",
-            "The hourly Windows refresh task publishes refresh_status.json so the UI/API can show when the worker actually checked sources.",
+            "The 15-minute Windows refresh task publishes refresh_status.json so the UI/API can show when the worker actually checked sources.",
         ],
     )
 
