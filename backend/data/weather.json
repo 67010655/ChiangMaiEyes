@@ -1,18 +1,18 @@
 {
-  "wind_speed_kmh": 2.9,
-  "wind_direction_deg": 271.4,
-  "wind_direction_text": "ทิศตะวันตก",
-  "temperature_c": 31.2,
-  "humidity_percent": 62.6,
-  "latest_update": "2026-06-19T13:06:00+07:00",
+  "wind_speed_kmh": 0.7,
+  "wind_direction_deg": 43.4,
+  "wind_direction_text": "ทิศตะวันออกเฉียงเหนือ",
+  "temperature_c": 31.7,
+  "humidity_percent": 60.4,
+  "latest_update": "2026-06-19T13:20:00+07:00",
   "source": "Thai Meteorological Department AWS",
   "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
   "station_latitude": 18.7711,
   "station_longitude": 98.9692,
-  "pressure_hpa": 972.3,
+  "pressure_hpa": 972.1,
   "rain_15m_mm": 0.0,
   "rain_1h_mm": 0.0,
   "rain_today_mm": 0.0,
   "temperature_min_today_c": 24.8,
-  "temperature_max_today_c": 31.6
+  "temperature_max_today_c": 31.7
 }
