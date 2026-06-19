@@ -1,7 +1,7 @@
 import type { DashboardResponse, DataStatusResponse } from './types';
 
-const HOTSPOT_WATCH_MINUTES = 90;
-const HOTSPOT_STALE_MINUTES = 180;
+const HOTSPOT_WATCH_MINUTES = 30;
+const HOTSPOT_STALE_MINUTES = 60;
 
 export type FreshnessLevel = 'fresh' | 'watch' | 'stale';
 
@@ -36,16 +36,25 @@ export function getHotspotAgeMinutes(status: DataStatusResponse) {
   return status.hotspot_age_minutes ?? status.snapshot_age_minutes;
 }
 
+function getFreshnessAgeMinutes(status: DataStatusResponse) {
+  return Math.max(
+    getHotspotAgeMinutes(status),
+    status.refresh_age_minutes ?? 0,
+  );
+}
+
 export function getHotspotLatestUpdate(status: DataStatusResponse) {
   return status.hotspot_latest_update ?? status.latest_update;
 }
 
 export function getDataFreshnessState(status: DataStatusResponse) {
   const hotspotAgeMinutes = getHotspotAgeMinutes(status);
+  const freshnessAgeMinutes = getFreshnessAgeMinutes(status);
+  const workerIsPartial = Boolean(status.refresh_status && status.refresh_status !== 'ok');
   const level: FreshnessLevel =
-    hotspotAgeMinutes > HOTSPOT_STALE_MINUTES
+    workerIsPartial || freshnessAgeMinutes > HOTSPOT_STALE_MINUTES
       ? 'stale'
-      : hotspotAgeMinutes > HOTSPOT_WATCH_MINUTES
+      : freshnessAgeMinutes > HOTSPOT_WATCH_MINUTES
         ? 'watch'
         : 'fresh';
 

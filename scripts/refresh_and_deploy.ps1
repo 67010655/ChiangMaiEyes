@@ -1,14 +1,8 @@
-# Hourly hotspot refresh — run from a Thailand network (RFD blocks foreign IPs).
+# 15-minute hotspot refresh, run from a Thailand network because RFD blocks many foreign IPs.
 #
-# Fetches + reconciles RFD/GISTDA/NASA and, ONLY when the reconciled hotspot
-# set actually changed, commits the snapshot and pushes. The push triggers
-# Vercel's git auto-deploy of the backend.
-#
-# PREREQUISITE: set the backend Vercel project's Root Directory to "backend"
-# (Settings -> Build & Deployment), otherwise the push won't deploy the backend.
-#
-# The refresh script is idempotent, so most hourly runs do nothing.
-# Register as an hourly Scheduled Task — see scripts/README-refresh.md.
+# The Python refresh reconciles RFD/GISTDA/NASA, refreshes PM2.5/weather, and
+# writes refresh_status.json on every successful check. Changed data is committed,
+# pushed, and deployed to production so the public API can prove freshness.
 
 $ErrorActionPreference = 'Stop'
 $repo = 'C:\Users\User\Desktop\ChiangMaiEyes'
@@ -61,11 +55,10 @@ try {
   Log 'refresh: start'
   Run-PythonRefresh
 
-  # The refresh only rewrites files when the reconciled hotspots changed.
   $changed = git status --porcelain -- $dataFiles
-  if (-not $changed) { Log 'refresh: no data change — done'; exit 0 }
+  if (-not $changed) { Log 'refresh: no data change - done'; exit 0 }
 
-  Log 'refresh: data changed — commit + push'
+  Log 'refresh: data changed - commit + push'
   git add $dataFiles
   git commit -m 'chore: refresh hotspot snapshot (RFD/NASA reconciliation)'
   git push origin HEAD:codex/production-wind-chip

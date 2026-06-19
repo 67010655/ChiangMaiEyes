@@ -46,6 +46,27 @@ describe('getDataFreshnessState', () => {
     expect(copy.title).toContain('ห้ามถือว่า realtime');
     expect(copy.hotspotAgeMinutes).toBe(240);
   });
+
+  test('warns when the Thailand refresh worker is older than thirty minutes', () => {
+    const copy = getDataFreshnessState({
+      ...status,
+      hotspot_age_minutes: 5,
+      refresh_age_minutes: 31,
+    });
+
+    expect(copy.level).toBe('watch');
+  });
+
+  test('marks data stale when the Thailand refresh worker reports partial status', () => {
+    const copy = getDataFreshnessState({
+      ...status,
+      hotspot_age_minutes: 5,
+      refresh_age_minutes: 5,
+      refresh_status: 'partial',
+    });
+
+    expect(copy.level).toBe('stale');
+  });
 });
 
 describe('buildDataStatusFromDashboard', () => {

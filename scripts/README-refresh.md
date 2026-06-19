@@ -1,53 +1,51 @@
-# Hotspot auto-refresh (Thailand egress)
+# Hotspot Auto-Refresh (Thailand Egress)
 
-The Royal Forest Department Firemap blocks non-Thai IPs (HTTP 403), so neither
-Vercel nor GitHub-hosted runners can fetch it. Hotspots are therefore refreshed
-from a machine on a **Thai network** (this PC) and shipped to the deployed app.
+The Royal Forest Department Firemap blocks many non-Thai IPs, so Vercel and
+GitHub-hosted runners cannot be trusted to fetch the full RFD dataset directly.
+Hotspots are refreshed from a machine on a Thai network, then shipped to the
+deployed app as a snapshot.
 
-Data only updates a few times a day (as VIIRS satellite passes arrive), so the
-refresh runs **hourly** but `refresh_snapshot.py` is idempotent — it rewrites
-files (→ commit → deploy) **only when the reconciled hotspot set changes**.
+The worker runs every 15 minutes. Satellite detections may update less often
+than that, but the 15-minute cadence lets the app detect a stalled worker
+quickly. `refresh_snapshot.py` writes `refresh_status.json` on every successful
+check, even when the hotspot count is unchanged.
 
-## One-time setup
+## One-Time Setup
 
-### 1. Vercel: set the backend Root Directory to `backend`
-So that `git push` auto-deploys the backend (instead of building the frontend
-from the repo root and failing).
+### 1. Vercel: set backend Root Directory to `backend`
 
-- Vercel → project **backend** → **Settings → Build & Deployment**
-- **Root Directory** → `backend` → **Save**
+Set this in the Vercel backend project:
 
-(After this, every push that changes backend files deploys the API automatically.
-Until then, deploy manually with `vercel --prod` from `backend/`.)
+- Project: `backend`
+- Settings -> Build & Deployment
+- Root Directory -> `backend`
 
-### 2. Register the hourly Scheduled Task
-Run once in an **elevated PowerShell** (Run as Administrator):
+### 2. Register the 15-minute Scheduled Task
+
+Run once in PowerShell:
 
 ```powershell
-$action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' `
   -Argument '-NoProfile -ExecutionPolicy Bypass -File "C:\Users\User\Desktop\ChiangMaiEyes\scripts\refresh_and_deploy.ps1"'
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) `
-  -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration ([TimeSpan]::MaxValue)
+  -RepetitionInterval (New-TimeSpan -Minutes 15) -RepetitionDuration ([TimeSpan]::MaxValue)
 Register-ScheduledTask -TaskName 'ChiangMaiEyes hotspot refresh' `
-  -Action $action -Trigger $trigger -Description 'Hourly RFD/NASA hotspot reconcile + deploy' `
-  -RunLevel Highest
+  -Action $action -Trigger $trigger -Description '15-minute RFD/GISTDA/NASA hotspot reconcile + deploy'
 ```
 
-Verify / run on demand / remove:
+Verify, run on demand, or remove:
 
 ```powershell
-Start-ScheduledTask -TaskName 'ChiangMaiEyes hotspot refresh'   # run now
-Get-Content scripts\refresh.log -Tail 20                        # see results
+Get-ScheduledTaskInfo -TaskName 'ChiangMaiEyes hotspot refresh'
+Start-ScheduledTask -TaskName 'ChiangMaiEyes hotspot refresh'
+Get-Content scripts\refresh.log -Tail 40
 Unregister-ScheduledTask -TaskName 'ChiangMaiEyes hotspot refresh' -Confirm:$false
 ```
 
-## Notes
-- The task needs this PC on and online; if it's off at an update burst, the next
-  hourly run catches up.
-- `vercel` and `git` must be on PATH and authenticated for the scheduled user.
-- The GitHub Action (`.github/workflows/refresh-hotspots.yml`) is dispatch-only:
-  GitHub-hosted runners also get 403. It would work only on a self-hosted runner
-  attached to a Thai network.
-- NASA FIRMS only contributes once a real `NASA_FIRMS_MAP_KEY` is set (free key
-  from https://firms.modaps.eosdis.nasa.gov/api/area/). GISTDA's gateway product
-  is a global sample; a real GISTDA fire endpoint can be added later.
+## Runtime Contract
+
+- This PC must be powered on and online.
+- `git`, `npx`, and Vercel authentication must work for the scheduled user.
+- The frontend treats `refresh_age_minutes > 30` as a warning.
+- The frontend treats `refresh_status != ok` or `refresh_age_minutes > 60` as stale.
+- PM2.5 and weather still refresh live from the backend on user visits.
