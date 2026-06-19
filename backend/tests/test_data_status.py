@@ -50,6 +50,16 @@ def _write_snapshot(cache_dir: Path) -> None:
             "source": "Thai Meteorological Department AWS",
         },
     )
+    write_json(
+        cache_dir,
+        "refresh_status.json",
+        {
+            "checked_at": "2026-06-03T01:09:27+07:00",
+            "status": "ok",
+            "hotspot_fetch_ok": True,
+            "hotspot_error": None,
+        },
+    )
 
 
 def _pm25_response() -> Pm25Response:
@@ -97,7 +107,9 @@ def test_data_status_reports_snapshot_freshness(tmp_path: Path, monkeypatch):
     assert status.source_breakdown["Royal Forest Department Firemap"] == 14
     assert status.local_refresh_required is True
     assert status.vercel_fetches_rfd_directly is False
-    assert status.refresh_checked_at is None
+    assert status.refresh_checked_at == "2026-06-03T01:09:27+07:00"
+    assert status.refresh_age_minutes == 10
+    assert status.refresh_status == "ok"
     assert status.data_quality["hotspots"].source_mode == "LIVE"
     assert status.data_quality["hotspots"].age_minutes == 60
     assert status.data_quality["ndvi"].source_mode == "PROTOTYPE"
@@ -130,3 +142,5 @@ def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path, monkeypatch)
     assert body["data_quality"]["hotspots"]["source_mode"] == "UNAVAILABLE"
     assert body["data_quality"]["hotspots"]["is_stale"] is True
     assert body["data_quality"]["fire_zones"]["source_mode"] == "PROTOTYPE"
+    assert response.headers["cache-control"] == "no-store, no-cache, must-revalidate, max-age=0"
+    assert response.headers["pragma"] == "no-cache"

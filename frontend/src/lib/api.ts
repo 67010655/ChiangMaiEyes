@@ -2,12 +2,20 @@ import type { DashboardResponse, DataStatusResponse, HistoryResponse, HotspotHis
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
+const LIVE_FETCH_OPTIONS = {
+  cache: 'no-store',
+  headers: {
+    'Cache-Control': 'no-cache',
+  },
+} as const;
+
 export async function fetchDashboard(): Promise<DashboardResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15_000);
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
+      ...LIVE_FETCH_OPTIONS,
       signal: controller.signal,
     });
 
@@ -27,6 +35,7 @@ export async function fetchHotspotHistory(): Promise<HotspotHistoryResponse> {
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/hotspots/history`, {
+      ...LIVE_FETCH_OPTIONS,
       signal: controller.signal,
     });
 
@@ -47,6 +56,7 @@ export async function fetchHistory(): Promise<HistoryResponse> {
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/history`, {
+      ...LIVE_FETCH_OPTIONS,
       signal: controller.signal,
     });
 
@@ -66,6 +76,7 @@ export async function fetchDataStatus(): Promise<DataStatusResponse> {
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/data-status`, {
+      ...LIVE_FETCH_OPTIONS,
       signal: controller.signal,
     });
 

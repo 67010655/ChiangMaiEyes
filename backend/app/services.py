@@ -55,10 +55,10 @@ _BUNDLED_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 # ---------------------------------------------------------------------------
 # Simple TTL cache to avoid hammering upstream APIs on every request.
-# Upstream data (Air4Thai, GISTDA, TMD AWS) updates every 1-6 hours;
-# a 5-minute TTL is a good balance between freshness and rate-limit safety.
+# User-facing live values should refresh quickly when new visitors arrive.
+# Keep a short TTL to avoid hammering upstream APIs while preventing stale UI.
 # ---------------------------------------------------------------------------
-_CACHE_TTL_SECONDS = 300  # 5 minutes
+_CACHE_TTL_SECONDS = 60  # 1 minute
 # Historical series are immutable except for "today", so cache them far longer
 # to avoid re-running the heavy multi-request NASA chain every 5 minutes.
 _HISTORY_TTL_SECONDS = 1800  # 30 minutes
