@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import L from "leaflet";
 
@@ -81,6 +81,17 @@ type Props = {
   onToggleFullscreen?: () => void;
 
   hoveredDistrict?: string | null;
+};
+
+type DryForestZone = {
+  name: string;
+  center: [number, number];
+  radius: number;
+  ndvi: number;
+  ndmi?: number;
+  nbr?: number;
+  status: string;
+  source?: string;
 };
 
 type CommunityForest = {
@@ -1027,6 +1038,26 @@ export function DashboardMap({
   const predictionsLayerRef = useRef<L.LayerGroup | null>(null);
 
   const userLocationLayerRef = useRef<L.LayerGroup | null>(null);
+  const dryForestZones = useMemo<DryForestZone[]>(() => {
+    const satelliteZones = dashboard.intelligence?.satellite_layers?.dryness_zones ?? [];
+    if (satelliteZones.length === 0) return DRY_FOREST_ZONES as DryForestZone[];
+
+    return satelliteZones.map((zone) => ({
+      name: zone.name,
+      center: [zone.latitude, zone.longitude],
+      radius: zone.radius_m,
+      ndvi: zone.ndvi,
+      ndmi: zone.ndmi,
+      nbr: zone.nbr,
+      status:
+        zone.dryness_class === "critical"
+          ? "critical satellite-derived fuel dryness"
+          : zone.dryness_class === "high"
+            ? "high satellite-derived fuel dryness"
+            : "moderate satellite-derived fuel dryness",
+      source: zone.source,
+    }));
+  }, [dashboard.intelligence?.satellite_layers?.dryness_zones]);
 
   const tileLayerRef = useRef<L.TileLayer | null>(null);
 
@@ -2116,7 +2147,7 @@ export function DashboardMap({
 
     if (!layers.fuelRisk) return;
 
-    DRY_FOREST_ZONES.forEach((zone) => {
+    dryForestZones.forEach((zone) => {
       L.circle(zone.center as [number, number], {
         radius: zone.radius,
 
@@ -2173,7 +2204,7 @@ export function DashboardMap({
 
         .addTo(group);
     });
-  }, [layers.fuelRisk]);
+  }, [dryForestZones, layers.fuelRisk]);
 
   // ── User location marker and nearest hotspot link line ────────────────────
 

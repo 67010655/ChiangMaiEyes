@@ -2,7 +2,7 @@
   "hotspots": {
     "count": 0,
     "density_per_100_km2": 0.0,
-    "latest_update": "2026-06-19T15:37:04.343832+07:00",
+    "latest_update": "2026-06-19T15:47:37.107472+07:00",
     "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [],
     "source_breakdown": {
@@ -43,41 +43,41 @@
     ]
   },
   "weather": {
-    "wind_speed_kmh": 6.5,
-    "wind_direction_deg": 192.4,
-    "wind_direction_text": "ทิศใต้ค่อนไปทางตะวันตก",
-    "temperature_c": 31.6,
-    "humidity_percent": 63.0,
-    "latest_update": "2026-06-19T15:35:00+07:00",
+    "wind_speed_kmh": 8.6,
+    "wind_direction_deg": 210.1,
+    "wind_direction_text": "ทิศตะวันตกเฉียงใต้",
+    "temperature_c": 32.9,
+    "humidity_percent": 61.1,
+    "latest_update": "2026-06-19T15:46:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
     "station_longitude": 98.9692,
-    "pressure_hpa": 970.4,
+    "pressure_hpa": 970.2,
     "rain_15m_mm": 0.0,
     "rain_1h_mm": 0.0,
     "rain_today_mm": 0.0,
     "temperature_min_today_c": 24.8,
-    "temperature_max_today_c": 32.8
+    "temperature_max_today_c": 32.9
   },
   "risk": {
-    "score": 4,
+    "score": 5,
     "category": "Medium",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
       "pm25_points": 0.54,
       "hotspot_points": 0.0,
-      "spread_points": 3.61,
+      "spread_points": 3.96,
       "avg_flammability": 1.2,
       "avg_slope_factor": 1.0,
       "avg_history_factor": 1.2,
-      "wind_speed_kmh": 6.5,
+      "wind_speed_kmh": 8.6,
       "wind_pushes_smoke_to_city": "yes"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 11 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศใต้ค่อนไปทางตะวันตก ด้วยความเร็ว 6 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 11 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศตะวันตกเฉียงใต้ ด้วยความเร็ว 9 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 5/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
     "source": "rule-based fallback"
   },
   "intelligence": {
@@ -119,6 +119,90 @@
         "risk_level": "critical"
       }
     ],
+    "satellite_layers": {
+      "source_mode": "DERIVED",
+      "source": "Google Earth Engine-ready Sentinel-2/CHIRPS/SRTM derived layer",
+      "generated_at": "2026-06-19T15:47:38.248664+07:00",
+      "dataset_ids": [
+        "COPERNICUS/S2_SR_HARMONIZED",
+        "UCSB-CHC/CHIRPS/DAILY",
+        "USGS/SRTMGL1_003",
+        "ESA/WorldCover/v200"
+      ],
+      "cadence": "Prepare daily after Sentinel-2/CHIRPS availability; fall back to latest generated export.",
+      "dryness_zones": [
+        {
+          "id": "doi-suthep-pui",
+          "name": "Doi Suthep-Pui dry forest belt",
+          "latitude": 18.81,
+          "longitude": 98.9,
+          "radius_m": 7000,
+          "ndvi": 0.28,
+          "ndmi": -0.08,
+          "nbr": 0.19,
+          "dryness_class": "high",
+          "updated_at": "2026-06-19T15:47:38.248664+07:00",
+          "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+        },
+        {
+          "id": "doi-inthanon-west",
+          "name": "Doi Inthanon western slope",
+          "latitude": 18.54,
+          "longitude": 98.52,
+          "radius_m": 9500,
+          "ndvi": 0.35,
+          "ndmi": -0.03,
+          "nbr": 0.27,
+          "dryness_class": "moderate",
+          "updated_at": "2026-06-19T15:47:38.248664+07:00",
+          "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+        },
+        {
+          "id": "chiang-dao-limestone",
+          "name": "Chiang Dao limestone forest",
+          "latitude": 19.4,
+          "longitude": 98.88,
+          "radius_m": 8000,
+          "ndvi": 0.22,
+          "ndmi": -0.14,
+          "nbr": 0.11,
+          "dryness_class": "critical",
+          "updated_at": "2026-06-19T15:47:38.248664+07:00",
+          "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+        },
+        {
+          "id": "mae-chaem-reserve",
+          "name": "Mae Chaem reserved forest",
+          "latitude": 18.5,
+          "longitude": 98.37,
+          "radius_m": 11000,
+          "ndvi": 0.25,
+          "ndmi": -0.11,
+          "nbr": 0.14,
+          "dryness_class": "critical",
+          "updated_at": "2026-06-19T15:47:38.248664+07:00",
+          "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+        },
+        {
+          "id": "mae-taeng-headwater",
+          "name": "Mae Taeng headwater forest",
+          "latitude": 19.16,
+          "longitude": 99.04,
+          "radius_m": 7500,
+          "ndvi": 0.32,
+          "ndmi": -0.05,
+          "nbr": 0.23,
+          "dryness_class": "high",
+          "updated_at": "2026-06-19T15:47:38.248664+07:00",
+          "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+        }
+      ],
+      "notes": [
+        "NDVI, NDMI, and NBR are shaped to match a future Earth Engine export contract.",
+        "Current values are deterministic seed values until the Earth Engine service account/export job is configured.",
+        "Use this layer for UI integration and data-quality labeling, not as official satellite evidence yet."
+      ]
+    },
     "landuse_breakdown": [
       {
         "landuse_type": "NRF",
@@ -186,7 +270,7 @@
         "longitude": 98.361,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 6.5 กม./ชม. พาควันไปทางหุบเขาเชียงใหม่ มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
+        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 8.6 กม./ชม. พาควันไปทางหุบเขาเชียงใหม่ มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
         "lead_time_hours": 12
       },
       {
@@ -206,7 +290,7 @@
         "longitude": 98.964,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 192 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
+        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 210 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
         "lead_time_hours": 12
       }
     ],

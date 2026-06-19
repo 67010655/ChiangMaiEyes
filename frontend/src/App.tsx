@@ -4041,7 +4041,7 @@ export function App() {
                 <span className="layer-dot layer-dot--fuel" />
 
                 <span>NDVI</span>
-                <span className="layer-truth-badge">PROTOTYPE</span>
+                <span className="layer-truth-badge">{truthModeLabel(quality.ndvi?.source_mode ?? "DERIVED")}</span>
               </button>
 
               <button

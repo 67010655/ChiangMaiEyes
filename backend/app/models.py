@@ -154,6 +154,30 @@ class DroughtZone(BaseModel):
     risk_level: Literal["low", "medium", "high", "critical"]
 
 
+class SatelliteDrynessZone(BaseModel):
+    id: str
+    name: str
+    latitude: float
+    longitude: float
+    radius_m: int
+    ndvi: float
+    ndmi: float
+    nbr: float
+    dryness_class: Literal["moderate", "high", "critical"]
+    updated_at: str
+    source: str
+
+
+class SatelliteLayerResponse(BaseModel):
+    source_mode: SourceMode
+    source: str
+    generated_at: str
+    dataset_ids: list[str] = Field(default_factory=list)
+    cadence: str
+    dryness_zones: list[SatelliteDrynessZone] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
 class LanduseBreakdownItem(BaseModel):
     landuse_type: str
     label: str
@@ -206,6 +230,7 @@ class LocalizedPrediction(BaseModel):
 class OperationalIntelligenceResponse(BaseModel):
     annual_hotspot_stats: AnnualHotspotStats
     drought_zones: list[DroughtZone] = Field(default_factory=list)
+    satellite_layers: SatelliteLayerResponse | None = None
     landuse_breakdown: list[LanduseBreakdownItem] = Field(default_factory=list)
     weekly_forest_league: WeeklyForestLeagueResponse
     localizedPredictions: list[LocalizedPrediction] = Field(default_factory=list)

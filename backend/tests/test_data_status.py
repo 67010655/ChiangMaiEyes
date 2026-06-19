@@ -112,7 +112,7 @@ def test_data_status_reports_snapshot_freshness(tmp_path: Path, monkeypatch):
     assert status.refresh_status == "ok"
     assert status.data_quality["hotspots"].source_mode == "LIVE"
     assert status.data_quality["hotspots"].age_minutes == 60
-    assert status.data_quality["ndvi"].source_mode == "PROTOTYPE"
+    assert status.data_quality["ndvi"].source_mode == "DERIVED"
     assert status.data_quality["community_forests"].source_mode == "PROTOTYPE"
 
 

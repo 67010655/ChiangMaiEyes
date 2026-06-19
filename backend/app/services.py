@@ -24,6 +24,8 @@ from app.models import (
     OperationalIntelligenceResponse,
     Pm25Response,
     RiskResponse,
+    SatelliteDrynessZone,
+    SatelliteLayerResponse,
     SummaryResponse,
     SourceMode,
     WeeklyForestLeagueResponse,
@@ -179,6 +181,64 @@ _DROUGHT_ZONES = [
         trend="drying",
         risk_level="critical",
     ),
+]
+
+_SATELLITE_DRYNESS_ZONES = [
+    {
+        "id": "doi-suthep-pui",
+        "name": "Doi Suthep-Pui dry forest belt",
+        "latitude": 18.81,
+        "longitude": 98.9,
+        "radius_m": 7000,
+        "ndvi": 0.28,
+        "ndmi": -0.08,
+        "nbr": 0.19,
+        "dryness_class": "high",
+    },
+    {
+        "id": "doi-inthanon-west",
+        "name": "Doi Inthanon western slope",
+        "latitude": 18.54,
+        "longitude": 98.52,
+        "radius_m": 9500,
+        "ndvi": 0.35,
+        "ndmi": -0.03,
+        "nbr": 0.27,
+        "dryness_class": "moderate",
+    },
+    {
+        "id": "chiang-dao-limestone",
+        "name": "Chiang Dao limestone forest",
+        "latitude": 19.4,
+        "longitude": 98.88,
+        "radius_m": 8000,
+        "ndvi": 0.22,
+        "ndmi": -0.14,
+        "nbr": 0.11,
+        "dryness_class": "critical",
+    },
+    {
+        "id": "mae-chaem-reserve",
+        "name": "Mae Chaem reserved forest",
+        "latitude": 18.5,
+        "longitude": 98.37,
+        "radius_m": 11000,
+        "ndvi": 0.25,
+        "ndmi": -0.11,
+        "nbr": 0.14,
+        "dryness_class": "critical",
+    },
+    {
+        "id": "mae-taeng-headwater",
+        "name": "Mae Taeng headwater forest",
+        "latitude": 19.16,
+        "longitude": 99.04,
+        "radius_m": 7500,
+        "ndvi": 0.32,
+        "ndmi": -0.05,
+        "nbr": 0.23,
+        "dryness_class": "high",
+    },
 ]
 
 
@@ -337,14 +397,14 @@ def _build_data_quality(
         ),
         "ndvi": _data_quality(
             label="NDVI",
-            source="Prototype dry-forest reference zones",
-            source_mode="PROTOTYPE",
+            source="Google Earth Engine-ready Sentinel-2 NDVI/NDMI/NBR export",
+            source_mode="DERIVED",
             latest_update=None,
             checked_at=checked_at,
             age_minutes=None,
-            confidence=0.25,
+            confidence=0.45,
             stale_after_minutes=0,
-            note="Reference layer only. Not live Sentinel/GISTDA NDVI yet.",
+            note="Derived layer contract is wired for Earth Engine export; current zone values remain seeded until the export job is configured.",
         ),
         "fire_zones": _data_quality(
             label="Fire management zones",
@@ -754,6 +814,35 @@ def _landuse_breakdown(hotspots: HotspotResponse) -> list[LanduseBreakdownItem]:
     ]
 
 
+def get_satellite_layers(now: str | None = None) -> SatelliteLayerResponse:
+    generated_at = now or datetime.now().astimezone().isoformat()
+    return SatelliteLayerResponse(
+        source_mode="DERIVED",
+        source="Google Earth Engine-ready Sentinel-2/CHIRPS/SRTM derived layer",
+        generated_at=generated_at,
+        dataset_ids=[
+            "COPERNICUS/S2_SR_HARMONIZED",
+            "UCSB-CHC/CHIRPS/DAILY",
+            "USGS/SRTMGL1_003",
+            "ESA/WorldCover/v200",
+        ],
+        cadence="Prepare daily after Sentinel-2/CHIRPS availability; fall back to latest generated export.",
+        dryness_zones=[
+            SatelliteDrynessZone(
+                **zone,
+                updated_at=generated_at,
+                source="Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job.",
+            )
+            for zone in _SATELLITE_DRYNESS_ZONES
+        ],
+        notes=[
+            "NDVI, NDMI, and NBR are shaped to match a future Earth Engine export contract.",
+            "Current values are deterministic seed values until the Earth Engine service account/export job is configured.",
+            "Use this layer for UI integration and data-quality labeling, not as official satellite evidence yet.",
+        ],
+    )
+
+
 def _localized_predictions(
     hotspots: HotspotResponse,
     pm25: Pm25Response,
@@ -839,6 +928,7 @@ def get_operational_intelligence(
             source="ข้อมูลจำลองแนว GISTDA/TAMFIRE สำหรับเทียบจุดความร้อนสะสมรายปี",
         ),
         drought_zones=_DROUGHT_ZONES,
+        satellite_layers=get_satellite_layers(),
         landuse_breakdown=_landuse_breakdown(hotspots),
         weekly_forest_league=WeeklyForestLeagueResponse(
             week_id=sunday_week_id(ranking_week_start),

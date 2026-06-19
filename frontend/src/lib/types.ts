@@ -141,6 +141,30 @@ export type DroughtZone = {
   risk_level: 'low' | 'medium' | 'high' | 'critical';
 };
 
+export type SatelliteDrynessZone = {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  radius_m: number;
+  ndvi: number;
+  ndmi: number;
+  nbr: number;
+  dryness_class: 'moderate' | 'high' | 'critical';
+  updated_at: string;
+  source: string;
+};
+
+export type SatelliteLayerResponse = {
+  source_mode: SourceMode;
+  source: string;
+  generated_at: string;
+  dataset_ids: string[];
+  cadence: string;
+  dryness_zones: SatelliteDrynessZone[];
+  notes: string[];
+};
+
 export type LanduseBreakdownItem = {
   landuse_type: string;
   label: string;
@@ -193,6 +217,7 @@ export type LocalizedPrediction = {
 export type OperationalIntelligenceResponse = {
   annual_hotspot_stats: AnnualHotspotStats;
   drought_zones: DroughtZone[];
+  satellite_layers?: SatelliteLayerResponse | null;
   landuse_breakdown: LanduseBreakdownItem[];
   weekly_forest_league: WeeklyForestLeagueResponse;
   localizedPredictions: LocalizedPrediction[];

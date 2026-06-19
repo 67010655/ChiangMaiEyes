@@ -121,6 +121,10 @@ def test_operational_intelligence_has_rankings_and_explainable_predictions():
 
     assert intelligence.weekly_forest_league.ranking
     assert intelligence.landuse_breakdown
+    assert intelligence.satellite_layers is not None
+    assert intelligence.satellite_layers.source_mode == "DERIVED"
+    assert "COPERNICUS/S2_SR_HARMONIZED" in intelligence.satellite_layers.dataset_ids
+    assert len(intelligence.satellite_layers.dryness_zones) >= 5
     assert intelligence.localizedPredictions
     assert all(p.reason_for_prediction for p in intelligence.localizedPredictions)
 
