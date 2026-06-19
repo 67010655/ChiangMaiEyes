@@ -131,7 +131,7 @@ def main() -> int:
     weather = get_weather(settings)
     risk = calculate_risk(pm25, hotspots, weather)
     summary = fallback_summary(pm25, hotspots, weather, risk)
-    intelligence = get_operational_intelligence(hotspots, pm25, weather, risk)
+    intelligence = get_operational_intelligence(hotspots, pm25, weather, risk, settings)
     dashboard = DashboardResponse(
         hotspots=hotspots,
         pm25=pm25,

@@ -163,6 +163,8 @@ class SatelliteDrynessZone(BaseModel):
     ndvi: float
     ndmi: float
     nbr: float
+    rainfall_30d_mm: float | None = None
+    slope_mean_deg: float | None = None
     dryness_class: Literal["moderate", "high", "critical"]
     updated_at: str
     source: str

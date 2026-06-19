@@ -1,0 +1,94 @@
+{
+  "source_mode": "DERIVED",
+  "source": "Google Earth Engine-ready Sentinel-2/CHIRPS/SRTM derived layer",
+  "generated_at": "2026-06-19T15:54:30.038530+07:00",
+  "dataset_ids": [
+    "COPERNICUS/S2_SR_HARMONIZED",
+    "UCSB-CHC/CHIRPS/DAILY",
+    "USGS/SRTMGL1_003",
+    "ESA/WorldCover/v200"
+  ],
+  "cadence": "Prepare daily after Sentinel-2/CHIRPS availability; fall back to latest generated export.",
+  "dryness_zones": [
+    {
+      "id": "doi-suthep-pui",
+      "name": "Doi Suthep-Pui dry forest belt",
+      "latitude": 18.81,
+      "longitude": 98.9,
+      "radius_m": 7000,
+      "ndvi": 0.28,
+      "ndmi": -0.08,
+      "nbr": 0.19,
+      "rainfall_30d_mm": null,
+      "slope_mean_deg": null,
+      "dryness_class": "high",
+      "updated_at": "2026-06-19T15:54:30.038530+07:00",
+      "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+    },
+    {
+      "id": "doi-inthanon-west",
+      "name": "Doi Inthanon western slope",
+      "latitude": 18.54,
+      "longitude": 98.52,
+      "radius_m": 9500,
+      "ndvi": 0.35,
+      "ndmi": -0.03,
+      "nbr": 0.27,
+      "rainfall_30d_mm": null,
+      "slope_mean_deg": null,
+      "dryness_class": "moderate",
+      "updated_at": "2026-06-19T15:54:30.038530+07:00",
+      "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+    },
+    {
+      "id": "chiang-dao-limestone",
+      "name": "Chiang Dao limestone forest",
+      "latitude": 19.4,
+      "longitude": 98.88,
+      "radius_m": 8000,
+      "ndvi": 0.22,
+      "ndmi": -0.14,
+      "nbr": 0.11,
+      "rainfall_30d_mm": null,
+      "slope_mean_deg": null,
+      "dryness_class": "critical",
+      "updated_at": "2026-06-19T15:54:30.038530+07:00",
+      "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+    },
+    {
+      "id": "mae-chaem-reserve",
+      "name": "Mae Chaem reserved forest",
+      "latitude": 18.5,
+      "longitude": 98.37,
+      "radius_m": 11000,
+      "ndvi": 0.25,
+      "ndmi": -0.11,
+      "nbr": 0.14,
+      "rainfall_30d_mm": null,
+      "slope_mean_deg": null,
+      "dryness_class": "critical",
+      "updated_at": "2026-06-19T15:54:30.038530+07:00",
+      "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+    },
+    {
+      "id": "mae-taeng-headwater",
+      "name": "Mae Taeng headwater forest",
+      "latitude": 19.16,
+      "longitude": 99.04,
+      "radius_m": 7500,
+      "ndvi": 0.32,
+      "ndmi": -0.05,
+      "nbr": 0.23,
+      "rainfall_30d_mm": null,
+      "slope_mean_deg": null,
+      "dryness_class": "high",
+      "updated_at": "2026-06-19T15:54:30.038530+07:00",
+      "source": "Seeded Chiang Mai dry-zone geometry; replace values from Earth Engine export job."
+    }
+  ],
+  "notes": [
+    "NDVI, NDMI, and NBR are shaped to match a future Earth Engine export contract.",
+    "Current values are deterministic seed values until the Earth Engine service account/export job is configured.",
+    "Use this layer for UI integration and data-quality labeling, not as official satellite evidence yet."
+  ]
+}

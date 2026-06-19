@@ -48,6 +48,7 @@ $dataFiles = @(
   'backend/data/pm25.json',
   'backend/data/weather.json',
   'backend/data/refresh_status.json',
+  'backend/data/satellite_layers.json',
   'frontend/src/data/dashboardSnapshot.json'
 )
 

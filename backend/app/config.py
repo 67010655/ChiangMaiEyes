@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     gistda_api_key: str | None = None
     gistda_disaster_api_key: str | None = DEFAULT_GISTDA_DISASTER_API_KEY
     nasa_firms_map_key: str | None = None
+    earth_engine_enabled: bool = False
+    earth_engine_project: str | None = None
+    earth_engine_service_account: str | None = None
+    earth_engine_private_key_path: Path | None = None
+    satellite_layers_file: Path | None = None
 
     @property
     def allowed_origins(self) -> list[str]:

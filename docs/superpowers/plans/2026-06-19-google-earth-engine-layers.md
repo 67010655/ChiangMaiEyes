@@ -54,3 +54,20 @@
 
 - [ ] Verify production `/api/dashboard` includes `intelligence.satellite_layers`.
 - [ ] Verify frontend production loads without console errors.
+
+### Task 5: Optional Earth Engine Export Provider
+
+**Files:**
+- Create: `backend/app/providers/earth_engine_provider.py`
+- Create: `backend/scripts/refresh_satellite_layers.py`
+- Modify: `backend/app/config.py`
+- Modify: `backend/pyproject.toml`
+- Modify: `backend/requirements.txt`
+- Modify: `scripts/refresh_and_deploy.ps1`
+- Test: `backend/tests/test_earth_engine_provider.py`
+
+- [ ] Add `earthengine-api` runtime dependency.
+- [ ] Add config for `EARTH_ENGINE_ENABLED`, `EARTH_ENGINE_PROJECT`, `EARTH_ENGINE_SERVICE_ACCOUNT`, `EARTH_ENGINE_PRIVATE_KEY_PATH`, and `SATELLITE_LAYERS_FILE`.
+- [ ] Implement provider behavior: load existing `satellite_layers.json`, refresh via Earth Engine when enabled, otherwise write deterministic seed export.
+- [ ] Add script `python backend/scripts/refresh_satellite_layers.py` for daily/manual satellite export generation.
+- [ ] Add tests for existing export load and no-credential seed export.
