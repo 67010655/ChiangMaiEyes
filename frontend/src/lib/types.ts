@@ -213,6 +213,9 @@ export type DataStatusResponse = {
   mode: 'local-refresh-snapshot' | 'live-backend';
   latest_update: string;
   snapshot_age_minutes: number;
+  refresh_checked_at?: string | null;
+  refresh_age_minutes?: number | null;
+  refresh_status?: string | null;
   hotspot_latest_update?: string;
   hotspot_age_minutes?: number;
   pm25_latest_update?: string;

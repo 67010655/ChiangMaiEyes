@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -2055,6 +2056,7 @@ export function App() {
   const [dashboard, setDashboard] = useState<DashboardResponse>(fallback);
 
   const [dataStatus, setDataStatus] = useState<DataStatusResponse | null>(null);
+  const lastAutoRefreshAt = useRef(0);
 
   const [history, setHistory] = useState<HistoryResponse | null>(null);
 
@@ -2208,9 +2210,27 @@ export function App() {
   useEffect(() => {
     loadDashboard();
 
-    const refreshId = window.setInterval(loadDashboard, 5 * 60 * 1000);
+    const refreshId = window.setInterval(loadDashboard, 2 * 60 * 1000);
 
     return () => window.clearInterval(refreshId);
+  }, [loadDashboard]);
+
+  useEffect(() => {
+    const refreshWhenVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      const nowMs = Date.now();
+      if (nowMs - lastAutoRefreshAt.current < 30_000) return;
+      lastAutoRefreshAt.current = nowMs;
+      loadDashboard();
+    };
+
+    window.addEventListener("focus", refreshWhenVisible);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.removeEventListener("focus", refreshWhenVisible);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [loadDashboard]);
 
   useEffect(() => {

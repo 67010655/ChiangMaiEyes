@@ -219,6 +219,15 @@ def write_json(cache_dir: Path, filename: str, data: dict) -> None:
         logger.error("Error writing cached JSON file %s: %s", filename, e)
 
 
+def _read_optional_json(cache_dir: Path, filename: str) -> dict[str, Any] | None:
+    for directory in (cache_dir, _BUNDLED_DATA_DIR):
+        try:
+            return read_json(directory, filename)
+        except Exception:
+            continue
+    return None
+
+
 def _parse_datetime(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
@@ -374,9 +383,9 @@ def _build_data_quality(
 
 
 def get_data_status(settings: Settings, now: str | None = None) -> DataStatusResponse:
-    hotspots = HotspotResponse(**read_json(settings.cache_dir, "hotspots.json"))
-    pm25 = Pm25Response(**read_json(settings.cache_dir, "pm25.json"))
-    weather = WeatherResponse(**read_json(settings.cache_dir, "weather.json"))
+    hotspots = _serve_hotspot_snapshot(settings)
+    pm25 = get_pm25(settings)
+    weather = get_weather(settings)
     latest_update = max(
         hotspots.latest_update,
         pm25.latest_update,
@@ -385,11 +394,18 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
     )
     current_time = _parse_datetime(now) if now else datetime.now(tz=_parse_datetime(latest_update).tzinfo)
     checked_at = current_time.isoformat()
+    refresh_status = _read_optional_json(settings.cache_dir, "refresh_status.json")
+    refresh_checked_at = refresh_status.get("checked_at") if refresh_status else None
 
     return DataStatusResponse(
         mode="local-refresh-snapshot",
         latest_update=latest_update,
         snapshot_age_minutes=_age_minutes(current_time, latest_update),
+        refresh_checked_at=refresh_checked_at,
+        refresh_age_minutes=(
+            _age_minutes(current_time, refresh_checked_at) if isinstance(refresh_checked_at, str) else None
+        ),
+        refresh_status=refresh_status.get("status") if refresh_status else None,
         hotspot_latest_update=hotspots.latest_update,
         hotspot_age_minutes=_age_minutes(current_time, hotspots.latest_update),
         pm25_latest_update=pm25.latest_update,
@@ -403,8 +419,9 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
         vercel_fetches_rfd_directly=False,
         data_quality=_build_data_quality(hotspots, pm25, weather, checked_at=checked_at),
         notes=[
-            "RFD blocks non-Thai infrastructure, so this deployment serves the latest local refresh snapshot.",
-            "The Windows startup launcher and hourly task refresh data from this PC, then push changed snapshots to Vercel.",
+            "Hotspots use the latest Thailand refresh snapshot because RFD blocks some serverless infrastructure.",
+            "PM2.5 and wind/weather are fetched live by the backend when upstream providers are reachable.",
+            "The hourly Windows refresh task publishes refresh_status.json so the UI/API can show when the worker actually checked sources.",
         ],
     )
 

@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings
 from app.main import app
+from app.models import Pm25Response, WeatherResponse
 from app.services import get_data_status, write_json
 
 
@@ -51,9 +52,35 @@ def _write_snapshot(cache_dir: Path) -> None:
     )
 
 
-def test_data_status_reports_snapshot_freshness(tmp_path: Path):
+def _pm25_response() -> Pm25Response:
+    return Pm25Response(
+        current_pm25=18.7,
+        category="good",
+        color="green",
+        trend="stable",
+        latest_update="2026-06-03T00:00:00+07:00",
+        source="Air4Thai Live API",
+        stations=[],
+    )
+
+
+def _weather_response() -> WeatherResponse:
+    return WeatherResponse(
+        wind_speed_kmh=2.9,
+        wind_direction_deg=349,
+        wind_direction_text="north",
+        temperature_c=25.7,
+        humidity_percent=90,
+        latest_update="2026-06-03T00:43:25+07:00",
+        source="Thai Meteorological Department AWS",
+    )
+
+
+def test_data_status_reports_snapshot_freshness(tmp_path: Path, monkeypatch):
     settings = Settings(cache_dir=tmp_path)
     _write_snapshot(tmp_path)
+    monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
+    monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
 
     status = get_data_status(settings, now="2026-06-03T01:19:27+07:00")
 
@@ -70,14 +97,17 @@ def test_data_status_reports_snapshot_freshness(tmp_path: Path):
     assert status.source_breakdown["Royal Forest Department Firemap"] == 14
     assert status.local_refresh_required is True
     assert status.vercel_fetches_rfd_directly is False
+    assert status.refresh_checked_at is None
     assert status.data_quality["hotspots"].source_mode == "LIVE"
     assert status.data_quality["hotspots"].age_minutes == 60
     assert status.data_quality["ndvi"].source_mode == "PROTOTYPE"
     assert status.data_quality["community_forests"].source_mode == "PROTOTYPE"
 
 
-def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path):
+def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path, monkeypatch):
     _write_snapshot(tmp_path)
+    monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
+    monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
 
     def override_settings() -> Settings:
         return Settings(cache_dir=tmp_path)

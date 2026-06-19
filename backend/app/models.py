@@ -226,6 +226,9 @@ class DataStatusResponse(BaseModel):
     mode: Literal["local-refresh-snapshot", "live-backend"]
     latest_update: str
     snapshot_age_minutes: int
+    refresh_checked_at: str | None = None
+    refresh_age_minutes: int | None = None
+    refresh_status: str | None = None
     hotspot_latest_update: str
     hotspot_age_minutes: int
     pm25_latest_update: str

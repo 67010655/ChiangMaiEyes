@@ -74,6 +74,9 @@ def _hotspot_fingerprint(items: list[dict]) -> list[tuple]:
 
 def main() -> int:
     settings = get_settings()
+    checked_at = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).isoformat()
+    hotspot_fetch_ok = True
+    hotspot_error = None
 
     # --- Fetch live hotspots (best-effort) ---
     # If all sources genuinely return 0 (e.g. rainy season, no active fires),
@@ -84,6 +87,8 @@ def main() -> int:
         hotspots = build_hotspots(settings)
         logger.info("Reconciled %d unique hotspots", hotspots.count)
     except Exception as exc:  # noqa: BLE001 — network/auth failure, not a "0 count" result
+        hotspot_fetch_ok = False
+        hotspot_error = str(exc)
         logger.error("Hotspot fetch failed: %s", exc)
         # Fall back to the existing snapshot so PM2.5/weather can still refresh.
         existing_path = settings.cache_dir / "hotspots.json"
@@ -137,6 +142,22 @@ def main() -> int:
     )
     frontend_data = REPO_DIR / "frontend" / "src" / "data"
     write_json(frontend_data, "dashboardSnapshot.json", dashboard.model_dump())
+    write_json(
+        settings.cache_dir,
+        "refresh_status.json",
+        {
+            "checked_at": checked_at,
+            "status": "ok" if hotspot_fetch_ok else "partial",
+            "hotspot_fetch_ok": hotspot_fetch_ok,
+            "hotspot_error": hotspot_error,
+            "hotspot_count": hotspots.count,
+            "hotspot_latest_update": hotspots.latest_update,
+            "pm25_latest_update": pm25.latest_update,
+            "weather_latest_update": weather.latest_update,
+            "source": hotspots.source,
+            "source_breakdown": hotspots.source_breakdown,
+        },
+    )
 
     logger.info("Wrote dashboardSnapshot.json (hotspot_count=%d)", hotspots.count)
     return 0
