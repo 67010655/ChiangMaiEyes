@@ -2,7 +2,7 @@
   "hotspots": {
     "count": 0,
     "density_per_100_km2": 0.0,
-    "latest_update": "2026-06-21T00:07:06.458271+07:00",
+    "latest_update": "2026-06-21T00:22:05.897392+07:00",
     "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [],
     "source_breakdown": {
@@ -13,11 +13,11 @@
     }
   },
   "pm25": {
-    "current_pm25": 11.4,
+    "current_pm25": 11.1,
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-20T23:00:00+07:00",
+    "latest_update": "2026-06-21T00:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -26,9 +26,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 15.5,
+        "pm25": 15.0,
         "trend": "stable",
-        "updated_at": "2026-06-20T23:00:00+07:00"
+        "updated_at": "2026-06-21T00:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -36,19 +36,19 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 7.3,
+        "pm25": 7.2,
         "trend": "stable",
-        "updated_at": "2026-06-20T23:00:00+07:00"
+        "updated_at": "2026-06-21T00:00:00+07:00"
       }
     ]
   },
   "weather": {
     "wind_speed_kmh": 1.4,
-    "wind_direction_deg": 141.0,
+    "wind_direction_deg": 150.5,
     "wind_direction_text": "ทิศใต้ค่อนไปทางตะวันออก",
     "temperature_c": 26.9,
-    "humidity_percent": 78.0,
-    "latest_update": "2026-06-21T00:06:00+07:00",
+    "humidity_percent": 77.2,
+    "latest_update": "2026-06-21T00:21:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
@@ -65,7 +65,7 @@
     "category": "Low",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
-      "pm25_points": 0.57,
+      "pm25_points": 0.55,
       "hotspot_points": 0.0,
       "spread_points": 1.57,
       "avg_flammability": 1.2,
@@ -300,7 +300,7 @@
         "longitude": 98.964,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 141 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
+        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 150 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
         "lead_time_hours": 12
       }
     ],
