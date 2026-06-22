@@ -81,11 +81,12 @@
     "source": "rule-based fallback"
   },
   "intelligence": {
-    "annual_hotspot_stats": {
-      "this_year_count": 43731,
-      "last_year_count": 51280,
-      "change_percent": -14.7,
-      "source": "ข้อมูลจำลองแนว GISTDA/TAMFIRE สำหรับเทียบจุดความร้อนสะสมรายปี"
+    "hotspot_trend": {
+      "window_days": 0,
+      "recent_count": 0,
+      "previous_count": 0,
+      "change_percent": 0,
+      "source": "ยังไม่มีประวัติย้อนหลังจาก NASA VIIRS"
     },
     "drought_zones": [
       {
@@ -213,32 +214,7 @@
         "Use this layer for UI integration and data-quality labeling, not as official satellite evidence yet."
       ]
     },
-    "landuse_breakdown": [
-      {
-        "landuse_type": "NRF",
-        "label": "ป่าสงวนแห่งชาติ",
-        "count": 5,
-        "percent": 62.5
-      },
-      {
-        "landuse_type": "CONSERVATION",
-        "label": "ป่าอนุรักษ์",
-        "count": 1,
-        "percent": 12.5
-      },
-      {
-        "landuse_type": "AGRI",
-        "label": "พื้นที่เกษตร",
-        "count": 1,
-        "percent": 12.5
-      },
-      {
-        "landuse_type": "OTHER",
-        "label": "ชุมชนและอื่น ๆ",
-        "count": 1,
-        "percent": 12.5
-      }
-    ],
+    "landuse_breakdown": [],
     "weekly_forest_league": {
       "week_id": "2026-06-07",
       "scoring_window": "2026-06-07 to 2026-06-13",

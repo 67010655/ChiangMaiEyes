@@ -1,7 +1,7 @@
 import json
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -10,8 +10,10 @@ import math
 from app.fire_spread_physics import get_district_physics
 from app.config import Settings, get_settings
 from app.models import (
-    AnnualHotspotStats,
+    HotspotTrendStats,
     DailyMetric,
+    FieldReportResult,
+    FieldReportSubmission,
     DataQualityMetadata,
     DataStatusResponse,
     DashboardResponse,
@@ -335,16 +337,20 @@ def _build_data_quality(
         "hotspots": _data_quality(
             label="Hotspot",
             source=hotspots.source,
-            source_mode="LIVE" if not hotspot_age > 180 else "UNAVAILABLE",
+            # Hotspots are always delivered via the Thailand refresh snapshot
+            # (RFD blocks the serving infrastructure), so the honest mode is
+            # SNAPSHOT, never LIVE — and it degrades to UNAVAILABLE on staleness.
+            source_mode="SNAPSHOT" if not hotspot_age > 180 else "UNAVAILABLE",
             latest_update=hotspots.latest_update,
             checked_at=checked_at,
             age_minutes=hotspot_age,
             confidence=0.9 if not hotspot_age > 180 else 0.35,
             stale_after_minutes=180,
             note=(
-                "Snapshot refreshed from Thailand because RFD blocks some serverless infrastructure."
+                "Authoritative RFD-backed data delivered via the Thailand refresh snapshot "
+                "(RFD blocks some serverless infrastructure), not a live request — trust the snapshot age."
                 if FOREST_FIREMAP_SOURCE in (hotspots.source_breakdown or {}) or "Royal Forest" in hotspots.source
-                else "Best-effort satellite feed without RFD confirmation."
+                else "Best-effort satellite snapshot without RFD confirmation; trust the snapshot age, not live status."
             ),
         ),
         "pm25": _data_quality(
@@ -393,14 +399,14 @@ def _build_data_quality(
         ),
         "ndvi": _data_quality(
             label="NDVI",
-            source="Google Earth Engine-ready Sentinel-2 NDVI/NDMI/NBR export",
+            source="Sentinel-2 NDVI/NDMI/NBR (Copernicus Data Space; seeded until configured)",
             source_mode="DERIVED",
             latest_update=None,
             checked_at=checked_at,
             age_minutes=None,
             confidence=0.45,
             stale_after_minutes=0,
-            note="Derived layer contract is wired for Earth Engine export; current zone values remain seeded until the export job is configured.",
+            note="Zonal dryness indices from Copernicus Data Space Sentinel-2 when COPERNICUS_CLIENT_ID/SECRET are set; otherwise seeded values until configured.",
         ),
         "fire_zones": _data_quality(
             label="Fire management zones",
@@ -783,13 +789,10 @@ def _landuse_breakdown(hotspots: HotspotResponse) -> list[LanduseBreakdownItem]:
         key = item.landuse_type or "OTHER"
         counts[key] = counts.get(key, 0) + 1
 
+    # No fabricated fallback: with zero hotspots there is genuinely nothing to
+    # break down, so return an empty list and let the UI say "no active fire".
     if not counts:
-        counts = {
-            "NRF": 5,
-            "CONSERVATION": 1,
-            "AGRI": 1,
-            "OTHER": 1,
-        }
+        return []
 
     total = max(1, sum(counts.values()))
     return [
@@ -867,6 +870,113 @@ def _localized_predictions(
     ]
 
 
+def _load_field_reports(settings: Settings) -> tuple[list[FieldActivityReport], SourceMode]:
+    """Real submitted reports from Supabase when configured, else the seed demo
+    set. Returns the reports and the provenance mode for the league response."""
+    from app.providers.field_report_store import fetch_field_reports, supabase_enabled
+
+    if supabase_enabled(settings):
+        try:
+            reports = fetch_field_reports(settings)
+            return reports, "LIVE"
+        except Exception as exc:  # noqa: BLE001 — never error the dashboard on a store hiccup
+            logger.warning("Supabase field reports unavailable, using seed: %s", exc)
+    return list(_FIELD_REPORTS), "PROTOTYPE"
+
+
+def submit_field_report(settings: Settings, submission: "FieldReportSubmission") -> "FieldReportResult":
+    """Validate + persist a community field report, enforcing the daily limit.
+
+    In demo mode (no Supabase) nothing is stored — we say so plainly rather than
+    pretending the report was saved."""
+    from uuid import uuid4
+
+    import httpx
+
+    from app.providers.field_report_store import (
+        insert_field_report,
+        report_exists_today,
+        supabase_enabled,
+    )
+
+    if not supabase_enabled(settings):
+        return FieldReportResult(
+            accepted=False,
+            stored=False,
+            message="โหมดสาธิต: ยังไม่ได้เชื่อมฐานข้อมูล รายงานจึงยังไม่ถูกบันทึก",
+            source_mode="PROTOTYPE",
+        )
+
+    rate_limited = FieldReportResult(
+        accepted=False,
+        stored=False,
+        message="วันนี้ป่าชุมชน/หมู่บ้านนี้ส่งรายงานแล้ว (จำกัด 1 ครั้งต่อวัน)",
+        source_mode="LIVE",
+    )
+
+    submitted_at = datetime.now(tz=timezone(timedelta(hours=7)))
+    if report_exists_today(settings, submission.forest_id, submission.village_id, submitted_at.date()):
+        return rate_limited
+
+    report = FieldActivityReport(
+        report_id=f"rpt-{uuid4().hex[:12]}",
+        submitted_at=submitted_at,
+        **submission.model_dump(),
+    )
+    try:
+        insert_field_report(settings, report)
+    except httpx.HTTPStatusError as exc:
+        # DB unique index is the authoritative rate-limit; a 409 means another
+        # report for this forest/village landed today between our check and insert.
+        if exc.response.status_code == 409:
+            return rate_limited
+        raise
+    return FieldReportResult(
+        accepted=True,
+        stored=True,
+        message="บันทึกรายงานภาคสนามเรียบร้อย ขอบคุณที่ช่วยกันดูแลป่า",
+        source_mode="LIVE",
+    )
+
+
+def _hotspot_trend(settings: Settings, hotspots: HotspotResponse, window_days: int = 30) -> HotspotTrendStats:
+    """Real in-province cumulative from NASA VIIRS daily counts, split recent vs
+    previous half so the change is computed, never invented. Falls back to the
+    current snapshot count (clearly labelled) when no history is available."""
+    series: list[HotspotHistoryDay] = []
+    try:
+        series = get_history(settings, days=window_days).hotspots
+    except Exception as exc:  # noqa: BLE001 — trend is non-critical
+        logger.warning("Hotspot trend history unavailable: %s", exc)
+
+    if series:
+        counts = [day.count for day in series]
+        half = len(counts) // 2
+        previous_count = sum(counts[:half])
+        recent_count = sum(counts[half:])
+        change = (
+            round(((recent_count - previous_count) / previous_count) * 100, 1)
+            if previous_count
+            else 0.0
+        )
+        return HotspotTrendStats(
+            window_days=len(counts),
+            recent_count=recent_count,
+            previous_count=previous_count,
+            change_percent=change,
+            source="NASA VIIRS (SNPP/NOAA-20/NOAA-21) จุดความร้อนรายวันในจังหวัด",
+        )
+
+    # No history (no NASA key / unreachable): show only the current snapshot count.
+    return HotspotTrendStats(
+        window_days=0,
+        recent_count=hotspots.count,
+        previous_count=0,
+        change_percent=0.0,
+        source="จำนวนปัจจุบันจาก snapshot (ยังไม่มีประวัติย้อนหลังจาก NASA VIIRS)",
+    )
+
+
 def get_operational_intelligence(
     hotspots: HotspotResponse,
     pm25: Pm25Response,
@@ -874,24 +984,18 @@ def get_operational_intelligence(
     risk: RiskResponse,
     settings: Settings | None = None,
 ) -> OperationalIntelligenceResponse:
+    settings = settings or get_settings()
+    field_reports, league_mode = _load_field_reports(settings)
     today = datetime.now().date()
     week_start = today - timedelta(days=(today.weekday() + 1) % 7)
-    ranking = aggregate_weekly_rankings(_FOREST_RECORDS, _FIELD_REPORTS, week_start)
+    ranking = aggregate_weekly_rankings(_FOREST_RECORDS, field_reports, week_start)
     ranking_week_start = week_start
-    if not ranking and _FIELD_REPORTS:
-        latest_report_day = max(report.submitted_at.date() for report in _FIELD_REPORTS)
+    if not ranking and field_reports:
+        latest_report_day = max(report.submitted_at.date() for report in field_reports)
         ranking_week_start = latest_report_day - timedelta(days=(latest_report_day.weekday() + 1) % 7)
-        ranking = aggregate_weekly_rankings(_FOREST_RECORDS, _FIELD_REPORTS, ranking_week_start)
-    this_year = max(43731, hotspots.count * 120)
-    last_year = 51280
-    change = round(((this_year - last_year) / last_year) * 100, 1)
+        ranking = aggregate_weekly_rankings(_FOREST_RECORDS, field_reports, ranking_week_start)
     return OperationalIntelligenceResponse(
-        annual_hotspot_stats=AnnualHotspotStats(
-            this_year_count=this_year,
-            last_year_count=last_year,
-            change_percent=change,
-            source="ข้อมูลจำลองแนว GISTDA/TAMFIRE สำหรับเทียบจุดความร้อนสะสมรายปี",
-        ),
+        hotspot_trend=_hotspot_trend(settings, hotspots),
         drought_zones=_DROUGHT_ZONES,
         satellite_layers=get_satellite_layers(settings or get_settings()),
         landuse_breakdown=_landuse_breakdown(hotspots),
@@ -901,6 +1005,7 @@ def get_operational_intelligence(
             scheduled_recompute="คำนวณใหม่ทุกวันอาทิตย์ 23:55 น. เวลาไทย และรีเฟรชรายคืนเพื่ออัปเดตคะแนนย้อนหลัง 7 วัน",
             rate_limit_rule="รับรายงานกิจกรรมภาคสนามได้ 1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน",
             ranking=ranking,
+            source_mode=league_mode,
         ),
         localizedPredictions=_localized_predictions(hotspots, pm25, weather, risk),
         source_notes=[

@@ -15,6 +15,8 @@ from app.models import (
     AdvisorResponse,
     DataStatusResponse,
     DashboardResponse,
+    FieldReportResult,
+    FieldReportSubmission,
     HistoryResponse,
     HotspotHistoryResponse,
     HotspotResponse,
@@ -33,6 +35,7 @@ from app.services import (
     get_pm25,
     get_summary,
     get_weather,
+    submit_field_report,
 )
 
 app = FastAPI(title="ChiangMaiEyes API", version="0.1.0")
@@ -110,6 +113,14 @@ def dashboard(settings: Settings = Depends(get_settings)) -> DashboardResponse:
 @app.get("/api/data-status", response_model=DataStatusResponse)
 def data_status(settings: Settings = Depends(get_settings)) -> DataStatusResponse:
     return get_data_status(settings)
+
+
+@app.post("/api/field-reports", response_model=FieldReportResult)
+def field_reports(
+    submission: FieldReportSubmission,
+    settings: Settings = Depends(get_settings),
+) -> FieldReportResult:
+    return submit_field_report(settings, submission)
 
 
 @app.post("/api/advisor/briefing", response_model=AdvisorResponse)

@@ -109,7 +109,7 @@ export type SummaryResponse = {
   source: string;
 };
 
-export type SourceMode = 'LIVE' | 'DERIVED' | 'PROTOTYPE' | 'UNAVAILABLE';
+export type SourceMode = 'LIVE' | 'SNAPSHOT' | 'DERIVED' | 'PROTOTYPE' | 'UNAVAILABLE';
 
 export type DataQualityMetadata = {
   label: string;
@@ -123,9 +123,10 @@ export type DataQualityMetadata = {
   note: string;
 };
 
-export type AnnualHotspotStats = {
-  this_year_count: number;
-  last_year_count: number;
+export type HotspotTrendStats = {
+  window_days: number;
+  recent_count: number;
+  previous_count: number;
   change_percent: number;
   source: string;
 };
@@ -201,6 +202,7 @@ export type WeeklyForestLeagueResponse = {
   scheduled_recompute: string;
   rate_limit_rule: string;
   ranking: WeeklyForestRankingEntry[];
+  source_mode?: SourceMode;
 };
 
 export type LocalizedPrediction = {
@@ -215,7 +217,7 @@ export type LocalizedPrediction = {
 };
 
 export type OperationalIntelligenceResponse = {
-  annual_hotspot_stats: AnnualHotspotStats;
+  hotspot_trend: HotspotTrendStats;
   drought_zones: DroughtZone[];
   satellite_layers?: SatelliteLayerResponse | null;
   landuse_breakdown: LanduseBreakdownItem[];

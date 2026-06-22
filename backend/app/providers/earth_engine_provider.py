@@ -99,6 +99,24 @@ def load_satellite_layers(settings: Settings, now: str | None = None) -> Satelli
         except Exception as exc:  # noqa: BLE001
             logger.warning("Invalid satellite layer export %s: %s", path, exc)
 
+    # Preferred real source: Copernicus Data Space (free + operational/government
+    # usable). Imported lazily to avoid a circular import (copernicus_provider
+    # imports seeds from this module).
+    from app.providers.copernicus_provider import copernicus_enabled
+
+    if copernicus_enabled(settings):
+        try:
+            from app.providers.copernicus_provider import (
+                build_satellite_layers_from_copernicus,
+            )
+
+            response = build_satellite_layers_from_copernicus(settings, now=now)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(response.model_dump_json(indent=2), encoding="utf-8")
+            return response
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Copernicus satellite layer refresh failed: %s", exc)
+
     if settings.earth_engine_enabled:
         try:
             response = build_satellite_layers_from_earth_engine(settings, now=now)
@@ -112,7 +130,13 @@ def load_satellite_layers(settings: Settings, now: str | None = None) -> Satelli
 
 
 def refresh_satellite_layers(settings: Settings, now: str | None = None) -> SatelliteLayerResponse:
-    if settings.earth_engine_enabled:
+    from app.providers.copernicus_provider import copernicus_enabled
+
+    if copernicus_enabled(settings):
+        from app.providers.copernicus_provider import build_satellite_layers_from_copernicus
+
+        response = build_satellite_layers_from_copernicus(settings, now=now)
+    elif settings.earth_engine_enabled:
         response = build_satellite_layers_from_earth_engine(settings, now=now)
     else:
         response = seeded_satellite_layers(now=now)

@@ -472,6 +472,13 @@ button {
   color: #92400e;
 }
 
+.quality-chip--snapshot,
+.truth-badge--snapshot {
+  border-color: rgba(13, 148, 136, 0.26);
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
 .quality-chip--unavailable,
 .truth-badge--unavailable {
   border-color: rgba(220, 38, 38, 0.28);
@@ -6583,6 +6590,98 @@ button {
 .layer-dot--prediction {
   background: #7c3aed;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+}
+
+.operator-intel-disclaimer {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(234, 179, 8, 0.34);
+  border-radius: 10px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.operator-intel-notes {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  color: #60766b;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* Win over `.community-action-panel__head span:not(.icon)` (which forces
+   display:block + teal uppercase) so the badge keeps its pill styling. */
+.community-action-panel__head span.truth-badge.community-action-panel__badge,
+.community-command-strip__header span.truth-badge.community-action-panel__badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-left: auto;
+  align-self: flex-start;
+  color: #92400e;
+  font-size: 0.58rem;
+  text-transform: none;
+}
+
+.community-league-disclaimer {
+  margin: 8px 0 0;
+  padding: 7px 9px;
+  border: 1px solid rgba(234, 179, 8, 0.32);
+  border-radius: 9px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.community-league-disclaimer--live {
+  border-color: rgba(13, 148, 136, 0.26);
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.operator-intel-tag {
+  margin-top: 6px;
+  align-self: flex-start;
+}
+
+/* Win over `.operator-intel-metric span` (muted grey) so provenance tags keep
+   their badge colour. */
+.operator-intel-metric span.operator-intel-tag {
+  font-size: 0.56rem;
+  font-weight: 850;
+}
+.operator-intel-metric span.truth-badge--snapshot.operator-intel-tag,
+.operator-intel-breakdown__head span.truth-badge--snapshot.operator-intel-tag {
+  color: #0f766e;
+}
+.operator-intel-metric span.truth-badge--prototype.operator-intel-tag,
+.operator-intel-breakdown__head span.truth-badge--prototype.operator-intel-tag {
+  color: #92400e;
+}
+
+.operator-intel-breakdown__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #5a6d63;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.operator-intel-empty {
+  margin: 4px 0 0;
+  color: #60766b;
+  font-size: 0.74rem;
+  font-weight: 700;
 }
 
 .operator-intel-grid {

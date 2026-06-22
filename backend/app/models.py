@@ -121,7 +121,15 @@ class SummaryResponse(BaseModel):
     source: str
 
 
-SourceMode = Literal["LIVE", "DERIVED", "PROTOTYPE", "UNAVAILABLE"]
+# LIVE      = fetched live from the upstream provider at request time
+# SNAPSHOT  = authoritative source data, but delivered via a periodic refresh
+#             snapshot (e.g. RFD hotspots, which only a Thai-network worker can
+#             fetch) — real, but NOT a live request, so freshness rides on the
+#             snapshot age, never on "the API returned 200".
+# DERIVED   = computed by ChiangMaiEyes from other inputs (risk, NDVI, summary)
+# PROTOTYPE = sample/seed geometry or records, not an official dataset yet
+# UNAVAILABLE = too stale or missing to trust as current
+SourceMode = Literal["LIVE", "SNAPSHOT", "DERIVED", "PROTOTYPE", "UNAVAILABLE"]
 
 
 class DataQualityMetadata(BaseModel):
@@ -136,9 +144,12 @@ class DataQualityMetadata(BaseModel):
     note: str
 
 
-class AnnualHotspotStats(BaseModel):
-    this_year_count: int
-    last_year_count: int
+class HotspotTrendStats(BaseModel):
+    # Real NASA VIIRS in-province cumulative over a rolling window, split into the
+    # recent vs previous half so the change is genuinely computed (not invented).
+    window_days: int
+    recent_count: int
+    previous_count: int
     change_percent: float
     source: str
 
@@ -216,6 +227,33 @@ class WeeklyForestLeagueResponse(BaseModel):
     scheduled_recompute: str
     rate_limit_rule: str
     ranking: list[WeeklyForestRankingEntry] = Field(default_factory=list)
+    # LIVE when the ranking came from real submitted field reports (Supabase),
+    # PROTOTYPE when it is still the seeded demo data.
+    source_mode: SourceMode = "PROTOTYPE"
+
+
+class FieldReportSubmission(BaseModel):
+    """Public field-report submission from a community operator."""
+
+    forest_id: str = Field(min_length=1)
+    village_id: str = Field(min_length=1)
+    reporter_hash: str = Field(min_length=1, max_length=120)
+    patrol_count: int = Field(default=0, ge=0, le=100)
+    firebreak_km: float = Field(default=0, ge=0, le=500)
+    fuel_management_rai: float = Field(default=0, ge=0, le=100000)
+    water_points_checked: int = Field(default=0, ge=0, le=1000)
+    committee_meeting: bool = False
+    budget_used_baht: float = Field(default=0, ge=0, le=10_000_000)
+    community_use_activity: bool = False
+    biodiversity_note: str = Field(default="", max_length=500)
+    no_burn_agreement: bool = False
+
+
+class FieldReportResult(BaseModel):
+    accepted: bool
+    stored: bool
+    message: str
+    source_mode: SourceMode
 
 
 class LocalizedPrediction(BaseModel):
@@ -230,7 +268,7 @@ class LocalizedPrediction(BaseModel):
 
 
 class OperationalIntelligenceResponse(BaseModel):
-    annual_hotspot_stats: AnnualHotspotStats
+    hotspot_trend: HotspotTrendStats
     drought_zones: list[DroughtZone] = Field(default_factory=list)
     satellite_layers: SatelliteLayerResponse | None = None
     landuse_breakdown: list[LanduseBreakdownItem] = Field(default_factory=list)

@@ -9,8 +9,29 @@ from app.weekly_forest_league import (
     score_daily_report,
     should_recompute_weekly_rankings,
 )
-from app.models import HotspotResponse, Pm25Response, RiskResponse, WeatherResponse
+from app.models import (
+    Hotspot,
+    HotspotHistoryDay,
+    HotspotResponse,
+    HistoryResponse,
+    Pm25Response,
+    RiskResponse,
+    WeatherResponse,
+)
 from app.services import get_operational_intelligence
+
+
+def _hotspot(idx: int, landuse_type: str) -> Hotspot:
+    return Hotspot(
+        id=f"HS-{idx:03d}",
+        latitude=18.8,
+        longitude=98.9,
+        district="แม่ริม",
+        landuse_type=landuse_type,
+        confidence=80,
+        source="test",
+        detected_at="2026-06-07T08:00:00+07:00",
+    )
 
 
 def _report(report_id: str, submitted_at: str) -> FieldActivityReport:
@@ -89,13 +110,32 @@ def test_weekly_ranking_aggregates_and_ranks_reports():
     assert "ลาดตระเวน" in ranking[0].reasons
 
 
-def test_operational_intelligence_has_rankings_and_explainable_predictions():
+def test_operational_intelligence_has_rankings_and_explainable_predictions(monkeypatch):
+    # Deterministic, offline NASA VIIRS history so the hotspot trend is real-shaped
+    # but does not hit the network: 4 days, 2 older + 5 + 6 + 7 recent.
+    monkeypatch.setattr(
+        "app.services.get_history",
+        lambda settings, days=30: HistoryResponse(
+            days=days,
+            hotspots=[
+                HotspotHistoryDay(date="2026-06-04", count=2),
+                HotspotHistoryDay(date="2026-06-05", count=4),
+                HotspotHistoryDay(date="2026-06-06", count=6),
+                HotspotHistoryDay(date="2026-06-07", count=8),
+            ],
+            pm25=[],
+            weather=[],
+            sources={},
+            latest_update="2026-06-07T08:00:00+07:00",
+        ),
+    )
+
     hotspots = HotspotResponse(
         count=2,
         density_per_100_km2=0.1,
         latest_update="2026-06-07T08:00:00+07:00",
         source="test",
-        items=[],
+        items=[_hotspot(1, "NRF"), _hotspot(2, "NRF"), _hotspot(3, "AGRI")],
     )
     pm25 = Pm25Response(
         current_pm25=42,
@@ -120,7 +160,19 @@ def test_operational_intelligence_has_rankings_and_explainable_predictions():
     intelligence = get_operational_intelligence(hotspots, pm25, weather, risk)
 
     assert intelligence.weekly_forest_league.ranking
-    assert intelligence.landuse_breakdown
+
+    # Real NASA VIIRS trend: recent half (6+8=14) vs previous half (2+4=6) → +133.3%
+    trend = intelligence.hotspot_trend
+    assert trend.window_days == 4
+    assert trend.recent_count == 14
+    assert trend.previous_count == 6
+    assert trend.change_percent == 133.3
+    assert "NASA VIIRS" in trend.source
+
+    # Real GISTDA-tagged landuse: 2× NRF + 1× AGRI, no fabricated fallback.
+    breakdown = {item.landuse_type: item.count for item in intelligence.landuse_breakdown}
+    assert breakdown == {"NRF": 2, "AGRI": 1}
+
     assert intelligence.satellite_layers is not None
     assert intelligence.satellite_layers.source_mode == "DERIVED"
     assert "COPERNICUS/S2_SR_HARMONIZED" in intelligence.satellite_layers.dataset_ids

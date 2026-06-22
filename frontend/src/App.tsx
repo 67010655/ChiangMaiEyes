@@ -177,11 +177,12 @@ const communityForests = (
 const prototypeZones = (fireZoneData as { zones: PrototypeZone[] }).zones;
 
 const operatorIntelligenceFallback: OperationalIntelligenceResponse = {
-  annual_hotspot_stats: {
-    this_year_count: 43731,
-    last_year_count: 51280,
-    change_percent: -14.7,
-    source: "ข้อมูลจำลองเทียบจุดความร้อนสะสมจากแนว GISTDA/TAMFIRE",
+  hotspot_trend: {
+    window_days: 0,
+    recent_count: 0,
+    previous_count: 0,
+    change_percent: 0,
+    source: "ยังไม่มีประวัติย้อนหลังจาก NASA VIIRS",
   },
   drought_zones: [
     {
@@ -291,6 +292,7 @@ function sourceDisplayLabel(value: string) {
 
 function truthModeLabel(mode?: DataQualityMetadata["source_mode"]) {
   if (mode === "LIVE") return "LIVE";
+  if (mode === "SNAPSHOT") return "SNAPSHOT";
   if (mode === "DERIVED") return "DERIVED";
   if (mode === "PROTOTYPE") return "PROTOTYPE";
   if (mode === "UNAVAILABLE") return "UNAVAILABLE";
@@ -1874,22 +1876,37 @@ function OperationalIntelPanel({
     prediction: OperationalIntelligenceResponse["localizedPredictions"][number],
   ) => void;
 }) {
-  const annual = intelligence.annual_hotspot_stats;
-  const changeLabel = `${annual.change_percent > 0 ? "+" : ""}${annual.change_percent}%`;
+  const trend = intelligence.hotspot_trend;
+  const trendTotal =
+    trend.window_days > 0 ? trend.recent_count + trend.previous_count : trend.recent_count;
+  const changeLabel = `${trend.change_percent > 0 ? "+" : ""}${trend.change_percent}%`;
 
   return (
     <section className="card operator-intel-card">
       <div className="card__head">
         <span className="card__title">ชั้นข้อมูลปฏิบัติการ</span>
+        <span className="truth-badge truth-badge--derived">ข้อมูลผสม</span>
       </div>
+
+      <p className="operator-intel-disclaimer">
+        การ์ดนี้มีทั้ง<b>ข้อมูลจริง</b> (จุดความร้อน · การใช้ที่ดิน) และ<b>ข้อมูลจำลอง</b>
+        (ภัยแล้ง · พยากรณ์) — ดูป้ายกำกับแต่ละรายการก่อนนำไปใช้
+      </p>
 
       <div className="operator-intel-grid">
         <div className="operator-intel-metric">
-          <span>จุดความร้อนสะสม</span>
-          <b>{formatNumber(annual.this_year_count)}</b>
+          <span>
+            จุดความร้อนสะสม{trend.window_days > 0 ? ` ${trend.window_days} วัน` : ""}
+          </span>
+          <b>{formatNumber(trendTotal)}</b>
           <small>
-            เทียบปีก่อน {formatNumber(annual.last_year_count)} ({changeLabel})
+            {trend.window_days > 0
+              ? `ครึ่งหลัง ${formatNumber(trend.recent_count)} · ครึ่งแรก ${formatNumber(trend.previous_count)} (${changeLabel})`
+              : "ยังไม่มีประวัติย้อนหลังจาก NASA VIIRS"}
           </small>
+          <span className="truth-badge truth-badge--snapshot operator-intel-tag">
+            NASA VIIRS
+          </span>
         </div>
 
         <div className="operator-intel-metric">
@@ -1904,21 +1921,40 @@ function OperationalIntelPanel({
               )
               .join(" / ")}
           </small>
+          <span className="truth-badge truth-badge--prototype operator-intel-tag">
+            ข้อมูลจำลอง
+          </span>
         </div>
       </div>
 
       <div className="operator-intel-breakdown">
-        {intelligence.landuse_breakdown.map((item) => (
-          <div key={item.landuse_type} className="operator-intel-breakdown__row">
-            <span>{item.label}</span>
-            <b>
-              {item.count} ({item.percent}%)
-            </b>
-          </div>
-        ))}
+        <div className="operator-intel-breakdown__head">
+          <span>จุดความร้อนแยกตามการใช้ที่ดิน</span>
+          <span className="truth-badge truth-badge--snapshot operator-intel-tag">
+            GISTDA
+          </span>
+        </div>
+        {intelligence.landuse_breakdown.length ? (
+          intelligence.landuse_breakdown.map((item) => (
+            <div key={item.landuse_type} className="operator-intel-breakdown__row">
+              <span>{item.label}</span>
+              <b>
+                {item.count} ({item.percent}%)
+              </b>
+            </div>
+          ))
+        ) : (
+          <p className="operator-intel-empty">ไม่มีจุดความร้อนในช่วงนี้</p>
+        )}
       </div>
 
       <div className="localized-prediction-list">
+        <div className="operator-intel-breakdown__head">
+          <span>พยากรณ์เฉพาะจุด</span>
+          <span className="truth-badge truth-badge--prototype operator-intel-tag">
+            ประเมินจากกฎ
+          </span>
+        </div>
         {intelligence.localizedPredictions.map((prediction) => (
           <button
             key={prediction.id}
@@ -1935,6 +1971,14 @@ function OperationalIntelPanel({
           </button>
         ))}
       </div>
+
+      {intelligence.source_notes?.length ? (
+        <ul className="operator-intel-notes">
+          {intelligence.source_notes.map((note, i) => (
+            <li key={i}>{note}</li>
+          ))}
+        </ul>
+      ) : null}
     </section>
   );
 }
@@ -2430,14 +2474,21 @@ export function App() {
     [],
   );
 
+  const leagueIsLive =
+    intelligence.weekly_forest_league.source_mode === "LIVE";
+
   const weeklyForestRanking = [
     ...intelligence.weekly_forest_league.ranking,
-    ...prototypeForestRanking().filter(
-      (fallback) =>
-        !intelligence.weekly_forest_league.ranking.some(
-          (item) => item.forest_id === fallback.forest_id,
-        ),
-    ),
+    // Only pad with prototype forests in demo mode — never mix seed rows into a
+    // real, submitted-report league.
+    ...(leagueIsLive
+      ? []
+      : prototypeForestRanking().filter(
+          (fallback) =>
+            !intelligence.weekly_forest_league.ranking.some(
+              (item) => item.forest_id === fallback.forest_id,
+            ),
+        )),
   ]
     .sort((a, b) => b.total_score - a.total_score)
     .slice(0, 5);
@@ -2926,7 +2977,29 @@ export function App() {
 
                         <strong>อันดับผลงานป้องกันไฟ</strong>
                       </div>
+
+                      <span
+                        className={`truth-badge ${
+                          leagueIsLive
+                            ? "truth-badge--snapshot"
+                            : "truth-badge--prototype"
+                        } community-action-panel__badge`}
+                      >
+                        {leagueIsLive ? "ข้อมูลจริง" : "ข้อมูลจำลอง"}
+                      </span>
                     </div>
+
+                    {leagueIsLive ? (
+                      <p className="community-league-disclaimer community-league-disclaimer--live">
+                        อันดับคำนวณจาก<b>รายงานภาคสนามจริง</b>ที่ชุมชนส่งเข้ามา
+                        (1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน)
+                      </p>
+                    ) : (
+                      <p className="community-league-disclaimer">
+                        อันดับคำนวณจาก<b>รายงานภาคสนามตัวอย่าง</b> เพื่อสาธิตระบบให้คะแนน
+                        — ยังไม่ใช่ผลงานจริงของแต่ละป่าชุมชน จนกว่าจะเปิดรับรายงานจากผู้ใช้จริง
+                      </p>
+                    )}
 
                     <div className="forest-ranking-list">
                       {weeklyForestRanking.map((item, index) => {
@@ -3552,6 +3625,10 @@ export function App() {
                       </span>
 
                       <strong>ศูนย์จัดการเครือข่ายป่าชุมชน</strong>
+
+                      <span className="truth-badge truth-badge--prototype community-action-panel__badge">
+                        ข้อมูลต้นแบบ
+                      </span>
                     </div>
 
                     <div
