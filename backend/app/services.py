@@ -14,6 +14,7 @@ from app.models import (
     DailyMetric,
     FieldReportResult,
     FieldReportSubmission,
+    FirePhaseResponse,
     DataQualityMetadata,
     DataStatusResponse,
     DashboardResponse,
@@ -808,6 +809,12 @@ def _landuse_breakdown(hotspots: HotspotResponse) -> list[LanduseBreakdownItem]:
 
 def get_satellite_layers(settings: Settings, now: str | None = None) -> SatelliteLayerResponse:
     return load_satellite_layers(settings, now=now)
+
+
+def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
+    from app.fire_phase import classify_fire_phases
+
+    return classify_fire_phases(get_hotspots(settings), get_weather(settings))
 
 
 def _localized_predictions(

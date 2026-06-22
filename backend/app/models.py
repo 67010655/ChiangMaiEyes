@@ -267,6 +267,24 @@ class LocalizedPrediction(BaseModel):
     lead_time_hours: int = 12
 
 
+class DistrictFirePhase(BaseModel):
+    # Fire lifecycle phase per district: before(yellow) / during(red) /
+    # after(grey) / normal(green). A decision aid, not an official warning.
+    district: str
+    phase: Literal["normal", "before", "during", "after"]
+    color: Literal["green", "yellow", "red", "grey"]
+    danger_score: float = Field(ge=0, le=1)
+    active_hotspots: int = 0
+    reasons: list[str] = Field(default_factory=list)
+
+
+class FirePhaseResponse(BaseModel):
+    generated_at: str
+    source_mode: SourceMode = "DERIVED"
+    phases: list[DistrictFirePhase] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
 class OperationalIntelligenceResponse(BaseModel):
     hotspot_trend: HotspotTrendStats
     drought_zones: list[DroughtZone] = Field(default_factory=list)
