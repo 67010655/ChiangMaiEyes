@@ -144,3 +144,55 @@ def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path, monkeypatch)
     assert body["data_quality"]["fire_zones"]["source_mode"] == "PROTOTYPE"
     assert response.headers["cache-control"] == "no-store, no-cache, must-revalidate, max-age=0"
     assert response.headers["pragma"] == "no-cache"
+
+
+def test_data_status_uses_remote_snapshot_when_local_cache_is_empty(tmp_path: Path, monkeypatch):
+    remote_payloads = {
+        "hotspots.json": {
+            "count": 7,
+            "density_per_100_km2": 0.04,
+            "latest_update": "2026-06-03T02:00:00+07:00",
+            "source": "Royal Forest Department Firemap + NASA FIRMS",
+            "items": [],
+            "source_breakdown": {
+                "Royal Forest Department Firemap": 7,
+                "NASA FIRMS": 2,
+            },
+        },
+        "refresh_status.json": {
+            "checked_at": "2026-06-03T02:05:00+07:00",
+            "status": "ok",
+            "hotspot_fetch_ok": True,
+            "hotspot_error": None,
+        },
+    }
+
+    class FakeResponse:
+        def __init__(self, filename: str):
+            self.filename = filename
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return remote_payloads[self.filename]
+
+    def fake_get(url: str, **_kwargs):
+        filename = url.rsplit("/", 1)[-1]
+        return FakeResponse(filename)
+
+    settings = Settings(
+        cache_dir=tmp_path,
+        remote_snapshot_base_url="https://example.test/snapshots",
+    )
+    monkeypatch.setattr("app.services.httpx.get", fake_get)
+    monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
+    monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
+
+    status = get_data_status(settings, now="2026-06-03T02:10:00+07:00")
+
+    assert status.hotspot_count == 7
+    assert status.hotspot_latest_update == "2026-06-03T02:00:00+07:00"
+    assert status.hotspot_age_minutes == 10
+    assert status.refresh_checked_at == "2026-06-03T02:05:00+07:00"
+    assert status.refresh_age_minutes == 5

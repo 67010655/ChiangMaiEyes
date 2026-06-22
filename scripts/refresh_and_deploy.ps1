@@ -1,8 +1,9 @@
 # 15-minute hotspot refresh, run from a Thailand network because RFD blocks many foreign IPs.
 #
 # The Python refresh reconciles RFD/GISTDA/NASA, refreshes PM2.5/weather, and
-# writes refresh_status.json on every successful check. Changed data is committed,
-# pushed, and deployed to production so the public API can prove freshness.
+# writes refresh_status.json on every successful check. Changed data is committed
+# and pushed. Production reads the latest JSON from GitHub raw, so this task must
+# not deploy every 15 minutes and burn through the Vercel daily deployment quota.
 
 $ErrorActionPreference = 'Stop'
 $repo = 'C:\Users\User\Desktop\ChiangMaiEyes'
@@ -34,15 +35,6 @@ function Run-PythonRefresh {
   }
 }
 
-function Run-BackendProductionDeploy {
-  Log 'refresh: deploying backend production'
-  cmd.exe /d /c "npx.cmd vercel@latest deploy . --project backend --prod --yes >> ""$log"" 2>>&1"
-  if ($LASTEXITCODE -ne 0) {
-    throw "vercel backend deploy exited $LASTEXITCODE"
-  }
-  Log 'refresh: backend production deployed'
-}
-
 $dataFiles = @(
   'backend/data/hotspots.json',
   'backend/data/pm25.json',
@@ -63,8 +55,7 @@ try {
   git add $dataFiles
   git commit -m 'chore: refresh hotspot snapshot (RFD/NASA reconciliation)'
   git push origin HEAD:codex/production-wind-chip
-  Log 'refresh: pushed snapshot branch'
-  Run-BackendProductionDeploy
+  Log 'refresh: pushed snapshot branch - production will read remote snapshot'
 }
 catch {
   Log "refresh: ERROR $_"

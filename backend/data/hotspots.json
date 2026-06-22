@@ -1,13 +1,11 @@
 {
   "count": 0,
   "density_per_100_km2": 0.0,
-  "latest_update": "2026-06-21T22:49:01.860974+07:00",
-  "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
+  "latest_update": "2026-06-22T19:05:05.082961+07:00",
+  "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day",
   "items": [],
   "source_breakdown": {
     "Royal Forest Department Firemap": 0,
-    "GISTDA Disaster STAC VIIRS 3-day": 0,
-    "GISTDA API Gateway VIIRS 1-day": 0,
-    "NASA FIRMS": 0
+    "GISTDA Disaster STAC VIIRS 3-day": 0
   }
 }

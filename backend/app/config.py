@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     earth_engine_service_account: str | None = None
     earth_engine_private_key_path: Path | None = None
     satellite_layers_file: Path | None = None
+    remote_snapshot_base_url: str | None = (
+        "https://raw.githubusercontent.com/67010655/ChiangMaiEyes/"
+        "codex/production-wind-chip"
+    )
 
     @property
     def allowed_origins(self) -> list[str]:

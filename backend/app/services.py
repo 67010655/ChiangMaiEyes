@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, TypeVar
 
+import httpx
 import math
 from app.fire_spread_physics import get_district_physics
 from app.config import Settings, get_settings
@@ -61,6 +62,7 @@ _BUNDLED_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 # Keep a short TTL to avoid hammering upstream APIs while preventing stale UI.
 # ---------------------------------------------------------------------------
 _CACHE_TTL_SECONDS = 60  # 1 minute
+_REMOTE_SNAPSHOT_TTL_SECONDS = 30
 # Historical series are immutable except for "today", so cache them far longer
 # to avoid re-running the heavy multi-request NASA chain every 5 minutes.
 _HISTORY_TTL_SECONDS = 1800  # 30 minutes
@@ -230,6 +232,58 @@ def _read_optional_json(cache_dir: Path, filename: str) -> dict[str, Any] | None
     return None
 
 
+def _snapshot_path(filename: str) -> str:
+    if filename == "dashboardSnapshot.json":
+        return f"frontend/src/data/{filename}"
+    return f"backend/data/{filename}"
+
+
+def _read_remote_snapshot(settings: Settings, filename: str) -> dict[str, Any] | None:
+    if not settings.remote_snapshot_base_url:
+        return None
+
+    cache_key = f"remote_snapshot:{filename}"
+    cached = _get_cached(cache_key, ttl=_REMOTE_SNAPSHOT_TTL_SECONDS)
+    if cached is not None:
+        return cached
+
+    url = f"{settings.remote_snapshot_base_url.rstrip('/')}/{_snapshot_path(filename)}"
+    try:
+        response = httpx.get(
+            url,
+            timeout=8,
+            headers={"Cache-Control": "no-cache", "Pragma": "no-cache"},
+        )
+        response.raise_for_status()
+        data = response.json()
+        _set_cached(cache_key, data)
+        return data
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Remote snapshot unavailable for %s: %s", filename, exc)
+        return None
+
+
+def _read_snapshot_json(settings: Settings, filename: str) -> dict[str, Any]:
+    if settings.cache_dir != _BUNDLED_DATA_DIR:
+        try:
+            return read_json(settings.cache_dir, filename)
+        except Exception:
+            pass
+
+    remote = _read_remote_snapshot(settings, filename)
+    if remote is not None:
+        return remote
+
+    return read_json(_BUNDLED_DATA_DIR, filename)
+
+
+def _read_optional_snapshot_json(settings: Settings, filename: str) -> dict[str, Any] | None:
+    try:
+        return _read_snapshot_json(settings, filename)
+    except Exception:
+        return None
+
+
 def _parse_datetime(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
@@ -396,7 +450,7 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
     )
     current_time = _parse_datetime(now) if now else datetime.now(tz=_parse_datetime(latest_update).tzinfo)
     checked_at = current_time.isoformat()
-    refresh_status = _read_optional_json(settings.cache_dir, "refresh_status.json")
+    refresh_status = _read_optional_snapshot_json(settings, "refresh_status.json")
     refresh_checked_at = refresh_status.get("checked_at") if refresh_status else None
 
     return DataStatusResponse(
@@ -429,17 +483,10 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
 
 
 def _serve_hotspot_snapshot(settings: Settings) -> HotspotResponse:
-    """Serve the most recent hotspot snapshot, preferring a writable cache
-    (refreshed from Thailand) and falling back to the bundled deploy file so a
-    read-only or empty /tmp can never turn this into a 500."""
-    for directory in (settings.cache_dir, _BUNDLED_DATA_DIR):
-        try:
-            snapshot = HotspotResponse(**read_json(directory, "hotspots.json"))
-            _set_cached("hotspots", snapshot)
-            return snapshot
-        except Exception as exc:  # noqa: BLE001 — try the next location
-            logger.debug("Hotspot snapshot unavailable in %s: %s", directory, exc)
-    raise RuntimeError("No hotspot snapshot available")
+    """Serve the newest Thailand-refreshed snapshot without requiring redeploys."""
+    snapshot = HotspotResponse(**_read_snapshot_json(settings, "hotspots.json"))
+    _set_cached("hotspots", snapshot)
+    return snapshot
 
 
 def get_hotspots(settings: Settings) -> HotspotResponse:
@@ -558,7 +605,7 @@ def get_pm25(settings: Settings) -> Pm25Response:
         return response
     except Exception as e:
         logger.warning("Failed to fetch live PM2.5, falling back to cached file: %s", e)
-        data = read_json(settings.cache_dir, "pm25.json")
+        data = _read_snapshot_json(settings, "pm25.json")
         return Pm25Response(**data)
 
 
@@ -573,7 +620,7 @@ def get_weather(settings: Settings) -> WeatherResponse:
         return response
     except Exception as e:
         logger.warning("Failed to fetch live weather, falling back to cached file: %s", e)
-        data = read_json(settings.cache_dir, "weather.json")
+        data = _read_snapshot_json(settings, "weather.json")
         return WeatherResponse(**data)
 
 

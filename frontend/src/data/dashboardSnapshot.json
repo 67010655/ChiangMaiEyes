@@ -2,14 +2,12 @@
   "hotspots": {
     "count": 0,
     "density_per_100_km2": 0.0,
-    "latest_update": "2026-06-21T22:49:01.860974+07:00",
-    "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
+    "latest_update": "2026-06-22T19:05:05.082961+07:00",
+    "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day",
     "items": [],
     "source_breakdown": {
       "Royal Forest Department Firemap": 0,
-      "GISTDA Disaster STAC VIIRS 3-day": 0,
-      "GISTDA API Gateway VIIRS 1-day": 0,
-      "NASA FIRMS": 0
+      "GISTDA Disaster STAC VIIRS 3-day": 0
     }
   },
   "pm25": {
@@ -17,7 +15,7 @@
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-21T22:00:00+07:00",
+    "latest_update": "2026-06-22T18:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -26,9 +24,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 11.8,
+        "pm25": 12.0,
         "trend": "stable",
-        "updated_at": "2026-06-21T22:00:00+07:00"
+        "updated_at": "2026-06-22T18:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -36,29 +34,29 @@
         "district": "Meuang",
         "latitude": 18.7909333,
         "longitude": 98.99,
-        "pm25": 8.6,
+        "pm25": 8.3,
         "trend": "stable",
-        "updated_at": "2026-06-21T22:00:00+07:00"
+        "updated_at": "2026-06-22T18:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 1.8,
-    "wind_direction_deg": 334.4,
-    "wind_direction_text": "ทิศเหนือค่อนไปทางตะวันตก",
-    "temperature_c": 25.4,
-    "humidity_percent": 88.4,
-    "latest_update": "2026-06-21T22:47:00+07:00",
+    "wind_speed_kmh": 0.0,
+    "wind_direction_deg": 158.7,
+    "wind_direction_text": "ทิศใต้ค่อนไปทางตะวันออก",
+    "temperature_c": 29.4,
+    "humidity_percent": 65.8,
+    "latest_update": "2026-06-22T19:04:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
     "station_longitude": 98.9692,
-    "pressure_hpa": 974.6,
+    "pressure_hpa": 970.2,
     "rain_15m_mm": 0.0,
     "rain_1h_mm": 0.0,
-    "rain_today_mm": 5.0,
-    "temperature_min_today_c": 24.2,
-    "temperature_max_today_c": 35.2
+    "rain_today_mm": 0.2,
+    "temperature_min_today_c": 25.0,
+    "temperature_max_today_c": 33.2
   },
   "risk": {
     "score": 2,
@@ -67,17 +65,17 @@
     "factors": {
       "pm25_points": 0.51,
       "hotspot_points": 0.0,
-      "spread_points": 1.61,
+      "spread_points": 1.44,
       "avg_flammability": 1.2,
       "avg_slope_factor": 1.0,
       "avg_history_factor": 1.2,
-      "wind_speed_kmh": 1.8,
+      "wind_speed_kmh": 0.0,
       "wind_pushes_smoke_to_city": "no"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 10 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศเหนือค่อนไปทางตะวันตก ด้วยความเร็ว 2 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 2/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 10 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศใต้ค่อนไปทางตะวันออก ด้วยความเร็ว 0 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 2/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
     "source": "rule-based fallback"
   },
   "intelligence": {
@@ -268,26 +266,7 @@
             "จัดการเชื้อเพลิง",
             "ลาดตระเวน",
             "แนวกันไฟ"
-          ],
-          "authority_owner": "Mae Chaem community forest committee / district coordination",
-          "boundary_source": "Thaicfnet/RFD prototype point with estimated fire-management operating area",
-          "boundary_confidence": "prototype",
-          "verification_status": "prototype",
-          "hotspot_activity_delta_percent": -12.5,
-          "satellite_context": {
-            "source_mode": "DERIVED",
-            "nearest_zone_id": "mae-chaem-reserve",
-            "nearest_zone_name": "Mae Chaem reserved forest",
-            "dryness_class": "critical",
-            "distance_km": 1.0,
-            "ndvi": 0.25,
-            "ndmi": -0.11,
-            "nbr": 0.14,
-            "rainfall_30d_mm": null,
-            "slope_mean_deg": null,
-            "hotspot_pressure_7d": 5,
-            "fire_pressure_index": 64.0
-          }
+          ]
         }
       ]
     },
@@ -299,7 +278,7 @@
         "longitude": 98.361,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 1.8 กม./ชม. พาควันไปทางแนวปลายลม มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
+        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 0.0 กม./ชม. พาควันไปทางแนวปลายลม มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
         "lead_time_hours": 12
       },
       {
@@ -319,7 +298,7 @@
         "longitude": 98.964,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 334 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
+        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 159 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
         "lead_time_hours": 12
       }
     ],
