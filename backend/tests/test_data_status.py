@@ -178,7 +178,7 @@ def test_data_status_uses_remote_snapshot_when_local_cache_is_empty(tmp_path: Pa
             return remote_payloads[self.filename]
 
     def fake_get(url: str, **_kwargs):
-        filename = url.rsplit("/", 1)[-1]
+        filename = url.rsplit("/", 1)[-1].split("?", 1)[0]
         return FakeResponse(filename)
 
     settings = Settings(

@@ -247,7 +247,8 @@ def _read_remote_snapshot(settings: Settings, filename: str) -> dict[str, Any] |
     if cached is not None:
         return cached
 
-    url = f"{settings.remote_snapshot_base_url.rstrip('/')}/{_snapshot_path(filename)}"
+    cache_buster = int(time.time() // _REMOTE_SNAPSHOT_TTL_SECONDS)
+    url = f"{settings.remote_snapshot_base_url.rstrip('/')}/{_snapshot_path(filename)}?v={cache_buster}"
     try:
         response = httpx.get(
             url,
