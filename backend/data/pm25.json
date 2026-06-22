@@ -1,9 +1,9 @@
 {
-  "current_pm25": 10.7,
+  "current_pm25": 10.9,
   "category": "ดีมาก",
   "color": "green",
   "trend": "stable",
-  "latest_update": "2026-06-22T21:00:00+07:00",
+  "latest_update": "2026-06-22T22:00:00+07:00",
   "source": "Air4Thai Live API",
   "stations": [
     {
@@ -22,9 +22,9 @@
       "district": "Meuang",
       "latitude": 18.7909333,
       "longitude": 98.99,
-      "pm25": 8.5,
+      "pm25": 8.8,
       "trend": "stable",
-      "updated_at": "2026-06-22T21:00:00+07:00"
+      "updated_at": "2026-06-22T22:00:00+07:00"
     }
   ]
 }
