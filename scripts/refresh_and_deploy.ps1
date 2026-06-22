@@ -1,19 +1,43 @@
-# 15-minute hotspot refresh, run from a Thailand network because RFD blocks many foreign IPs.
+# 5-minute hotspot refresh, run from a Thailand network because RFD blocks many foreign IPs.
 #
 # The Python refresh reconciles RFD/GISTDA/NASA, refreshes PM2.5/weather, and
 # writes refresh_status.json on every successful check. Changed data is committed
 # and pushed. Production reads the latest JSON from GitHub raw, so this task must
-# not deploy every 15 minutes and burn through the Vercel daily deployment quota.
+# not deploy every 5 minutes and burn through the Vercel daily deployment quota.
 
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 Set-Location $repo
+$branch = 'codex/production-wind-chip'
 
 $log = Join-Path $repo 'scripts\refresh.log'
 function Log($m) {
   $line = "$([DateTime]::Now.ToString('s'))  $m"
   Write-Output $line
   $line | Out-File -FilePath $log -Append -Encoding utf8
+}
+
+function Sync-WorkerCheckout {
+  if ($repo -notlike '*ChiangMaiEyes-refresh-worker*') {
+    Log 'refresh: skip worker self-sync outside refresh-worker checkout'
+    return
+  }
+
+  $dirty = git status --porcelain
+  if ($dirty) {
+    throw 'worker checkout is dirty before refresh; refusing to overwrite local changes'
+  }
+
+  Log 'refresh: syncing worker checkout'
+  git fetch origin $branch
+  if ($LASTEXITCODE -ne 0) {
+    throw "git fetch exited $LASTEXITCODE"
+  }
+
+  git reset --hard "origin/$branch"
+  if ($LASTEXITCODE -ne 0) {
+    throw "git reset exited $LASTEXITCODE"
+  }
 }
 
 function Run-PythonRefresh {
@@ -46,6 +70,7 @@ $dataFiles = @(
 
 try {
   Log 'refresh: start'
+  Sync-WorkerCheckout
   Run-PythonRefresh
 
   $changed = git status --porcelain -- $dataFiles
@@ -54,7 +79,7 @@ try {
   Log 'refresh: data changed - commit + push'
   git add $dataFiles
   git commit -m 'chore: refresh hotspot snapshot (RFD/NASA reconciliation)'
-  git push origin HEAD:codex/production-wind-chip
+  git push origin "HEAD:$branch"
   Log 'refresh: pushed snapshot branch - production will read remote snapshot'
 }
 catch {
