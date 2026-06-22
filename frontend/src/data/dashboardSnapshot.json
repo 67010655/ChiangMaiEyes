@@ -2,7 +2,7 @@
   "hotspots": {
     "count": 0,
     "density_per_100_km2": 0.0,
-    "latest_update": "2026-06-23T03:52:01.440368+07:00",
+    "latest_update": "2026-06-23T03:57:01.156707+07:00",
     "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [],
     "source_breakdown": {
@@ -44,11 +44,11 @@
   },
   "weather": {
     "wind_speed_kmh": 0.0,
-    "wind_direction_deg": 333.3,
-    "wind_direction_text": "ทิศเหนือค่อนไปทางตะวันตก",
-    "temperature_c": 25.4,
-    "humidity_percent": 80.5,
-    "latest_update": "2026-06-23T03:51:00+07:00",
+    "wind_direction_deg": 8.3,
+    "wind_direction_text": "ทิศเหนือ",
+    "temperature_c": 25.3,
+    "humidity_percent": 80.7,
+    "latest_update": "2026-06-23T03:56:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
@@ -77,7 +77,7 @@
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 11 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศเหนือค่อนไปทางตะวันตก ด้วยความเร็ว 0 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 2/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 11 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศเหนือ ด้วยความเร็ว 0 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 2/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
     "source": "rule-based fallback"
   },
   "intelligence": {
@@ -251,7 +251,7 @@
         "longitude": 98.964,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 333 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
+        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 8 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
         "lead_time_hours": 12
       }
     ],
