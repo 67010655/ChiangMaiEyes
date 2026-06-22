@@ -2,7 +2,7 @@
   "hotspots": {
     "count": 0,
     "density_per_100_km2": 0.0,
-    "latest_update": "2026-06-22T20:27:01.867231+07:00",
+    "latest_update": "2026-06-22T20:32:02.553992+07:00",
     "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
     "items": [],
     "source_breakdown": {
@@ -43,12 +43,12 @@
     ]
   },
   "weather": {
-    "wind_speed_kmh": 1.1,
-    "wind_direction_deg": 237.4,
-    "wind_direction_text": "ทิศตะวันตกค่อนไปทางใต้",
+    "wind_speed_kmh": 3.6,
+    "wind_direction_deg": 195.6,
+    "wind_direction_text": "ทิศใต้ค่อนไปทางตะวันตก",
     "temperature_c": 28.2,
-    "humidity_percent": 70.2,
-    "latest_update": "2026-06-22T20:26:00+07:00",
+    "humidity_percent": 70.8,
+    "latest_update": "2026-06-22T20:29:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
@@ -61,23 +61,23 @@
     "temperature_max_today_c": 33.2
   },
   "risk": {
-    "score": 3,
-    "category": "Low",
+    "score": 4,
+    "category": "Medium",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
       "pm25_points": 0.52,
       "hotspot_points": 0.0,
-      "spread_points": 2.7,
+      "spread_points": 3.12,
       "avg_flammability": 1.2,
       "avg_slope_factor": 1.0,
       "avg_history_factor": 1.2,
-      "wind_speed_kmh": 1.1,
+      "wind_speed_kmh": 3.6,
       "wind_pushes_smoke_to_city": "yes"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 10 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศตะวันตกค่อนไปทางใต้ ด้วยความเร็ว 1 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 3/10 ระดับ Low สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง",
+    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 10 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศใต้ค่อนไปทางตะวันตก ด้วยความเร็ว 4 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
     "source": "rule-based fallback"
   },
   "intelligence": {
@@ -280,7 +280,7 @@
         "longitude": 98.361,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 1.1 กม./ชม. พาควันไปทางหุบเขาเชียงใหม่ มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
+        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 3.6 กม./ชม. พาควันไปทางหุบเขาเชียงใหม่ มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
         "lead_time_hours": 12
       },
       {
@@ -300,7 +300,7 @@
         "longitude": 98.964,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 237 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
+        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 196 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
         "lead_time_hours": 12
       }
     ],
