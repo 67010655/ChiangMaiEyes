@@ -242,12 +242,12 @@ def _read_remote_snapshot(settings: Settings, filename: str) -> dict[str, Any] |
     if not settings.remote_snapshot_base_url:
         return None
 
-    cache_key = f"remote_snapshot:{filename}"
+    cache_buster = int(time.time() // _REMOTE_SNAPSHOT_TTL_SECONDS)
+    cache_key = f"remote_snapshot:{settings.remote_snapshot_base_url}:{filename}:{cache_buster}"
     cached = _get_cached(cache_key, ttl=_REMOTE_SNAPSHOT_TTL_SECONDS)
     if cached is not None:
         return cached
 
-    cache_buster = int(time.time() // _REMOTE_SNAPSHOT_TTL_SECONDS)
     url = f"{settings.remote_snapshot_base_url.rstrip('/')}/{_snapshot_path(filename)}?v={cache_buster}"
     try:
         response = httpx.get(
@@ -265,7 +265,8 @@ def _read_remote_snapshot(settings: Settings, filename: str) -> dict[str, Any] |
 
 
 def _read_snapshot_json(settings: Settings, filename: str) -> dict[str, Any]:
-    if settings.cache_dir != _BUNDLED_DATA_DIR:
+    use_local_first = settings.cache_dir.is_absolute() and settings.cache_dir != _BUNDLED_DATA_DIR
+    if use_local_first:
         try:
             return read_json(settings.cache_dir, filename)
         except Exception:
@@ -274,6 +275,12 @@ def _read_snapshot_json(settings: Settings, filename: str) -> dict[str, Any]:
     remote = _read_remote_snapshot(settings, filename)
     if remote is not None:
         return remote
+
+    if not use_local_first:
+        try:
+            return read_json(settings.cache_dir, filename)
+        except Exception:
+            pass
 
     return read_json(_BUNDLED_DATA_DIR, filename)
 

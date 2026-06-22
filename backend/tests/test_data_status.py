@@ -196,3 +196,54 @@ def test_data_status_uses_remote_snapshot_when_local_cache_is_empty(tmp_path: Pa
     assert status.hotspot_age_minutes == 10
     assert status.refresh_checked_at == "2026-06-03T02:05:00+07:00"
     assert status.refresh_age_minutes == 5
+
+
+def test_relative_cache_dir_does_not_shadow_remote_snapshot(tmp_path: Path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    cache_dir = Path("relative-cache")
+    _write_snapshot(cache_dir)
+
+    remote_payloads = {
+        "hotspots.json": {
+            "count": 4,
+            "density_per_100_km2": 0.02,
+            "latest_update": "2026-06-03T03:00:00+07:00",
+            "source": "Royal Forest Department Firemap",
+            "items": [],
+            "source_breakdown": {"Royal Forest Department Firemap": 4},
+        },
+        "refresh_status.json": {
+            "checked_at": "2026-06-03T03:05:00+07:00",
+            "status": "ok",
+            "hotspot_fetch_ok": True,
+            "hotspot_error": None,
+        },
+    }
+
+    class FakeResponse:
+        def __init__(self, filename: str):
+            self.filename = filename
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return remote_payloads[self.filename]
+
+    def fake_get(url: str, **_kwargs):
+        filename = url.rsplit("/", 1)[-1].split("?", 1)[0]
+        return FakeResponse(filename)
+
+    settings = Settings(
+        cache_dir=cache_dir,
+        remote_snapshot_base_url="https://example.test/snapshots-relative",
+    )
+    monkeypatch.setattr("app.services.httpx.get", fake_get)
+    monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
+    monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
+
+    status = get_data_status(settings, now="2026-06-03T03:10:00+07:00")
+
+    assert status.hotspot_count == 4
+    assert status.hotspot_latest_update == "2026-06-03T03:00:00+07:00"
+    assert status.refresh_checked_at == "2026-06-03T03:05:00+07:00"
