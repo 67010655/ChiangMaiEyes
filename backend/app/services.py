@@ -265,22 +265,14 @@ def _read_remote_snapshot(settings: Settings, filename: str) -> dict[str, Any] |
 
 
 def _read_snapshot_json(settings: Settings, filename: str) -> dict[str, Any]:
-    use_local_first = settings.cache_dir.is_absolute() and settings.cache_dir != _BUNDLED_DATA_DIR
-    if use_local_first:
-        try:
-            return read_json(settings.cache_dir, filename)
-        except Exception:
-            pass
-
     remote = _read_remote_snapshot(settings, filename)
     if remote is not None:
         return remote
 
-    if not use_local_first:
-        try:
-            return read_json(settings.cache_dir, filename)
-        except Exception:
-            pass
+    try:
+        return read_json(settings.cache_dir, filename)
+    except Exception:
+        pass
 
     return read_json(_BUNDLED_DATA_DIR, filename)
 

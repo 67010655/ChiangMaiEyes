@@ -87,7 +87,7 @@ def _weather_response() -> WeatherResponse:
 
 
 def test_data_status_reports_snapshot_freshness(tmp_path: Path, monkeypatch):
-    settings = Settings(cache_dir=tmp_path)
+    settings = Settings(cache_dir=tmp_path, remote_snapshot_base_url=None)
     _write_snapshot(tmp_path)
     monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
     monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
@@ -122,7 +122,7 @@ def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path, monkeypatch)
     monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
 
     def override_settings() -> Settings:
-        return Settings(cache_dir=tmp_path)
+        return Settings(cache_dir=tmp_path, remote_snapshot_base_url=None)
 
     from app.config import get_settings
 
