@@ -6,7 +6,7 @@
 # not deploy every 15 minutes and burn through the Vercel daily deployment quota.
 
 $ErrorActionPreference = 'Stop'
-$repo = 'C:\Users\User\Desktop\ChiangMaiEyes'
+$repo = Split-Path -Parent $PSScriptRoot
 Set-Location $repo
 
 $log = Join-Path $repo 'scripts\refresh.log'
