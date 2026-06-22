@@ -1,12 +1,12 @@
 {
-  "checked_at": "2026-06-22T23:26:53.873631+07:00",
+  "checked_at": "2026-06-22T23:31:53.835767+07:00",
   "status": "ok",
   "hotspot_fetch_ok": true,
   "hotspot_error": null,
   "hotspot_count": 0,
-  "hotspot_latest_update": "2026-06-22T23:27:01.045602+07:00",
+  "hotspot_latest_update": "2026-06-22T23:32:01.137467+07:00",
   "pm25_latest_update": "2026-06-22T23:00:00+07:00",
-  "weather_latest_update": "2026-06-22T23:26:00+07:00",
+  "weather_latest_update": "2026-06-22T23:31:00+07:00",
   "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
   "source_breakdown": {
     "Royal Forest Department Firemap": 0,
