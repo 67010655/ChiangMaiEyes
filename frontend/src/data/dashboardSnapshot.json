@@ -2,22 +2,19 @@
   "hotspots": {
     "count": 0,
     "density_per_100_km2": 0.0,
-    "latest_update": "2026-06-23T15:32:52.612440+07:00",
-    "source": "Royal Forest Department Firemap + GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
+    "latest_update": "2026-06-23T16:29:03.451924+07:00",
+    "source": "GISTDA Disaster STAC VIIRS 3-day",
     "items": [],
     "source_breakdown": {
-      "Royal Forest Department Firemap": 0,
-      "GISTDA Disaster STAC VIIRS 3-day": 0,
-      "GISTDA API Gateway VIIRS 1-day": 0,
-      "NASA FIRMS": 0
+      "GISTDA Disaster STAC VIIRS 3-day": 0
     }
   },
   "pm25": {
-    "current_pm25": 12.6,
+    "current_pm25": 12.7,
     "category": "ดีมาก",
     "color": "green",
     "trend": "stable",
-    "latest_update": "2026-06-23T15:00:00+07:00",
+    "latest_update": "2026-06-23T16:00:00+07:00",
     "source": "Air4Thai Live API",
     "stations": [
       {
@@ -26,9 +23,9 @@
         "district": "Meuang",
         "latitude": 18.840732,
         "longitude": 98.96978,
-        "pm25": 14.7,
+        "pm25": 15.0,
         "trend": "stable",
-        "updated_at": "2026-06-23T15:00:00+07:00"
+        "updated_at": "2026-06-23T16:00:00+07:00"
       },
       {
         "id": "CM-36T",
@@ -38,22 +35,22 @@
         "longitude": 98.99,
         "pm25": 10.4,
         "trend": "stable",
-        "updated_at": "2026-06-23T15:00:00+07:00"
+        "updated_at": "2026-06-23T16:00:00+07:00"
       }
     ]
   },
   "weather": {
-    "wind_speed_kmh": 6.5,
-    "wind_direction_deg": 190.8,
-    "wind_direction_text": "ทิศใต้ค่อนไปทางตะวันตก",
-    "temperature_c": 29.4,
-    "humidity_percent": 68.8,
-    "latest_update": "2026-06-23T15:31:00+07:00",
+    "wind_speed_kmh": 5.8,
+    "wind_direction_deg": 224.3,
+    "wind_direction_text": "ทิศตะวันตกเฉียงใต้",
+    "temperature_c": 31.6,
+    "humidity_percent": 60.1,
+    "latest_update": "2026-06-23T16:28:00+07:00",
     "source": "Thai Meteorological Department AWS",
     "station_name": "สถานีอุตุนิยมวิทยาเชียงใหม่ (ศูนย์อุตุนิยมวิทยาเชียงใหม่)",
     "station_latitude": 18.7711,
     "station_longitude": 98.9692,
-    "pressure_hpa": 969.2,
+    "pressure_hpa": 968.5,
     "rain_15m_mm": 0.0,
     "rain_1h_mm": 0.0,
     "rain_today_mm": 0.0,
@@ -65,28 +62,28 @@
     "category": "Medium",
     "formula": "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind",
     "factors": {
-      "pm25_points": 0.63,
+      "pm25_points": 0.64,
       "hotspot_points": 0.0,
-      "spread_points": 3.61,
+      "spread_points": 3.49,
       "avg_flammability": 1.2,
       "avg_slope_factor": 1.0,
       "avg_history_factor": 1.2,
-      "wind_speed_kmh": 6.5,
+      "wind_speed_kmh": 5.8,
       "wind_pushes_smoke_to_city": "yes"
     }
   },
   "summary": {
     "language": "th",
-    "text": "เชียงใหม่มีค่า PM2.5 เฉลี่ย 13 ไมโครกรัมต่อลูกบาศก์เมตร อยู่ในระดับดีมาก พบจุดความร้อน 0 จุด และลมพัดจากทิศ ทิศใต้ค่อนไปทางตะวันตก ด้วยความเร็ว 6 กม./ชม. คะแนนความเสี่ยงอยู่ที่ 4/10 ระดับ Medium ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร",
-    "source": "rule-based fallback"
+    "text": "สรุปสถานการณ์รอบ 16:29 น.: PM2.5 เฉลี่ย 13 µg/m³ อยู่ในระดับ ดีมาก; พบจุดความร้อนในเชียงใหม่ 0 จุด จากแหล่งข้อมูล GISTDA Disaster STAC VIIRS 3-day 0 จุด. ลมมาจาก ทิศตะวันตกเฉียงใต้ ความเร็ว 6 กม./ชม.; คะแนนความเสี่ยงหมอกควัน 4/10 (ระดับปานกลาง ต้องติดตามการเปลี่ยนแปลงของลม จุดความร้อน และฝุ่น). ข้อเสนอแนะ: ให้เจ้าหน้าที่ติดตามจุดความร้อนซ้ำในรอบถัดไป ตรวจแนวลมที่อาจพาควันเข้าพื้นที่ชุมชน และเตรียมมาตรการลดการเผา.",
+    "source": "deterministic hourly summary"
   },
   "intelligence": {
     "hotspot_trend": {
-      "window_days": 30,
-      "recent_count": 5,
-      "previous_count": 88,
-      "change_percent": -94.3,
-      "source": "NASA VIIRS (SNPP/NOAA-20/NOAA-21) จุดความร้อนรายวันในจังหวัด"
+      "window_days": 0,
+      "recent_count": 0,
+      "previous_count": 0,
+      "change_percent": 0.0,
+      "source": "จำนวนปัจจุบันจาก snapshot (ยังไม่มีประวัติย้อนหลังจาก NASA VIIRS)"
     },
     "drought_zones": [
       {
@@ -226,12 +223,38 @@
     },
     "landuse_breakdown": [],
     "weekly_forest_league": {
-      "week_id": "2026-06-21",
-      "scoring_window": "2026-06-21 to 2026-06-27",
+      "week_id": "2026-06-07",
+      "scoring_window": "2026-06-07 to 2026-06-13",
       "scheduled_recompute": "คำนวณใหม่ทุกวันอาทิตย์ 23:55 น. เวลาไทย และรีเฟรชรายคืนเพื่ออัปเดตคะแนนย้อนหลัง 7 วัน",
       "rate_limit_rule": "รับรายงานกิจกรรมภาคสนามได้ 1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน",
-      "ranking": [],
-      "source_mode": "LIVE"
+      "ranking": [
+        {
+          "forest_id": "cf-mae-chaem-001",
+          "forest_name": "ป่าชุมชนแม่แจ่ม",
+          "village": "บ้านแม่ปาน",
+          "tambon": "ช่างเคิ่ง",
+          "amphoe": "แม่แจ่ม",
+          "latitude": 18.503,
+          "longitude": 98.361,
+          "total_score": 91,
+          "rank": 1,
+          "report_count": 1,
+          "last_report_at": "2026-06-07T07:30:00+07:00",
+          "score_breakdown": {
+            "management": 21,
+            "prevention": 30,
+            "utilization": 20,
+            "ecological_outcome": 20
+          },
+          "reasons": [
+            "ข้อตกลงงดเผา",
+            "จัดการเชื้อเพลิง",
+            "ลาดตระเวน",
+            "แนวกันไฟ"
+          ]
+        }
+      ],
+      "source_mode": "PROTOTYPE"
     },
     "localizedPredictions": [
       {
@@ -241,7 +264,7 @@
         "longitude": 98.361,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 6.5 กม./ชม. พาควันไปทางหุบเขาเชียงใหม่ มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
+        "reason_for_prediction": "PM2.5 อาจเพิ่มขึ้นใกล้บ้านแม่ปานใน 12 ชั่วโมง เพราะลม 5.8 กม./ชม. พาควันไปทางหุบเขาเชียงใหม่ มีจุดความร้อนใกล้เคียง 0 จุด และภูมิประเทศแบบหุบเขาระบายอากาศช้า",
         "lead_time_hours": 12
       },
       {
@@ -261,7 +284,7 @@
         "longitude": 98.964,
         "forecastType": "dust",
         "severity": "watch",
-        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 191 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
+        "reason_for_prediction": "ควันอาจสะสมรอบบ้านถ้ำ เพราะทิศลม 224 องศา พาควันไปตามแนวสันเขา และภูมิประเทศหุบเขาหินปูนทำให้ควันกระจายช้าช่วงกลางคืน",
         "lead_time_hours": 12
       }
     ],

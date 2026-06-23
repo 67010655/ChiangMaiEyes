@@ -44,14 +44,15 @@ logger = logging.getLogger("refresh_snapshot")
 
 
 def build_hotspots(settings) -> HotspotResponse:
-    # Reconcile every reachable source (RFD + GISTDA Disaster + GISTDA API
-    # Gateway + NASA). From a Thai egress RFD works; key-backed sources join
-    # when configured.
+    # Reconcile every configured source. RFD is opt-in because it requires
+    # reliable Thailand egress; production defaults to cloud-friendly
+    # GISTDA/NASA only.
     logger.info("Fetching + reconciling hotspots from all sources")
     response = fetch_live_hotspots(
         settings.gistda_api_key,
         settings.nasa_firms_map_key,
         settings.gistda_disaster_api_key,
+        include_forest_firemap=settings.hotspot_include_rfd,
     )
     logger.info("Source breakdown: %s → %d unique", response.source_breakdown, response.count)
     # Same post-processing the backend applies before caching.
