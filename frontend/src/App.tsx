@@ -15,6 +15,7 @@ import {
   ClipboardList,
   CloudSun,
   Database,
+  Download,
   ExternalLink,
   Flame,
   Home,
@@ -45,6 +46,7 @@ import {
   fetchFirePhases,
   fetchHistory,
 } from "./lib/api";
+import { downloadHotspotsCsv } from "./lib/exportCsv";
 
 import {
   buildDataStatusFromDashboard,
@@ -1988,6 +1990,14 @@ function OperationalIntelPanel({
     </section>
   );
 }
+
+const HOTSPOT_AGE_LEGEND = [
+  { color: "#dc2626", label: "0–1 วัน" },
+  { color: "#f97316", label: "2–3 วัน" },
+  { color: "#f59e0b", label: "4–5 วัน" },
+  { color: "#fbbf24", label: "6–7 วัน" },
+  { color: "#fde047", label: "8+ วัน" },
+];
 
 const FIRE_PHASE_LABEL: Record<string, string> = {
   during: "เกิดไฟ",
@@ -4146,6 +4156,23 @@ export function App() {
                 <span>จุดความร้อน</span>
               </button>
 
+              {layers.hotspots && (
+                <div className="hotspot-age-legend" aria-label="สีจุดความร้อนตามอายุ">
+                  <span className="hotspot-age-legend__title">อายุจุดความร้อน</span>
+                  <div className="hotspot-age-legend__items">
+                    {HOTSPOT_AGE_LEGEND.map((a) => (
+                      <span key={a.color} className="hotspot-age-legend__item">
+                        <span
+                          className="hotspot-age-legend__dot"
+                          style={{ background: a.color }}
+                        />
+                        {a.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <button
                 type="button"
                 className={`layer-btn ${layers.wind ? "active" : ""}`}
@@ -4207,6 +4234,19 @@ export function App() {
                 <span className="layer-dot layer-dot--prediction" />
                 <span>AI</span>
                 <span className="layer-truth-badge">DERIVED</span>
+              </button>
+
+              <hr className="layer-divider" />
+
+              <button
+                type="button"
+                className="layer-btn layer-btn--export"
+                onClick={() => downloadHotspotsCsv(dashboard.hotspots)}
+                disabled={dashboard.hotspots.items.length === 0}
+                title="ดาวน์โหลดจุดความร้อนเป็นไฟล์ CSV"
+              >
+                <Download size={14} />
+                <span>Export CSV ({dashboard.hotspots.items.length})</span>
               </button>
             </div>
 

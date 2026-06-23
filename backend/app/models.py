@@ -177,6 +177,10 @@ class SatelliteDrynessZone(BaseModel):
     rainfall_30d_mm: float | None = None
     slope_mean_deg: float | None = None
     dryness_class: Literal["moderate", "high", "critical"]
+    # Post-fire burn severity (Phase 6.2): dNBR = NBR_prefire - NBR_postfire.
+    # None until a pre/post Sentinel-2 pair is available (e.g. seed mode).
+    dnbr: float | None = None
+    burn_severity: Literal["unburned", "low", "moderate", "high"] | None = None
     updated_at: str
     source: str
 

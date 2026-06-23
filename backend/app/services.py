@@ -814,7 +814,11 @@ def get_satellite_layers(settings: Settings, now: str | None = None) -> Satellit
 def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
     from app.fire_phase import classify_fire_phases
 
-    return classify_fire_phases(get_hotspots(settings), get_weather(settings))
+    return classify_fire_phases(
+        get_hotspots(settings),
+        get_weather(settings),
+        get_satellite_layers(settings),
+    )
 
 
 def _localized_predictions(

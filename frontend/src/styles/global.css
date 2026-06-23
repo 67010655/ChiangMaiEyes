@@ -5885,6 +5885,51 @@ button {
   transition: all 0.15s ease;
 }
 
+.hotspot-age-legend {
+  padding: 4px 10px 6px;
+}
+.hotspot-age-legend__title {
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 800;
+  color: #60766b;
+  margin-bottom: 4px;
+}
+.hotspot-age-legend__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+.hotspot-age-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #5a6d63;
+}
+.hotspot-age-legend__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.layer-btn--export {
+  justify-content: center;
+  border-color: rgba(15, 107, 84, 0.22);
+  background: #ecfdf3;
+  color: #0f6b54;
+  font-weight: 800;
+}
+.layer-btn--export:hover {
+  background: #d8f5e6;
+}
+.layer-btn--export:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .layer-btn:hover {
   background: var(--surface-soft);
 

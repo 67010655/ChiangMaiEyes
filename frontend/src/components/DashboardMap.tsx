@@ -430,6 +430,31 @@ function hotspotImageKey(h: Hotspot) {
   return h.landuse_type && h.landuse_type !== "OTHER" ? "forest" : "hotspot";
 }
 
+// Colour a hotspot by how long ago it was detected (newest = hot red → oldest =
+// pale yellow), matching the standard fire-age legend used by GISTDA/VIIRS dashboards.
+function hotspotAgeDays(detectedAt: string): number {
+  const t = Date.parse(detectedAt);
+  if (Number.isNaN(t)) return 0;
+  return Math.max(0, Math.floor((Date.now() - t) / 86_400_000));
+}
+
+function hotspotAgeColor(detectedAt: string): string {
+  const d = hotspotAgeDays(detectedAt);
+  if (d <= 1) return "#dc2626"; // 0–1 day: newest
+  if (d <= 3) return "#f97316"; // 2–3 days
+  if (d <= 5) return "#f59e0b"; // 4–5 days
+  if (d <= 7) return "#fbbf24"; // 6–7 days
+  return "#fde047"; // 8+ days: oldest
+}
+
+export const HOTSPOT_AGE_LEGEND = [
+  { color: "#dc2626", label: "0–1 วัน" },
+  { color: "#f97316", label: "2–3 วัน" },
+  { color: "#f59e0b", label: "4–5 วัน" },
+  { color: "#fbbf24", label: "6–7 วัน" },
+  { color: "#fde047", label: "8+ วัน" },
+];
+
 function hotspotPlaceTitle(h: Hotspot) {
   return h.landuse_name || h.district || h.id;
 }
@@ -1529,6 +1554,7 @@ export function DashboardMap({
 
     dashboard.hotspots.items.forEach((h) => {
       const isForest = h.landuse_type && h.landuse_type !== "OTHER";
+      const ageColor = hotspotAgeColor(h.detected_at);
 
       const labelHtml =
         tier !== "sm" && h.district
@@ -1540,11 +1566,11 @@ export function DashboardMap({
           : "";
 
       const icon = L.divIcon({
-        html: `<div class="lf-hotspot${isForest ? " lf-hotspot--forest" : ""}" style="width:${size}px;height:${size}px">
+        html: `<div class="lf-hotspot${isForest ? " lf-hotspot--forest" : ""}" style="width:${size}px;height:${size}px;--lf-age:${ageColor}">
 
-          <div class="lf-hotspot__halo"></div>
+          <div class="lf-hotspot__halo" style="background:${ageColor}"></div>
 
-          <span class="lf-hotspot__fire" aria-hidden="true" style="font-size:${Math.round(size * 0.72)}px"></span>
+          <span class="lf-hotspot__fire" aria-hidden="true" style="font-size:${Math.round(size * 0.72)}px;color:${ageColor}"></span>
 
           ${labelHtml}
 

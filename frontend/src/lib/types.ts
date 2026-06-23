@@ -152,6 +152,8 @@ export type SatelliteDrynessZone = {
   ndmi: number;
   nbr: number;
   dryness_class: 'moderate' | 'high' | 'critical';
+  dnbr?: number | null;
+  burn_severity?: 'unburned' | 'low' | 'moderate' | 'high' | null;
   updated_at: string;
   source: string;
 };

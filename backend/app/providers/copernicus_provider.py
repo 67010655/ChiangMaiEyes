@@ -42,6 +42,22 @@ CDSE_STATISTICS_URL = "https://sh.dataspace.copernicus.eu/api/v1/statistics"
 # resolution the seeded contract documented).
 _RES_DEG = 0.00027
 _LOOKBACK_DAYS = 45
+# Pre-fire baseline window for dNBR (~2–4 months back, before the burn season).
+_BASELINE_START_DAYS = 120
+_BASELINE_END_DAYS = 60
+
+
+def _burn_severity_class(dnbr: float | None) -> str | None:
+    """USGS dNBR thresholds → burn-severity class."""
+    if dnbr is None:
+        return None
+    if dnbr < 0.1:
+        return "unburned"
+    if dnbr < 0.27:
+        return "low"
+    if dnbr < 0.66:
+        return "moderate"
+    return "high"
 
 # Single evalscript computing the three dryness indices, masking clouds/shadow/
 # snow via the Scene Classification Layer (SCL) so zonal means reflect ground.
@@ -158,6 +174,8 @@ def build_satellite_layers_from_copernicus(
     start = end - timedelta(days=_LOOKBACK_DAYS)
     start_iso = start.strftime("%Y-%m-%dT00:00:00Z")
     end_iso = end.strftime("%Y-%m-%dT00:00:00Z")
+    base_start_iso = (end - timedelta(days=_BASELINE_START_DAYS)).strftime("%Y-%m-%dT00:00:00Z")
+    base_end_iso = (end - timedelta(days=_BASELINE_END_DAYS)).strftime("%Y-%m-%dT00:00:00Z")
 
     with httpx.Client(timeout=30) as client:
         token = _get_token(settings, client=client)
@@ -178,6 +196,21 @@ def build_satellite_layers_from_copernicus(
             nbr = _round_or_seed(means["nbr"], seed.get("nbr"), 3)
             # NDVI/NDMI came back empty (all-cloud window) → keep seed but flag it.
             measured = means["ndvi"] is not None
+
+            # dNBR = pre-fire baseline NBR − current NBR (post). Needs both a
+            # cloud-free baseline and current NBR; otherwise stays None.
+            dnbr: float | None = None
+            if means["nbr"] is not None:
+                base = client.post(
+                    CDSE_STATISTICS_URL,
+                    json=_statistics_payload(geometry, base_start_iso, base_end_iso),
+                    headers=headers,
+                )
+                base.raise_for_status()
+                base_nbr = _extract_means(base.json())["nbr"]
+                if base_nbr is not None:
+                    dnbr = round(base_nbr - means["nbr"], 3)
+
             zones.append(
                 SatelliteDrynessZone(
                     id=seed["id"],
@@ -191,6 +224,8 @@ def build_satellite_layers_from_copernicus(
                     rainfall_30d_mm=seed.get("rainfall_30d_mm"),
                     slope_mean_deg=seed.get("slope_mean_deg"),
                     dryness_class=_dryness_class(ndvi, ndmi, seed.get("rainfall_30d_mm")),
+                    dnbr=dnbr,
+                    burn_severity=_burn_severity_class(dnbr),
                     updated_at=generated_at,
                     source=(
                         "Copernicus Data Space Sentinel-2 L2A zonal mean"

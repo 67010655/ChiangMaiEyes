@@ -1,5 +1,39 @@
 from app.fire_phase import classify_fire_phases
-from app.models import Hotspot, HotspotResponse, WeatherResponse
+from app.models import (
+    Hotspot,
+    HotspotResponse,
+    SatelliteDrynessZone,
+    SatelliteLayerResponse,
+    WeatherResponse,
+)
+
+
+def _burn_layer(zone_id: str, dnbr: float, severity: str) -> SatelliteLayerResponse:
+    return SatelliteLayerResponse(
+        source_mode="LIVE",
+        source="test",
+        generated_at="2026-06-23T08:00:00+07:00",
+        dataset_ids=[],
+        cadence="test",
+        dryness_zones=[
+            SatelliteDrynessZone(
+                id=zone_id,
+                name=zone_id,
+                latitude=18.5,
+                longitude=98.4,
+                radius_m=8000,
+                ndvi=0.3,
+                ndmi=-0.05,
+                nbr=0.2,
+                dryness_class="high",
+                dnbr=dnbr,
+                burn_severity=severity,
+                updated_at="2026-06-23T08:00:00+07:00",
+                source="test",
+            )
+        ],
+        notes=[],
+    )
 
 
 def _weather(humidity: float, rain_today: float = 0.0) -> WeatherResponse:
@@ -80,6 +114,29 @@ def test_recent_rain_lowers_danger_below_yellow():
     dry = classify_fire_phases(_hotspots(), _weather(humidity=30, rain_today=0))
     wet = classify_fire_phases(_hotspots(), _weather(humidity=30, rain_today=10))
     assert _phase_of(wet, "ฝาง").danger_score < _phase_of(dry, "ฝาง").danger_score
+
+
+def test_dnbr_burn_scar_marks_district_after_grey():
+    # mae-chaem-reserve zone → แม่แจ่ม. Moderate burn severity, no active fire.
+    layer = _burn_layer("mae-chaem-reserve", dnbr=0.4, severity="moderate")
+    resp = classify_fire_phases(_hotspots(), _weather(humidity=30), layer)
+    p = _phase_of(resp, "แม่แจ่ม")
+    assert p.phase == "after"
+    assert p.color == "grey"
+    assert any("dNBR" in r for r in p.reasons)
+
+
+def test_low_dnbr_does_not_mark_after():
+    layer = _burn_layer("mae-chaem-reserve", dnbr=0.05, severity="unburned")
+    resp = classify_fire_phases(_hotspots(), _weather(humidity=30), layer)
+    assert _phase_of(resp, "แม่แจ่ม").phase != "after"
+
+
+def test_active_fire_beats_burn_scar():
+    # During (active fire) takes precedence over after (burn scar).
+    layer = _burn_layer("mae-chaem-reserve", dnbr=0.5, severity="high")
+    resp = classify_fire_phases(_hotspots("แม่แจ่ม"), _weather(humidity=30), layer)
+    assert _phase_of(resp, "แม่แจ่ม").phase == "during"
 
 
 def test_scores_in_range_and_sorted_desc():

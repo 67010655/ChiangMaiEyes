@@ -19,12 +19,28 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from app.fire_spread_physics import DISTRICT_PHYSICS
-from app.models import DistrictFirePhase, FirePhaseResponse, HotspotResponse, WeatherResponse
+from app.models import (
+    DistrictFirePhase,
+    FirePhaseResponse,
+    HotspotResponse,
+    SatelliteLayerResponse,
+    WeatherResponse,
+)
 
 _PHASE_COLOR = {"normal": "green", "before": "yellow", "during": "red", "after": "grey"}
 _YELLOW_THRESHOLD = 0.55
 _DRY_AIR_GATE = 0.35  # below this, air is too moist for elevated fire danger
 _DURING_FLOOR = 0.85  # an active fire is always high danger regardless of the blend
+
+# Which dry-forest dNBR zone reports a burn scar for which district (Phase 6.2).
+_ZONE_DISTRICT = {
+    "doi-suthep-pui": "เมืองเชียงใหม่",
+    "doi-inthanon-west": "จอมทอง",
+    "chiang-dao-limestone": "เชียงดาว",
+    "mae-chaem-reserve": "แม่แจ่ม",
+    "mae-taeng-headwater": "แม่แตง",
+}
+_BURNED_CLASSES = {"moderate", "high"}
 
 
 def _normalize_district(name: str | None) -> str:
@@ -40,12 +56,24 @@ def _air_dryness(weather: WeatherResponse) -> float:
     return dryness
 
 
-def classify_fire_phases(hotspots: HotspotResponse, weather: WeatherResponse) -> FirePhaseResponse:
+def classify_fire_phases(
+    hotspots: HotspotResponse,
+    weather: WeatherResponse,
+    satellite_layers: SatelliteLayerResponse | None = None,
+) -> FirePhaseResponse:
     active_by_district: dict[str, int] = {}
     for item in hotspots.items:
         name = _normalize_district(item.district)
         if name:
             active_by_district[name] = active_by_district.get(name, 0) + 1
+
+    # Recently-burned districts from Sentinel-2 dNBR burn scars (Phase 6.2).
+    burned: dict[str, tuple[float, str]] = {}
+    if satellite_layers:
+        for zone in satellite_layers.dryness_zones:
+            district = _ZONE_DISTRICT.get(zone.id)
+            if district and zone.burn_severity in _BURNED_CLASSES and zone.dnbr is not None:
+                burned[district] = (zone.dnbr, zone.burn_severity)
 
     dryness = _air_dryness(weather)
     humidity = weather.humidity_percent if weather.humidity_percent is not None else 50.0
@@ -61,6 +89,10 @@ def classify_fire_phases(hotspots: HotspotResponse, weather: WeatherResponse) ->
             phase = "during"
             danger = max(danger, _DURING_FLOOR)
             reasons = [f"พบจุดความร้อน {active} จุดในพื้นที่ตอนนี้"]
+        elif district in burned:
+            phase = "after"
+            dnbr_value, severity = burned[district]
+            reasons = [f"พบรอยไหม้จากดาวเทียม (dNBR {dnbr_value}, ความรุนแรง {severity}) — ระยะฟื้นฟู"]
         elif dryness < _DRY_AIR_GATE:
             # Moist air (e.g. rainy season): fuel won't ignite, so no "before"
             # danger no matter how flammable the forest is — keep anxiety low.
@@ -95,6 +127,7 @@ def classify_fire_phases(hotspots: HotspotResponse, weather: WeatherResponse) ->
         notes=[
             "ระยะเหลือง/แดงคำนวณจากจุดความร้อนจริง + ดัชนีเชื้อเพลิงรายอำเภอ + ความชื้นอากาศสด "
             "เป็นตัวช่วยประเมิน ไม่ใช่คำเตือนทางการ",
-            "ระยะ 'หลังไฟ' (เทา) ต้องใช้ดัชนีรอยไหม้ dNBR จาก Sentinel-2 ซึ่งยังไม่เชื่อม (Phase 6.2)",
+            "ระยะ 'หลังไฟ' (เทา) มาจากดัชนีรอยไหม้ dNBR (Sentinel-2 ก่อน/หลัง) — แสดงเมื่อเชื่อม "
+            "Copernicus และพบรอยไหม้ระดับปานกลางขึ้นไป",
         ],
     )
