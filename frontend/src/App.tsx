@@ -2176,6 +2176,8 @@ export function App() {
 
   const [freshnessOpen, setFreshnessOpen] = useState(false);
 
+  const [layersOpen, setLayersOpen] = useState(true);
+
   const [note, setNote] = useState<"pm" | "risk" | null>(null);
 
   const [mapSelection, setMapSelection] =
@@ -4111,11 +4113,21 @@ export function App() {
             }}
           >
             <div
-              className="map-layer-selector command-layer-strip"
+              className="map-layer-selector map-layer-selector--v2"
               aria-label="ชั้นข้อมูลแผนที่"
             >
-              <div className="layer-selector-title">ชั้นข้อมูลแผนที่</div>
+              <button
+                type="button"
+                className="layer-selector-title layer-selector-toggle"
+                onClick={() => setLayersOpen((o) => !o)}
+                aria-expanded={layersOpen}
+              >
+                <span>ชั้นข้อมูลแผนที่</span>
+                <ChevronDown size={15} aria-hidden />
+              </button>
 
+              {layersOpen && (
+              <div className="layer-selector-body">
               <button
                 type="button"
                 className={`layer-btn ${allOn ? "active" : ""}`}
@@ -4314,6 +4326,8 @@ export function App() {
                 <Download size={14} />
                 <span>Export CSV ({visibleHotspots.items.length})</span>
               </button>
+              </div>
+              )}
             </div>
 
             <Suspense

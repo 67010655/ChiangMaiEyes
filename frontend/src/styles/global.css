@@ -6097,6 +6097,15 @@ button {
   transition: all 0.2s ease;
 }
 
+/* Redesign: clean vertical, collapsible, scroll-capped layer panel (replaces the
+   overflowing horizontal pill strip). */
+.map-layer-selector--v2 {
+  width: 216px;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  gap: 5px;
+}
+
 [data-theme="dark"] .map-layer-selector {
   background: rgba(18, 24, 21, 0.95);
 }
@@ -6115,6 +6124,28 @@ button {
   margin-bottom: 6px;
 
   padding: 0 4px;
+}
+
+.layer-selector-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.layer-selector-toggle svg {
+  color: var(--muted);
+  transition: transform 0.18s ease;
+}
+.layer-selector-toggle[aria-expanded="false"] svg {
+  transform: rotate(-90deg);
+}
+.layer-selector-body {
+  display: flex;
+  flex-direction: column;
 }
 
 .layer-divider {
