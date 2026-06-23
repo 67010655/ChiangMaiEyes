@@ -112,6 +112,8 @@ type LayerState = {
   fireZones: boolean;
 
   predictions: boolean;
+
+  firePhase: boolean;
 };
 
 const fallback = dashboardSnapshot as DashboardResponse;
@@ -2212,7 +2214,11 @@ export function App() {
     fireZones: true,
 
     predictions: true,
+
+    firePhase: false,
   });
+
+  const [thematicOpacity, setThematicOpacity] = useState(0.6);
 
   const [note, setNote] = useState<"pm" | "risk" | null>(null);
 
@@ -2646,6 +2652,8 @@ export function App() {
       fireZones: true,
 
       predictions: true,
+
+      firePhase: layers.firePhase,
     });
 
   const pm25Time = formatTime(dashboard.pm25.latest_update);
@@ -4295,6 +4303,35 @@ export function App() {
                 <span className="layer-truth-badge">DERIVED</span>
               </button>
 
+              <button
+                type="button"
+                className={`layer-btn ${layers.firePhase ? "active" : ""}`}
+                onClick={() => toggleLayer("firePhase")}
+                aria-pressed={layers.firePhase}
+                title="ระบายสีอำเภอตามระยะไฟ (ก่อน/เกิด/หลัง)"
+              >
+                <span className="layer-dot layer-dot--firephase" />
+                <span>ระยะไฟ</span>
+                <span className="layer-truth-badge">DERIVED</span>
+              </button>
+
+              {layers.fuelRisk && (
+                <div className="thematic-opacity" aria-label="ความเข้มชั้นภาพ NDVI">
+                  <span className="hotspot-age-legend__title">
+                    ความเข้มชั้น NDVI ({Math.round(thematicOpacity * 100)}%)
+                  </span>
+                  <input
+                    type="range"
+                    min={0.1}
+                    max={1}
+                    step={0.1}
+                    value={thematicOpacity}
+                    onChange={(e) => setThematicOpacity(Number(e.target.value))}
+                    className="thematic-opacity__slider"
+                  />
+                </div>
+              )}
+
               <hr className="layer-divider" />
 
               <button
@@ -4326,6 +4363,8 @@ export function App() {
                 onToggleFullscreen={() => setMapFullscreen((prev) => !prev)}
                 hoveredDistrict={hoveredDistrict}
                 landuseFilter={landuseFilter}
+                firePhases={firePhases}
+                thematicOpacity={thematicOpacity}
               />
             </Suspense>
           </section>

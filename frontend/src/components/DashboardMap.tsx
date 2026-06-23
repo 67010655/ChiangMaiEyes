@@ -13,7 +13,7 @@ import {
   Wind,
 } from "lucide-react";
 
-import type { DashboardResponse, Hotspot, Pm25Station } from "../lib/types";
+import type { DashboardResponse, FirePhaseResponse, Hotspot, Pm25Station } from "../lib/types";
 
 import provinceGeoData from "../data/chiangmai-province.json";
 
@@ -60,7 +60,13 @@ type Props = {
     fireZones: boolean;
 
     predictions: boolean;
+
+    firePhase: boolean;
   };
+
+  firePhases?: FirePhaseResponse | null;
+
+  thematicOpacity?: number;
 
   selection: MapSelection;
 
@@ -447,6 +453,17 @@ function hotspotAgeColor(detectedAt: string): string {
   if (d <= 5) return "#f59e0b"; // 4–5 days
   if (d <= 7) return "#fbbf24"; // 6–7 days
   return "#fde047"; // 8+ days: oldest
+}
+
+const FIRE_PHASE_HEX: Record<string, string> = {
+  green: "#16a34a",
+  yellow: "#f59e0b",
+  red: "#dc2626",
+  grey: "#9ca3af",
+};
+
+function cleanDistrictName(name: string): string {
+  return (name || "").replace("อำเภอ", "").replace("อ.", "").trim();
 }
 
 export const HOTSPOT_AGE_LEGEND = [
@@ -1036,12 +1053,19 @@ export function DashboardMap({
 
   hoveredDistrict,
   landuseFilter,
+  firePhases,
+  thematicOpacity = 0.6,
 }: Props) {
   const mapDivRef = useRef<HTMLDivElement>(null);
 
   const mapRef = useRef<L.Map | null>(null);
 
   const districtsLayerRef = useRef<L.GeoJSON | null>(null);
+  // Current fire-phase tint, read by the (closure-bound) district mouseout handler.
+  const phaseStyleRef = useRef<{ on: boolean; colors: Map<string, string> }>({
+    on: false,
+    colors: new Map(),
+  });
 
   const isTransitioningRef = useRef(false);
   const selectionRef = useRef(selection);
@@ -1266,16 +1290,16 @@ export function DashboardMap({
           },
 
           mouseout: () => {
+            // Reset to the fire-phase tint if that layer is on, else default.
+            const ps = phaseStyleRef.current;
+            const phaseColor =
+              ps.on && ps.colors.get(cleanDistrictName(nameTh));
             (layer as L.Path).setStyle({
-              color: "#6aab7a",
-
-              weight: 0.8,
-
-              opacity: 0.45,
-
-              fillColor: "transparent",
-
-              fillOpacity: 0,
+              color: phaseColor || "#6aab7a",
+              weight: phaseColor ? 1.4 : 0.8,
+              opacity: phaseColor ? 0.7 : 0.45,
+              fillColor: phaseColor || "transparent",
+              fillOpacity: phaseColor ? 0.35 : 0,
             });
           },
         });
@@ -2190,7 +2214,9 @@ export function DashboardMap({
 
         fillColor: "#dc2626",
 
-        fillOpacity: 0.12,
+        fillOpacity: 0.12 * (thematicOpacity / 0.6),
+
+        opacity: Math.min(1, thematicOpacity + 0.3),
 
         className: "lf-fuel-zone",
       })
@@ -2235,7 +2261,7 @@ export function DashboardMap({
 
         .addTo(group);
     });
-  }, [dryForestZones, layers.fuelRisk]);
+  }, [dryForestZones, layers.fuelRisk, thematicOpacity]);
 
   // ── User location marker and nearest hotspot link line ────────────────────
 
@@ -2474,6 +2500,15 @@ export function DashboardMap({
 
     if (!layerGroup) return;
 
+    // District → fire-phase colour (Phase 6.1b), used to tint the polygon fill.
+    const phaseByDistrict = new Map<string, string>();
+    if (firePhases) {
+      firePhases.phases.forEach((p) => {
+        phaseByDistrict.set(cleanDistrictName(p.district), FIRE_PHASE_HEX[p.color]);
+      });
+    }
+    phaseStyleRef.current = { on: !!layers.firePhase, colors: phaseByDistrict };
+
     layerGroup.eachLayer((layer: any) => {
       const feature = layer.feature;
 
@@ -2502,6 +2537,15 @@ export function DashboardMap({
         if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
           layer.bringToFront();
         }
+      } else if (layers.firePhase && phaseByDistrict.size > 0) {
+        const phaseColor = phaseByDistrict.get(cleanNameTh);
+        layer.setStyle({
+          color: phaseColor ? phaseColor : "#6aab7a",
+          weight: phaseColor ? 1.4 : 0.8,
+          opacity: phaseColor ? 0.7 : 0.45,
+          fillColor: phaseColor ?? "transparent",
+          fillOpacity: phaseColor ? 0.35 : 0,
+        });
       } else {
         layer.setStyle({
           color: "#6aab7a",
@@ -2516,7 +2560,7 @@ export function DashboardMap({
         });
       }
     });
-  }, [hoveredDistrict]);
+  }, [hoveredDistrict, layers.firePhase, firePhases]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 

@@ -5915,6 +5915,19 @@ button {
   flex: 0 0 auto;
 }
 
+.layer-dot--firephase {
+  background: linear-gradient(135deg, #dc2626 0%, #f59e0b 50%, #9ca3af 100%);
+}
+
+.thematic-opacity {
+  padding: 4px 10px 6px;
+}
+.thematic-opacity__slider {
+  width: 100%;
+  accent-color: #0f6b54;
+  cursor: pointer;
+}
+
 .landuse-filter {
   padding: 4px 10px 6px;
 }
