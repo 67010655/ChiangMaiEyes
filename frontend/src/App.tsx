@@ -1,4 +1,4 @@
-import {
+﻿import {
   lazy,
   Suspense,
   useCallback,
@@ -38,6 +38,7 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 
 import {
@@ -75,10 +76,6 @@ import type {
 import dashboardSnapshot from "./data/dashboardSnapshot.json";
 
 import districtsGeoData from "./data/chiangmai-districts.json";
-
-import communityForestData from "./data/community-forests-prototype.json";
-
-import fireZoneData from "./data/fire-management-zones-prototype.json";
 
 import { windDestinationName, getBearing } from "./lib/wind";
 
@@ -172,15 +169,18 @@ type CommunityForestPrototype = {
   lng: number;
 };
 
-const communityForestSummary = (
-  communityForestData as { summary: CommunityForestSummary }
-).summary;
+const communityForestSummary: CommunityForestSummary = {
+  officialInfographicCount: 0,
+  officialInfographicAreaRai: 0,
+  rfdCoordinatePoints: 0,
+  thaicfnetDetailedForests: 0,
+  thaicfnetGeocodedForests: 0,
+  detailedForestsWithFireManagement: 0,
+};
 
-const communityForests = (
-  communityForestData as { forests: CommunityForestPrototype[] }
-).forests;
+const communityForests: CommunityForestPrototype[] = [];
 
-const prototypeZones = (fireZoneData as { zones: PrototypeZone[] }).zones;
+const prototypeZones: PrototypeZone[] = [];
 
 const operatorIntelligenceFallback: OperationalIntelligenceResponse = {
   hotspot_trend: {
@@ -188,91 +188,20 @@ const operatorIntelligenceFallback: OperationalIntelligenceResponse = {
     recent_count: 0,
     previous_count: 0,
     change_percent: 0,
-    source: "ยังไม่มีประวัติย้อนหลังจาก NASA VIIRS",
+    source: "No hotspot history loaded",
   },
-  drought_zones: [
-    {
-      id: "dry-mae-chaem",
-      location_name: "สันเขาฝั่งตะวันตก อ.แม่แจ่ม",
-      latitude: 18.503,
-      longitude: 98.361,
-      soil_moisture_percent: 18,
-      drought_index: 0.78,
-      trend: "drying",
-      risk_level: "high",
-    },
-    {
-      id: "dry-samoeng",
-      location_name: "แนวสะสมเชื้อเพลิง อ.สะเมิง",
-      latitude: 18.849,
-      longitude: 98.73,
-      soil_moisture_percent: 16.2,
-      drought_index: 0.83,
-      trend: "drying",
-      risk_level: "critical",
-    },
-  ],
-  landuse_breakdown: [
-    { landuse_type: "NRF", label: "ป่าสงวนแห่งชาติ", count: 5, percent: 62.5 },
-    { landuse_type: "CONSERVATION", label: "ป่าอนุรักษ์", count: 1, percent: 12.5 },
-    { landuse_type: "AGRI", label: "พื้นที่เกษตร", count: 1, percent: 12.5 },
-    { landuse_type: "OTHER", label: "ชุมชนและอื่น ๆ", count: 1, percent: 12.5 },
-  ],
+  drought_zones: [],
+  landuse_breakdown: [],
   weekly_forest_league: {
-    week_id: "2026-06-07",
-    scoring_window: "2026-06-07 to 2026-06-13",
-    scheduled_recompute: "คำนวณใหม่ทุกวันอาทิตย์ 23:55 น. เวลาไทย",
-    rate_limit_rule: "รับรายงานกิจกรรมภาคสนามได้ 1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน",
-    ranking: [
-      {
-        forest_id: "cf-mae-chaem-001",
-        forest_name: "ป่าชุมชนแม่แจ่ม",
-        village: "บ้านแม่ปาน",
-        tambon: "ช่างเคิ่ง",
-        amphoe: "แม่แจ่ม",
-        latitude: 18.503,
-        longitude: 98.361,
-        total_score: 94,
-        rank: 1,
-        report_count: 1,
-        last_report_at: "2026-06-07T07:30:00+07:00",
-        score_breakdown: {
-          management: 25,
-          prevention: 29,
-          utilization: 20,
-          ecological_outcome: 20,
-        },
-        reasons: ["ลาดตระเวน", "แนวกันไฟ", "จัดการเชื้อเพลิง", "ข้อตกลงงดเผา"],
-      },
-    ],
+    week_id: "",
+    scoring_window: "",
+    scheduled_recompute: "",
+    rate_limit_rule: "",
+    ranking: [],
+    source_mode: "UNAVAILABLE",
   },
-  localizedPredictions: [
-    {
-      id: "pred-smoke-mae-chaem",
-      locationName: "บ้านแม่ปาน อ.แม่แจ่ม",
-      latitude: 18.503,
-      longitude: 98.361,
-      forecastType: "dust",
-      severity: "high",
-      lead_time_hours: 12,
-      reason_for_prediction:
-        "PM2.5 อาจเพิ่มขึ้นใน 12 ชั่วโมง เพราะลมพาควันเข้าสู่หมู่บ้านในหุบเขา จุดความร้อนใกล้เคียงและการระบายอากาศต่ำทำให้เสี่ยงรับควันมากขึ้น",
-    },
-    {
-      id: "pred-fire-samoeng",
-      locationName: "บ้านแม่สาบ อ.สะเมิง",
-      latitude: 18.849,
-      longitude: 98.73,
-      forecastType: "fire",
-      severity: "critical",
-      lead_time_hours: 24,
-      reason_for_prediction:
-        "ความเสี่ยงไฟลามสูง เพราะความชื้นดินต่ำ เชื้อเพลิงแห้ง และรายงานภาคสนามสัปดาห์นี้ยังพบงานจัดการเชื้อเพลิงค้างอยู่",
-    },
-  ],
-  source_notes: [
-    "เป็นข้อมูลจำลองชั่วคราวระหว่างรอเชื่อมข้อมูลรอยไหม้ ความถี่การไหม้จาก GISTDA และค่าภัยแล้งจาก TAMFIRE",
-  ],
+  localizedPredictions: [],
+  source_notes: [],
 };
 
 function forecastTypeLabel(value: string) {
@@ -1438,7 +1367,7 @@ function Sparkline() {
   return (
     <div
       style={{ position: "relative" }}
-      aria-label="กราฟแนวโน้ม PM2.5 ย้อนหลัง 24 ชั่วโมง (ข้อมูลตัวอย่าง)"
+      aria-label="กราฟแนวโน้ม PM2.5 ย้อนหลัง 24 ชั่วโมง"
     >
       <svg
         className="sparkline"
@@ -1461,7 +1390,7 @@ function Sparkline() {
           opacity: 0.7,
         }}
       >
-        ตัวอย่าง
+        ยังไม่เปิดใช้
       </span>
     </div>
   );
@@ -1918,8 +1847,8 @@ function OperationalIntelPanel({
       </div>
 
       <p className="operator-intel-disclaimer">
-        การ์ดนี้มีทั้ง<b>ข้อมูลจริง</b> (จุดความร้อน · การใช้ที่ดิน) และ<b>ข้อมูลจำลอง</b>
-        (ภัยแล้ง · พยากรณ์) — ดูป้ายกำกับแต่ละรายการก่อนนำไปใช้
+        การ์ดนี้แสดงเฉพาะข้อมูลจริงหรือข้อมูลที่คำนวณจาก feed จริงของระบบ
+        รายการที่ยังไม่มีแหล่งข้อมูลยืนยันจะไม่ถูกแสดง
       </p>
 
       <div className="operator-intel-grid">
@@ -1938,22 +1867,24 @@ function OperationalIntelPanel({
           </span>
         </div>
 
-        <div className="operator-intel-metric">
-          <span>ภัยแล้ง / ความชื้นดิน</span>
-          <b>{intelligence.drought_zones.length} พื้นที่</b>
-          <small>
-            {intelligence.drought_zones
-              .slice(0, 2)
-              .map(
-                (zone) =>
-                  `${zone.location_name}: ${zone.soil_moisture_percent}%`,
-              )
-              .join(" / ")}
-          </small>
-          <span className="truth-badge truth-badge--prototype operator-intel-tag">
-            ข้อมูลจำลอง
-          </span>
-        </div>
+        {intelligence.drought_zones.length > 0 && (
+          <div className="operator-intel-metric">
+            <span>ภัยแล้ง / ความชื้นดิน</span>
+            <b>{intelligence.drought_zones.length} พื้นที่</b>
+            <small>
+              {intelligence.drought_zones
+                .slice(0, 2)
+                .map(
+                  (zone) =>
+                    `${zone.location_name}: ${zone.soil_moisture_percent}%`,
+                )
+                .join(" / ")}
+            </small>
+            <span className="truth-badge truth-badge--derived operator-intel-tag">
+              ข้อมูลจริง
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="operator-intel-breakdown">
@@ -1977,6 +1908,7 @@ function OperationalIntelPanel({
         )}
       </div>
 
+      {intelligence.localizedPredictions.length > 0 && (
       <div className="localized-prediction-list">
         <div className="operator-intel-breakdown__head">
           <span>พยากรณ์เฉพาะจุด</span>
@@ -2000,6 +1932,7 @@ function OperationalIntelPanel({
           </button>
         ))}
       </div>
+      )}
 
       {intelligence.source_notes?.length ? (
         <ul className="operator-intel-notes">
@@ -2232,14 +2165,16 @@ export function App() {
 
     communityForests: true,
 
-    fireZones: true,
+    fireZones: false,
 
-    predictions: true,
+    predictions: false,
 
     firePhase: false,
   });
 
   const [thematicOpacity, setThematicOpacity] = useState(0.6);
+
+  const [freshnessOpen, setFreshnessOpen] = useState(false);
 
   const [note, setNote] = useState<"pm" | "risk" | null>(null);
 
@@ -2603,36 +2538,13 @@ export function App() {
     };
   }, [dashboard.hotspots, landuseFilter]);
 
-  const topCommunityZones = useMemo(
-    () =>
-      [...prototypeZones]
-
-        .sort(
-          (a, b) =>
-            a.healthScore - b.healthScore ||
-            b.rfdCoordinatePoints - a.rfdCoordinatePoints,
-        )
-
-        .slice(0, 4),
-
-    [],
-  );
+  const topCommunityZones = useMemo<PrototypeZone[]>(() => [], []);
 
   const leagueIsLive =
     intelligence.weekly_forest_league.source_mode === "LIVE";
 
   const weeklyForestRanking = [
     ...intelligence.weekly_forest_league.ranking,
-    // Only pad with prototype forests in demo mode — never mix seed rows into a
-    // real, submitted-report league.
-    ...(leagueIsLive
-      ? []
-      : prototypeForestRanking().filter(
-          (fallback) =>
-            !intelligence.weekly_forest_league.ranking.some(
-              (item) => item.forest_id === fallback.forest_id,
-            ),
-        )),
   ]
     .sort((a, b) => b.total_score - a.total_score)
     .slice(0, 5);
@@ -2645,10 +2557,7 @@ export function App() {
   const allOn =
     layers.hotspots &&
     layers.pm25 &&
-    layers.wind &&
-    layers.communityForests &&
-    layers.fireZones &&
-    layers.predictions;
+    layers.wind;
 
   const toggleLayer = (key: keyof LayerState) =>
     setLayers((current) => ({ ...current, [key]: !current[key] }));
@@ -2672,9 +2581,9 @@ export function App() {
 
       communityForests: true,
 
-      fireZones: true,
+      fireZones: false,
 
-      predictions: true,
+      predictions: false,
 
       firePhase: layers.firePhase,
     });
@@ -2700,6 +2609,11 @@ export function App() {
   const dataStatusCopy = dataStatus ? getDataStatusCopy(dataStatus) : null;
   const dataFreshness = dataStatus ? getDataFreshnessState(dataStatus) : null;
   const quality = dataStatus?.data_quality ?? dashboard.data_quality ?? {};
+  const hasVerifiedFireZones = quality.fire_zones?.source_mode === "LIVE";
+  const hasVerifiedCommunityForests =
+    quality.community_forests?.source_mode === "LIVE";
+  const hasLocalizedPredictions =
+    intelligence.localizedPredictions.length > 0;
   const qualityItems = [
     quality.hotspots,
     quality.pm25,
@@ -2964,52 +2878,55 @@ export function App() {
 
       {dataStatus && dataStatusCopy && dataFreshness && (
         <div
-          className={`data-status data-status--${dataFreshness.level}`}
+          className={`freshness-bar freshness-bar--${dataFreshness.level}${freshnessOpen ? " freshness-bar--open" : ""}`}
           role={dataFreshness.level === "stale" ? "alert" : "status"}
         >
-          <span className="data-status__icon" aria-hidden>
-            {dataFreshness.level === "fresh" ? (
-              <ShieldCheck size={18} />
-            ) : (
-              <AlertTriangle size={18} />
-            )}
-          </span>
-
-          <div className="data-status__main">
-            <span className="data-status__label">
-              สถานะความสดของข้อมูล Hotspot
+          <button
+            type="button"
+            className="freshness-bar__summary"
+            onClick={() => setFreshnessOpen((o) => !o)}
+            aria-expanded={freshnessOpen}
+          >
+            <span className="freshness-bar__dot" aria-hidden />
+            <span className="freshness-bar__text">
+              <strong>{loading ? "กำลังอัปเดต" : dataFreshness.title}</strong>
+              <span>
+                ตรวจล่าสุด {dataFreshness.hotspotAgeLabel} · {formatNumber(dataStatus.hotspot_count)} จุด
+                {" · "}{dataStatusCopy.modeLabel}
+              </span>
             </span>
-            <strong>{dataFreshness.title}</strong>
-            <p>
-              ตรวจ hotspot ล่าสุดเมื่อ {formatDateTime(dataFreshness.hotspotLatestUpdate)}
-              {" · "}อายุข้อมูล {dataFreshness.hotspotAgeLabel}
-              {" · "}จำนวน {formatNumber(dataStatus.hotspot_count)} จุด
-            </p>
-          </div>
+            <span className="freshness-bar__toggle">
+              {freshnessOpen ? "ซ่อนที่มา" : "ดูที่มา"}
+              <ChevronDown size={15} aria-hidden />
+            </span>
+          </button>
 
-          <div className="data-status__meta">
-            <span>{dataStatusCopy.modeLabel}</span>
-            <span>PM2.5 {dataFreshness.pm25AgeLabel}</span>
-            <span>ลม/อากาศ {dataFreshness.weatherAgeLabel}</span>
-          </div>
-        </div>
-      )}
-
-      {qualityItems.length > 0 && (
-        <div className="trust-strip" aria-label="สถานะความจริงของชุดข้อมูล">
-          {qualityItems.map((item) => (
-            <span
-              key={item.label}
-              className={`quality-chip quality-chip--${item.source_mode.toLowerCase()}`}
-              title={`${item.source}: ${item.note}`}
-            >
-              <b>{truthModeLabel(item.source_mode)}</b>
-              {qualityDisplayLabel(item.label)}
-              {item.source_mode !== "PROTOTYPE" && (
-                <small>{qualityAgeLabel(item)}</small>
+          {freshnessOpen && (
+            <div className="freshness-bar__detail">
+              <p className="freshness-bar__times">
+                Hotspot {dataFreshness.hotspotAgeLabel} ({formatDateTime(dataFreshness.hotspotLatestUpdate)})
+                {" · "}PM2.5 {dataFreshness.pm25AgeLabel}
+                {" · "}ลม/อากาศ {dataFreshness.weatherAgeLabel}
+              </p>
+              {qualityItems.length > 0 && (
+                <div className="trust-strip" aria-label="สถานะความจริงของชุดข้อมูล">
+                  {qualityItems.map((item) => (
+                    <span
+                      key={item.label}
+                      className={`quality-chip quality-chip--${item.source_mode.toLowerCase()}`}
+                      title={`${item.source}: ${item.note}`}
+                    >
+                      <b>{truthModeLabel(item.source_mode)}</b>
+                      {qualityDisplayLabel(item.label)}
+                      {item.source_mode !== "PROTOTYPE" && (
+                        <small>{qualityAgeLabel(item)}</small>
+                      )}
+                    </span>
+                  ))}
+                </div>
               )}
-            </span>
-          ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -3102,8 +3019,40 @@ export function App() {
             <div className="sidebar-body">
               {activeTab === "overview" && (
                 <div className="tab-pane">
+                  <section className="card situation-card" aria-label="สรุปสถานการณ์ปัจจุบัน">
+                    <div className="card__head">
+                      <span className="card__title">ตอนนี้เป็นยังไง</span>
+                    </div>
+                    <div className="situation-card__grid">
+                      {[
+                        situationItems[0],
+                        situationItems[3],
+                        situationItems[1],
+                        situationItems[2],
+                      ].map((item) => {
+                        const isWind = item.key === "wind";
+                        const bigValue = isWind ? item.detail : item.value;
+                        const subLabel = isWind
+                          ? `${item.label} · ${item.value}`
+                          : `${item.label} · ${item.detail}`;
+                        return (
+                          <button
+                            key={item.key}
+                            type="button"
+                            className={`situation-metric situation-metric--${item.tone}`}
+                            onClick={item.onClick}
+                          >
+                            <b className="situation-metric__value">{bigValue}</b>
+                            <span className="situation-metric__label">{subLabel}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+
                   {/* Weekly Forest League */}
 
+                  {leagueIsLive && weeklyForestRanking.length > 0 && (
                   <div className="community-action-panel community-action-panel--league">
                     <div className="community-action-panel__head">
                       <span className="community-action-panel__icon">
@@ -3117,27 +3066,16 @@ export function App() {
                       </div>
 
                       <span
-                        className={`truth-badge ${
-                          leagueIsLive
-                            ? "truth-badge--snapshot"
-                            : "truth-badge--prototype"
-                        } community-action-panel__badge`}
+                        className="truth-badge truth-badge--snapshot community-action-panel__badge"
                       >
-                        {leagueIsLive ? "ข้อมูลจริง" : "ข้อมูลจำลอง"}
+                        ข้อมูลจริง
                       </span>
                     </div>
 
-                    {leagueIsLive ? (
-                      <p className="community-league-disclaimer community-league-disclaimer--live">
-                        อันดับคำนวณจาก<b>รายงานภาคสนามจริง</b>ที่ชุมชนส่งเข้ามา
-                        (1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน)
-                      </p>
-                    ) : (
-                      <p className="community-league-disclaimer">
-                        อันดับคำนวณจาก<b>รายงานภาคสนามตัวอย่าง</b> เพื่อสาธิตระบบให้คะแนน
-                        — ยังไม่ใช่ผลงานจริงของแต่ละป่าชุมชน จนกว่าจะเปิดรับรายงานจากผู้ใช้จริง
-                      </p>
-                    )}
+                    <p className="community-league-disclaimer community-league-disclaimer--live">
+                      อันดับคำนวณจาก<b>รายงานภาคสนามจริง</b>ที่ชุมชนส่งเข้ามา
+                      (1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน)
+                    </p>
 
                     <div className="forest-ranking-list">
                       {weeklyForestRanking.map((item, index) => {
@@ -3221,6 +3159,7 @@ export function App() {
                       })}
                     </div>
                   </div>
+                  )}
 
                   <OperationalIntelPanel
                     intelligence={intelligence}
@@ -3480,22 +3419,7 @@ export function App() {
                     <CitizenTravelGuide dailyForecast={dailyForecast} />
                   )}
 
-                  {/* 24h PM2.5 trend sparkline */}
-
-                  <section className="card trend-card">
-                    <div
-                      className="card__head"
-                      style={{ marginBottom: "12px" }}
-                    >
-                      <span className="card__title">
-                        📈 แนวโน้มฝุ่นละอองย้อนหลัง (ตัวอย่าง)
-                      </span>
-                    </div>
-
-                    <div style={{ padding: "10px 0" }}>
-                      <Sparkline />
-                    </div>
-                  </section>
+                  {/* Historical PM2.5 chart hidden until a real hourly-history feed is connected. */}
                 </div>
               )}
 
@@ -3608,6 +3532,7 @@ export function App() {
 
                   {/* 8h forecast strip */}
 
+                  {false && (
                   <section className="card hourly-forecast-card">
                     <div className="card__head">
                       <span className="card__title">
@@ -3654,9 +3579,11 @@ export function App() {
                       })}
                     </div>
                   </section>
+                  )}
 
                   {/* 7-day outlook table */}
 
+                  {false && (
                   <section className="card daily-forecast-card">
                     <div className="card__head">
                       <span className="card__title">
@@ -3740,6 +3667,7 @@ export function App() {
                       </table>
                     </div>
                   </section>
+                  )}
 
                   {/* History section (Authority only) */}
 
@@ -3749,10 +3677,24 @@ export function App() {
                 </div>
               )}
 
-              {activeTab === "community" && (
+              {activeTab === "community" && !leagueIsLive && (
+                <div className="tab-pane">
+                  <section className="card">
+                    <div className="card__head">
+                      <span className="card__title">ข้อมูลป่าชุมชน</span>
+                    </div>
+                    <p className="card__note">
+                      ยังไม่เชื่อมฐานข้อมูลป่าชุมชน/แนวกันไฟ/รายงานภาคสนามจริง จึงไม่แสดงข้อมูลที่ยังไม่ยืนยันใน production
+                    </p>
+                  </section>
+                </div>
+              )}
+
+              {activeTab === "community" && leagueIsLive && (
                 <div className="tab-pane">
                   {/* Forest command strip stats */}
 
+                  {false && (
                   <section
                     className="community-command-strip"
                     aria-label="Community Forest Fire Management stats"
@@ -3860,6 +3802,7 @@ export function App() {
                       ))}
                     </div>
                   </section>
+                  )}
 
                   {/* Village Report Intake */}
 
@@ -4266,6 +4209,7 @@ export function App() {
                 <span>ลม</span>
               </button>
 
+              {hasVerifiedFireZones && (
               <button
                 type="button"
                 className={`layer-btn ${layers.fireZones ? "active" : ""}`}
@@ -4275,7 +4219,9 @@ export function App() {
                 <span className="layer-dot layer-dot--zone" />
                 <span>เขตไฟ</span>
               </button>
+              )}
 
+              {hasVerifiedCommunityForests && (
               <button
                 type="button"
                 className={`layer-btn ${layers.communityForests ? "active" : ""}`}
@@ -4285,6 +4231,7 @@ export function App() {
                 <span className="layer-dot layer-dot--forest" />
                 <span>ป่าชุมชน</span>
               </button>
+              )}
 
               <button
                 type="button"
@@ -4320,6 +4267,7 @@ export function App() {
                 <span className="layer-truth-badge">WMTS</span>
               </button>
 
+              {hasLocalizedPredictions && (
               <button
                 type="button"
                 className={`layer-btn ${layers.predictions ? "active" : ""}`}
@@ -4330,6 +4278,7 @@ export function App() {
                 <span>คาดการณ์</span>
                 <span className="layer-truth-badge">DERIVED</span>
               </button>
+              )}
 
               <button
                 type="button"
@@ -4419,3 +4368,4 @@ export function App() {
     </div>
   );
 }
+

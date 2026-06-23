@@ -404,6 +404,143 @@ button {
   box-shadow: var(--shadow-sm);
 }
 
+/* Situation-first summary card (UI redesign): the calm "ตอนนี้เป็นยังไง" 2x2
+   big-number grid. Number stays dark/calm; only elevated states tint it. */
+.situation-card__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.situation-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  min-width: 0;
+}
+.situation-metric:hover {
+  border-color: rgba(15, 107, 84, 0.3);
+  background: #fff;
+}
+.situation-metric__value {
+  font-size: 1.5rem;
+  font-weight: 850;
+  line-height: 1.05;
+  color: var(--green-deep);
+  overflow-wrap: anywhere;
+}
+.situation-metric__label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.situation-metric--yellow .situation-metric__value,
+.situation-metric--medium .situation-metric__value {
+  color: #ca8a04;
+}
+.situation-metric--orange .situation-metric__value,
+.situation-metric--hot .situation-metric__value {
+  color: #f97316;
+}
+.situation-metric--red .situation-metric__value,
+.situation-metric--high .situation-metric__value {
+  color: #dc2626;
+}
+.situation-metric--purple .situation-metric__value {
+  color: #7c3aed;
+}
+
+/* Collapsible data-freshness bar (UI redesign): one slim line that expands to
+   reveal per-source timestamps + provenance chips. Replaces the old stacked
+   data-status + always-on trust-strip. */
+.freshness-bar {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.freshness-bar__summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.freshness-bar__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  background: #16a34a;
+}
+.freshness-bar--stale .freshness-bar__dot {
+  background: #eab308;
+}
+.freshness-bar__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.freshness-bar__text strong {
+  font-size: 0.84rem;
+  color: var(--green-deep);
+}
+.freshness-bar__text span {
+  font-size: 0.72rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.freshness-bar__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--green-deep);
+}
+.freshness-bar__toggle svg {
+  transition: transform 0.18s ease;
+}
+.freshness-bar--open .freshness-bar__toggle svg {
+  transform: rotate(180deg);
+}
+.freshness-bar__detail {
+  padding: 0 14px 12px;
+  display: grid;
+  gap: 8px;
+}
+.freshness-bar__times {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.freshness-bar__detail .trust-strip {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
 .quality-chip,
 .truth-badge,
 .layer-truth-badge {
