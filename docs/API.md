@@ -46,7 +46,9 @@ Categories:
 
 ## GET /api/summary
 
-Returns a Thai summary with maximum 3 sentences. The MVP includes a deterministic fallback summary.
+Returns a deterministic Thai hourly operator briefing. It is generated from
+PM2.5, hotspot, wind, risk, and source-provenance fields. It does not call a Gen
+AI provider.
 
 ## GET /api/dashboard
 
@@ -86,7 +88,8 @@ providers.
 
 ## POST /api/advisor/briefing
 
-Returns a short Thai daily briefing generated through the backend advisor proxy.
+Legacy optional endpoint for AI experiments. The production dashboard no longer
+uses this endpoint for the main situation summary.
 The request body is:
 
 ```json
@@ -95,12 +98,13 @@ The request body is:
 }
 ```
 
-The backend reads `GROQ_API_KEYS` from server-side environment variables. The
-frontend must not send provider API keys.
+If enabled, the backend reads `GROQ_API_KEYS` from server-side environment
+variables. The frontend must not send provider API keys.
 
 ## POST /api/advisor/chat
 
-Returns a Thai chat reply from the advisor using the current dashboard context.
+Legacy optional endpoint for AI chat experiments. It is not required for the
+production decision-support dashboard.
 The request body is:
 
 ```json

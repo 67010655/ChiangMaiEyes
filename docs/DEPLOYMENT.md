@@ -9,7 +9,7 @@ The backend is deployed as a separate Vercel project named `backend`.
 3. Vercel uses `backend/pyproject.toml` and `backend/api/index.py`.
 4. Set environment variables:
    - `CORS_ORIGINS=https://chiangmaieyes.vercel.app`
-   - `GROQ_API_KEYS=gsk_...` for the backend advisor proxy. Multiple keys can be comma-separated.
+   - `GROQ_API_KEYS=gsk_...` only if legacy advisor endpoints are enabled. The main situation summary does not use Gen AI.
    - `GISTDA_DISASTER_API_KEY` for GISTDA Disaster STAC hotspot data. A default key is bundled for MVP use.
    - `GISTDA_API_KEY` for optional GISTDA API Gateway VIIRS 1-day data.
    - `NASA_FIRMS_MAP_KEY` for NASA FIRMS VIIRS backup/history. Recommended for production.
@@ -31,8 +31,8 @@ https://backend-mocha-tau-49.vercel.app
    - `VITE_API_BASE_URL=https://backend-mocha-tau-49.vercel.app`
 
 Do not set provider API keys in the frontend project. Browser-visible `VITE_*`
-variables are public, so the AI advisor calls `/api/advisor/*` on the backend
-instead of calling Groq directly from the client.
+variables are public. The production dashboard summary is rule-based and does
+not require AI provider keys.
 
 Current production frontend:
 

@@ -392,14 +392,14 @@ def _build_data_quality(
         ),
         "summary": _data_quality(
             label="Situation summary",
-            source="AI when available, otherwise rule-based fallback",
+            source="ChiangMaiEyes deterministic hourly summary",
             source_mode="DERIVED",
             latest_update=max(hotspots.latest_update, pm25.latest_update, weather.latest_update, key=_parse_datetime),
             checked_at=checked_at,
             age_minutes=max(hotspot_age, pm25_age, weather_age),
-            confidence=0.68,
+            confidence=0.82,
             stale_after_minutes=180,
-            note="Narrative generated from dashboard data. Trust the source timestamps over the wording.",
+            note="Rule-based operator briefing generated from PM2.5, hotspot, wind, and risk inputs. No Gen AI call.",
         ),
         "ndvi": _data_quality(
             label="NDVI",
@@ -718,33 +718,71 @@ def calculate_risk(pm25: Pm25Response, hotspots: HotspotResponse, weather: Weath
 
 
 def fallback_summary(pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse, risk: RiskResponse) -> SummaryResponse:
+    return deterministic_hourly_summary(pm25, hotspots, weather, risk)
+
+
+def _risk_action(risk: RiskResponse, hotspots: HotspotResponse, pm25: Pm25Response) -> str:
     if risk.category == "High":
-        action = "ควรลดกิจกรรมกลางแจ้งและติดตามประกาศจากหน่วยงานท้องถิ่น"
-    elif risk.category == "Medium":
-        action = "ประชาชนกลุ่มเสี่ยงควรระวังและตรวจสอบคุณภาพอากาศก่อนออกนอกอาคาร"
-    else:
-        action = "สถานการณ์โดยรวมยังอยู่ในระดับเฝ้าระวัง"
+        return (
+            "ข้อเสนอแนะ: ให้ศูนย์สั่งการตรวจสอบพื้นที่จุดความร้อนกับหน่วยพื้นที่ทันที "
+            "เตรียมชุดลาดตระเวน/ดับไฟ และสื่อสารเตือนกลุ่มเสี่ยงเรื่องฝุ่น"
+        )
+    if risk.category == "Medium":
+        return (
+            "ข้อเสนอแนะ: ให้เจ้าหน้าที่ติดตามจุดความร้อนซ้ำในรอบถัดไป "
+            "ตรวจแนวลมที่อาจพาควันเข้าพื้นที่ชุมชน และเตรียมมาตรการลดการเผา"
+        )
+    if hotspots.count > 0 or pm25.current_pm25 >= 25:
+        return (
+            "ข้อเสนอแนะ: ยังควรเฝ้าระวังเชิงพื้นที่ โดยเฉพาะอำเภอที่มีจุดความร้อน "
+            "และตรวจแนวโน้ม PM2.5 ก่อนตัดสินใจกิจกรรมกลางแจ้ง"
+        )
+    return "ข้อเสนอแนะ: สถานการณ์เหมาะกับการเฝ้าระวังตามปกติและเตรียมพร้อมข้อมูลสำหรับรอบถัดไป"
+
+
+def _risk_meaning(risk: RiskResponse) -> str:
+    if risk.category == "High":
+        return "ระดับสูง ต้องให้ความสำคัญกับการสั่งการภาคสนาม"
+    if risk.category == "Medium":
+        return "ระดับปานกลาง ต้องติดตามการเปลี่ยนแปลงของลม จุดความร้อน และฝุ่น"
+    return "ระดับต่ำถึงเฝ้าระวัง เหมาะกับการติดตามสถานการณ์ตามรอบ"
+
+
+def _source_summary(hotspots: HotspotResponse) -> str:
+    if not hotspots.source_breakdown:
+        return hotspots.source
+    parts = [f"{source} {count} จุด" for source, count in hotspots.source_breakdown.items()]
+    return " · ".join(parts)
+
+
+def deterministic_hourly_summary(
+    pm25: Pm25Response,
+    hotspots: HotspotResponse,
+    weather: WeatherResponse,
+    risk: RiskResponse,
+) -> SummaryResponse:
+    """Rule-based operator summary. No Gen AI calls by design."""
+
+    updated = max(
+        pm25.latest_update,
+        hotspots.latest_update,
+        weather.latest_update,
+        key=_parse_datetime,
+    )
+    updated_label = _parse_datetime(updated).strftime("%H:%M")
+    source_text = _source_summary(hotspots)
+    wind_towards = "ทิศปลายลมควรดูประกอบบนแผนที่"
+    if isinstance(weather.wind_direction_deg, (int, float)):
+        wind_towards = f"ลมมาจาก {weather.wind_direction_text} ความเร็ว {weather.wind_speed_kmh:.0f} กม./ชม."
 
     text = (
-        f"เชียงใหม่มีค่า PM2.5 เฉลี่ย {pm25.current_pm25:.0f} ไมโครกรัมต่อลูกบาศก์เมตร "
-        f"อยู่ในระดับ{pm25.category} พบจุดความร้อน {hotspots.count} จุด "
-        f"และลมพัดจากทิศ {weather.wind_direction_text} ด้วยความเร็ว {weather.wind_speed_kmh:.0f} กม./ชม. "
-        f"คะแนนความเสี่ยงอยู่ที่ {risk.score}/10 ระดับ {risk.category} {action}"
+        f"สรุปสถานการณ์รอบ {updated_label} น.: PM2.5 เฉลี่ย {pm25.current_pm25:.0f} µg/m³ "
+        f"อยู่ในระดับ {pm25.category}; พบจุดความร้อนในเชียงใหม่ {hotspots.count} จุด "
+        f"จากแหล่งข้อมูล {source_text}. "
+        f"{wind_towards}; คะแนนความเสี่ยงหมอกควัน {risk.score}/10 ({_risk_meaning(risk)}). "
+        f"{_risk_action(risk, hotspots, pm25)}."
     )
-    return SummaryResponse(language="th", text=repair_thai_mojibake_tree(text), source="rule-based fallback")
-
-
-def _gemini_text(api_key: str, model_name: str, prompt: str) -> str:
-    import concurrent.futures
-    import google.generativeai as genai  # type: ignore[import-not-found]
-
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(model_name)
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(model.generate_content, prompt)
-        response = future.result(timeout=10)
-    return response.text.strip()
+    return SummaryResponse(language="th", text=repair_thai_mojibake_tree(text), source="deterministic hourly summary")
 
 
 def get_summary(settings: Settings, pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse, risk: RiskResponse) -> SummaryResponse:
@@ -752,31 +790,9 @@ def get_summary(settings: Settings, pm25: Pm25Response, hotspots: HotspotRespons
     if cached is not None:
         return cached
 
-    result = _compute_summary(settings, pm25, hotspots, weather, risk)
+    result = deterministic_hourly_summary(pm25, hotspots, weather, risk)
     _set_cached("summary", result)
     return result
-
-
-def _compute_summary(settings: Settings, pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse, risk: RiskResponse) -> SummaryResponse:
-    if not settings.gemini_api_key:
-        return fallback_summary(pm25, hotspots, weather, risk)
-
-    prompt = (
-        f"สรุปสถานการณ์ฝุ่น PM2.5 และไฟป่าจังหวัดเชียงใหม่วันนี้เป็นภาษาไทย 2-3 ประโยคกระชับ โดยใช้ข้อมูลต่อไปนี้:\n"
-        f"- ค่า PM2.5 เฉลี่ย {pm25.current_pm25:.0f} µg/m³ ระดับ{pm25.category}\n"
-        f"- จุดความร้อน {hotspots.count} จุดในเชียงใหม่\n"
-        f"- ลมพัดจากทิศ{weather.wind_direction_text} ความเร็ว {weather.wind_speed_kmh:.0f} กม./ชม.\n"
-        f"- คะแนนความเสี่ยงหมอกควัน {risk.score}/10 ระดับ{risk.category}\n"
-        "ตอบเป็นภาษาไทยเท่านั้น ไม่ต้องมีหัวข้อ ไม่ต้องใช้ markdown "
-        "ใช้ภาษากลาง เข้าใจง่ายสำหรับประชาชนทั่วไป ไม่เกิน 3 ประโยค"
-    )
-
-    try:
-        text = _gemini_text(settings.gemini_api_key, settings.gemini_model, prompt)
-        return SummaryResponse(language="th", text=text, source="Gemini AI")
-    except Exception as e:
-        logger.warning("Gemini call failed, using fallback: %s", e)
-        return fallback_summary(pm25, hotspots, weather, risk)
 
 
 def _landuse_breakdown(hotspots: HotspotResponse) -> list[LanduseBreakdownItem]:

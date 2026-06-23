@@ -90,12 +90,6 @@ const DashboardMap = lazy(() =>
   })),
 );
 
-const AiAdvisor = lazy(() =>
-  import("./components/AiAdvisor").then((module) => ({
-    default: module.AiAdvisor,
-  })),
-);
-
 type LayerState = {
   hotspots: boolean;
 
@@ -326,7 +320,7 @@ function qualityDisplayLabel(label: string) {
     "Risk score": "ความเสี่ยง",
     "Fire management zones": "เขตไฟ",
     "Community forest league": "ป่าชุมชน",
-    "Localized predictions": "AI ประเมิน",
+    "Localized predictions": "คาดการณ์พื้นที่",
     "Situation summary": "สรุป",
   };
   return labels[label] ?? label;
@@ -369,6 +363,29 @@ function formatTime(value: string) {
   return new Intl.DateTimeFormat("th-TH", { timeStyle: "short" }).format(
     new Date(value),
   );
+}
+
+function sourceBreakdownLabel(sourceBreakdown?: Record<string, number>) {
+  const entries = Object.entries(sourceBreakdown ?? {});
+  if (entries.length === 0) return "ไม่มีรายละเอียดแยกตามแหล่งข้อมูล";
+  return entries.map(([source, count]) => `${source}: ${formatNumber(count)} จุด`).join(" · ");
+}
+
+function operatorActionLabel(
+  riskCategory: DashboardResponse["risk"]["category"],
+  hotspotCount: number,
+  pm25: number,
+) {
+  if (riskCategory === "High") {
+    return "ยกระดับติดตามภาคสนาม ตรวจจุดความร้อนกับหน่วยพื้นที่ และเตรียมสื่อสารความเสี่ยงกับชุมชน";
+  }
+  if (riskCategory === "Medium") {
+    return "ติดตามซ้ำในรอบถัดไป ตรวจทิศทางลม และเตรียมมาตรการป้องกันก่อนสถานการณ์เปลี่ยน";
+  }
+  if (hotspotCount > 0 || pm25 >= 25) {
+    return "เฝ้าระวังเชิงพื้นที่ต่อเนื่อง โดยเฉพาะบริเวณที่มีจุดความร้อนหรือฝุ่นเริ่มสูง";
+  }
+  return "เฝ้าระวังตามปกติ ใช้ข้อมูลรอบถัดไปประกอบการตัดสินใจ";
 }
 
 function weeklyForestScore(forest: CommunityForestPrototype) {
@@ -2666,16 +2683,6 @@ export function App() {
 
   const weatherTime = formatTime(dashboard.weather.latest_update);
 
-  const advice = adviceByColor[dashboard.pm25.color] ?? adviceByColor.green;
-
-  const recommendations = computeRecommendations(
-    dashboard.pm25.current_pm25,
-
-    dashboard.hotspots.count,
-
-    dashboard.risk.score,
-  );
-
   const factors = dashboard.risk.factors;
 
   const pm25Points = Number(factors.pm25_points ?? 0);
@@ -3023,7 +3030,7 @@ export function App() {
 
                 setSidebarOpen(true);
               }}
-              title="ภาพรวม & ที่ปรึกษา AI"
+              title="ภาพรวมสถานการณ์"
             >
               <Home size={18} />
 
@@ -3308,9 +3315,9 @@ export function App() {
                     )}
                   </section>
 
-                  {/* Advice Card */}
+                  {/* Hourly Situation Summary */}
 
-                  <section className="card advice-card">
+                  <section className="card advice-card operator-summary-card">
                     <div className="card__head">
                       <ShieldCheck
                         size={18}
@@ -3318,52 +3325,55 @@ export function App() {
                       />
 
                       <span className="card__title">
-                        สรุป AI สำหรับหน้างาน
+                        สรุปสถานการณ์รายชั่วโมง
+                      </span>
+
+                      <span className="truth-badge truth-badge--derived">
+                        ไม่ใช้ Gen AI
                       </span>
                     </div>
 
-                    {false && (
-                      <>
-                        <h3
-                          className={`advice-card__heading advice-card__heading--${dashboard.pm25.color}`}
-                          style={{ fontSize: "1.05rem", margin: "8px 0 4px" }}
-                        >
-                          {advice.heading}
-                        </h3>
+                    <div className="operator-summary">
+                      <p className="operator-summary__text">
+                        {dashboard.summary.text}
+                      </p>
 
-                        <p
-                          className="advice-card__text"
-                          style={{ fontSize: "0.84rem", margin: "0 0 10px" }}
-                        >
-                          {advice.text}
-                        </p>
-
-                        <ul
-                          className="advice-recs"
-                          style={{
-                            fontSize: "0.8rem",
-                            paddingLeft: "14px",
-                            margin: "0 0 12px",
-                          }}
-                        >
-                          {recommendations.map(({ label, detail }, i) => (
-                            <li key={i} style={{ marginBottom: "6px" }}>
-                              <strong>{label}:</strong> {detail}
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    )}
-
-                    <Suspense
-                      fallback={
-                        <div className="ai-briefing ai-briefing__text--fallback">
-                          กำลังโหลดที่ปรึกษา...
+                      <dl className="operator-summary__facts">
+                        <div>
+                          <dt>รอบข้อมูลล่าสุด</dt>
+                          <dd>{formatDateTime(updatedAt)}</dd>
                         </div>
-                      }
-                    >
-                      <AiAdvisor dashboard={dashboard} />
-                    </Suspense>
+                        <div>
+                          <dt>จุดความร้อน</dt>
+                          <dd>{formatNumber(dashboard.hotspots.count)} จุด · {formatTime(dashboard.hotspots.latest_update)}</dd>
+                        </div>
+                        <div>
+                          <dt>แหล่งข้อมูล hotspot</dt>
+                          <dd>{sourceBreakdownLabel(dashboard.hotspots.source_breakdown)}</dd>
+                        </div>
+                        <div>
+                          <dt>ลมและฝุ่น</dt>
+                          <dd>
+                            PM2.5 {dashboard.pm25.current_pm25.toFixed(0)} µg/m³ · ลม {windSourceText} {dashboard.weather.wind_speed_kmh.toFixed(0)} กม./ชม.
+                          </dd>
+                        </div>
+                      </dl>
+
+                      <div className="operator-summary__action">
+                        <ClipboardList size={16} />
+                        <span>
+                          {operatorActionLabel(
+                            dashboard.risk.category,
+                            dashboard.hotspots.count,
+                            dashboard.pm25.current_pm25,
+                          )}
+                        </span>
+                      </div>
+
+                      <p className="operator-summary__source">
+                        สร้างจากกฎคงที่ของระบบและข้อมูลล่าสุดบน dashboard · {dashboard.summary.source}
+                      </p>
+                    </div>
                   </section>
                 </div>
               )}
@@ -4317,7 +4327,7 @@ export function App() {
                 aria-pressed={layers.predictions}
               >
                 <span className="layer-dot layer-dot--prediction" />
-                <span>AI</span>
+                <span>คาดการณ์</span>
                 <span className="layer-truth-badge">DERIVED</span>
               </button>
 

@@ -11,7 +11,8 @@ All MVP services must be free or have a free tier suitable for hackathon usage. 
 | Hotspots | GISTDA API Gateway VIIRS 1-day | NASA FIRMS | `backend/data/hotspots.json` |
 | PM2.5 | Air4Thai | OpenAQ | `backend/data/pm25.json` |
 | Weather | TMD Open Data | Open-Meteo | `backend/data/weather.json` |
-| AI advisor | Backend Groq proxy | Advisor unavailable message / rule-based dashboard summary | `backend/app/advisor.py`, `frontend/src/lib/gemini.ts`, `fallback_summary()` |
+| Situation summary | Deterministic hourly backend summary | Bundled/cached dashboard inputs | `deterministic_hourly_summary()` |
+| AI advisor (legacy optional) | Backend Groq proxy | Advisor unavailable message | `backend/app/advisor.py`, `frontend/src/lib/gemini.ts` |
 | Map | OpenStreetMap | Browser cache | Leaflet base map still loads when online |
 
 ## Operational Risks
@@ -20,7 +21,7 @@ All MVP services must be free or have a free tier suitable for hackathon usage. 
 - Vercel serverless functions may cold start.
 - Vercel frontend needs CORS configured on backend.
 - OpenStreetMap tile usage should remain lightweight and attribution must stay visible.
-- Groq can fail, timeout, or exceed quota; advisor errors must not block the dashboard.
+- Groq can fail, timeout, or exceed quota; advisor errors must not block the dashboard and are not used for the main situation summary.
 - Provider keys must stay in backend/Vercel env vars, never in browser-visible `VITE_*` variables.
 
 ## Mitigations

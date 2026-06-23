@@ -12,8 +12,7 @@ flowchart LR
   ThaiPC[Optional Thai-network PC] -. RFD enrichment only .-> RFD[RFD Firemap]
   Backend -. live/fallback .-> Air4Thai[Air4Thai PM2.5]
   Backend -. live/fallback .-> OpenMeteo[Open-Meteo]
-  Frontend -->|POST /api/advisor/*| Backend
-  Backend -. advisor proxy .-> Groq[Groq API]
+  Backend -->|deterministic hourly summary| Summary[Operator briefing]
   Vercel --> OSM[OpenStreetMap tiles]
 ```
 
@@ -22,8 +21,8 @@ flowchart LR
 1. Frontend requests `GET /api/dashboard` and `GET /api/data-status`.
 2. FastAPI fetches cloud-friendly hotspot sources (GISTDA and NASA FIRMS when configured), clips points to Chiang Mai, reconciles duplicate detections, and caches briefly.
 3. If all cloud hotspot providers fail, FastAPI falls back to bundled JSON snapshots.
-4. React renders Leaflet map, PM2.5 panel, hotspot panel, wind layer, risk score, data-status strip, and Thai summary.
-5. The AI advisor sends dashboard context to backend `/api/advisor/briefing` and `/api/advisor/chat`; provider keys stay server-side.
+4. FastAPI generates a deterministic hourly operator briefing from PM2.5, hotspots, wind, risk, and source provenance. No Gen AI call is used for this summary.
+5. React renders Leaflet map, PM2.5 panel, hotspot panel, wind layer, risk score, data-status strip, and Thai summary.
 6. The Thai-network worker is optional legacy/enrichment mode only when `HOTSPOT_INCLUDE_RFD=true`.
 
 ## Folder Structure
