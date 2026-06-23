@@ -39,7 +39,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { fetchDashboard, fetchDataStatus, fetchHistory } from "./lib/api";
+import {
+  fetchDashboard,
+  fetchDataStatus,
+  fetchFirePhases,
+  fetchHistory,
+} from "./lib/api";
 
 import {
   buildDataStatusFromDashboard,
@@ -59,6 +64,7 @@ import type {
   DashboardResponse,
   DataQualityMetadata,
   DataStatusResponse,
+  FirePhaseResponse,
   HistoryResponse,
   OperationalIntelligenceResponse,
   WeeklyForestRankingEntry,
@@ -1983,6 +1989,65 @@ function OperationalIntelPanel({
   );
 }
 
+const FIRE_PHASE_LABEL: Record<string, string> = {
+  during: "เกิดไฟ",
+  before: "ก่อนเกิดไฟ",
+  after: "หลังไฟ",
+  normal: "ปกติ",
+};
+
+function FirePhasePanel({ firePhases }: { firePhases: FirePhaseResponse | null }) {
+  if (!firePhases || firePhases.phases.length === 0) return null;
+
+  const legend = [
+    { color: "red", label: "เกิดไฟ" },
+    { color: "yellow", label: "ก่อนเกิดไฟ" },
+    { color: "grey", label: "หลังไฟ" },
+    { color: "green", label: "ปกติ" },
+  ];
+
+  return (
+    <section className="card fire-phase-card">
+      <div className="card__head">
+        <span className="card__title">ระยะไฟป่ารายอำเภอ</span>
+        <span className="truth-badge truth-badge--derived">ตัวช่วยประเมิน</span>
+      </div>
+
+      <div className="fire-phase-legend">
+        {legend.map((l) => (
+          <span key={l.color} className="fire-phase-legend__item">
+            <span className={`fire-phase-dot fire-phase-dot--${l.color}`} />
+            {l.label}
+          </span>
+        ))}
+      </div>
+
+      <div className="fire-phase-list">
+        {firePhases.phases.map((p) => (
+          <div
+            key={p.district}
+            className={`fire-phase-row fire-phase-row--${p.color}`}
+            title={p.reasons.join(" · ")}
+          >
+            <span className={`fire-phase-dot fire-phase-dot--${p.color}`} />
+            <b>{p.district}</b>
+            <span className="fire-phase-row__phase">{FIRE_PHASE_LABEL[p.phase]}</span>
+            <span className="fire-phase-row__score">{Math.round(p.danger_score * 100)}</span>
+          </div>
+        ))}
+      </div>
+
+      {firePhases.notes?.length ? (
+        <ul className="operator-intel-notes">
+          {firePhases.notes.map((note, i) => (
+            <li key={i}>{note}</li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
 function pmHex(color: string) {
   return color === "green"
     ? "#10b981"
@@ -2103,6 +2168,8 @@ export function App() {
   const lastAutoRefreshAt = useRef(0);
 
   const [history, setHistory] = useState<HistoryResponse | null>(null);
+
+  const [firePhases, setFirePhases] = useState<FirePhaseResponse | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -2291,6 +2358,14 @@ export function App() {
         .catch(() => undefined);
     }
   }, [history]);
+
+  useEffect(() => {
+    if (!firePhases) {
+      fetchFirePhases()
+        .then(setFirePhases)
+        .catch(() => undefined);
+    }
+  }, [firePhases]);
 
   useEffect(() => {
     if (!userLocation) return;
@@ -3088,6 +3163,8 @@ export function App() {
                     intelligence={intelligence}
                     onSelectPrediction={selectLocalizedPrediction}
                   />
+
+                  <FirePhasePanel firePhases={firePhases} />
 
 
 

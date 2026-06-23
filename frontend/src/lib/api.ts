@@ -1,4 +1,4 @@
-import type { DashboardResponse, DataStatusResponse, HistoryResponse, HotspotHistoryResponse } from './types';
+import type { DashboardResponse, DataStatusResponse, FirePhaseResponse, HistoryResponse, HotspotHistoryResponse } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -62,6 +62,26 @@ export async function fetchHistory(): Promise<HistoryResponse> {
 
     if (!response.ok) {
       throw new Error(`History API failed with ${response.status}`);
+    }
+
+    return response.json();
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export async function fetchFirePhases(): Promise<FirePhaseResponse> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15_000);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/fire-phases`, {
+      ...LIVE_FETCH_OPTIONS,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Fire phases API failed with ${response.status}`);
     }
 
     return response.json();

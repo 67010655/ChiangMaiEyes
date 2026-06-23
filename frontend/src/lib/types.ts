@@ -226,6 +226,22 @@ export type OperationalIntelligenceResponse = {
   source_notes: string[];
 };
 
+export type DistrictFirePhase = {
+  district: string;
+  phase: 'normal' | 'before' | 'during' | 'after';
+  color: 'green' | 'yellow' | 'red' | 'grey';
+  danger_score: number;
+  active_hotspots: number;
+  reasons: string[];
+};
+
+export type FirePhaseResponse = {
+  generated_at: string;
+  source_mode: SourceMode;
+  phases: DistrictFirePhase[];
+  notes: string[];
+};
+
 export type DashboardResponse = {
   hotspots: HotspotResponse;
   pm25: Pm25Response;

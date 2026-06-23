@@ -6651,6 +6651,67 @@ button {
   align-self: flex-start;
 }
 
+/* Fire-lifecycle phase panel (Phase 6) */
+.fire-phase-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #5a6d63;
+}
+.fire-phase-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.fire-phase-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+.fire-phase-dot--red { background: #dc2626; }
+.fire-phase-dot--yellow { background: #f59e0b; }
+.fire-phase-dot--grey { background: #9ca3af; }
+.fire-phase-dot--green { background: #16a34a; }
+
+.fire-phase-list {
+  display: grid;
+  gap: 5px;
+}
+.fire-phase-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 0.8rem;
+}
+.fire-phase-row b {
+  flex: 1 1 auto;
+  color: #123b2c;
+  min-width: 0;
+}
+.fire-phase-row__phase {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #5a6d63;
+}
+.fire-phase-row__score {
+  min-width: 26px;
+  text-align: right;
+  font-weight: 900;
+  color: #123b2c;
+}
+.fire-phase-row--red { border-color: rgba(220, 38, 38, 0.3); background: #fff1f2; }
+.fire-phase-row--yellow { border-color: rgba(245, 158, 11, 0.3); background: #fffbeb; }
+.fire-phase-row--grey { border-color: rgba(156, 163, 175, 0.35); background: #f3f4f6; }
+.fire-phase-row--green { border-color: rgba(22, 163, 74, 0.22); background: #f0fdf4; }
+
 /* Win over `.operator-intel-metric span` (muted grey) so provenance tags keep
    their badge colour. */
 .operator-intel-metric span.operator-intel-tag {
