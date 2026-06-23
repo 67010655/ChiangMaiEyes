@@ -8821,3 +8821,102 @@ button {
     right: auto !important;
   }
 }
+
+/* ===== STITCH-STYLE DARK CHROME (topbar, icon rail, right layer panel) ===== */
+.topbar {
+  background: rgba(16, 35, 29, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.topbar .brand-lockup strong,
+.topbar .brand-lockup h1,
+.topbar .brand-lockup > div > :first-child {
+  color: #ffffff !important;
+}
+.topbar .brand-lockup span {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.topbar .date-pill {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+.topbar .date-pill,
+.topbar .date-pill strong {
+  color: #ffffff !important;
+}
+.topbar .date-pill .date-pill__full {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.topbar .icon-button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
+
+/* dark icon rail */
+.sidebar-tabs {
+  background: #10231d !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+.sidebar-tab-btn,
+.sidebar-tab-btn span {
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+.sidebar-tab-btn.active,
+.sidebar-tab-btn.active span {
+  color: #ffffff !important;
+}
+.sidebar-tab-btn.active {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* dark right layer panel */
+.map-layer-selector--v2 {
+  background: rgba(16, 35, 29, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.map-layer-selector--v2 .layer-selector-title,
+.map-layer-selector--v2 .layer-selector-title span,
+.map-layer-selector--v2 .layer-btn span:not(.layer-dot),
+.map-layer-selector--v2 .hotspot-age-legend__title,
+.map-layer-selector--v2 .hotspot-age-legend__item,
+.map-layer-selector--v2 .layer-truth-badge {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.map-layer-selector--v2 .layer-btn.active {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+.map-layer-selector--v2 .layer-divider {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.map-layer-selector--v2 .landuse-chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+.map-layer-selector--v2 .layer-btn--export {
+  background: rgba(22, 163, 74, 0.22) !important;
+  color: #86efac !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+/* green community-alert CTA in the left panel (Stitch) */
+.deploy-alert-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin: 4px 0 6px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 12px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.28);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.deploy-alert-btn:hover { background: #15803d; }
+.deploy-alert-btn:active { transform: scale(0.99); }

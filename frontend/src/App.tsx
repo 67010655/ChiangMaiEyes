@@ -3025,6 +3025,18 @@ export function App() {
                 </div>
               </section>
 
+              <button
+                type="button"
+                className="deploy-alert-btn"
+                onClick={() => {
+                  setActiveTab("checker");
+                  setSidebarOpen(true);
+                }}
+              >
+                <Send size={16} aria-hidden />
+                แจ้งเตือน / ส่งทีมชุมชน
+              </button>
+
               {activeTab === "overview" && (
                 <div className="tab-pane">
                   {/* Weekly Forest League */}
