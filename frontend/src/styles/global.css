@@ -5915,6 +5915,34 @@ button {
   flex: 0 0 auto;
 }
 
+.landuse-filter {
+  padding: 4px 10px 6px;
+}
+.landuse-filter__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.landuse-chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #5a6d63;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.landuse-chip:hover {
+  border-color: rgba(15, 107, 84, 0.3);
+}
+.landuse-chip.active {
+  border-color: rgba(15, 107, 84, 0.4);
+  background: #ecfdf3;
+  color: #0f6b54;
+}
+
 .layer-btn--export {
   justify-content: center;
   border-color: rgba(15, 107, 84, 0.22);

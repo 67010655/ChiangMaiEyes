@@ -81,6 +81,8 @@ type Props = {
   onToggleFullscreen?: () => void;
 
   hoveredDistrict?: string | null;
+
+  landuseFilter?: string | null;
 };
 
 type DryForestZone = {
@@ -1033,6 +1035,7 @@ export function DashboardMap({
   onToggleFullscreen,
 
   hoveredDistrict,
+  landuseFilter,
 }: Props) {
   const mapDivRef = useRef<HTMLDivElement>(null);
 
@@ -1553,6 +1556,8 @@ export function DashboardMap({
     const size = tier === "sm" ? 20 : tier === "md" ? 26 : 34;
 
     dashboard.hotspots.items.forEach((h) => {
+      if (landuseFilter && (h.landuse_type || "OTHER") !== landuseFilter) return;
+
       const isForest = h.landuse_type && h.landuse_type !== "OTHER";
       const ageColor = hotspotAgeColor(h.detected_at);
 
@@ -1635,7 +1640,7 @@ export function DashboardMap({
 
         .addTo(group);
     });
-  }, [dashboard.hotspots.items, layers.hotspots, zoom]);
+  }, [dashboard.hotspots.items, layers.hotspots, zoom, landuseFilter]);
 
   useEffect(() => {
     const group = predictionsLayerRef.current;

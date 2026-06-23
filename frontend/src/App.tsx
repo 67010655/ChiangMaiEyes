@@ -1991,6 +1991,15 @@ function OperationalIntelPanel({
   );
 }
 
+const LANDUSE_LABEL: Record<string, string> = {
+  NRF: "ป่าสงวนแห่งชาติ",
+  CONSERVATION: "ป่าอนุรักษ์",
+  AGRI: "พื้นที่เกษตร",
+  ALRO: "เขต ส.ป.ก.",
+  HIGHWAY: "ริมทางหลวง",
+  OTHER: "ชุมชน/อื่น ๆ",
+};
+
 const HOTSPOT_AGE_LEGEND = [
   { color: "#dc2626", label: "0–1 วัน" },
   { color: "#f97316", label: "2–3 วัน" },
@@ -2180,6 +2189,8 @@ export function App() {
   const [history, setHistory] = useState<HistoryResponse | null>(null);
 
   const [firePhases, setFirePhases] = useState<FirePhaseResponse | null>(null);
+
+  const [landuseFilter, setLanduseFilter] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -2543,6 +2554,27 @@ export function App() {
   const riskTone = getRiskTone(dashboard.risk.score);
 
   const intelligence = dashboard.intelligence ?? operatorIntelligenceFallback;
+
+  const landuseOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    dashboard.hotspots.items.forEach((h) => {
+      const key = h.landuse_type || "OTHER";
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+    return [...counts.entries()]
+      .map(([type, count]) => ({ type, count, label: LANDUSE_LABEL[type] ?? type }))
+      .sort((a, b) => b.count - a.count);
+  }, [dashboard.hotspots.items]);
+
+  const visibleHotspots = useMemo(() => {
+    if (!landuseFilter) return dashboard.hotspots;
+    return {
+      ...dashboard.hotspots,
+      items: dashboard.hotspots.items.filter(
+        (h) => (h.landuse_type || "OTHER") === landuseFilter,
+      ),
+    };
+  }, [dashboard.hotspots, landuseFilter]);
 
   const topCommunityZones = useMemo(
     () =>
@@ -4173,6 +4205,33 @@ export function App() {
                 </div>
               )}
 
+              {layers.hotspots && landuseOptions.length > 0 && (
+                <div className="landuse-filter" aria-label="กรองตามการใช้ที่ดิน">
+                  <span className="hotspot-age-legend__title">กรองการใช้ที่ดิน</span>
+                  <div className="landuse-filter__chips">
+                    <button
+                      type="button"
+                      className={`landuse-chip ${landuseFilter === null ? "active" : ""}`}
+                      onClick={() => setLanduseFilter(null)}
+                    >
+                      ทั้งหมด
+                    </button>
+                    {landuseOptions.map((o) => (
+                      <button
+                        key={o.type}
+                        type="button"
+                        className={`landuse-chip ${landuseFilter === o.type ? "active" : ""}`}
+                        onClick={() =>
+                          setLanduseFilter((cur) => (cur === o.type ? null : o.type))
+                        }
+                      >
+                        {o.label} ({o.count})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <button
                 type="button"
                 className={`layer-btn ${layers.wind ? "active" : ""}`}
@@ -4241,12 +4300,12 @@ export function App() {
               <button
                 type="button"
                 className="layer-btn layer-btn--export"
-                onClick={() => downloadHotspotsCsv(dashboard.hotspots)}
-                disabled={dashboard.hotspots.items.length === 0}
+                onClick={() => downloadHotspotsCsv(visibleHotspots)}
+                disabled={visibleHotspots.items.length === 0}
                 title="ดาวน์โหลดจุดความร้อนเป็นไฟล์ CSV"
               >
                 <Download size={14} />
-                <span>Export CSV ({dashboard.hotspots.items.length})</span>
+                <span>Export CSV ({visibleHotspots.items.length})</span>
               </button>
             </div>
 
@@ -4266,6 +4325,7 @@ export function App() {
                 isFullscreen={mapFullscreen}
                 onToggleFullscreen={() => setMapFullscreen((prev) => !prev)}
                 hoveredDistrict={hoveredDistrict}
+                landuseFilter={landuseFilter}
               />
             </Suspense>
           </section>
