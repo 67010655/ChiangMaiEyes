@@ -8713,7 +8713,7 @@ button {
   left: 12px;
   right: 12px;
   width: auto;
-  padding: 8px 16px !important;
+  padding: 7px 14px !important;
   border-radius: 14px !important;
   background: rgba(255, 255, 255, 0.94) !important;
   backdrop-filter: blur(12px);
@@ -8723,16 +8723,22 @@ button {
 .topbar .theme-toggle-btn {
   display: none !important;
 }
+.topbar__actions {
+  margin-left: auto !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+  gap: 10px !important;
+}
+.topbar .date-pill {
+  padding: 5px 12px !important;
+}
 
-/* freshness = compact floating button, top-left */
-.freshness-bar {
-  position: absolute !important;
-  z-index: 42;
-  top: 72px;
-  left: 12px;
-  width: -moz-fit-content !important;
-  width: fit-content !important;
-  max-width: 360px;
+/* freshness now sits at the top of the left sidebar panel (not floating) */
+.sidebar-body .freshness-bar {
+  position: static !important;
+  width: auto !important;
+  max-width: none !important;
+  margin-bottom: 10px;
 }
 .freshness-bar__text span {
   max-width: 230px;
@@ -8782,3 +8788,36 @@ button {
 }
 
 } /* end @media min-width:901px map-hero */
+
+/* map-hero v2 fixes: clear the floating topbar, declutter the top edge */
+@media (min-width: 901px) {
+  .sidebar-container {
+    top: 80px !important;
+    max-height: calc(100vh - 92px) !important;
+  }
+  .map-controls {
+    top: 80px !important;
+  }
+  .basemap-switcher {
+    top: 80px !important;
+    left: 452px !important;
+  }
+}
+
+/* map-hero v2 fixes (high-specificity): pin time right, basemap below topbar */
+@media (min-width: 901px) {
+  .topbar .topbar__actions {
+    position: absolute !important;
+    right: 16px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    width: auto !important;
+  }
+  .map-stage.map-hero .basemap-switcher,
+  .basemap-switcher {
+    top: 88px !important;
+    left: 452px !important;
+    right: auto !important;
+  }
+}

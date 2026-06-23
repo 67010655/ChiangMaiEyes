@@ -2853,60 +2853,6 @@ export function App() {
 
       {error && <div className="notice">{error}</div>}
 
-      {dataStatus && dataStatusCopy && dataFreshness && (
-        <div
-          className={`freshness-bar freshness-bar--${dataFreshness.level}${freshnessOpen ? " freshness-bar--open" : ""}`}
-          role={dataFreshness.level === "stale" ? "alert" : "status"}
-        >
-          <button
-            type="button"
-            className="freshness-bar__summary"
-            onClick={() => setFreshnessOpen((o) => !o)}
-            aria-expanded={freshnessOpen}
-          >
-            <span className="freshness-bar__dot" aria-hidden />
-            <span className="freshness-bar__text">
-              <strong>{loading ? "กำลังอัปเดต" : dataFreshness.title}</strong>
-              <span>
-                ตรวจล่าสุด {dataFreshness.hotspotAgeLabel} · {formatNumber(dataStatus.hotspot_count)} จุด
-                {" · "}{dataStatusCopy.modeLabel}
-              </span>
-            </span>
-            <span className="freshness-bar__toggle">
-              {freshnessOpen ? "ซ่อนที่มา" : "ดูที่มา"}
-              <ChevronDown size={15} aria-hidden />
-            </span>
-          </button>
-
-          {freshnessOpen && (
-            <div className="freshness-bar__detail">
-              <p className="freshness-bar__times">
-                Hotspot {dataFreshness.hotspotAgeLabel} ({formatDateTime(dataFreshness.hotspotLatestUpdate)})
-                {" · "}PM2.5 {dataFreshness.pm25AgeLabel}
-                {" · "}ลม/อากาศ {dataFreshness.weatherAgeLabel}
-              </p>
-              {qualityItems.length > 0 && (
-                <div className="trust-strip" aria-label="สถานะความจริงของชุดข้อมูล">
-                  {qualityItems.map((item) => (
-                    <span
-                      key={item.label}
-                      className={`quality-chip quality-chip--${item.source_mode.toLowerCase()}`}
-                      title={`${item.source}: ${item.note}`}
-                    >
-                      <b>{truthModeLabel(item.source_mode)}</b>
-                      {qualityDisplayLabel(item.label)}
-                      {item.source_mode !== "PROTOTYPE" && (
-                        <small>{qualityAgeLabel(item)}</small>
-                      )}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
       <div className="main-content-layout">
         {/* LEFT COLLAPSIBLE SIDEBAR */}
 
@@ -2994,6 +2940,60 @@ export function App() {
 
           <div className="sidebar-panel-content">
             <div className="sidebar-body">
+              {dataStatus && dataStatusCopy && dataFreshness && (
+                <div
+                  className={`freshness-bar freshness-bar--${dataFreshness.level}${freshnessOpen ? " freshness-bar--open" : ""}`}
+                  role={dataFreshness.level === "stale" ? "alert" : "status"}
+                >
+                  <button
+                    type="button"
+                    className="freshness-bar__summary"
+                    onClick={() => setFreshnessOpen((o) => !o)}
+                    aria-expanded={freshnessOpen}
+                  >
+                    <span className="freshness-bar__dot" aria-hidden />
+                    <span className="freshness-bar__text">
+                      <strong>{loading ? "กำลังอัปเดต" : dataFreshness.title}</strong>
+                      <span>
+                        ตรวจล่าสุด {dataFreshness.hotspotAgeLabel} · {formatNumber(dataStatus.hotspot_count)} จุด
+                        {" · "}{dataStatusCopy.modeLabel}
+                      </span>
+                    </span>
+                    <span className="freshness-bar__toggle">
+                      {freshnessOpen ? "ซ่อน" : "ดูที่มา"}
+                      <ChevronDown size={15} aria-hidden />
+                    </span>
+                  </button>
+
+                  {freshnessOpen && (
+                    <div className="freshness-bar__detail">
+                      <p className="freshness-bar__times">
+                        Hotspot {dataFreshness.hotspotAgeLabel} ({formatDateTime(dataFreshness.hotspotLatestUpdate)})
+                        {" · "}PM2.5 {dataFreshness.pm25AgeLabel}
+                        {" · "}ลม/อากาศ {dataFreshness.weatherAgeLabel}
+                      </p>
+                      {qualityItems.length > 0 && (
+                        <div className="trust-strip" aria-label="สถานะความจริงของชุดข้อมูล">
+                          {qualityItems.map((item) => (
+                            <span
+                              key={item.label}
+                              className={`quality-chip quality-chip--${item.source_mode.toLowerCase()}`}
+                              title={`${item.source}: ${item.note}`}
+                            >
+                              <b>{truthModeLabel(item.source_mode)}</b>
+                              {qualityDisplayLabel(item.label)}
+                              {item.source_mode !== "PROTOTYPE" && (
+                                <small>{qualityAgeLabel(item)}</small>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <section className="card situation-card" aria-label="สรุปสถานการณ์ปัจจุบัน">
                 <div className="card__head">
                   <span className="card__title">ตอนนี้เป็นยังไง</span>
