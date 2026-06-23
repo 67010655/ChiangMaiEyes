@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     gistda_api_key: str | None = None
     gistda_disaster_api_key: str | None = DEFAULT_GISTDA_DISASTER_API_KEY
     nasa_firms_map_key: str | None = None
+    # RFD Firemap is useful enrichment, but it is not cloud-friendly because it
+    # blocks some serverless infrastructure. Keep it opt-in so production can
+    # run from NASA/GISTDA without a local Thailand PC.
+    hotspot_include_rfd: bool = False
     earth_engine_enabled: bool = False
     earth_engine_project: str | None = None
     earth_engine_service_account: str | None = None

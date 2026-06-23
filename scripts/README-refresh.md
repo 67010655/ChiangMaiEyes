@@ -1,8 +1,13 @@
-# Hotspot Auto-Refresh (Thailand Egress)
+# Optional RFD Hotspot Auto-Refresh (Thailand Egress)
+
+Production does not require this worker by default. The Vercel backend fetches
+cloud-friendly NASA/GISTDA satellite hotspot feeds directly. Use this worker
+only if you deliberately enable `HOTSPOT_INCLUDE_RFD=true` and want RFD Firemap
+as an additional Thailand-egress source.
 
 The Royal Forest Department Firemap blocks many non-Thai IPs, so Vercel and
-GitHub-hosted runners cannot be trusted to fetch the full RFD dataset directly.
-Hotspots are refreshed from a machine on a Thai network, then shipped to the
+GitHub-hosted runners cannot be trusted to fetch RFD directly. In RFD mode,
+hotspots are refreshed from a machine on a Thai network, then shipped to the
 deployed app as a snapshot.
 
 The worker runs hourly. ChiangMaiEyes is positioned as an hourly
@@ -47,7 +52,7 @@ Unregister-ScheduledTask -TaskName 'ChiangMaiEyes hotspot refresh' -Confirm:$fal
 
 ## Runtime Contract
 
-- This PC must be powered on and online.
+- This PC must be powered on and online only when RFD mode is enabled.
 - `git` and Python must work for the scheduled user.
 - The frontend treats `refresh_age_minutes > 75` as a warning.
 - The frontend treats `refresh_status != ok` or `refresh_age_minutes > 180` as stale.

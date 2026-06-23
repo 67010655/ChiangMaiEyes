@@ -8,7 +8,7 @@ Public environmental intelligence dashboard for Chiang Mai, Thailand.
 - Backend: Python, FastAPI
 - Database: none for MVP, cached JSON files only
 - Deployment: Vercel frontend and Vercel FastAPI backend
-- Refresh worker: this Windows PC on a Thai network refreshes hotspot snapshots hourly
+- Hotspots: Vercel backend fetches cloud-friendly NASA/GISTDA satellite feeds; RFD is optional
 
 ## Local Development
 
@@ -36,7 +36,11 @@ provider keys in frontend `VITE_*` variables because they are browser-visible.
 
 ## MVP Notes
 
-The production app serves the latest JSON snapshot committed by the local Thai-network refresh worker. This is intentional because RFD blocks non-Thai infrastructure, including Vercel and GitHub-hosted runners.
+Production no longer requires the local Thai-network refresh worker for
+hotspots. RFD Firemap remains available as optional enrichment, but it is
+disabled by default because it blocks some serverless infrastructure. The
+production path uses NASA/GISTDA satellite hotspot feeds that the Vercel backend
+can fetch directly.
 ## Project Context
 
 Development decisions and handoff notes from the original build chat are saved in `docs/CHAT_CONTEXT.md`.

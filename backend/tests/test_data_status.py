@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings
 from app.main import app
-from app.models import Pm25Response, WeatherResponse
+from app.models import HotspotResponse, Pm25Response, WeatherResponse
 from app.services import get_data_status, write_json
 
 
@@ -87,7 +87,7 @@ def _weather_response() -> WeatherResponse:
 
 
 def test_data_status_reports_snapshot_freshness(tmp_path: Path, monkeypatch):
-    settings = Settings(cache_dir=tmp_path, remote_snapshot_base_url=None)
+    settings = Settings(cache_dir=tmp_path, remote_snapshot_base_url=None, hotspot_include_rfd=True)
     _write_snapshot(tmp_path)
     monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
     monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
@@ -122,7 +122,7 @@ def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path, monkeypatch)
     monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
 
     def override_settings() -> Settings:
-        return Settings(cache_dir=tmp_path, remote_snapshot_base_url=None)
+        return Settings(cache_dir=tmp_path, remote_snapshot_base_url=None, hotspot_include_rfd=True)
 
     from app.config import get_settings
 
@@ -184,6 +184,7 @@ def test_data_status_uses_remote_snapshot_when_local_cache_is_empty(tmp_path: Pa
     settings = Settings(
         cache_dir=tmp_path,
         remote_snapshot_base_url="https://example.test/snapshots",
+        hotspot_include_rfd=True,
     )
     monkeypatch.setattr("app.services.httpx.get", fake_get)
     monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
@@ -237,6 +238,7 @@ def test_relative_cache_dir_does_not_shadow_remote_snapshot(tmp_path: Path, monk
     settings = Settings(
         cache_dir=cache_dir,
         remote_snapshot_base_url="https://example.test/snapshots-relative",
+        hotspot_include_rfd=True,
     )
     monkeypatch.setattr("app.services.httpx.get", fake_get)
     monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
@@ -247,3 +249,38 @@ def test_relative_cache_dir_does_not_shadow_remote_snapshot(tmp_path: Path, monk
     assert status.hotspot_count == 4
     assert status.hotspot_latest_update == "2026-06-03T03:00:00+07:00"
     assert status.refresh_checked_at == "2026-06-03T03:05:00+07:00"
+
+
+def test_data_status_reports_cloud_hotspot_mode_without_local_pc(tmp_path: Path, monkeypatch):
+    settings = Settings(
+        cache_dir=tmp_path,
+        remote_snapshot_base_url=None,
+        hotspot_include_rfd=False,
+    )
+    monkeypatch.setattr(
+        "app.services.get_hotspots",
+        lambda _settings: HotspotResponse(
+            count=3,
+            density_per_100_km2=0.01,
+            latest_update="2026-06-03T01:00:00+07:00",
+            source="GISTDA Disaster STAC VIIRS 3-day + NASA FIRMS",
+            items=[],
+            source_breakdown={
+                "GISTDA Disaster STAC VIIRS 3-day": 2,
+                "NASA FIRMS": 1,
+            },
+        ),
+    )
+    monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
+    monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
+
+    status = get_data_status(settings, now="2026-06-03T01:10:00+07:00")
+
+    assert status.mode == "live-backend"
+    assert status.local_refresh_required is False
+    assert status.refresh_checked_at is None
+    assert status.refresh_age_minutes is None
+    assert status.hotspot_count == 3
+    assert status.hotspot_age_minutes == 10
+    assert status.data_quality["hotspots"].source_mode == "LIVE"
+    assert "does not require the local Thailand refresh PC" in status.notes[0]

@@ -452,8 +452,44 @@ def test_fetch_live_hotspots_uses_gistda_disaster_when_rfd_empty(mock_get):
     assert response.items[0].sources == [GISTDA_DISASTER_SOURCE]
     assert response.items[0].confidence == 90
 
+
 @patch("httpx.get")
-def test_fetch_live_hotspots_raises_when_forest_blocked_and_backups_empty(mock_get):
+def test_fetch_live_hotspots_can_skip_rfd_for_cloud_backend(mock_get):
+    stac_resp = MagicMock()
+    stac_resp.json.return_value = {
+        "features": [{"assets": {"data": {"href": "https://example.test/gistda/features"}}}]
+    }
+
+    asset_resp = MagicMock()
+    asset_resp.json.return_value = {
+        "features": [
+            {
+                "geometry": {"coordinates": [98.35485, 18.48269]},
+                "properties": {
+                    "pv_idn": 50,
+                    "ap_tn": "Mae Chaem",
+                    "th_date": "2026-06-06T00:00:00",
+                    "th_time": "1305",
+                    "confidence": "high",
+                },
+            }
+        ]
+    }
+    mock_get.side_effect = [stac_resp, asset_resp]
+
+    response = fetch_live_hotspots(
+        gistda_disaster_key="gistda_disaster_key",
+        include_forest_firemap=False,
+    )
+
+    assert response.count == 1
+    assert "Royal Forest Department Firemap" not in response.source_breakdown
+    assert response.source_breakdown[GISTDA_DISASTER_SOURCE] == 1
+    assert response.items[0].sources == [GISTDA_DISASTER_SOURCE]
+    assert mock_get.call_count == 2
+
+@patch("httpx.get")
+def test_fetch_live_hotspots_raises_when_forest_required_and_backups_empty(mock_get):
     mock_forest_resp = MagicMock()
     mock_forest_resp.raise_for_status.side_effect = httpx.HTTPStatusError(
         "403 Forbidden",
@@ -466,4 +502,4 @@ def test_fetch_live_hotspots_raises_when_forest_blocked_and_backups_empty(mock_g
     mock_get.side_effect = [mock_forest_resp, mock_gistda_resp]
 
     with pytest.raises(Exception, match="Royal Forest Department Firemap unavailable"):
-        fetch_live_hotspots(gistda_key="gistda_key")
+        fetch_live_hotspots(gistda_key="gistda_key", include_forest_firemap=True)

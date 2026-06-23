@@ -555,6 +555,7 @@ def fetch_live_hotspots(
     gistda_key: str | None = None,
     nasa_key: str | None = None,
     gistda_disaster_key: str | None = None,
+    include_forest_firemap: bool = True,
 ) -> HotspotResponse:
     # Always query every available source so we can cross-reference them, rather
     # than stopping at the first that responds. Each source is best-effort.
@@ -577,7 +578,8 @@ def fetch_live_hotspots(
             fetch_errors.append(f"{label}: {e}")
             logger.error("%s fetch failed: %s", label, e)
 
-    _try(FOREST_FIREMAP_SOURCE, fetch_forest_firemap_hotspots)
+    if include_forest_firemap:
+        _try(FOREST_FIREMAP_SOURCE, fetch_forest_firemap_hotspots)
     if gistda_disaster_key:
         _try(GISTDA_DISASTER_SOURCE, lambda: fetch_gistda_disaster_hotspots(gistda_disaster_key))
     if gistda_key:
@@ -591,7 +593,7 @@ def fetch_live_hotspots(
     hotspots = reconcile_hotspots(hotspot_groups)
     source = " + ".join(dict.fromkeys(sources))
 
-    if not hotspots and any(error.startswith(FOREST_FIREMAP_SOURCE) for error in fetch_errors):
+    if include_forest_firemap and not hotspots and any(error.startswith(FOREST_FIREMAP_SOURCE) for error in fetch_errors):
         raise Exception(f"Royal Forest Department Firemap unavailable and backup sources returned no hotspots: {'; '.join(fetch_errors)}")
 
     count = len(hotspots)

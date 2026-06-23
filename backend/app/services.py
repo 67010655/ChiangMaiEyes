@@ -61,10 +61,10 @@ _BUNDLED_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 # ---------------------------------------------------------------------------
 # Simple TTL cache to avoid hammering upstream APIs on every request.
-# User-facing live values should refresh quickly when new visitors arrive.
-# Keep a short TTL to avoid hammering upstream APIs while preventing stale UI.
+# User-facing values should refresh within the decision-support window, without
+# hammering free upstream APIs on every frontend poll.
 # ---------------------------------------------------------------------------
-_CACHE_TTL_SECONDS = 60  # 1 minute
+_CACHE_TTL_SECONDS = 900  # 15 minutes
 _REMOTE_SNAPSHOT_TTL_SECONDS = 30
 # Historical series are immutable except for "today", so cache them far longer
 # to avoid re-running the heavy multi-request NASA chain every 5 minutes.
@@ -333,15 +333,18 @@ def _build_data_quality(
     hotspot_age = _age_minutes(current_time, hotspots.latest_update)
     pm25_age = _age_minutes(current_time, pm25.latest_update)
     weather_age = _age_minutes(current_time, weather.latest_update)
+    has_rfd = FOREST_FIREMAP_SOURCE in (hotspots.source_breakdown or {}) or "Royal Forest" in hotspots.source
+    hotspot_source_mode = (
+        "UNAVAILABLE"
+        if hotspot_age > 180
+        else "SNAPSHOT" if has_rfd else "LIVE"
+    )
 
     return {
         "hotspots": _data_quality(
             label="Hotspot",
             source=hotspots.source,
-            # Hotspots are always delivered via the Thailand refresh snapshot
-            # (RFD blocks the serving infrastructure), so the honest mode is
-            # SNAPSHOT, never LIVE — and it degrades to UNAVAILABLE on staleness.
-            source_mode="SNAPSHOT" if not hotspot_age > 180 else "UNAVAILABLE",
+            source_mode=hotspot_source_mode,
             latest_update=hotspots.latest_update,
             checked_at=checked_at,
             age_minutes=hotspot_age,
@@ -350,8 +353,8 @@ def _build_data_quality(
             note=(
                 "Authoritative RFD-backed data delivered via the Thailand refresh snapshot "
                 "(RFD blocks some serverless infrastructure), not a live request — trust the snapshot age."
-                if FOREST_FIREMAP_SOURCE in (hotspots.source_breakdown or {}) or "Royal Forest" in hotspots.source
-                else "Best-effort satellite snapshot without RFD confirmation; trust the snapshot age, not live status."
+                if has_rfd
+                else "Cloud-fetched satellite hotspot feed from NASA/GISTDA; use the source breakdown and timestamp."
             ),
         ),
         "pm25": _data_quality(
@@ -446,7 +449,8 @@ def _build_data_quality(
 
 
 def get_data_status(settings: Settings, now: str | None = None) -> DataStatusResponse:
-    hotspots = _serve_hotspot_snapshot(settings)
+    local_refresh_required = settings.hotspot_include_rfd
+    hotspots = _serve_hotspot_snapshot(settings) if local_refresh_required else get_hotspots(settings)
     pm25 = get_pm25(settings)
     weather = get_weather(settings)
     latest_update = max(
@@ -457,11 +461,11 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
     )
     current_time = _parse_datetime(now) if now else datetime.now(tz=_parse_datetime(latest_update).tzinfo)
     checked_at = current_time.isoformat()
-    refresh_status = _read_optional_snapshot_json(settings, "refresh_status.json")
+    refresh_status = _read_optional_snapshot_json(settings, "refresh_status.json") if local_refresh_required else None
     refresh_checked_at = refresh_status.get("checked_at") if refresh_status else None
 
     return DataStatusResponse(
-        mode="local-refresh-snapshot",
+        mode="local-refresh-snapshot" if local_refresh_required else "live-backend",
         latest_update=latest_update,
         snapshot_age_minutes=_age_minutes(current_time, latest_update),
         refresh_checked_at=refresh_checked_at,
@@ -478,14 +482,22 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
         hotspot_count=hotspots.count,
         source=hotspots.source,
         source_breakdown=hotspots.source_breakdown,
-        local_refresh_required=True,
+        local_refresh_required=local_refresh_required,
         vercel_fetches_rfd_directly=False,
         data_quality=_build_data_quality(hotspots, pm25, weather, checked_at=checked_at),
-        notes=[
-            "Hotspots use the latest Thailand refresh snapshot because RFD blocks some serverless infrastructure.",
-            "PM2.5 and wind/weather are fetched live by the backend when upstream providers are reachable.",
-            "The hourly Windows refresh task publishes refresh_status.json so the UI/API can show when the worker actually checked sources.",
-        ],
+        notes=(
+            [
+                "Hotspots use NASA/GISTDA cloud-friendly satellite feeds so production does not require the local Thailand refresh PC.",
+                "RFD Firemap is disabled by default because it blocks some serverless infrastructure.",
+                "Backend responses are cached briefly to protect free upstream APIs while keeping the dashboard current enough for hourly decisions.",
+            ]
+            if not local_refresh_required
+            else [
+                "Hotspots use the latest Thailand refresh snapshot because RFD blocks some serverless infrastructure.",
+                "PM2.5 and wind/weather are fetched live by the backend when upstream providers are reachable.",
+                "The hourly Windows refresh task publishes refresh_status.json so the UI/API can show when the worker actually checked sources.",
+            ]
+        ),
     )
 
 
@@ -505,18 +517,9 @@ def get_hotspots(settings: Settings) -> HotspotResponse:
             settings.gistda_api_key,
             settings.nasa_firms_map_key,
             settings.gistda_disaster_api_key,
+            include_forest_firemap=settings.hotspot_include_rfd,
         )
         response = HotspotResponse(**repair_thai_mojibake_tree(response.model_dump()))
-        # RFD (Royal Forest Department) is the authoritative, full-coverage source.
-        # Infrastructure it blocks (e.g. Vercel's datacenter) only gets partial live
-        # data from NASA/GISTDA, which under-counts. When RFD didn't contribute,
-        # serve the Thailand-refreshed snapshot — it still carries RFD's complete
-        # in-province picture — instead of the thin live result.
-        if FOREST_FIREMAP_SOURCE not in (response.source_breakdown or {}):
-            logger.info(
-                "RFD absent from live hotspots — serving snapshot instead of partial live data"
-            )
-            return _serve_hotspot_snapshot(settings)
         write_json(settings.cache_dir, "hotspots.json", response.model_dump())
         _set_cached("hotspots", response)
         return response

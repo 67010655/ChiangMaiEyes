@@ -10,7 +10,10 @@ The backend is deployed as a separate Vercel project named `backend`.
 4. Set environment variables:
    - `CORS_ORIGINS=https://chiangmaieyes.vercel.app`
    - `GROQ_API_KEYS=gsk_...` for the backend advisor proxy. Multiple keys can be comma-separated.
-   - `GISTDA_API_KEY` and `NASA_FIRMS_MAP_KEY` for hourly local refresh fetches where available.
+   - `GISTDA_DISASTER_API_KEY` for GISTDA Disaster STAC hotspot data. A default key is bundled for MVP use.
+   - `GISTDA_API_KEY` for optional GISTDA API Gateway VIIRS 1-day data.
+   - `NASA_FIRMS_MAP_KEY` for NASA FIRMS VIIRS backup/history. Recommended for production.
+   - `HOTSPOT_INCLUDE_RFD=false` unless the environment has reliable Thai egress.
 
 Current production backend:
 
@@ -37,26 +40,23 @@ Current production frontend:
 https://chiangmaieyes.vercel.app
 ```
 
-## Hotspot Refresh Worker
+## Hotspot Data Mode
 
-RFD blocks non-Thai infrastructure. Production hotspot freshness therefore
-depends on the local Windows refresh worker:
+Production does not require the local Windows refresh worker for hotspots. The
+backend fetches cloud-friendly NASA/GISTDA satellite feeds directly and caches
+responses briefly so the dashboard stays current enough for hourly decisions.
 
 ```text
-Thai-network PC -> refresh_snapshot.py -> JSON snapshot -> git push -> production reads remote snapshot
+Browser -> Vercel backend -> GISTDA/NASA -> reconciled Chiang Mai hotspot response
 ```
 
-The worker is registered in two ways:
+RFD Firemap is optional enrichment only. If `HOTSPOT_INCLUDE_RFD=true`, use the
+legacy Thailand refresh worker because RFD blocks some serverless infrastructure:
 
 - Startup launcher: `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\chiangmaieyes-refresh.cmd`
 - Scheduled Task: `ChiangMaiEyes hotspot refresh`
 
 See `scripts/README-refresh.md` for setup and troubleshooting.
-
-The worker is intentionally hourly. The product is a decision-support dashboard
-based on the latest hourly snapshot, not a realtime emergency feed. Avoid
-shorter push intervals unless the data store is decoupled from Git/Vercel
-deployments.
 
 ## Local Run
 

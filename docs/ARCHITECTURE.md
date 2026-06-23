@@ -6,12 +6,10 @@
 flowchart LR
   Citizen[Citizen mobile/desktop browser] --> Vercel[Vercel Free Tier\nReact + Vite]
   Vercel -->|REST /api/*| Backend[Vercel FastAPI backend]
-  Backend --> Cache[(Committed JSON snapshots\nNo DB for MVP)]
-  ThaiPC[Windows PC on Thai network] -->|hourly refresh| RFD[RFD Firemap]
-  ThaiPC -. optional .-> GISTDA[GISTDA wildfire data]
-  ThaiPC -. backup .-> FIRMS[NASA FIRMS]
-  ThaiPC -->|commit + push changed snapshot| GitHub[GitHub main]
-  GitHub -->|auto-deploy| Backend
+  Backend --> Cache[(Bundled fallback JSON\nNo DB for MVP)]
+  Backend -->|cloud fetch + TTL cache| GISTDA[GISTDA Disaster / API Gateway]
+  Backend -->|cloud fetch + TTL cache| FIRMS[NASA FIRMS VIIRS]
+  ThaiPC[Optional Thai-network PC] -. RFD enrichment only .-> RFD[RFD Firemap]
   Backend -. live/fallback .-> Air4Thai[Air4Thai PM2.5]
   Backend -. live/fallback .-> OpenMeteo[Open-Meteo]
   Frontend -->|POST /api/advisor/*| Backend
@@ -21,13 +19,12 @@ flowchart LR
 
 ## Runtime Flow
 
-1. The local Thai-network refresh worker updates `backend/data/*.json` and `frontend/src/data/dashboardSnapshot.json` when the reconciled hotspot set changes.
-2. The worker commits and pushes changed snapshots to `main`.
-3. Vercel deploys the `frontend` and `backend` projects from the pushed commit.
-4. Frontend requests `GET /api/dashboard` and `GET /api/data-status`.
-5. FastAPI serves the latest committed snapshot, calculates the risk score, and reports snapshot freshness.
-6. React renders Leaflet map, PM2.5 panel, hotspot panel, wind layer, risk score, data-status strip, and Thai summary.
-7. The AI advisor sends dashboard context to backend `/api/advisor/briefing` and `/api/advisor/chat`; provider keys stay server-side.
+1. Frontend requests `GET /api/dashboard` and `GET /api/data-status`.
+2. FastAPI fetches cloud-friendly hotspot sources (GISTDA and NASA FIRMS when configured), clips points to Chiang Mai, reconciles duplicate detections, and caches briefly.
+3. If all cloud hotspot providers fail, FastAPI falls back to bundled JSON snapshots.
+4. React renders Leaflet map, PM2.5 panel, hotspot panel, wind layer, risk score, data-status strip, and Thai summary.
+5. The AI advisor sends dashboard context to backend `/api/advisor/briefing` and `/api/advisor/chat`; provider keys stay server-side.
+6. The Thai-network worker is optional legacy/enrichment mode only when `HOTSPOT_INCLUDE_RFD=true`.
 
 ## Folder Structure
 
@@ -82,8 +79,7 @@ If the project later needs history, add PostgreSQL with tables for `hotspot_obse
 
 ## Production Data Mode
 
-Production currently runs in `local-refresh-snapshot` mode. Vercel does not
-fetch RFD directly because RFD blocks non-Thai infrastructure. The endpoint
-`GET /api/data-status` exposes this mode, the latest timestamp, snapshot age,
-hotspot count, and source breakdown so operators can see what production is
-actually serving.
+Production currently runs in `live-backend` mode for hotspots. Vercel fetches
+NASA/GISTDA satellite feeds directly and reports the active source breakdown via
+`GET /api/data-status`. RFD Firemap is disabled by default; enable
+`HOTSPOT_INCLUDE_RFD=true` only for an environment with reliable Thai egress.
