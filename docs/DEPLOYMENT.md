@@ -10,7 +10,7 @@ The backend is deployed as a separate Vercel project named `backend`.
 4. Set environment variables:
    - `CORS_ORIGINS=https://chiangmaieyes.vercel.app`
    - `GROQ_API_KEYS=gsk_...` for the backend advisor proxy. Multiple keys can be comma-separated.
-   - `GISTDA_API_KEY` and `NASA_FIRMS_MAP_KEY` for live/local refresh fetches where available.
+   - `GISTDA_API_KEY` and `NASA_FIRMS_MAP_KEY` for hourly local refresh fetches where available.
 
 Current production backend:
 
@@ -43,7 +43,7 @@ RFD blocks non-Thai infrastructure. Production hotspot freshness therefore
 depends on the local Windows refresh worker:
 
 ```text
-Thai-network PC -> refresh_snapshot.py -> JSON snapshot -> git push -> Vercel deploy
+Thai-network PC -> refresh_snapshot.py -> JSON snapshot -> git push -> production reads remote snapshot
 ```
 
 The worker is registered in two ways:
@@ -52,6 +52,11 @@ The worker is registered in two ways:
 - Scheduled Task: `ChiangMaiEyes hotspot refresh`
 
 See `scripts/README-refresh.md` for setup and troubleshooting.
+
+The worker is intentionally hourly. The product is a decision-support dashboard
+based on the latest hourly snapshot, not a realtime emergency feed. Avoid
+shorter push intervals unless the data store is decoupled from Git/Vercel
+deployments.
 
 ## Local Run
 

@@ -1,9 +1,9 @@
-# 5-minute hotspot refresh, run from a Thailand network because RFD blocks many foreign IPs.
+# Hourly hotspot refresh, run from a Thailand network because RFD blocks many foreign IPs.
 #
 # The Python refresh reconciles RFD/GISTDA/NASA, refreshes PM2.5/weather, and
 # writes refresh_status.json on every successful check. Changed data is committed
-# and pushed. Production reads the latest JSON from GitHub raw, so this task must
-# not deploy every 5 minutes and burn through the Vercel daily deployment quota.
+# and pushed. Production reads the latest JSON from GitHub raw; keep this hourly
+# while snapshot pushes can still create Vercel deployments through Git integration.
 
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot

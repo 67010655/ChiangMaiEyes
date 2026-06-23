@@ -47,11 +47,21 @@ describe('getDataFreshnessState', () => {
     expect(copy.hotspotAgeMinutes).toBe(240);
   });
 
-  test('warns when the Thailand refresh worker is older than thirty minutes', () => {
+  test('keeps hourly snapshots fresh inside the normal cadence window', () => {
     const copy = getDataFreshnessState({
       ...status,
       hotspot_age_minutes: 5,
-      refresh_age_minutes: 31,
+      refresh_age_minutes: 74,
+    });
+
+    expect(copy.level).toBe('fresh');
+  });
+
+  test('warns when the Thailand refresh worker is older than the hourly cadence window', () => {
+    const copy = getDataFreshnessState({
+      ...status,
+      hotspot_age_minutes: 5,
+      refresh_age_minutes: 76,
     });
 
     expect(copy.level).toBe('watch');

@@ -1,7 +1,7 @@
 import type { DashboardResponse, DataStatusResponse } from './types';
 
-const HOTSPOT_WATCH_MINUTES = 30;
-const HOTSPOT_STALE_MINUTES = 60;
+const HOTSPOT_WATCH_MINUTES = 75;
+const HOTSPOT_STALE_MINUTES = 180;
 
 export type FreshnessLevel = 'fresh' | 'watch' | 'stale';
 
