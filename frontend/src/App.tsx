@@ -2782,31 +2782,6 @@ export function App() {
           </div>
         </div>
 
-        <div className="situation-strip" aria-label="สรุปสถานการณ์ปัจจุบัน">
-          {situationItems.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={`situation-chip situation-chip--${item.tone}`}
-              onClick={item.onClick}
-            >
-              <span className="situation-chip__dot" aria-hidden />
-              <span className="situation-chip__copy">
-                <span className="situation-chip__label">{item.label}</span>
-                <strong>{item.value}</strong>
-              </span>
-              <span className="situation-chip__detail">
-                {item.detail}
-                {item.quality && (
-                  <span className={`truth-badge truth-badge--${item.quality.source_mode.toLowerCase()}`}>
-                    {truthModeLabel(item.quality.source_mode)}
-                  </span>
-                )}
-              </span>
-            </button>
-          ))}
-        </div>
-
         <div className="topbar__actions">
           <div className="operator-scope-badge">มุมมองเจ้าหน้าที่หน้างาน</div>
 
@@ -3017,39 +2992,39 @@ export function App() {
 
           <div className="sidebar-panel-content">
             <div className="sidebar-body">
+              <section className="card situation-card" aria-label="สรุปสถานการณ์ปัจจุบัน">
+                <div className="card__head">
+                  <span className="card__title">ตอนนี้เป็นยังไง</span>
+                </div>
+                <div className="situation-card__grid">
+                  {[
+                    situationItems[0],
+                    situationItems[3],
+                    situationItems[1],
+                    situationItems[2],
+                  ].map((item) => {
+                    const isWind = item.key === "wind";
+                    const bigValue = isWind ? item.detail : item.value;
+                    const subLabel = isWind
+                      ? `${item.label} · ${item.value}`
+                      : `${item.label} · ${item.detail}`;
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        className={`situation-metric situation-metric--${item.tone}`}
+                        onClick={item.onClick}
+                      >
+                        <b className="situation-metric__value">{bigValue}</b>
+                        <span className="situation-metric__label">{subLabel}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
               {activeTab === "overview" && (
                 <div className="tab-pane">
-                  <section className="card situation-card" aria-label="สรุปสถานการณ์ปัจจุบัน">
-                    <div className="card__head">
-                      <span className="card__title">ตอนนี้เป็นยังไง</span>
-                    </div>
-                    <div className="situation-card__grid">
-                      {[
-                        situationItems[0],
-                        situationItems[3],
-                        situationItems[1],
-                        situationItems[2],
-                      ].map((item) => {
-                        const isWind = item.key === "wind";
-                        const bigValue = isWind ? item.detail : item.value;
-                        const subLabel = isWind
-                          ? `${item.label} · ${item.value}`
-                          : `${item.label} · ${item.detail}`;
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            className={`situation-metric situation-metric--${item.tone}`}
-                            onClick={item.onClick}
-                          >
-                            <b className="situation-metric__value">{bigValue}</b>
-                            <span className="situation-metric__label">{subLabel}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </section>
-
                   {/* Weekly Forest League */}
 
                   {leagueIsLive && weeklyForestRanking.length > 0 && (
@@ -3161,12 +3136,30 @@ export function App() {
                   </div>
                   )}
 
-                  <OperationalIntelPanel
-                    intelligence={intelligence}
-                    onSelectPrediction={selectLocalizedPrediction}
-                  />
+                  <details className="sb-accordion">
+                    <summary>
+                      <span className="sb-accordion__title">
+                        ชั้นข้อมูลปฏิบัติการ
+                        <span className="truth-badge truth-badge--derived">ข้อมูลผสม</span>
+                      </span>
+                      <ChevronDown size={16} aria-hidden />
+                    </summary>
+                    <OperationalIntelPanel
+                      intelligence={intelligence}
+                      onSelectPrediction={selectLocalizedPrediction}
+                    />
+                  </details>
 
-                  <FirePhasePanel firePhases={firePhases} />
+                  <details className="sb-accordion">
+                    <summary>
+                      <span className="sb-accordion__title">
+                        ระยะไฟป่ารายอำเภอ
+                        <span className="truth-badge truth-badge--derived">ตัวช่วยประเมิน</span>
+                      </span>
+                      <ChevronDown size={16} aria-hidden />
+                    </summary>
+                    <FirePhasePanel firePhases={firePhases} />
+                  </details>
 
 
 

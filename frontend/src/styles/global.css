@@ -404,6 +404,57 @@ button {
   box-shadow: var(--shadow-sm);
 }
 
+/* Collapsible sidebar sections (UI redesign): keep secondary/operator panels
+   folded so the overview is short. Summary is the section header; the inner
+   panel's own card chrome is flattened so it doesn't double-frame. */
+.sb-accordion {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.sb-accordion > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+}
+.sb-accordion > summary::-webkit-details-marker {
+  display: none;
+}
+.sb-accordion__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--green-deep);
+}
+.sb-accordion > summary > svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+  transition: transform 0.18s ease;
+}
+.sb-accordion[open] > summary > svg {
+  transform: rotate(180deg);
+}
+.sb-accordion[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.sb-accordion > .card {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+}
+.sb-accordion > .card > .card__head {
+  display: none;
+}
+
 /* Situation-first summary card (UI redesign): the calm "ตอนนี้เป็นยังไง" 2x2
    big-number grid. Number stays dark/calm; only elevated states tint it. */
 .situation-card__grid {
