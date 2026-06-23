@@ -8671,3 +8671,114 @@ button {
     max-width: 380px !important;
   }
 }
+
+/* ===================================================================
+   MAP-HERO LAYOUT (redesign v2): the map is the full-bleed background;
+   the topbar, sidebar, freshness button + layer panel all float over it.
+   Desktop-only (min-width:901px) — mobile keeps its stacked/drawer layout.
+   =================================================================== */
+@media (min-width: 901px) {
+.app-shell {
+  height: 100vh !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.main-content-layout {
+  position: absolute !important;
+  inset: 0 !important;
+  gap: 0 !important;
+}
+.map-stage-wrapper {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+}
+.map-stage-wrapper .map-stage,
+.map-stage.map-hero {
+  height: 100% !important;
+  min-height: 100% !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* slim floating topbar */
+.topbar {
+  position: absolute !important;
+  z-index: 46;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  width: auto;
+  padding: 8px 16px !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(12px);
+}
+.topbar .live-pill,
+.topbar .operator-scope-badge,
+.topbar .theme-toggle-btn {
+  display: none !important;
+}
+
+/* freshness = compact floating button, top-left */
+.freshness-bar {
+  position: absolute !important;
+  z-index: 42;
+  top: 72px;
+  left: 12px;
+  width: -moz-fit-content !important;
+  width: fit-content !important;
+  max-width: 360px;
+}
+.freshness-bar__text span {
+  max-width: 230px;
+}
+
+/* floating left sidebar over the map */
+.sidebar-container {
+  position: absolute !important;
+  z-index: 38;
+  top: 120px;
+  left: 12px !important;
+  bottom: 12px;
+  max-height: calc(100vh - 132px) !important;
+  border: 1px solid var(--line) !important;
+  border-right: 1px solid var(--line) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--shadow) !important;
+}
+
+/* push the right layer panel + map title below the floating topbar */
+.map-layer-selector--v2 {
+  top: 72px !important;
+}
+
+/* hide the cut-off footer in map-hero (source still in the freshness "ดูที่มา") */
+.app-shell > .app-footer,
+.app-shell > footer {
+  display: none !important;
+}
+
+/* map-hero: force the full leaflet height chain to fill the viewport */
+.map-stage-wrapper,
+.map-stage-wrapper .map-stage,
+.map-stage.map-hero,
+.map-stage.map-hero .map-canvas,
+.map-stage .map-canvas,
+.map-canvas > *,
+.map-stage .leaflet-container {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+/* map-hero: beat the legacy calc(100vh - 104px) height so the map area fills */
+.main-content-layout,
+.map-stage-wrapper {
+  height: 100% !important;
+}
+
+} /* end @media min-width:901px map-hero */
