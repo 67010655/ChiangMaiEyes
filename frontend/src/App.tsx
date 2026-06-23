@@ -107,6 +107,8 @@ type LayerState = {
 
   fuelRisk: boolean;
 
+  satelliteNdvi: boolean;
+
   communityForests: boolean;
 
   fireZones: boolean;
@@ -2209,6 +2211,8 @@ export function App() {
 
     fuelRisk: true,
 
+    satelliteNdvi: false,
+
     communityForests: true,
 
     fireZones: true,
@@ -2646,6 +2650,8 @@ export function App() {
       landmarks: false,
 
       fuelRisk: true,
+
+      satelliteNdvi: false,
 
       communityForests: true,
 
@@ -4294,6 +4300,18 @@ export function App() {
 
               <button
                 type="button"
+                className={`layer-btn ${layers.satelliteNdvi ? "active" : ""}`}
+                onClick={() => toggleLayer("satelliteNdvi")}
+                aria-pressed={layers.satelliteNdvi}
+                title="ภาพ NDVI จาก Copernicus Data Space / Sentinel Hub WMTS"
+              >
+                <span className="layer-dot layer-dot--satellite-ndvi" />
+                <span>NDVI สด</span>
+                <span className="layer-truth-badge">WMTS</span>
+              </button>
+
+              <button
+                type="button"
                 className={`layer-btn ${layers.predictions ? "active" : ""}`}
                 onClick={() => toggleLayer("predictions")}
                 aria-pressed={layers.predictions}
@@ -4315,7 +4333,7 @@ export function App() {
                 <span className="layer-truth-badge">DERIVED</span>
               </button>
 
-              {layers.fuelRisk && (
+              {(layers.fuelRisk || layers.satelliteNdvi) && (
                 <div className="thematic-opacity" aria-label="ความเข้มชั้นภาพ NDVI">
                   <span className="hotspot-age-legend__title">
                     ความเข้มชั้น NDVI ({Math.round(thematicOpacity * 100)}%)

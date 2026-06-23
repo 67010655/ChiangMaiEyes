@@ -6031,6 +6031,11 @@ button {
   background: #f59e0b;
 }
 
+.layer-dot--satellite-ndvi {
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+
 /* ─── Leaflet Custom Popups and Spring Animation ─── */
 
 @keyframes popupEntrance {

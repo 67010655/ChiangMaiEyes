@@ -55,6 +55,8 @@ type Props = {
 
     fuelRisk: boolean;
 
+    satelliteNdvi: boolean;
+
     communityForests: boolean;
 
     fireZones: boolean;
@@ -565,6 +567,15 @@ const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
 const MAPTILER_ATTRIBUTION =
   '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
 
+const CDSE_SENTINEL_HUB_INSTANCE_ID =
+  (import.meta.env.VITE_CDSE_SENTINEL_HUB_INSTANCE_ID as string | undefined) ??
+  "e2332d57-eb4d-47de-b3d9-1409d0ee8956";
+
+const CDSE_NDVI_LAYER_ID = "VEGETATION_INDEX";
+const CDSE_WMTS_TILE_MATRIX_SET = "PopularWebMercator256";
+const CDSE_WMTS_ATTRIBUTION =
+  '&copy; <a href="https://dataspace.copernicus.eu/" target="_blank" rel="noopener">Copernicus Data Space Ecosystem</a> / Sentinel Hub';
+
 function maptilerUrl(style: string, ext: "jpg" | "png") {
   // {r} → "@2x" on retina screens (Leaflet substitutes automatically)
   return `https://api.maptiler.com/maps/${style}/{z}/{x}/{y}{r}.${ext}?key=${MAPTILER_KEY}`;
@@ -642,6 +653,29 @@ function createBaseTileLayer(id: BaseMapId) {
     maxZoom: basemap.maxZoom,
 
     attribution: basemap.attribution,
+  });
+}
+
+function createCdseNdviTileLayer(opacity: number) {
+  const instanceId = CDSE_SENTINEL_HUB_INSTANCE_ID.trim();
+  const tileUrl =
+    `https://sh.dataspace.copernicus.eu/ogc/wmts/${instanceId}` +
+    "?SERVICE=WMTS" +
+    "&REQUEST=GetTile" +
+    "&VERSION=1.0.0" +
+    `&LAYER=${encodeURIComponent(CDSE_NDVI_LAYER_ID)}` +
+    "&STYLE=default" +
+    `&TILEMATRIXSET=${encodeURIComponent(CDSE_WMTS_TILE_MATRIX_SET)}` +
+    "&FORMAT=image/png" +
+    "&TILEMATRIX={z}" +
+    "&TILEROW={y}" +
+    "&TILECOL={x}";
+
+  return L.tileLayer(tileUrl, {
+    attribution: CDSE_WMTS_ATTRIBUTION,
+    maxZoom: 18,
+    opacity,
+    pane: "tilePane",
   });
 }
 
@@ -1083,6 +1117,8 @@ export function DashboardMap({
 
   const fuelRiskLayerRef = useRef<L.LayerGroup | null>(null);
 
+  const satelliteNdviLayerRef = useRef<L.TileLayer | null>(null);
+
   const fireZonesLayerRef = useRef<L.LayerGroup | null>(null);
 
   const communityForestsLayerRef = useRef<L.LayerGroup | null>(null);
@@ -1410,6 +1446,31 @@ export function DashboardMap({
 
     tileLayerRef.current = nextLayer;
   }, [baseMapId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map) return;
+
+    if (satelliteNdviLayerRef.current) {
+      map.removeLayer(satelliteNdviLayerRef.current);
+      satelliteNdviLayerRef.current = null;
+    }
+
+    if (!layers.satelliteNdvi || !CDSE_SENTINEL_HUB_INSTANCE_ID.trim()) return;
+
+    const nextLayer = createCdseNdviTileLayer(thematicOpacity);
+    nextLayer.setZIndex(1);
+    nextLayer.addTo(map);
+    satelliteNdviLayerRef.current = nextLayer;
+
+    return () => {
+      if (satelliteNdviLayerRef.current && mapRef.current) {
+        mapRef.current.removeLayer(satelliteNdviLayerRef.current);
+        satelliteNdviLayerRef.current = null;
+      }
+    };
+  }, [layers.satelliteNdvi, thematicOpacity]);
 
   // Fire Management Zones: prototype management boundary layer.
 
