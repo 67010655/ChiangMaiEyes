@@ -508,6 +508,24 @@ button {
   color: #7c3aed;
 }
 
+@media (max-width: 600px) {
+  .situation-metric {
+    padding: 10px 12px;
+  }
+  .situation-metric__value {
+    font-size: 1.3rem;
+  }
+  .situation-card__grid {
+    gap: 8px;
+  }
+  .map-layer-selector--v2 {
+    width: min(216px, 64vw);
+  }
+  .sb-accordion__title {
+    font-size: 0.84rem;
+  }
+}
+
 /* Collapsible data-freshness bar (UI redesign): one slim line that expands to
    reveal per-source timestamps + provenance chips. Replaces the old stacked
    data-status + always-on trust-strip. */
