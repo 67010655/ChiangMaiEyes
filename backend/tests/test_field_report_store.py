@@ -46,6 +46,25 @@ def test_submit_in_demo_mode_does_not_pretend_to_store():
     assert "สาธิต" in result.message
 
 
+def test_submit_rejects_unknown_forest_id(monkeypatch):
+    # Validation happens before any network call, so no httpx mock is needed.
+    def _no_network(*a, **k):  # pragma: no cover
+        raise AssertionError("must reject unknown forest before touching the store")
+
+    monkeypatch.setattr(store.httpx, "get", _no_network)
+    monkeypatch.setattr(store.httpx, "post", _no_network)
+
+    bad = FieldReportSubmission(
+        forest_id="cf-not-a-real-forest",
+        village_id="ban-x",
+        reporter_hash="op-1",
+    )
+    result = submit_field_report(_enabled_settings(), bad)
+    assert result.accepted is False
+    assert result.stored is False
+    assert "ทะเบียน" in result.message
+
+
 def test_submit_inserts_when_no_report_today(monkeypatch):
     posted: dict = {}
 

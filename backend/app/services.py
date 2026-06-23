@@ -914,6 +914,18 @@ def submit_field_report(settings: Settings, submission: "FieldReportSubmission")
             source_mode="PROTOTYPE",
         )
 
+    # Only registered community forests may submit — blocks arbitrary forest_id
+    # injection that would bloat the store (junk rows never reach the league,
+    # which filters to known forests, but must not be storable in the first place).
+    known_forest_ids = {record.forest_id for record in _FOREST_RECORDS}
+    if submission.forest_id not in known_forest_ids:
+        return FieldReportResult(
+            accepted=False,
+            stored=False,
+            message="ไม่พบรหัสป่าชุมชนนี้ในทะเบียน — ส่งรายงานได้เฉพาะป่าชุมชนที่ลงทะเบียนไว้",
+            source_mode="LIVE",
+        )
+
     rate_limited = FieldReportResult(
         accepted=False,
         stored=False,
