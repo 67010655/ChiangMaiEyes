@@ -24,6 +24,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 1680.0,
+      "estimatedBoundaryRadiusM": 925,
       "lat": 19.094576,
       "lng": 98.279933
     },
@@ -42,6 +43,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 2167.0,
+      "estimatedBoundaryRadiusM": 1051,
       "lat": 19.104761,
       "lng": 98.314987
     },
@@ -60,6 +62,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 2206.0,
+      "estimatedBoundaryRadiusM": 1060,
       "lat": 19.080768,
       "lng": 98.264806
     },
@@ -78,6 +81,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 1106.0,
+      "estimatedBoundaryRadiusM": 751,
       "lat": 19.130322,
       "lng": 98.310792
     },
@@ -96,6 +100,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 1892.0,
+      "estimatedBoundaryRadiusM": 982,
       "lat": 19.129593,
       "lng": 98.336328
     },
@@ -114,6 +119,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 793.0,
+      "estimatedBoundaryRadiusM": 636,
       "lat": 19.117449,
       "lng": 98.249755
     },
@@ -132,6 +138,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 150.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.468139,
       "lng": 98.384005
     },
@@ -150,6 +157,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 66.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.464517,
       "lng": 98.387613
     },
@@ -168,6 +176,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 68.98,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.460035,
       "lng": 98.383916
     },
@@ -186,6 +195,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 4137.0,
+      "estimatedBoundaryRadiusM": 1452,
       "lat": 19.017962,
       "lng": 98.377428
     },
@@ -204,6 +214,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 6897.0,
+      "estimatedBoundaryRadiusM": 1874,
       "lat": 19.062211,
       "lng": 98.234558
     },
@@ -222,6 +233,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 2116.0,
+      "estimatedBoundaryRadiusM": 1038,
       "lat": 18.968602,
       "lng": 98.292858
     },
@@ -240,6 +252,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 5244.0,
+      "estimatedBoundaryRadiusM": 1634,
       "lat": 18.958729,
       "lng": 98.214752
     },
@@ -258,6 +271,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 867.0,
+      "estimatedBoundaryRadiusM": 664,
       "lat": 19.029502,
       "lng": 98.276355
     },
@@ -276,6 +290,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 5479.0,
+      "estimatedBoundaryRadiusM": 1670,
       "lat": 18.985636,
       "lng": 98.299584
     },
@@ -294,6 +309,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 4547.25,
+      "estimatedBoundaryRadiusM": 1522,
       "lat": 19.03166,
       "lng": 98.406885
     },
@@ -312,6 +328,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 1790.0,
+      "estimatedBoundaryRadiusM": 955,
       "lat": 18.957084,
       "lng": 98.374915
     },
@@ -330,6 +347,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 25.83,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.958295,
       "lng": 98.474371
     },
@@ -348,6 +366,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 29.03,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.958205,
       "lng": 98.471115
     },
@@ -366,6 +385,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 370.31,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.955382,
       "lng": 98.454998
     },
@@ -384,6 +404,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 2244.22,
+      "estimatedBoundaryRadiusM": 1069,
       "lat": 18.925491,
       "lng": 98.466435
     },
@@ -402,6 +423,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 3224.14,
+      "estimatedBoundaryRadiusM": 1281,
       "lat": 18.926879,
       "lng": 98.441398
     },
@@ -420,6 +442,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 6214.12,
+      "estimatedBoundaryRadiusM": 1779,
       "lat": 18.915294,
       "lng": 98.414762
     },
@@ -438,6 +461,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 1390.0,
+      "estimatedBoundaryRadiusM": 841,
       "lat": 18.892097,
       "lng": 98.375769
     },
@@ -456,6 +480,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 1560.0,
+      "estimatedBoundaryRadiusM": 891,
       "lat": 18.939115,
       "lng": 98.350677
     },
@@ -474,6 +499,7 @@
       "amphoe": "กัลยาณิวัฒนา",
       "province": "เชียงใหม่",
       "areaRai": 2221.0,
+      "estimatedBoundaryRadiusM": 1064,
       "lat": 18.946796,
       "lng": 98.412962
     },
@@ -492,6 +518,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 463.39,
+      "estimatedBoundaryRadiusM": 486,
       "lat": 18.472511,
       "lng": 98.726859
     },
@@ -510,6 +537,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 1020.0,
+      "estimatedBoundaryRadiusM": 721,
       "lat": 18.478793,
       "lng": 98.733873
     },
@@ -528,6 +556,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 475.0,
+      "estimatedBoundaryRadiusM": 492,
       "lat": 18.565833,
       "lng": 98.405689
     },
@@ -546,6 +575,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 12.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.48311,
       "lng": 98.68586
     },
@@ -564,6 +594,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 119.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.178291,
       "lng": 98.670215
     },
@@ -582,6 +613,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 475.0,
+      "estimatedBoundaryRadiusM": 492,
       "lat": 18.213677,
       "lng": 98.655341
     },
@@ -600,6 +632,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 120.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.17632,
       "lng": 98.685155
     },
@@ -618,6 +651,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 126.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.17566,
       "lng": 98.689914
     },
@@ -636,6 +670,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 50.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.331135,
       "lng": 98.666651
     },
@@ -654,6 +689,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 95.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.327316,
       "lng": 98.663862
     },
@@ -672,6 +708,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 355.85,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.380835,
       "lng": 98.676099
     },
@@ -690,6 +727,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 116.85,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.371374,
       "lng": 98.678405
     },
@@ -708,6 +746,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 108.81,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.370961,
       "lng": 98.673875
     },
@@ -726,6 +765,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 91.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.355575,
       "lng": 98.676078
     },
@@ -744,6 +784,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 1554.0,
+      "estimatedBoundaryRadiusM": 890,
       "lat": 18.213362,
       "lng": 98.702755
     },
@@ -762,6 +803,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 247.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.268024,
       "lng": 98.717213
     },
@@ -780,6 +822,7 @@
       "amphoe": "จอมทอง",
       "province": "เชียงใหม่",
       "areaRai": 330.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.192603,
       "lng": 98.693367
     },
@@ -798,6 +841,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 2123.0,
+      "estimatedBoundaryRadiusM": 1040,
       "lat": 18.86762,
       "lng": 99.185785
     },
@@ -816,6 +860,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 678.0,
+      "estimatedBoundaryRadiusM": 588,
       "lat": 18.848953,
       "lng": 99.16626
     },
@@ -834,6 +879,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 101.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.847025,
       "lng": 99.162166
     },
@@ -852,6 +898,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 74.94,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.850056,
       "lng": 99.156201
     },
@@ -870,6 +917,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 1328.0,
+      "estimatedBoundaryRadiusM": 822,
       "lat": 19.055252,
       "lng": 99.376566
     },
@@ -888,6 +936,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 8850.0,
+      "estimatedBoundaryRadiusM": 2123,
       "lat": 19.06101,
       "lng": 99.326006
     },
@@ -906,6 +955,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 5019.0,
+      "estimatedBoundaryRadiusM": 1599,
       "lat": 18.978722,
       "lng": 99.231985
     },
@@ -924,6 +974,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 355.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.955251,
       "lng": 99.244831
     },
@@ -942,6 +993,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 20.35,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.988561,
       "lng": 99.114518
     },
@@ -960,6 +1012,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 399.57,
+      "estimatedBoundaryRadiusM": 451,
       "lat": 19.001543,
       "lng": 99.122733
     },
@@ -978,6 +1031,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 360.42,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.997118,
       "lng": 99.129551
     },
@@ -996,6 +1050,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 33.89,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.001357,
       "lng": 99.127629
     },
@@ -1014,6 +1069,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 70.77,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.974938,
       "lng": 99.124927
     },
@@ -1032,6 +1088,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 3755.78,
+      "estimatedBoundaryRadiusM": 1383,
       "lat": 18.860305,
       "lng": 99.201448
     },
@@ -1050,6 +1107,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 984.0,
+      "estimatedBoundaryRadiusM": 708,
       "lat": 18.811709,
       "lng": 99.196938
     },
@@ -1068,6 +1126,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 462.0,
+      "estimatedBoundaryRadiusM": 485,
       "lat": 18.825349,
       "lng": 99.19507
     },
@@ -1086,6 +1145,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 389.17,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.837018,
       "lng": 99.192314
     },
@@ -1104,6 +1164,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 123.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.84417,
       "lng": 99.167152
     },
@@ -1122,6 +1183,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 244.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.840175,
       "lng": 99.171348
     },
@@ -1140,6 +1202,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 510.0,
+      "estimatedBoundaryRadiusM": 510,
       "lat": 18.840513,
       "lng": 99.178852
     },
@@ -1158,6 +1221,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 691.0,
+      "estimatedBoundaryRadiusM": 593,
       "lat": 18.818644,
       "lng": 99.195613
     },
@@ -1176,6 +1240,7 @@
       "amphoe": "ดอยสะเก็ด",
       "province": "เชียงใหม่",
       "areaRai": 1507.97,
+      "estimatedBoundaryRadiusM": 876,
       "lat": 18.820282,
       "lng": 99.208433
     },
@@ -1194,6 +1259,7 @@
       "amphoe": "ดอยหล่อ",
       "province": "เชียงใหม่",
       "areaRai": 101.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.483764,
       "lng": 98.746604
     },
@@ -1212,6 +1278,7 @@
       "amphoe": "ดอยเต่า",
       "province": "เชียงใหม่",
       "areaRai": 322.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.90769,
       "lng": 98.687756
     },
@@ -1230,6 +1297,7 @@
       "amphoe": "ดอยเต่า",
       "province": "เชียงใหม่",
       "areaRai": 143.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.008976,
       "lng": 98.679542
     },
@@ -1248,6 +1316,7 @@
       "amphoe": "ดอยเต่า",
       "province": "เชียงใหม่",
       "areaRai": 60.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.838751,
       "lng": 98.762403
     },
@@ -1266,6 +1335,7 @@
       "amphoe": "ดอยเต่า",
       "province": "เชียงใหม่",
       "areaRai": 23.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.841452,
       "lng": 98.731493
     },
@@ -1284,6 +1354,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 81.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.950142,
       "lng": 99.085143
     },
@@ -1302,6 +1373,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 26.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.968767,
       "lng": 99.110699
     },
@@ -1320,6 +1392,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 31.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.926842,
       "lng": 99.099081
     },
@@ -1338,6 +1411,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 57.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.98134,
       "lng": 99.09779
     },
@@ -1356,6 +1430,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 701.0,
+      "estimatedBoundaryRadiusM": 598,
       "lat": 19.937445,
       "lng": 99.138061
     },
@@ -1374,6 +1449,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 422.0,
+      "estimatedBoundaryRadiusM": 464,
       "lat": 19.917838,
       "lng": 99.10899
     },
@@ -1392,6 +1468,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 155.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.930315,
       "lng": 99.120643
     },
@@ -1410,6 +1487,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 72.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.915095,
       "lng": 99.137706
     },
@@ -1428,6 +1506,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 25.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.907899,
       "lng": 99.142225
     },
@@ -1446,6 +1525,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 15.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.912724,
       "lng": 99.140361
     },
@@ -1464,6 +1544,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 19.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.902843,
       "lng": 99.119987
     },
@@ -1482,6 +1563,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 1.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.867947,
       "lng": 99.213673
     },
@@ -1500,6 +1582,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 321.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.900809,
       "lng": 99.145735
     },
@@ -1518,6 +1601,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 1343.0,
+      "estimatedBoundaryRadiusM": 827,
       "lat": 19.854212,
       "lng": 99.260757
     },
@@ -1536,6 +1620,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 283.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.853002,
       "lng": 99.247173
     },
@@ -1554,6 +1639,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 23.82,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.853367,
       "lng": 99.241103
     },
@@ -1572,6 +1658,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 1141.0,
+      "estimatedBoundaryRadiusM": 762,
       "lat": 19.875563,
       "lng": 99.265348
     },
@@ -1590,6 +1677,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 61.44,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.957489,
       "lng": 99.181471
     },
@@ -1608,6 +1696,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 18.43,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.958006,
       "lng": 99.184333
     },
@@ -1626,6 +1715,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 48.46,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.962543,
       "lng": 99.192341
     },
@@ -1644,6 +1734,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 484.0,
+      "estimatedBoundaryRadiusM": 496,
       "lat": 19.848586,
       "lng": 99.316172
     },
@@ -1662,6 +1753,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 1952.0,
+      "estimatedBoundaryRadiusM": 997,
       "lat": 19.822725,
       "lng": 99.291373
     },
@@ -1680,6 +1772,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 773.0,
+      "estimatedBoundaryRadiusM": 627,
       "lat": 19.890256,
       "lng": 99.265949
     },
@@ -1698,6 +1791,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 8.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.776717,
       "lng": 99.177139
     },
@@ -1716,6 +1810,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 450.0,
+      "estimatedBoundaryRadiusM": 479,
       "lat": 19.784489,
       "lng": 99.20995
     },
@@ -1734,6 +1829,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 415.63,
+      "estimatedBoundaryRadiusM": 460,
       "lat": 19.779475,
       "lng": 99.244318
     },
@@ -1752,6 +1848,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 13.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.822703,
       "lng": 99.195459
     },
@@ -1770,6 +1867,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 3591.0,
+      "estimatedBoundaryRadiusM": 1352,
       "lat": 19.784171,
       "lng": 99.287061
     },
@@ -1788,6 +1886,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 108.39,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.825939,
       "lng": 99.245495
     },
@@ -1806,6 +1905,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 202.07,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.826998,
       "lng": 99.235635
     },
@@ -1824,6 +1924,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 437.38,
+      "estimatedBoundaryRadiusM": 472,
       "lat": 19.796058,
       "lng": 99.274111
     },
@@ -1842,6 +1943,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 61.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.844298,
       "lng": 99.236379
     },
@@ -1860,6 +1962,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 238.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.80534,
       "lng": 99.221955
     },
@@ -1878,6 +1981,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 346.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.813137,
       "lng": 99.253951
     },
@@ -1896,6 +2000,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 735.0,
+      "estimatedBoundaryRadiusM": 612,
       "lat": 19.792365,
       "lng": 99.214379
     },
@@ -1914,6 +2019,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 19.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.80809,
       "lng": 99.20515
     },
@@ -1932,6 +2038,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 368.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.804882,
       "lng": 99.196112
     },
@@ -1950,6 +2057,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 164.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.802415,
       "lng": 99.207862
     },
@@ -1968,6 +2076,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 38.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.808509,
       "lng": 99.206454
     },
@@ -1986,6 +2095,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 55.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.819176,
       "lng": 99.096195
     },
@@ -2004,6 +2114,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 128.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.775856,
       "lng": 99.092487
     },
@@ -2022,6 +2133,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 130.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.872029,
       "lng": 99.119225
     },
@@ -2040,6 +2152,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 44.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.883905,
       "lng": 99.112489
     },
@@ -2058,6 +2171,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 85.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.853672,
       "lng": 99.119523
     },
@@ -2076,6 +2190,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 448.0,
+      "estimatedBoundaryRadiusM": 478,
       "lat": 19.951977,
       "lng": 99.150285
     },
@@ -2094,6 +2209,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 910.0,
+      "estimatedBoundaryRadiusM": 681,
       "lat": 19.936589,
       "lng": 99.144864
     },
@@ -2112,6 +2228,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 567.0,
+      "estimatedBoundaryRadiusM": 537,
       "lat": 19.965153,
       "lng": 99.16205
     },
@@ -2130,6 +2247,7 @@
       "amphoe": "ฝาง",
       "province": "เชียงใหม่",
       "areaRai": 236.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.925321,
       "lng": 99.150188
     },
@@ -2148,6 +2266,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 214.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.430534,
       "lng": 99.184892
     },
@@ -2166,6 +2285,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 137.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.438258,
       "lng": 99.193259
     },
@@ -2184,6 +2304,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 371.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.417604,
       "lng": 99.169814
     },
@@ -2202,6 +2323,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 333.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.428053,
       "lng": 99.177649
     },
@@ -2220,6 +2342,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 184.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.439914,
       "lng": 99.200323
     },
@@ -2238,6 +2361,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 504.0,
+      "estimatedBoundaryRadiusM": 507,
       "lat": 19.428827,
       "lng": 99.17118
     },
@@ -2256,6 +2380,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 174.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.189454,
       "lng": 99.186562
     },
@@ -2274,6 +2399,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 89.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.18368,
       "lng": 99.191325
     },
@@ -2292,6 +2418,7 @@
       "amphoe": "พร้าว",
       "province": "เชียงใหม่",
       "areaRai": 112.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.175859,
       "lng": 99.194474
     },
@@ -2310,6 +2437,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 127.88,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.856095,
       "lng": 98.53341
     },
@@ -2328,6 +2456,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 43.4,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.838992,
       "lng": 98.579051
     },
@@ -2346,6 +2475,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 36.14,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.88785,
       "lng": 98.531719
     },
@@ -2364,6 +2494,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 11.92,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.873072,
       "lng": 98.547168
     },
@@ -2382,6 +2513,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 443.03,
+      "estimatedBoundaryRadiusM": 475,
       "lat": 18.920846,
       "lng": 98.758425
     },
@@ -2400,6 +2532,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 193.49,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.032602,
       "lng": 98.691673
     },
@@ -2418,6 +2551,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 1064.07,
+      "estimatedBoundaryRadiusM": 736,
       "lat": 19.015676,
       "lng": 98.71254
     },
@@ -2436,6 +2570,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 605.71,
+      "estimatedBoundaryRadiusM": 555,
       "lat": 18.998466,
       "lng": 98.721293
     },
@@ -2454,6 +2589,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 32.19,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.891369,
       "lng": 98.678089
     },
@@ -2472,6 +2608,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 3504.33,
+      "estimatedBoundaryRadiusM": 1336,
       "lat": 18.816095,
       "lng": 98.740772
     },
@@ -2490,6 +2627,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 2598.63,
+      "estimatedBoundaryRadiusM": 1150,
       "lat": 18.83752,
       "lng": 98.693795
     },
@@ -2508,6 +2646,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 18.31,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.985795,
       "lng": 98.675553
     },
@@ -2526,6 +2665,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 15.31,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.851216,
       "lng": 98.631346
     },
@@ -2544,6 +2684,7 @@
       "amphoe": "สะเมิง",
       "province": "เชียงใหม่",
       "areaRai": 874.86,
+      "estimatedBoundaryRadiusM": 668,
       "lat": 18.97708,
       "lng": 98.689532
     },
@@ -2562,6 +2703,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 52.27,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.753537,
       "lng": 99.181493
     },
@@ -2580,6 +2722,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 95.18,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.753789,
       "lng": 99.177944
     },
@@ -2598,6 +2741,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 354.33,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.748832,
       "lng": 99.202304
     },
@@ -2616,6 +2760,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 72.57,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.747837,
       "lng": 99.189627
     },
@@ -2634,6 +2779,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 135.28,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.720334,
       "lng": 99.22116
     },
@@ -2652,6 +2798,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 50.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.719333,
       "lng": 99.234523
     },
@@ -2670,6 +2817,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 34.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.719308,
       "lng": 99.233415
     },
@@ -2688,6 +2836,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 71.96,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.719721,
       "lng": 99.184939
     },
@@ -2706,6 +2855,7 @@
       "amphoe": "สันกำแพง",
       "province": "เชียงใหม่",
       "areaRai": 803.8,
+      "estimatedBoundaryRadiusM": 640,
       "lat": 18.730186,
       "lng": 99.240588
     },
@@ -2724,6 +2874,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 821.07,
+      "estimatedBoundaryRadiusM": 647,
       "lat": 18.929322,
       "lng": 99.070926
     },
@@ -2742,6 +2893,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 150.82,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.934627,
       "lng": 99.03918
     },
@@ -2760,6 +2912,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 18.74,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.930993,
       "lng": 99.034878
     },
@@ -2778,6 +2931,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 2964.82,
+      "estimatedBoundaryRadiusM": 1229,
       "lat": 18.92704,
       "lng": 99.099193
     },
@@ -2796,6 +2950,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 416.23,
+      "estimatedBoundaryRadiusM": 460,
       "lat": 19.037233,
       "lng": 98.998272
     },
@@ -2814,6 +2969,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 207.97,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.039039,
       "lng": 99.005814
     },
@@ -2832,6 +2988,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 287.33,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.046337,
       "lng": 98.996171
     },
@@ -2850,6 +3007,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 1341.51,
+      "estimatedBoundaryRadiusM": 827,
       "lat": 19.096674,
       "lng": 98.966286
     },
@@ -2868,6 +3026,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 2157.78,
+      "estimatedBoundaryRadiusM": 1048,
       "lat": 19.08425,
       "lng": 98.97066
     },
@@ -2886,6 +3045,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 3189.38,
+      "estimatedBoundaryRadiusM": 1274,
       "lat": 19.058008,
       "lng": 99.001065
     },
@@ -2904,6 +3064,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 875.25,
+      "estimatedBoundaryRadiusM": 668,
       "lat": 19.01726,
       "lng": 99.011402
     },
@@ -2922,6 +3083,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 176.51,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.993143,
       "lng": 99.002176
     },
@@ -2940,6 +3102,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 44.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.957358,
       "lng": 98.998028
     },
@@ -2958,6 +3121,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 2.25,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.968684,
       "lng": 98.999044
     },
@@ -2976,6 +3140,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 18.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.971753,
       "lng": 98.994451
     },
@@ -2994,6 +3159,7 @@
       "amphoe": "สันทราย",
       "province": "เชียงใหม่",
       "areaRai": 684.7,
+      "estimatedBoundaryRadiusM": 591,
       "lat": 19.000153,
       "lng": 99.010218
     },
@@ -3012,6 +3178,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 626.29,
+      "estimatedBoundaryRadiusM": 565,
       "lat": 18.667684,
       "lng": 98.845486
     },
@@ -3030,6 +3197,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 408.0,
+      "estimatedBoundaryRadiusM": 456,
       "lat": 18.66005,
       "lng": 98.849328
     },
@@ -3048,6 +3216,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 70.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.657586,
       "lng": 98.845171
     },
@@ -3066,6 +3235,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 1102.0,
+      "estimatedBoundaryRadiusM": 749,
       "lat": 18.679762,
       "lng": 98.844832
     },
@@ -3084,6 +3254,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 346.29,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.677408,
       "lng": 98.837315
     },
@@ -3102,6 +3273,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 800.0,
+      "estimatedBoundaryRadiusM": 638,
       "lat": 18.678582,
       "lng": 98.835096
     },
@@ -3120,6 +3292,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 95.46,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.690795,
       "lng": 98.82437
     },
@@ -3138,6 +3311,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 357.36,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.702924,
       "lng": 98.822525
     },
@@ -3156,6 +3330,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 49.57,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.651066,
       "lng": 98.84399
     },
@@ -3174,6 +3349,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 629.0,
+      "estimatedBoundaryRadiusM": 566,
       "lat": 18.677277,
       "lng": 98.85481
     },
@@ -3192,6 +3368,7 @@
       "amphoe": "สันป่าตอง",
       "province": "เชียงใหม่",
       "areaRai": 307.57,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.680754,
       "lng": 98.862353
     },
@@ -3210,6 +3387,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 463.0,
+      "estimatedBoundaryRadiusM": 486,
       "lat": 18.69833,
       "lng": 98.851068
     },
@@ -3228,6 +3406,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 1888.48,
+      "estimatedBoundaryRadiusM": 981,
       "lat": 18.725341,
       "lng": 98.895559
     },
@@ -3246,6 +3425,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 706.0,
+      "estimatedBoundaryRadiusM": 600,
       "lat": 18.710105,
       "lng": 98.891569
     },
@@ -3264,6 +3444,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 49.94,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.684198,
       "lng": 98.867436
     },
@@ -3282,6 +3463,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 22.52,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.776159,
       "lng": 98.856836
     },
@@ -3300,6 +3482,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 6.25,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.77606,
       "lng": 98.851197
     },
@@ -3318,6 +3501,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 4.98,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.768594,
       "lng": 98.863987
     },
@@ -3336,6 +3520,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 230.75,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.756647,
       "lng": 98.873413
     },
@@ -3354,6 +3539,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 208.75,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.778245,
       "lng": 98.829631
     },
@@ -3372,6 +3558,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 47.37,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.78708,
       "lng": 98.822331
     },
@@ -3390,6 +3577,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 84.6,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.752392,
       "lng": 98.879467
     },
@@ -3408,6 +3596,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 45.36,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.749847,
       "lng": 98.877329
     },
@@ -3426,6 +3615,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 6.67,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.745765,
       "lng": 98.877843
     },
@@ -3444,6 +3634,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 94.89,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.783291,
       "lng": 98.849545
     },
@@ -3462,6 +3653,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 12.29,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.779886,
       "lng": 98.849938
     },
@@ -3480,6 +3672,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 586.9,
+      "estimatedBoundaryRadiusM": 547,
       "lat": 18.809661,
       "lng": 98.798269
     },
@@ -3498,6 +3691,7 @@
       "amphoe": "หางดง",
       "province": "เชียงใหม่",
       "areaRai": 92.06,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.806909,
       "lng": 98.830257
     },
@@ -3516,6 +3710,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 2799.27,
+      "estimatedBoundaryRadiusM": 1194,
       "lat": 17.7925,
       "lng": 98.142616
     },
@@ -3534,6 +3729,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 7428.34,
+      "estimatedBoundaryRadiusM": 1945,
       "lat": 17.808814,
       "lng": 98.171409
     },
@@ -3552,6 +3748,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 9658.86,
+      "estimatedBoundaryRadiusM": 2218,
       "lat": 17.902648,
       "lng": 98.25812
     },
@@ -3570,6 +3767,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 300.45,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.680826,
       "lng": 98.14509
     },
@@ -3588,6 +3786,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 6512.74,
+      "estimatedBoundaryRadiusM": 1821,
       "lat": 17.882863,
       "lng": 98.117776
     },
@@ -3606,6 +3805,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 15214.15,
+      "estimatedBoundaryRadiusM": 2600,
       "lat": 17.768492,
       "lng": 98.181617
     },
@@ -3624,6 +3824,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 694.92,
+      "estimatedBoundaryRadiusM": 595,
       "lat": 17.405263,
       "lng": 98.488004
     },
@@ -3642,6 +3843,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 289.99,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.397834,
       "lng": 98.489313
     },
@@ -3660,6 +3862,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 24.34,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.425522,
       "lng": 98.472571
     },
@@ -3678,6 +3881,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 3535.26,
+      "estimatedBoundaryRadiusM": 1342,
       "lat": 17.757775,
       "lng": 98.360918
     },
@@ -3696,6 +3900,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 12961.43,
+      "estimatedBoundaryRadiusM": 2569,
       "lat": 17.601215,
       "lng": 98.498629
     },
@@ -3714,6 +3919,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 4670.02,
+      "estimatedBoundaryRadiusM": 1542,
       "lat": 17.593377,
       "lng": 98.295373
     },
@@ -3732,6 +3938,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 12166.16,
+      "estimatedBoundaryRadiusM": 2489,
       "lat": 17.775196,
       "lng": 98.444025
     },
@@ -3750,6 +3957,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 11205.92,
+      "estimatedBoundaryRadiusM": 2389,
       "lat": 17.822074,
       "lng": 98.446439
     },
@@ -3768,6 +3976,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 3211.02,
+      "estimatedBoundaryRadiusM": 1279,
       "lat": 17.769092,
       "lng": 98.469779
     },
@@ -3786,6 +3995,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 1653.54,
+      "estimatedBoundaryRadiusM": 918,
       "lat": 17.802234,
       "lng": 98.484881
     },
@@ -3804,6 +4014,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 815.45,
+      "estimatedBoundaryRadiusM": 644,
       "lat": 17.785624,
       "lng": 98.478088
     },
@@ -3822,6 +4033,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 27656.0,
+      "estimatedBoundaryRadiusM": 2600,
       "lat": 17.711516,
       "lng": 98.483443
     },
@@ -3840,6 +4052,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 23324.0,
+      "estimatedBoundaryRadiusM": 2600,
       "lat": 17.613039,
       "lng": 98.407605
     },
@@ -3858,6 +4071,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 2667.0,
+      "estimatedBoundaryRadiusM": 1165,
       "lat": 17.777634,
       "lng": 98.348037
     },
@@ -3876,6 +4090,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 21592.0,
+      "estimatedBoundaryRadiusM": 2600,
       "lat": 17.672224,
       "lng": 98.399749
     },
@@ -3894,6 +4109,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 9165.0,
+      "estimatedBoundaryRadiusM": 2160,
       "lat": 17.62155,
       "lng": 98.334709
     },
@@ -3912,6 +4128,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 13695.4,
+      "estimatedBoundaryRadiusM": 2600,
       "lat": 17.59215,
       "lng": 98.337139
     },
@@ -3930,6 +4147,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 895.14,
+      "estimatedBoundaryRadiusM": 675,
       "lat": 17.735546,
       "lng": 98.362378
     },
@@ -3948,6 +4166,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 3846.89,
+      "estimatedBoundaryRadiusM": 1400,
       "lat": 17.717699,
       "lng": 98.327463
     },
@@ -3966,6 +4185,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 19511.15,
+      "estimatedBoundaryRadiusM": 2600,
       "lat": 17.774882,
       "lng": 98.405437
     },
@@ -3984,6 +4204,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 1599.0,
+      "estimatedBoundaryRadiusM": 902,
       "lat": 17.761555,
       "lng": 98.24757
     },
@@ -4002,6 +4223,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 8631.0,
+      "estimatedBoundaryRadiusM": 2097,
       "lat": 17.732316,
       "lng": 98.26879
     },
@@ -4020,6 +4242,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 76.33,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.710406,
       "lng": 98.238688
     },
@@ -4038,6 +4261,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 47.46,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.699408,
       "lng": 98.266249
     },
@@ -4056,6 +4280,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 275.04,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.673005,
       "lng": 98.251919
     },
@@ -4074,6 +4299,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 15329.0,
+      "estimatedBoundaryRadiusM": 2600,
       "lat": 17.651637,
       "lng": 98.142877
     },
@@ -4092,6 +4318,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 4422.0,
+      "estimatedBoundaryRadiusM": 1501,
       "lat": 17.596891,
       "lng": 98.122729
     },
@@ -4110,6 +4337,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 19016.0,
+      "estimatedBoundaryRadiusM": 2600,
       "lat": 17.822517,
       "lng": 98.417016
     },
@@ -4128,6 +4356,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 4761.0,
+      "estimatedBoundaryRadiusM": 1557,
       "lat": 17.939344,
       "lng": 98.298397
     },
@@ -4146,6 +4375,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 2666.0,
+      "estimatedBoundaryRadiusM": 1165,
       "lat": 17.849927,
       "lng": 98.273165
     },
@@ -4164,6 +4394,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 4525.0,
+      "estimatedBoundaryRadiusM": 1518,
       "lat": 17.891127,
       "lng": 98.33126
     },
@@ -4182,6 +4413,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 2524.0,
+      "estimatedBoundaryRadiusM": 1134,
       "lat": 17.853303,
       "lng": 98.319618
     },
@@ -4200,6 +4432,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 1217.0,
+      "estimatedBoundaryRadiusM": 787,
       "lat": 17.822443,
       "lng": 98.337472
     },
@@ -4218,6 +4451,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 1340.0,
+      "estimatedBoundaryRadiusM": 826,
       "lat": 17.820906,
       "lng": 98.34262
     },
@@ -4236,6 +4470,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 3055.0,
+      "estimatedBoundaryRadiusM": 1247,
       "lat": 17.859225,
       "lng": 98.375276
     },
@@ -4254,6 +4489,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 1028.47,
+      "estimatedBoundaryRadiusM": 724,
       "lat": 17.364029,
       "lng": 98.470957
     },
@@ -4272,6 +4508,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 927.31,
+      "estimatedBoundaryRadiusM": 687,
       "lat": 17.413856,
       "lng": 98.443422
     },
@@ -4290,6 +4527,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 434.88,
+      "estimatedBoundaryRadiusM": 471,
       "lat": 17.387674,
       "lng": 98.447248
     },
@@ -4308,6 +4546,7 @@
       "amphoe": "อมก๋อย",
       "province": "เชียงใหม่",
       "areaRai": 205.72,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 17.406779,
       "lng": 98.450592
     },
@@ -4326,6 +4565,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 1048.0,
+      "estimatedBoundaryRadiusM": 731,
       "lat": 17.996114,
       "lng": 98.589189
     },
@@ -4344,6 +4584,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 823.0,
+      "estimatedBoundaryRadiusM": 647,
       "lat": 18.026331,
       "lng": 98.542787
     },
@@ -4362,6 +4603,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 869.0,
+      "estimatedBoundaryRadiusM": 665,
       "lat": 17.966924,
       "lng": 98.503152
     },
@@ -4380,6 +4622,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 1340.0,
+      "estimatedBoundaryRadiusM": 826,
       "lat": 18.144054,
       "lng": 98.237932
     },
@@ -4398,6 +4641,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 326.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.212419,
       "lng": 98.206006
     },
@@ -4416,6 +4660,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 147.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.101237,
       "lng": 98.20476
     },
@@ -4434,6 +4679,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 552.0,
+      "estimatedBoundaryRadiusM": 530,
       "lat": 18.139367,
       "lng": 98.232466
     },
@@ -4452,6 +4698,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 2217.0,
+      "estimatedBoundaryRadiusM": 1063,
       "lat": 18.136436,
       "lng": 98.212538
     },
@@ -4470,6 +4717,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 163.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.235321,
       "lng": 98.199557
     },
@@ -4488,6 +4736,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 3197.0,
+      "estimatedBoundaryRadiusM": 1276,
       "lat": 18.127588,
       "lng": 98.274441
     },
@@ -4506,6 +4755,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 2952.0,
+      "estimatedBoundaryRadiusM": 1226,
       "lat": 18.120143,
       "lng": 98.426755
     },
@@ -4524,6 +4774,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 87.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.147329,
       "lng": 98.412448
     },
@@ -4542,6 +4793,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 13131.0,
+      "estimatedBoundaryRadiusM": 2586,
       "lat": 18.092436,
       "lng": 98.417656
     },
@@ -4560,6 +4812,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 4999.0,
+      "estimatedBoundaryRadiusM": 1596,
       "lat": 18.214783,
       "lng": 98.350491
     },
@@ -4578,6 +4831,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 11513.0,
+      "estimatedBoundaryRadiusM": 2421,
       "lat": 18.194773,
       "lng": 98.394371
     },
@@ -4596,6 +4850,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 8296.44,
+      "estimatedBoundaryRadiusM": 2056,
       "lat": 18.208229,
       "lng": 98.325307
     },
@@ -4614,6 +4869,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 69.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.048464,
       "lng": 98.317649
     },
@@ -4632,6 +4888,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 38.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.038337,
       "lng": 98.29156
     },
@@ -4650,6 +4907,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 436.0,
+      "estimatedBoundaryRadiusM": 471,
       "lat": 18.119012,
       "lng": 98.303254
     },
@@ -4668,6 +4926,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 39.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.020386,
       "lng": 98.42831
     },
@@ -4686,6 +4945,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 58.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.032369,
       "lng": 98.406356
     },
@@ -4704,6 +4964,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 15.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.018164,
       "lng": 98.428912
     },
@@ -4722,6 +4983,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 12456.0,
+      "estimatedBoundaryRadiusM": 2519,
       "lat": 18.185999,
       "lng": 98.301983
     },
@@ -4740,6 +5002,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 1514.0,
+      "estimatedBoundaryRadiusM": 878,
       "lat": 18.212984,
       "lng": 98.376976
     },
@@ -4758,6 +5021,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 601.0,
+      "estimatedBoundaryRadiusM": 553,
       "lat": 18.147208,
       "lng": 98.678094
     },
@@ -4776,6 +5040,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 575.0,
+      "estimatedBoundaryRadiusM": 541,
       "lat": 18.14824,
       "lng": 98.650837
     },
@@ -4794,6 +5059,7 @@
       "amphoe": "ฮอด",
       "province": "เชียงใหม่",
       "areaRai": 595.0,
+      "estimatedBoundaryRadiusM": 550,
       "lat": 18.157942,
       "lng": 98.669391
     },
@@ -4812,6 +5078,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 149.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.539322,
       "lng": 98.970568
     },
@@ -4830,6 +5097,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 465.0,
+      "estimatedBoundaryRadiusM": 487,
       "lat": 19.550087,
       "lng": 98.971379
     },
@@ -4848,6 +5116,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 144.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.539235,
       "lng": 98.970549
     },
@@ -4866,6 +5135,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 81.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.47822,
       "lng": 98.985591
     },
@@ -4884,6 +5154,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 650.0,
+      "estimatedBoundaryRadiusM": 575,
       "lat": 19.570638,
       "lng": 98.943972
     },
@@ -4902,6 +5173,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 80.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.567255,
       "lng": 98.929726
     },
@@ -4920,6 +5192,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 228.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.418968,
       "lng": 99.085991
     },
@@ -4938,6 +5211,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 882.0,
+      "estimatedBoundaryRadiusM": 670,
       "lat": 19.431157,
       "lng": 99.094303
     },
@@ -4956,6 +5230,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1679.0,
+      "estimatedBoundaryRadiusM": 925,
       "lat": 19.472043,
       "lng": 99.027461
     },
@@ -4974,6 +5249,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 402.0,
+      "estimatedBoundaryRadiusM": 452,
       "lat": 19.502319,
       "lng": 99.059495
     },
@@ -4992,6 +5268,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 505.0,
+      "estimatedBoundaryRadiusM": 507,
       "lat": 19.490742,
       "lng": 99.048197
     },
@@ -5010,6 +5287,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 265.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.571308,
       "lng": 99.088129
     },
@@ -5028,6 +5306,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 129.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.606335,
       "lng": 99.063694
     },
@@ -5046,6 +5325,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1837.0,
+      "estimatedBoundaryRadiusM": 967,
       "lat": 19.461878,
       "lng": 99.031389
     },
@@ -5064,6 +5344,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1410.0,
+      "estimatedBoundaryRadiusM": 847,
       "lat": 19.43997,
       "lng": 99.016556
     },
@@ -5082,6 +5363,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 748.0,
+      "estimatedBoundaryRadiusM": 617,
       "lat": 19.451554,
       "lng": 99.021587
     },
@@ -5100,6 +5382,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 358.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.524121,
       "lng": 99.061714
     },
@@ -5118,6 +5401,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 631.0,
+      "estimatedBoundaryRadiusM": 567,
       "lat": 19.369188,
       "lng": 98.986755
     },
@@ -5136,6 +5420,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 78.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.353261,
       "lng": 99.045174
     },
@@ -5154,6 +5439,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 95.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.355431,
       "lng": 98.982249
     },
@@ -5172,6 +5458,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 60.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.353587,
       "lng": 99.041922
     },
@@ -5190,6 +5477,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1036.0,
+      "estimatedBoundaryRadiusM": 726,
       "lat": 19.397191,
       "lng": 99.002106
     },
@@ -5208,6 +5496,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 884.0,
+      "estimatedBoundaryRadiusM": 671,
       "lat": 19.422058,
       "lng": 98.942003
     },
@@ -5226,6 +5515,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 104.48,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.35884,
       "lng": 98.936268
     },
@@ -5244,6 +5534,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 51.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.332604,
       "lng": 98.972715
     },
@@ -5262,6 +5553,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1580.0,
+      "estimatedBoundaryRadiusM": 897,
       "lat": 19.418804,
       "lng": 98.637572
     },
@@ -5280,6 +5572,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1077.0,
+      "estimatedBoundaryRadiusM": 741,
       "lat": 19.372311,
       "lng": 98.696391
     },
@@ -5298,6 +5591,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1273.0,
+      "estimatedBoundaryRadiusM": 805,
       "lat": 19.367997,
       "lng": 98.672208
     },
@@ -5316,6 +5610,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 145.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.449127,
       "lng": 98.939248
     },
@@ -5334,6 +5629,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 79.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.482337,
       "lng": 98.962957
     },
@@ -5352,6 +5648,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 52.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.442099,
       "lng": 98.941103
     },
@@ -5370,6 +5667,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 608.0,
+      "estimatedBoundaryRadiusM": 556,
       "lat": 19.454741,
       "lng": 98.983781
     },
@@ -5388,6 +5686,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 21.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.459439,
       "lng": 98.976107
     },
@@ -5406,6 +5705,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 396.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.493841,
       "lng": 98.958993
     },
@@ -5424,6 +5724,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 575.0,
+      "estimatedBoundaryRadiusM": 541,
       "lat": 19.467508,
       "lng": 98.980188
     },
@@ -5442,6 +5743,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 115.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.732238,
       "lng": 98.89159
     },
@@ -5460,6 +5762,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 63.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.726712,
       "lng": 98.8924
     },
@@ -5478,6 +5781,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 32.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.691691,
       "lng": 98.957231
     },
@@ -5496,6 +5800,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 11.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.694647,
       "lng": 98.959983
     },
@@ -5514,6 +5819,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 11.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.694647,
       "lng": 98.959983
     },
@@ -5532,6 +5838,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 331.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.615533,
       "lng": 98.991164
     },
@@ -5550,6 +5857,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 309.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.635791,
       "lng": 98.981849
     },
@@ -5568,6 +5876,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 399.0,
+      "estimatedBoundaryRadiusM": 451,
       "lat": 19.620866,
       "lng": 99.002581
     },
@@ -5586,6 +5895,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 368.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.707978,
       "lng": 98.951851
     },
@@ -5604,6 +5914,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 47.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.716794,
       "lng": 98.954729
     },
@@ -5622,6 +5933,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 364.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.589176,
       "lng": 98.953157
     },
@@ -5640,6 +5952,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 53.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.753539,
       "lng": 98.899656
     },
@@ -5658,6 +5971,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 14.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.59367,
       "lng": 98.939925
     },
@@ -5676,6 +5990,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 126.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.728391,
       "lng": 98.951585
     },
@@ -5694,6 +6009,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 20.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.731787,
       "lng": 98.953444
     },
@@ -5712,6 +6028,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 144.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.340406,
       "lng": 98.931826
     },
@@ -5730,6 +6047,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1118.0,
+      "estimatedBoundaryRadiusM": 755,
       "lat": 19.29223,
       "lng": 98.91239
     },
@@ -5748,6 +6066,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 136.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.355413,
       "lng": 98.940184
     },
@@ -5766,6 +6085,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 679.0,
+      "estimatedBoundaryRadiusM": 588,
       "lat": 19.2968,
       "lng": 98.935525
     },
@@ -5784,6 +6104,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1199.0,
+      "estimatedBoundaryRadiusM": 781,
       "lat": 19.299489,
       "lng": 98.949003
     },
@@ -5802,6 +6123,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 23.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.309336,
       "lng": 98.979247
     },
@@ -5820,6 +6142,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 95.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.309079,
       "lng": 98.976345
     },
@@ -5838,6 +6161,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 104.02,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.314465,
       "lng": 98.930641
     },
@@ -5856,6 +6180,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1114.0,
+      "estimatedBoundaryRadiusM": 753,
       "lat": 19.290598,
       "lng": 98.954442
     },
@@ -5874,6 +6199,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1170.0,
+      "estimatedBoundaryRadiusM": 772,
       "lat": 19.277108,
       "lng": 98.954909
     },
@@ -5892,6 +6218,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 1504.0,
+      "estimatedBoundaryRadiusM": 875,
       "lat": 19.305059,
       "lng": 98.9085
     },
@@ -5910,6 +6237,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 567.0,
+      "estimatedBoundaryRadiusM": 537,
       "lat": 19.319018,
       "lng": 98.922623
     },
@@ -5928,6 +6256,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 2888.07,
+      "estimatedBoundaryRadiusM": 1213,
       "lat": 19.32767,
       "lng": 98.996223
     },
@@ -5946,6 +6275,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 348.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.297248,
       "lng": 99.033714
     },
@@ -5964,6 +6294,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 172.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.292073,
       "lng": 99.020081
     },
@@ -5982,6 +6313,7 @@
       "amphoe": "เชียงดาว",
       "province": "เชียงใหม่",
       "areaRai": 255.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.319488,
       "lng": 98.904754
     },
@@ -6000,6 +6332,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 608.97,
+      "estimatedBoundaryRadiusM": 557,
       "lat": 19.564874,
       "lng": 98.614581
     },
@@ -6018,6 +6351,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 124.52,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.587544,
       "lng": 98.625166
     },
@@ -6036,6 +6370,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 362.93,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.5589,
       "lng": 98.618569
     },
@@ -6054,6 +6389,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 583.63,
+      "estimatedBoundaryRadiusM": 545,
       "lat": 19.533394,
       "lng": 98.646965
     },
@@ -6072,6 +6408,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 4189.4,
+      "estimatedBoundaryRadiusM": 1461,
       "lat": 19.498107,
       "lng": 98.621735
     },
@@ -6090,6 +6427,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 163.01,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.542949,
       "lng": 98.635273
     },
@@ -6108,6 +6446,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 316.99,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.549714,
       "lng": 98.624521
     },
@@ -6126,6 +6465,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 606.98,
+      "estimatedBoundaryRadiusM": 556,
       "lat": 19.590448,
       "lng": 98.610736
     },
@@ -6144,6 +6484,7 @@
       "amphoe": "เวียงแหง",
       "province": "เชียงใหม่",
       "areaRai": 48.51,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.588163,
       "lng": 98.592982
     },
@@ -6162,6 +6503,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 471.06,
+      "estimatedBoundaryRadiusM": 490,
       "lat": 19.008372,
       "lng": 98.930028
     },
@@ -6180,6 +6522,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 1018.67,
+      "estimatedBoundaryRadiusM": 720,
       "lat": 19.00087,
       "lng": 98.929043
     },
@@ -6198,6 +6541,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 442.37,
+      "estimatedBoundaryRadiusM": 475,
       "lat": 18.98874,
       "lng": 98.928794
     },
@@ -6216,6 +6560,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 564.4,
+      "estimatedBoundaryRadiusM": 536,
       "lat": 19.037473,
       "lng": 98.901546
     },
@@ -6234,6 +6579,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 116.5,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.031019,
       "lng": 98.889654
     },
@@ -6252,6 +6598,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 571.18,
+      "estimatedBoundaryRadiusM": 539,
       "lat": 19.012017,
       "lng": 98.855604
     },
@@ -6270,6 +6617,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 137.12,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.002438,
       "lng": 98.892231
     },
@@ -6288,6 +6636,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 3820.1,
+      "estimatedBoundaryRadiusM": 1395,
       "lat": 19.030027,
       "lng": 98.777803
     },
@@ -6306,6 +6655,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 27.06,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.020897,
       "lng": 98.891048
     },
@@ -6324,6 +6674,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 49.22,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.02202,
       "lng": 98.909115
     },
@@ -6342,6 +6693,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 320.39,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.005687,
       "lng": 98.892028
     },
@@ -6360,6 +6712,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 1197.93,
+      "estimatedBoundaryRadiusM": 781,
       "lat": 18.997701,
       "lng": 98.873202
     },
@@ -6378,6 +6731,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 1611.81,
+      "estimatedBoundaryRadiusM": 906,
       "lat": 19.002062,
       "lng": 98.82938
     },
@@ -6396,6 +6750,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 2285.31,
+      "estimatedBoundaryRadiusM": 1079,
       "lat": 19.024613,
       "lng": 98.836169
     },
@@ -6414,6 +6769,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 2382.0,
+      "estimatedBoundaryRadiusM": 1101,
       "lat": 19.014184,
       "lng": 98.796321
     },
@@ -6432,6 +6788,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 645.0,
+      "estimatedBoundaryRadiusM": 573,
       "lat": 19.00073,
       "lng": 98.811526
     },
@@ -6450,6 +6807,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 4034.38,
+      "estimatedBoundaryRadiusM": 1433,
       "lat": 18.999524,
       "lng": 98.78186
     },
@@ -6468,6 +6826,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 149.69,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.960759,
       "lng": 98.935653
     },
@@ -6486,6 +6845,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 165.33,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.9526,
       "lng": 98.937503
     },
@@ -6504,6 +6864,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 7.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.957089,
       "lng": 98.905425
     },
@@ -6522,6 +6883,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 191.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.962804,
       "lng": 98.909393
     },
@@ -6540,6 +6902,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 211.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.953248,
       "lng": 98.910097
     },
@@ -6558,6 +6921,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 208.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.979322,
       "lng": 98.903574
     },
@@ -6576,6 +6940,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 65.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.985447,
       "lng": 98.909863
     },
@@ -6594,6 +6959,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 252.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.978435,
       "lng": 98.92792
     },
@@ -6612,6 +6978,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 22.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.968725,
       "lng": 98.90758
     },
@@ -6630,6 +6997,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 219.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.974564,
       "lng": 98.905626
     },
@@ -6648,6 +7016,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 170.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.970935,
       "lng": 98.90368
     },
@@ -6666,6 +7035,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 30.2,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.95965,
       "lng": 98.89724
     },
@@ -6684,6 +7054,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 79.76,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.944337,
       "lng": 98.895791
     },
@@ -6702,6 +7073,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 697.71,
+      "estimatedBoundaryRadiusM": 596,
       "lat": 18.926248,
       "lng": 98.832066
     },
@@ -6720,6 +7092,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 1915.0,
+      "estimatedBoundaryRadiusM": 988,
       "lat": 18.966883,
       "lng": 98.793227
     },
@@ -6738,6 +7111,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 51.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.9454,
       "lng": 98.799756
     },
@@ -6756,6 +7130,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 126.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.950201,
       "lng": 98.794167
     },
@@ -6774,6 +7149,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 584.0,
+      "estimatedBoundaryRadiusM": 545,
       "lat": 18.950758,
       "lng": 98.789045
     },
@@ -6792,6 +7168,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 65.64,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.935948,
       "lng": 98.92286
     },
@@ -6810,6 +7187,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 57.38,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.935951,
       "lng": 98.920533
     },
@@ -6828,6 +7206,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 167.72,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.890189,
       "lng": 98.787243
     },
@@ -6846,6 +7225,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 840.45,
+      "estimatedBoundaryRadiusM": 654,
       "lat": 18.923202,
       "lng": 98.804099
     },
@@ -6864,6 +7244,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 66.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.871529,
       "lng": 98.818857
     },
@@ -6882,6 +7263,7 @@
       "amphoe": "แม่ริม",
       "province": "เชียงใหม่",
       "areaRai": 118.88,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.914452,
       "lng": 98.818658
     },
@@ -6900,6 +7282,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 118.32,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.680363,
       "lng": 98.800681
     },
@@ -6918,6 +7301,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 153.59,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.677247,
       "lng": 98.801141
     },
@@ -6936,6 +7320,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 199.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.615544,
       "lng": 98.737838
     },
@@ -6954,6 +7339,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 244.66,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.598203,
       "lng": 98.767689
     },
@@ -6972,6 +7358,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 1600.04,
+      "estimatedBoundaryRadiusM": 903,
       "lat": 18.624381,
       "lng": 98.749683
     },
@@ -6990,6 +7377,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 261.99,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.663425,
       "lng": 98.540026
     },
@@ -7008,6 +7396,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 489.02,
+      "estimatedBoundaryRadiusM": 499,
       "lat": 18.780978,
       "lng": 98.541944
     },
@@ -7026,6 +7415,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 62.66,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.667209,
       "lng": 98.706572
     },
@@ -7044,6 +7434,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 1866.49,
+      "estimatedBoundaryRadiusM": 975,
       "lat": 18.645279,
       "lng": 98.548793
     },
@@ -7062,6 +7453,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 89.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.690419,
       "lng": 98.711282
     },
@@ -7080,6 +7472,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 974.98,
+      "estimatedBoundaryRadiusM": 705,
       "lat": 18.616121,
       "lng": 98.645601
     },
@@ -7098,6 +7491,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 84.41,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.668868,
       "lng": 98.662585
     },
@@ -7116,6 +7510,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 121.38,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.680306,
       "lng": 98.605914
     },
@@ -7134,6 +7529,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 761.65,
+      "estimatedBoundaryRadiusM": 623,
       "lat": 18.760265,
       "lng": 98.550426
     },
@@ -7152,6 +7548,7 @@
       "amphoe": "แม่วาง",
       "province": "เชียงใหม่",
       "areaRai": 236.34,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.684387,
       "lng": 98.681747
     },
@@ -7170,6 +7567,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 6559.24,
+      "estimatedBoundaryRadiusM": 1828,
       "lat": 18.663634,
       "lng": 99.323431
     },
@@ -7188,6 +7586,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 186.98,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.65925,
       "lng": 99.305621
     },
@@ -7206,6 +7605,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 8984.5,
+      "estimatedBoundaryRadiusM": 2139,
       "lat": 18.667757,
       "lng": 99.271899
     },
@@ -7224,6 +7624,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 647.33,
+      "estimatedBoundaryRadiusM": 574,
       "lat": 18.681507,
       "lng": 99.303353
     },
@@ -7242,6 +7643,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 4035.53,
+      "estimatedBoundaryRadiusM": 1434,
       "lat": 18.643595,
       "lng": 99.314329
     },
@@ -7260,6 +7662,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 50.52,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.655484,
       "lng": 99.298432
     },
@@ -7278,6 +7681,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 4943.01,
+      "estimatedBoundaryRadiusM": 1587,
       "lat": 18.752056,
       "lng": 99.32067
     },
@@ -7296,6 +7700,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 4999.08,
+      "estimatedBoundaryRadiusM": 1596,
       "lat": 18.701741,
       "lng": 99.322523
     },
@@ -7314,6 +7719,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 169.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.714107,
       "lng": 99.299628
     },
@@ -7332,6 +7738,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 172.02,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.748282,
       "lng": 99.209904
     },
@@ -7350,6 +7757,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 734.38,
+      "estimatedBoundaryRadiusM": 612,
       "lat": 18.831469,
       "lng": 99.302223
     },
@@ -7368,6 +7776,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1009.5,
+      "estimatedBoundaryRadiusM": 717,
       "lat": 18.840683,
       "lng": 99.24014
     },
@@ -7386,6 +7795,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 401.0,
+      "estimatedBoundaryRadiusM": 452,
       "lat": 18.830222,
       "lng": 99.281403
     },
@@ -7404,6 +7814,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 924.0,
+      "estimatedBoundaryRadiusM": 686,
       "lat": 18.801892,
       "lng": 99.221787
     },
@@ -7422,6 +7833,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 506.0,
+      "estimatedBoundaryRadiusM": 508,
       "lat": 18.81503,
       "lng": 99.218235
     },
@@ -7440,6 +7852,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 57.21,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.811328,
       "lng": 99.240011
     },
@@ -7458,6 +7871,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 69.81,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.816056,
       "lng": 99.240832
     },
@@ -7476,6 +7890,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 506.25,
+      "estimatedBoundaryRadiusM": 508,
       "lat": 18.816601,
       "lng": 99.214191
     },
@@ -7494,6 +7909,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 2009.55,
+      "estimatedBoundaryRadiusM": 1012,
       "lat": 18.858715,
       "lng": 99.314785
     },
@@ -7512,6 +7928,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 3135.57,
+      "estimatedBoundaryRadiusM": 1264,
       "lat": 18.878015,
       "lng": 99.313723
     },
@@ -7530,6 +7947,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 7582.66,
+      "estimatedBoundaryRadiusM": 1965,
       "lat": 18.898676,
       "lng": 99.318779
     },
@@ -7548,6 +7966,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1318.07,
+      "estimatedBoundaryRadiusM": 819,
       "lat": 18.912645,
       "lng": 99.298968
     },
@@ -7566,6 +7985,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 328.86,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.904801,
       "lng": 99.272441
     },
@@ -7584,6 +8004,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 2544.68,
+      "estimatedBoundaryRadiusM": 1138,
       "lat": 18.906559,
       "lng": 99.371401
     },
@@ -7602,6 +8023,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1692.83,
+      "estimatedBoundaryRadiusM": 929,
       "lat": 18.899249,
       "lng": 99.346117
     },
@@ -7620,6 +8042,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1014.0,
+      "estimatedBoundaryRadiusM": 719,
       "lat": 18.871331,
       "lng": 99.278923
     },
@@ -7638,6 +8061,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 2345.43,
+      "estimatedBoundaryRadiusM": 1093,
       "lat": 18.862057,
       "lng": 99.351038
     },
@@ -7656,6 +8080,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 626.76,
+      "estimatedBoundaryRadiusM": 565,
       "lat": 18.881734,
       "lng": 99.337394
     },
@@ -7674,6 +8099,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 4093.25,
+      "estimatedBoundaryRadiusM": 1444,
       "lat": 18.88543,
       "lng": 99.377798
     },
@@ -7692,6 +8118,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1685.81,
+      "estimatedBoundaryRadiusM": 927,
       "lat": 18.889819,
       "lng": 99.251078
     },
@@ -7710,6 +8137,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 552.76,
+      "estimatedBoundaryRadiusM": 531,
       "lat": 18.736809,
       "lng": 99.252991
     },
@@ -7728,6 +8156,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1410.38,
+      "estimatedBoundaryRadiusM": 848,
       "lat": 18.766415,
       "lng": 99.280122
     },
@@ -7746,6 +8175,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 978.37,
+      "estimatedBoundaryRadiusM": 706,
       "lat": 18.75167,
       "lng": 99.277889
     },
@@ -7764,6 +8194,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 174.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.738396,
       "lng": 99.266447
     },
@@ -7782,6 +8213,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 865.0,
+      "estimatedBoundaryRadiusM": 664,
       "lat": 18.735291,
       "lng": 99.269386
     },
@@ -7800,6 +8232,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 680.0,
+      "estimatedBoundaryRadiusM": 588,
       "lat": 18.744309,
       "lng": 99.269381
     },
@@ -7818,6 +8251,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 164.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.774304,
       "lng": 99.277836
     },
@@ -7836,6 +8270,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 197.1,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.778341,
       "lng": 99.277095
     },
@@ -7854,6 +8289,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 2817.34,
+      "estimatedBoundaryRadiusM": 1198,
       "lat": 18.796707,
       "lng": 99.337545
     },
@@ -7872,6 +8308,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 3532.11,
+      "estimatedBoundaryRadiusM": 1341,
       "lat": 18.81609,
       "lng": 99.327989
     },
@@ -7890,6 +8327,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 102.22,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.786114,
       "lng": 99.274879
     },
@@ -7908,6 +8346,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 2555.16,
+      "estimatedBoundaryRadiusM": 1141,
       "lat": 18.821862,
       "lng": 99.274469
     },
@@ -7926,6 +8365,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 41.35,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.785753,
       "lng": 99.266646
     },
@@ -7944,6 +8384,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 115.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.808508,
       "lng": 99.274359
     },
@@ -7962,6 +8403,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1351.77,
+      "estimatedBoundaryRadiusM": 830,
       "lat": 18.832548,
       "lng": 99.314898
     },
@@ -7980,6 +8422,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 2022.31,
+      "estimatedBoundaryRadiusM": 1015,
       "lat": 18.830753,
       "lng": 99.330902
     },
@@ -7998,6 +8441,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 2904.49,
+      "estimatedBoundaryRadiusM": 1216,
       "lat": 18.779534,
       "lng": 99.330586
     },
@@ -8016,6 +8460,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 575.0,
+      "estimatedBoundaryRadiusM": 541,
       "lat": 18.568316,
       "lng": 99.320143
     },
@@ -8034,6 +8479,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 4997.07,
+      "estimatedBoundaryRadiusM": 1595,
       "lat": 18.585511,
       "lng": 99.316027
     },
@@ -8052,6 +8498,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1233.59,
+      "estimatedBoundaryRadiusM": 793,
       "lat": 18.571681,
       "lng": 99.282024
     },
@@ -8070,6 +8517,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 3662.62,
+      "estimatedBoundaryRadiusM": 1366,
       "lat": 18.595433,
       "lng": 99.238458
     },
@@ -8088,6 +8536,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 3670.0,
+      "estimatedBoundaryRadiusM": 1367,
       "lat": 18.630402,
       "lng": 99.298883
     },
@@ -8106,6 +8555,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1316.26,
+      "estimatedBoundaryRadiusM": 819,
       "lat": 18.641955,
       "lng": 99.273932
     },
@@ -8124,6 +8574,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 4955.43,
+      "estimatedBoundaryRadiusM": 1589,
       "lat": 18.603777,
       "lng": 99.311468
     },
@@ -8142,6 +8593,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 1282.73,
+      "estimatedBoundaryRadiusM": 808,
       "lat": 18.576973,
       "lng": 99.28951
     },
@@ -8160,6 +8612,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 3666.27,
+      "estimatedBoundaryRadiusM": 1366,
       "lat": 18.613233,
       "lng": 99.24883
     },
@@ -8178,6 +8631,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 309.11,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.583824,
       "lng": 99.282891
     },
@@ -8196,6 +8650,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 4569.37,
+      "estimatedBoundaryRadiusM": 1526,
       "lat": 18.626533,
       "lng": 99.261878
     },
@@ -8214,6 +8669,7 @@
       "amphoe": "แม่ออน",
       "province": "เชียงใหม่",
       "areaRai": 4961.39,
+      "estimatedBoundaryRadiusM": 1590,
       "lat": 18.554461,
       "lng": 99.300444
     },
@@ -8232,6 +8688,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 2438.14,
+      "estimatedBoundaryRadiusM": 1114,
       "lat": 20.077431,
       "lng": 99.368925
     },
@@ -8250,6 +8707,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 1028.0,
+      "estimatedBoundaryRadiusM": 724,
       "lat": 19.894669,
       "lng": 99.276145
     },
@@ -8268,6 +8726,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 296.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.89463,
       "lng": 99.302858
     },
@@ -8286,6 +8745,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 175.84,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.895822,
       "lng": 99.31166
     },
@@ -8304,6 +8764,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 873.07,
+      "estimatedBoundaryRadiusM": 667,
       "lat": 19.903973,
       "lng": 99.316956
     },
@@ -8322,6 +8783,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 297.13,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 20.009638,
       "lng": 99.440335
     },
@@ -8340,6 +8802,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 193.75,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.975696,
       "lng": 99.3961
     },
@@ -8358,6 +8821,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 402.68,
+      "estimatedBoundaryRadiusM": 453,
       "lat": 20.036144,
       "lng": 99.453758
     },
@@ -8376,6 +8840,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 161.12,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 20.000805,
       "lng": 99.232156
     },
@@ -8394,6 +8859,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 56.78,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.998442,
       "lng": 99.227625
     },
@@ -8412,6 +8878,7 @@
       "amphoe": "แม่อาย",
       "province": "เชียงใหม่",
       "areaRai": 71.03,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 20.016799,
       "lng": 99.246965
     },
@@ -8430,6 +8897,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 2183.0,
+      "estimatedBoundaryRadiusM": 1054,
       "lat": 18.44578,
       "lng": 98.420859
     },
@@ -8448,6 +8916,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 335.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.426479,
       "lng": 98.393173
     },
@@ -8466,6 +8935,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 2557.0,
+      "estimatedBoundaryRadiusM": 1141,
       "lat": 18.393048,
       "lng": 98.376111
     },
@@ -8484,6 +8954,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 3802.0,
+      "estimatedBoundaryRadiusM": 1392,
       "lat": 18.310119,
       "lng": 98.336027
     },
@@ -8502,6 +8973,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 220.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.286307,
       "lng": 98.367906
     },
@@ -8520,6 +8992,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 429.0,
+      "estimatedBoundaryRadiusM": 467,
       "lat": 18.380983,
       "lng": 98.449941
     },
@@ -8538,6 +9011,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1912.0,
+      "estimatedBoundaryRadiusM": 987,
       "lat": 18.405406,
       "lng": 98.38299
     },
@@ -8556,6 +9030,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1203.0,
+      "estimatedBoundaryRadiusM": 783,
       "lat": 18.418554,
       "lng": 98.454909
     },
@@ -8574,6 +9049,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 185.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.428054,
       "lng": 98.442889
     },
@@ -8592,6 +9068,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1037.0,
+      "estimatedBoundaryRadiusM": 727,
       "lat": 18.377486,
       "lng": 98.390128
     },
@@ -8610,6 +9087,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 194.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.507988,
       "lng": 98.375035
     },
@@ -8628,6 +9106,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 41.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.510041,
       "lng": 98.399991
     },
@@ -8646,6 +9125,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 48.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.512982,
       "lng": 98.412132
     },
@@ -8664,6 +9144,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 34.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.516485,
       "lng": 98.413088
     },
@@ -8682,6 +9163,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 185.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.515768,
       "lng": 98.420737
     },
@@ -8700,6 +9182,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 787.0,
+      "estimatedBoundaryRadiusM": 633,
       "lat": 18.514003,
       "lng": 98.4355
     },
@@ -8718,6 +9201,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 5.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.510595,
       "lng": 98.403209
     },
@@ -8736,6 +9220,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 144.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.519319,
       "lng": 98.359481
     },
@@ -8754,6 +9239,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 505.0,
+      "estimatedBoundaryRadiusM": 507,
       "lat": 18.543268,
       "lng": 98.373028
     },
@@ -8772,6 +9258,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 562.0,
+      "estimatedBoundaryRadiusM": 535,
       "lat": 18.533428,
       "lng": 98.379855
     },
@@ -8790,6 +9277,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 2682.0,
+      "estimatedBoundaryRadiusM": 1169,
       "lat": 18.544419,
       "lng": 98.337592
     },
@@ -8808,6 +9296,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1188.0,
+      "estimatedBoundaryRadiusM": 778,
       "lat": 18.54619,
       "lng": 98.396039
     },
@@ -8826,6 +9315,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1350.88,
+      "estimatedBoundaryRadiusM": 829,
       "lat": 18.475194,
       "lng": 98.330123
     },
@@ -8844,6 +9334,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 19.63,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.484852,
       "lng": 98.346495
     },
@@ -8862,6 +9353,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 26.48,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.486667,
       "lng": 98.357783
     },
@@ -8880,6 +9372,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1084.0,
+      "estimatedBoundaryRadiusM": 743,
       "lat": 18.522449,
       "lng": 98.320582
     },
@@ -8898,6 +9391,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 404.0,
+      "estimatedBoundaryRadiusM": 454,
       "lat": 18.52414,
       "lng": 98.333034
     },
@@ -8916,6 +9410,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 66.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.540084,
       "lng": 98.43072
     },
@@ -8934,6 +9429,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1128.0,
+      "estimatedBoundaryRadiusM": 758,
       "lat": 18.495401,
       "lng": 98.336404
     },
@@ -8952,6 +9448,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1001.0,
+      "estimatedBoundaryRadiusM": 714,
       "lat": 18.523714,
       "lng": 98.344021
     },
@@ -8970,6 +9467,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 214.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.500915,
       "lng": 98.389409
     },
@@ -8988,6 +9486,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 534.0,
+      "estimatedBoundaryRadiusM": 522,
       "lat": 18.516091,
       "lng": 98.374063
     },
@@ -9006,6 +9505,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 731.0,
+      "estimatedBoundaryRadiusM": 610,
       "lat": 18.489124,
       "lng": 98.346255
     },
@@ -9024,6 +9524,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 158.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.530721,
       "lng": 98.389544
     },
@@ -9042,6 +9543,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 778.0,
+      "estimatedBoundaryRadiusM": 629,
       "lat": 18.537065,
       "lng": 98.397643
     },
@@ -9060,6 +9562,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 585.0,
+      "estimatedBoundaryRadiusM": 546,
       "lat": 18.50631,
       "lng": 98.402294
     },
@@ -9078,6 +9581,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 116.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.485447,
       "lng": 98.359485
     },
@@ -9096,6 +9600,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1349.0,
+      "estimatedBoundaryRadiusM": 829,
       "lat": 18.479558,
       "lng": 98.397321
     },
@@ -9114,6 +9619,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 790.0,
+      "estimatedBoundaryRadiusM": 634,
       "lat": 18.473896,
       "lng": 98.388141
     },
@@ -9132,6 +9638,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 582.0,
+      "estimatedBoundaryRadiusM": 544,
       "lat": 18.506111,
       "lng": 98.420769
     },
@@ -9150,6 +9657,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 294.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.468047,
       "lng": 98.384106
     },
@@ -9168,6 +9676,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 620.0,
+      "estimatedBoundaryRadiusM": 562,
       "lat": 18.467106,
       "lng": 98.417844
     },
@@ -9186,6 +9695,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 107.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.500565,
       "lng": 98.398894
     },
@@ -9204,6 +9714,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 903.0,
+      "estimatedBoundaryRadiusM": 678,
       "lat": 18.490257,
       "lng": 98.443321
     },
@@ -9222,6 +9733,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1174.0,
+      "estimatedBoundaryRadiusM": 773,
       "lat": 18.461311,
       "lng": 98.350997
     },
@@ -9240,6 +9752,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 11.68,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.487081,
       "lng": 98.254325
     },
@@ -9258,6 +9771,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 361.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.311079,
       "lng": 98.235595
     },
@@ -9276,6 +9790,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 51.11,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.439229,
       "lng": 98.264655
     },
@@ -9294,6 +9809,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 42.64,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.443233,
       "lng": 98.266764
     },
@@ -9312,6 +9828,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 396.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.281211,
       "lng": 98.228944
     },
@@ -9330,6 +9847,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 382.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.353507,
       "lng": 98.183034
     },
@@ -9348,6 +9866,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 78.73,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.46195,
       "lng": 98.303268
     },
@@ -9366,6 +9885,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 89.03,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.462077,
       "lng": 98.262267
     },
@@ -9384,6 +9904,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 18.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.456036,
       "lng": 98.154926
     },
@@ -9402,6 +9923,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 45.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.565048,
       "lng": 98.269693
     },
@@ -9420,6 +9942,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 10.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.486385,
       "lng": 98.144512
     },
@@ -9438,6 +9961,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 29.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.452495,
       "lng": 98.205671
     },
@@ -9456,6 +9980,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 10.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.504004,
       "lng": 98.235222
     },
@@ -9474,6 +9999,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 17.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.541816,
       "lng": 98.226908
     },
@@ -9492,6 +10018,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 110.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.521319,
       "lng": 98.248597
     },
@@ -9510,6 +10037,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 25.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.459214,
       "lng": 98.180942
     },
@@ -9528,6 +10056,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 12.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.493471,
       "lng": 98.119357
     },
@@ -9546,6 +10075,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 161.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.51043,
       "lng": 98.212857
     },
@@ -9564,6 +10094,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 98.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.545479,
       "lng": 98.175695
     },
@@ -9582,6 +10113,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 18.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.593861,
       "lng": 98.243187
     },
@@ -9600,6 +10132,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 457.0,
+      "estimatedBoundaryRadiusM": 482,
       "lat": 18.442205,
       "lng": 98.154132
     },
@@ -9618,6 +10151,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 14.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.435941,
       "lng": 98.105803
     },
@@ -9636,6 +10170,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 13.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.452094,
       "lng": 98.104993
     },
@@ -9654,6 +10189,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1103.0,
+      "estimatedBoundaryRadiusM": 750,
       "lat": 18.630433,
       "lng": 98.38391
     },
@@ -9672,6 +10208,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 31.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.899146,
       "lng": 98.321427
     },
@@ -9690,6 +10227,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 293.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.818654,
       "lng": 98.542824
     },
@@ -9708,6 +10246,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 211.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.806999,
       "lng": 98.550509
     },
@@ -9726,6 +10265,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 30.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.841578,
       "lng": 98.351523
     },
@@ -9744,6 +10284,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1873.0,
+      "estimatedBoundaryRadiusM": 977,
       "lat": 18.841144,
       "lng": 98.309962
     },
@@ -9762,6 +10303,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 430.0,
+      "estimatedBoundaryRadiusM": 468,
       "lat": 18.676341,
       "lng": 98.382732
     },
@@ -9780,6 +10322,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1095.0,
+      "estimatedBoundaryRadiusM": 747,
       "lat": 18.695721,
       "lng": 98.362449
     },
@@ -9798,6 +10341,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 248.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.731465,
       "lng": 98.405864
     },
@@ -9816,6 +10360,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 116.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.622287,
       "lng": 98.406545
     },
@@ -9834,6 +10379,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 543.0,
+      "estimatedBoundaryRadiusM": 526,
       "lat": 18.77964,
       "lng": 98.485481
     },
@@ -9852,6 +10398,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 783.0,
+      "estimatedBoundaryRadiusM": 631,
       "lat": 18.781328,
       "lng": 98.320093
     },
@@ -9870,6 +10417,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 428.0,
+      "estimatedBoundaryRadiusM": 467,
       "lat": 18.821086,
       "lng": 98.406862
     },
@@ -9888,6 +10436,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 645.0,
+      "estimatedBoundaryRadiusM": 573,
       "lat": 18.793145,
       "lng": 98.510184
     },
@@ -9906,6 +10455,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 263.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.61016,
       "lng": 98.428952
     },
@@ -9924,6 +10474,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 114.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.619566,
       "lng": 98.424521
     },
@@ -9942,6 +10493,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 3169.0,
+      "estimatedBoundaryRadiusM": 1270,
       "lat": 18.584454,
       "lng": 98.342166
     },
@@ -9960,6 +10512,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 46.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.659411,
       "lng": 98.142009
     },
@@ -9978,6 +10531,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 184.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.739456,
       "lng": 98.251096
     },
@@ -9996,6 +10550,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 1125.0,
+      "estimatedBoundaryRadiusM": 757,
       "lat": 18.688264,
       "lng": 98.328352
     },
@@ -10014,6 +10569,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 3644.0,
+      "estimatedBoundaryRadiusM": 1362,
       "lat": 18.65425,
       "lng": 98.330318
     },
@@ -10032,6 +10588,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 2315.0,
+      "estimatedBoundaryRadiusM": 1086,
       "lat": 18.78786,
       "lng": 98.125872
     },
@@ -10050,6 +10607,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 5670.0,
+      "estimatedBoundaryRadiusM": 1699,
       "lat": 18.77634,
       "lng": 98.133491
     },
@@ -10068,6 +10626,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 713.0,
+      "estimatedBoundaryRadiusM": 603,
       "lat": 18.840488,
       "lng": 98.204242
     },
@@ -10086,6 +10645,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 31.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.63716,
       "lng": 98.148244
     },
@@ -10104,6 +10664,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 794.0,
+      "estimatedBoundaryRadiusM": 636,
       "lat": 18.703024,
       "lng": 98.258186
     },
@@ -10122,6 +10683,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 137.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.826972,
       "lng": 98.111704
     },
@@ -10140,6 +10702,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 616.0,
+      "estimatedBoundaryRadiusM": 560,
       "lat": 18.739489,
       "lng": 98.227944
     },
@@ -10158,6 +10721,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 587.0,
+      "estimatedBoundaryRadiusM": 547,
       "lat": 18.595284,
       "lng": 98.299174
     },
@@ -10176,6 +10740,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 678.0,
+      "estimatedBoundaryRadiusM": 588,
       "lat": 18.557559,
       "lng": 98.321581
     },
@@ -10194,6 +10759,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 28.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.730754,
       "lng": 98.146774
     },
@@ -10212,6 +10778,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 60.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.878831,
       "lng": 98.146407
     },
@@ -10230,6 +10797,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 393.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.8793,
       "lng": 98.132357
     },
@@ -10248,6 +10816,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 60.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.885111,
       "lng": 98.157063
     },
@@ -10266,6 +10835,7 @@
       "amphoe": "แม่แจ่ม",
       "province": "เชียงใหม่",
       "areaRai": 158.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 18.648632,
       "lng": 98.232009
     },
@@ -10284,6 +10854,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 33.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.235946,
       "lng": 98.872979
     },
@@ -10302,6 +10873,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 18.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.259921,
       "lng": 98.885275
     },
@@ -10320,6 +10892,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 5.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.245697,
       "lng": 98.886463
     },
@@ -10338,6 +10911,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 14.18,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.27164,
       "lng": 98.768368
     },
@@ -10356,6 +10930,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 1395.92,
+      "estimatedBoundaryRadiusM": 843,
       "lat": 19.239705,
       "lng": 98.793924
     },
@@ -10374,6 +10949,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 971.0,
+      "estimatedBoundaryRadiusM": 703,
       "lat": 19.233507,
       "lng": 98.842186
     },
@@ -10392,6 +10968,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 886.0,
+      "estimatedBoundaryRadiusM": 672,
       "lat": 19.19805,
       "lng": 98.824585
     },
@@ -10410,6 +10987,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 407.0,
+      "estimatedBoundaryRadiusM": 455,
       "lat": 19.205932,
       "lng": 98.868101
     },
@@ -10428,6 +11006,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 330.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.206103,
       "lng": 98.892276
     },
@@ -10446,6 +11025,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 68.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.0834,
       "lng": 98.917111
     },
@@ -10464,6 +11044,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 377.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.106196,
       "lng": 98.904734
     },
@@ -10482,6 +11063,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 1180.19,
+      "estimatedBoundaryRadiusM": 775,
       "lat": 19.066845,
       "lng": 98.898735
     },
@@ -10500,6 +11082,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 100.69,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.083401,
       "lng": 98.897654
     },
@@ -10518,6 +11101,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 117.88,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.107355,
       "lng": 98.900993
     },
@@ -10536,6 +11120,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 89.67,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.090826,
       "lng": 98.89522
     },
@@ -10554,6 +11139,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 12.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.066218,
       "lng": 98.927744
     },
@@ -10572,6 +11158,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 13.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.152052,
       "lng": 99.042142
     },
@@ -10590,6 +11177,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 183.37,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.154822,
       "lng": 98.845493
     },
@@ -10608,6 +11196,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 104.16,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.130912,
       "lng": 98.873052
     },
@@ -10626,6 +11215,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 128.99,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.142171,
       "lng": 98.847109
     },
@@ -10644,6 +11234,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 536.71,
+      "estimatedBoundaryRadiusM": 523,
       "lat": 19.167186,
       "lng": 99.028098
     },
@@ -10662,6 +11253,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 15.59,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.188981,
       "lng": 99.008531
     },
@@ -10680,6 +11272,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 351.76,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.225562,
       "lng": 99.004275
     },
@@ -10698,6 +11291,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 190.55,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.158678,
       "lng": 98.753887
     },
@@ -10716,6 +11310,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 36.7,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.073796,
       "lng": 98.659146
     },
@@ -10734,6 +11329,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 305.24,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.10011,
       "lng": 98.748649
     },
@@ -10752,6 +11348,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 38.96,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.101097,
       "lng": 98.706477
     },
@@ -10770,6 +11367,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 118.02,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.098575,
       "lng": 98.695778
     },
@@ -10788,6 +11386,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 13.6,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.168295,
       "lng": 98.683642
     },
@@ -10806,6 +11405,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 276.38,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.087353,
       "lng": 98.717226
     },
@@ -10824,6 +11424,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 36.01,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.132549,
       "lng": 98.727783
     },
@@ -10842,6 +11443,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 99.37,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.10906,
       "lng": 98.728899
     },
@@ -10860,6 +11462,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 13.78,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.151523,
       "lng": 98.698581
     },
@@ -10878,6 +11481,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 102.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.117474,
       "lng": 98.845973
     },
@@ -10896,6 +11500,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 105.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.108853,
       "lng": 98.856422
     },
@@ -10914,6 +11519,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 45.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.101934,
       "lng": 98.814918
     },
@@ -10932,6 +11538,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 116.19,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.104738,
       "lng": 98.808071
     },
@@ -10950,6 +11557,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 225.72,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.146664,
       "lng": 98.813549
     },
@@ -10968,6 +11576,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 128.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.121362,
       "lng": 98.841553
     },
@@ -10986,6 +11595,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 28.35,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.060496,
       "lng": 98.850262
     },
@@ -11004,6 +11614,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 17.19,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.06494,
       "lng": 98.849469
     },
@@ -11022,6 +11633,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 314.16,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.079001,
       "lng": 98.761977
     },
@@ -11040,6 +11652,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 105.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.113812,
       "lng": 98.850232
     },
@@ -11058,6 +11671,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 440.16,
+      "estimatedBoundaryRadiusM": 473,
       "lat": 19.066206,
       "lng": 98.77807
     },
@@ -11076,6 +11690,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 478.69,
+      "estimatedBoundaryRadiusM": 494,
       "lat": 19.04304,
       "lng": 98.895988
     },
@@ -11094,6 +11709,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 63.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.042309,
       "lng": 98.85322
     },
@@ -11112,6 +11728,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 158.96,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.035779,
       "lng": 98.788406
     },
@@ -11130,6 +11747,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 20.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.144542,
       "lng": 98.953224
     },
@@ -11148,6 +11766,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 444.0,
+      "estimatedBoundaryRadiusM": 476,
       "lat": 19.1104,
       "lng": 98.961193
     },
@@ -11166,6 +11785,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 207.16,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.222479,
       "lng": 98.96304
     },
@@ -11184,6 +11804,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 9.44,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.228205,
       "lng": 98.967669
     },
@@ -11202,6 +11823,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 35.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.156045,
       "lng": 98.964086
     },
@@ -11220,6 +11842,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 54.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.242043,
       "lng": 98.928009
     },
@@ -11238,6 +11861,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 161.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.273469,
       "lng": 98.924988
     },
@@ -11256,6 +11880,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 17.76,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.189875,
       "lng": 98.970598
     },
@@ -11274,6 +11899,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 5.26,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.204765,
       "lng": 98.972452
     },
@@ -11292,6 +11918,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 6.88,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.190255,
       "lng": 98.962797
     },
@@ -11310,6 +11937,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 71.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.128902,
       "lng": 98.985843
     },
@@ -11328,6 +11956,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 259.66,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.240494,
       "lng": 98.910484
     },
@@ -11346,6 +11975,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 2253.36,
+      "estimatedBoundaryRadiusM": 1071,
       "lat": 19.263738,
       "lng": 98.951049
     },
@@ -11364,6 +11994,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 62.7,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.159984,
       "lng": 98.956381
     },
@@ -11382,6 +12013,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 289.06,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.212857,
       "lng": 98.778291
     },
@@ -11400,6 +12032,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 207.23,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.167435,
       "lng": 98.771369
     },
@@ -11418,6 +12051,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 332.62,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.174988,
       "lng": 98.771135
     },
@@ -11436,6 +12070,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 205.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.191732,
       "lng": 98.814544
     },
@@ -11454,6 +12089,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 85.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.208856,
       "lng": 98.781879
     },
@@ -11472,6 +12108,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 50.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.170288,
       "lng": 98.78556
     },
@@ -11490,6 +12127,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 374.9,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.097025,
       "lng": 99.068501
     },
@@ -11508,6 +12146,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 546.64,
+      "estimatedBoundaryRadiusM": 528,
       "lat": 19.10145,
       "lng": 99.084819
     },
@@ -11526,6 +12165,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 103.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.101108,
       "lng": 99.074254
     },
@@ -11544,6 +12184,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 711.0,
+      "estimatedBoundaryRadiusM": 602,
       "lat": 19.10348,
       "lng": 99.017313
     },
@@ -11562,6 +12203,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 1078.04,
+      "estimatedBoundaryRadiusM": 741,
       "lat": 19.130337,
       "lng": 99.066142
     },
@@ -11580,6 +12222,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 487.0,
+      "estimatedBoundaryRadiusM": 498,
       "lat": 19.095198,
       "lng": 99.009595
     },
@@ -11598,6 +12241,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 234.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.111812,
       "lng": 99.007367
     },
@@ -11616,6 +12260,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 752.32,
+      "estimatedBoundaryRadiusM": 619,
       "lat": 19.15609,
       "lng": 98.894255
     },
@@ -11634,6 +12279,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 535.69,
+      "estimatedBoundaryRadiusM": 522,
       "lat": 19.143882,
       "lng": 98.897518
     },
@@ -11652,6 +12298,7 @@
       "amphoe": "แม่แตง",
       "province": "เชียงใหม่",
       "areaRai": 100.14,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.147521,
       "lng": 98.9189
     },
@@ -11670,6 +12317,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 36.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.767006,
       "lng": 99.113439
     },
@@ -11688,6 +12336,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 163.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.755393,
       "lng": 99.11065
     },
@@ -11706,6 +12355,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 38.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.760469,
       "lng": 99.110683
     },
@@ -11724,6 +12374,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 25.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.760789,
       "lng": 99.103108
     },
@@ -11742,6 +12393,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 16.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.763938,
       "lng": 99.102824
     },
@@ -11760,6 +12412,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 24.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.699283,
       "lng": 99.103743
     },
@@ -11778,6 +12431,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 20.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.652771,
       "lng": 99.120358
     },
@@ -11796,6 +12450,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 69.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.674103,
       "lng": 99.158487
     },
@@ -11814,6 +12469,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 11.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.621464,
       "lng": 99.130612
     },
@@ -11832,6 +12488,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 15.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.62387,
       "lng": 99.125937
     },
@@ -11850,6 +12507,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 21.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.65223,
       "lng": 99.128383
     },
@@ -11868,6 +12526,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 65.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.6917,
       "lng": 99.216686
     },
@@ -11886,6 +12545,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 225.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.699366,
       "lng": 99.206429
     },
@@ -11904,6 +12564,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 136.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.706943,
       "lng": 99.205656
     },
@@ -11922,6 +12583,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 309.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.70566,
       "lng": 99.189899
     },
@@ -11940,6 +12602,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 23.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.673953,
       "lng": 99.179816
     },
@@ -11958,6 +12621,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 6.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.695757,
       "lng": 99.168112
     },
@@ -11976,6 +12640,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 25.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.710063,
       "lng": 99.100145
     },
@@ -11994,6 +12659,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 80.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.708588,
       "lng": 99.094624
     },
@@ -12012,6 +12678,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 104.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.726961,
       "lng": 99.040653
     },
@@ -12030,6 +12697,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 346.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.733539,
       "lng": 99.030012
     },
@@ -12048,6 +12716,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 180.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.735868,
       "lng": 99.087245
     },
@@ -12066,6 +12735,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 335.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.724639,
       "lng": 99.083527
     },
@@ -12084,6 +12754,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 25.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.721896,
       "lng": 99.094263
     },
@@ -12102,6 +12773,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 167.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.729452,
       "lng": 99.191934
     },
@@ -12120,6 +12792,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 37.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.686749,
       "lng": 99.264072
     },
@@ -12138,6 +12811,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 48.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.733711,
       "lng": 99.186799
     },
@@ -12156,6 +12830,7 @@
       "amphoe": "ไชยปราการ",
       "province": "เชียงใหม่",
       "areaRai": 12.0,
+      "estimatedBoundaryRadiusM": 450,
       "lat": 19.731321,
       "lng": 99.183824
     }

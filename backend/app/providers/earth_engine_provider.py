@@ -126,7 +126,22 @@ def load_satellite_layers(settings: Settings, now: str | None = None) -> Satelli
         except Exception as exc:  # noqa: BLE001
             logger.warning("Earth Engine satellite layer refresh failed: %s", exc)
 
-    return seeded_satellite_layers(now=now)
+    if settings.allow_prototype_data:
+        return seeded_satellite_layers(now=now)
+
+    generated_at = now or datetime.now(timezone(timedelta(hours=7))).isoformat()
+    return SatelliteLayerResponse(
+        source_mode="UNAVAILABLE",
+        source="No real Sentinel/CDSE/GEE satellite layer configured",
+        generated_at=generated_at,
+        dataset_ids=[],
+        cadence="Unavailable until COPERNICUS_CLIENT_ID/SECRET, Earth Engine, or satellite_layers_file is configured.",
+        dryness_zones=[],
+        notes=[
+            "Prototype seeded satellite layers are disabled in production.",
+            "Configure Copernicus Data Space, Earth Engine, or a verified satellite_layers_file to enable this layer.",
+        ],
+    )
 
 
 def refresh_satellite_layers(settings: Settings, now: str | None = None) -> SatelliteLayerResponse:
@@ -138,8 +153,19 @@ def refresh_satellite_layers(settings: Settings, now: str | None = None) -> Sate
         response = build_satellite_layers_from_copernicus(settings, now=now)
     elif settings.earth_engine_enabled:
         response = build_satellite_layers_from_earth_engine(settings, now=now)
-    else:
+    elif settings.allow_prototype_data:
         response = seeded_satellite_layers(now=now)
+    else:
+        generated_at = now or datetime.now(timezone(timedelta(hours=7))).isoformat()
+        response = SatelliteLayerResponse(
+            source_mode="UNAVAILABLE",
+            source="No real Sentinel/CDSE/GEE satellite layer configured",
+            generated_at=generated_at,
+            dataset_ids=[],
+            cadence="Unavailable until COPERNICUS_CLIENT_ID/SECRET, Earth Engine, or satellite_layers_file is configured.",
+            dryness_zones=[],
+            notes=["Prototype seeded satellite layers are disabled in production."],
+        )
 
     path = satellite_layers_path(settings)
     path.parent.mkdir(parents=True, exist_ok=True)

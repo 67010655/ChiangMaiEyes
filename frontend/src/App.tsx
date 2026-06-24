@@ -1,4 +1,4 @@
-﻿import {
+import {
   lazy,
   Suspense,
   useCallback,
@@ -2613,7 +2613,8 @@ export function App() {
   const quality = dataStatus?.data_quality ?? dashboard.data_quality ?? {};
   const hasVerifiedFireZones = quality.fire_zones?.source_mode === "LIVE";
   const hasVerifiedCommunityForests =
-    quality.community_forests?.source_mode === "LIVE";
+    quality.community_forests?.source_mode === "LIVE" ||
+    quality.community_forests?.source_mode === "SNAPSHOT";
   const hasLocalizedPredictions =
     intelligence.localizedPredictions.length > 0;
   const qualityItems = [

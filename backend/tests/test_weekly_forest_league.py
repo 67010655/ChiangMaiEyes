@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+from app.config import Settings
 from app.weekly_forest_league import (
     CommunityForestRecord,
     FieldActivityReport,
@@ -157,7 +158,13 @@ def test_operational_intelligence_has_rankings_and_explainable_predictions(monke
     )
     risk = RiskResponse(score=7, category="High", formula="test", factors={})
 
-    intelligence = get_operational_intelligence(hotspots, pm25, weather, risk)
+    intelligence = get_operational_intelligence(
+        hotspots,
+        pm25,
+        weather,
+        risk,
+        Settings(allow_prototype_data=True),
+    )
 
     assert intelligence.weekly_forest_league.ranking
 

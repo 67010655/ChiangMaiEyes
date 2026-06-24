@@ -19,7 +19,7 @@ import provinceGeoData from "../data/chiangmai-province.json";
 
 import districtsGeoData from "../data/chiangmai-districts.json";
 
-import communityForestData from "../data/community-forests-prototype.json";
+import communityForestData from "../data/community-forests-official.json";
 
 import fireZoneData from "../data/fire-management-zones-prototype.json";
 
@@ -107,13 +107,15 @@ type DryForestZone = {
 type CommunityForest = {
   id: string;
 
-  sourceId: number;
+  sourceId: number | string;
 
   source: string;
 
   name: string;
 
   village: string;
+
+  moo?: string;
 
   tambon: string;
 
@@ -125,23 +127,23 @@ type CommunityForest = {
 
   areaRai: number;
 
-  estimatedBoundaryRadiusM: number;
+  estimatedBoundaryRadiusM?: number;
 
-  fireManagement: boolean;
+  fireManagement?: boolean;
 
-  fireActivities: string[];
+  fireActivities?: string[];
 
-  managementPlan: boolean;
+  managementPlan?: boolean;
 
-  managementPlanYear: string;
+  managementPlanYear?: string;
 
-  forestTypes: string[];
+  forestTypes?: string[];
 
-  deedTypes: string[];
+  deedTypes?: string[];
 
-  villagesCount: number;
+  villagesCount?: number;
 
-  committeeTotal: number;
+  committeeTotal?: number;
 };
 
 type FireManagementZone = {
@@ -304,18 +306,38 @@ function communityForestSelection(forest: CommunityForest): MapSelection {
     .filter(Boolean)
     .join(" · ");
 
+  let sourceUrl = "https://www.forest.go.th/coorspec/พิกัดป่าชุมชน/";
+  let sourceLabel = "กรมป่าไม้: พิกัดป่าชุมชน";
+
+  if (forest.name && forest.name.includes("ป่าไผ่") && forest.amphoe === "เวียงแหง") {
+    sourceUrl = "https://drive.google.com/file/d/15h1dNCRecC1WT76QBdrmFRkAtx9mRdWK/view?usp=drive_link";
+    sourceLabel = "แผนที่ป่าชุมชนบ้านป่าไผ่";
+  } else if (forest.name && forest.name.includes("ห้วยอีค่าง") && forest.amphoe === "แม่วาง") {
+    sourceUrl = "https://drive.google.com/file/d/1INxvClI2uPrNwZuN0yjsMb5EDhLycKFn/view?usp=drive_link";
+    sourceLabel = "แผนที่ป่าชุมชนบ้านห้วยอีค่าง";
+  } else if (forest.amphoe === "แม่แจ่ม") {
+    sourceUrl = "https://drive.google.com/file/d/1nuCz_rPms8NRSoh1j6TovZ6g4wh2Eqfs/view?usp=drive_link";
+    sourceLabel = "แผนที่ป่าชุมชน 88 แห่ง แม่แจ่ม";
+  } else if (forest.amphoe === "สะเมิง") {
+    sourceUrl = "https://drive.google.com/file/d/1XfeAC_7W1XpPHoJ06ZO-q4rjOkS7ibdg/view?usp=drive_link";
+    sourceLabel = "แผนที่แนวกันไฟสะเมิงใต้";
+  } else {
+    sourceUrl = "https://drive.google.com/file/d/11svnusrDw8Lty5CBE3kmVZLk9B2efnIO/view?usp=drive_link";
+    sourceLabel = "แผนที่ป่าชุมชน 608 จุด (NSDANorth)";
+  }
+
   return {
-    eyebrow: "ป่าชุมชน · ขอบเขตดูแลต้นแบบ",
+    eyebrow: "ป่าชุมชน · พิกัดกรมป่าไม้",
 
     title: forest.name,
 
-    detail: `${place || "เชียงใหม่"} · วงขอบเขตเป็นประมาณการจากจุดพิกัดและขนาดพื้นที่ เพื่อใช้ demo การระบุผู้ดูแลและงานป้องกันไฟ`,
+    detail: `${place || "เชียงใหม่"} · จุดพิกัดตำแหน่งทางการกรมป่าไม้ (ไม่มีไฟล์ polygon ขอบเขต)`,
 
     mapUrl: `https://www.google.com/maps?q=${forest.lat},${forest.lng}`,
 
-    sourceUrl: "https://thaicfnet.org/database",
+    sourceUrl,
 
-    sourceLabel: "Thaicfnet database",
+    sourceLabel,
 
     imageKey: "forest",
 
@@ -331,33 +353,19 @@ function communityForestSelection(forest: CommunityForest): MapSelection {
       },
 
       {
-        label: "หมู่บ้านร่วมดูแล",
-        value: `${forest.villagesCount || 1} หมู่บ้าน`,
+        label: "หมู่ที่",
+        value: forest.moo || "ไม่ระบุ",
       },
 
       {
-        label: "แผนจัดการ",
-        value: forest.managementPlan
-          ? `มี${forest.managementPlanYear && forest.managementPlanYear !== "0" ? ` (${forest.managementPlanYear})` : ""}`
-          : "ยังไม่พบข้อมูล",
-        tone: forest.managementPlan ? "good" : "watch",
+        label: "รูปทรงข้อมูล",
+        value: "จุดพิกัด (Point)",
       },
 
       {
-        label: "จัดการไฟป่า",
-        value: forest.fireManagement ? "มีข้อมูลกิจกรรม" : "ยังไม่พบข้อมูล",
-        tone: forest.fireManagement ? "good" : "watch",
-      },
-
-      {
-        label: "กิจกรรม",
-        value: activityLabel(forest.fireActivities),
-        tone: forest.fireActivities.length ? "good" : "watch",
-      },
-
-      {
-        label: "ขอบเขต demo",
-        value: `รัศมี ~${formatNumber(forest.estimatedBoundaryRadiusM)} ม.`,
+        label: "ขอบเขตอ้างอิง",
+        value: "แผนที่สแกน (Google Drive)",
+        tone: "good",
       },
     ],
   };
@@ -1512,8 +1520,9 @@ export function DashboardMap({
 
   useEffect(() => {
     const group = communityForestsLayerRef.current;
+    const map = mapRef.current;
 
-    if (!group) return;
+    if (!group || !map) return;
 
     group.clearLayers();
 
@@ -1523,59 +1532,75 @@ export function DashboardMap({
 
     const markerSize = tier === "sm" ? 18 : tier === "md" ? 23 : 29;
 
-    COMMUNITY_FORESTS.forEach((forest) => {
-      const selected = communityForestSelection(forest);
+    interface ForestCluster {
+      lat: number;
+      lng: number;
+      forests: CommunityForest[];
+    }
 
-      const boundaryColor = forest.fireManagement ? "#10b981" : "#f59e0b";
+    const clusters: ForestCluster[] = [];
 
-      L.circle([forest.lat, forest.lng], {
-        radius: forest.estimatedBoundaryRadiusM,
+    // High zoom levels (zoom >= 13) show individual markers, lower zooms cluster them to prevent lag and overlaps
+    if (zoom >= 13) {
+      COMMUNITY_FORESTS.forEach((forest) => {
+        clusters.push({
+          lat: forest.lat,
+          lng: forest.lng,
+          forests: [forest],
+        });
+      });
+    } else {
+      const clusterRadiusPx = zoom <= 8 ? 45 : 35; // slightly larger cluster size when zoomed out
 
-        color: boundaryColor,
+      // Pre-project to layer points to optimize performance
+      const forestPoints = COMMUNITY_FORESTS.map((f) => ({
+        forest: f,
+        point: map.latLngToLayerPoint(L.latLng(f.lat, f.lng)),
+      }));
 
-        weight: 1.3,
+      forestPoints.forEach(({ forest, point }) => {
+        let matchedCluster: ForestCluster | null = null;
 
-        dashArray: "3, 5",
+        for (const c of clusters) {
+          const cPoint = map.latLngToLayerPoint(L.latLng(c.lat, c.lng));
+          if (point.distanceTo(cPoint) < clusterRadiusPx) {
+            matchedCluster = c;
+            break;
+          }
+        }
 
-        fillColor: boundaryColor,
+        if (matchedCluster) {
+          matchedCluster.forests.push(forest);
+          const count = matchedCluster.forests.length;
+          // Recalculate average center coordinates dynamically
+          matchedCluster.lat = (matchedCluster.lat * (count - 1) + forest.lat) / count;
+          matchedCluster.lng = (matchedCluster.lng * (count - 1) + forest.lng) / count;
+        } else {
+          clusters.push({
+            lat: forest.lat,
+            lng: forest.lng,
+            forests: [forest],
+          });
+        }
+      });
+    }
 
-        fillOpacity: 0.08,
+    // Render computed clusters and individual markers
+    clusters.forEach((cluster) => {
+      if (cluster.forests.length === 1) {
+        // Individual forest marker
+        const forest = cluster.forests[0];
+        const selected = communityForestSelection(forest);
 
-        className: "lf-community-forest-boundary",
-      })
+        const labelHtml =
+          tier === "lg"
+            ? `<span class="lf-cf__label">${forest.name}</span>`
+            : tier === "md"
+              ? `<span class="lf-cf__label">อ.${forest.amphoe}</span>`
+              : "";
 
-        .bindPopup(
-          createPopupHtml(
-            selected.eyebrow,
-            selected.title,
-            selected.detail,
-            selected.stats || [],
-            selected.mapUrl,
-            selected.sourceLabel,
-            selected.sourceUrl,
-          ),
-          { maxWidth: 340, minWidth: 300, className: "map-custom-popup" },
-        )
-
-        .on("click", (e: L.LeafletMouseEvent) => {
-          L.DomEvent.stopPropagation(e);
-
-          if (pinHomeFromMapEvent(e)) return;
-
-          selectMarker(selected, e.target);
-        })
-
-        .addTo(group);
-
-      const labelHtml =
-        tier === "lg"
-          ? `<span class="lf-cf__label">${forest.name}</span>`
-          : tier === "md"
-            ? `<span class="lf-cf__label">อ.${forest.amphoe}</span>`
-            : "";
-
-      const icon = L.divIcon({
-        html: `<div class="lf-cf${forest.fireManagement ? " lf-cf--active" : ""}" style="width:${markerSize}px;height:${markerSize}px;display:flex;align-items:center;justify-content:center;font-size:${Math.round(markerSize * 0.72)}px">
+        const icon = L.divIcon({
+          html: `<div class="lf-cf${forest.fireManagement ? " lf-cf--active" : ""}" style="width:${markerSize}px;height:${markerSize}px;display:flex;align-items:center;justify-content:center;font-size:${Math.round(markerSize * 0.72)}px">
 
           🌳
 
@@ -1583,37 +1608,73 @@ export function DashboardMap({
 
         </div>`,
 
-        className: "lf-marker-wrap",
+          className: "lf-marker-wrap",
 
-        iconSize: [markerSize, markerSize],
+          iconSize: [markerSize, markerSize],
 
-        iconAnchor: [markerSize / 2, markerSize / 2],
-      });
+          iconAnchor: [markerSize / 2, markerSize / 2],
+        });
 
-      L.marker([forest.lat, forest.lng], { icon, zIndexOffset: 80 })
+        L.marker([forest.lat, forest.lng], { icon, zIndexOffset: 80 })
 
-        .bindPopup(
-          createPopupHtml(
-            selected.eyebrow,
-            selected.title,
-            selected.detail,
-            selected.stats || [],
-            selected.mapUrl,
-            selected.sourceLabel,
-            selected.sourceUrl,
-          ),
-          { maxWidth: 340, minWidth: 300, className: "map-custom-popup" },
-        )
+          .bindPopup(
+            createPopupHtml(
+              selected.eyebrow,
+              selected.title,
+              selected.detail,
+              selected.stats || [],
+              selected.mapUrl,
+              selected.sourceLabel,
+              selected.sourceUrl,
+            ),
+            { maxWidth: 340, minWidth: 300, className: "map-custom-popup" },
+          )
 
-        .on("click", (e: L.LeafletMouseEvent) => {
-          L.DomEvent.stopPropagation(e);
+          .on("click", (e: L.LeafletMouseEvent) => {
+            L.DomEvent.stopPropagation(e);
 
-          if (pinHomeFromMapEvent(e)) return;
+            if (pinHomeFromMapEvent(e)) return;
 
-          selectMarker(selected, e.target);
-        })
+            selectMarker(selected, e.target);
+          })
 
-        .addTo(group);
+          .addTo(group);
+      } else {
+        // Cluster marker representing multiple forests
+        const count = cluster.forests.length;
+        const size = zoom <= 8 ? 32 : 36;
+
+        const icon = L.divIcon({
+          html: `<div class="lf-cf-cluster" style="width:${size}px;height:${size}px">
+            <span class="lf-cf-cluster__emoji">🌳</span>${count}
+          </div>`,
+          className: "lf-marker-wrap",
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+
+        const popupHtml = `
+          <div class="map-popup-card">
+            <div class="map-popup-header">
+              <span class="map-popup-eyebrow">ป่าชุมชน</span>
+            </div>
+            <h3 class="map-popup-title">🌳 ป่าชุมชน (${count} แห่ง)</h3>
+            <div class="map-popup-detail" style="max-height:120px;overflow-y:auto">
+              ${cluster.forests.slice(0, 5).map(f => `• ${f.name} (อ.${f.amphoe})`).join("<br>")}
+              ${count > 5 ? `<em style="opacity:0.6;display:block;margin-top:2px">และอีก ${count - 5} แห่ง...</em>` : ""}
+            </div>
+            <p class="map-popup-detail">คลิกที่กลุ่มหมุดเพื่อซูมขยายพื้นที่</p>
+          </div>
+        `;
+
+        L.marker([cluster.lat, cluster.lng], { icon, zIndexOffset: 70 })
+          .bindPopup(popupHtml, { maxWidth: 300 })
+          .on("click", (e: L.LeafletMouseEvent) => {
+            L.DomEvent.stopPropagation(e);
+            map.setView([cluster.lat, cluster.lng], Math.min(18, map.getZoom() + 2));
+          })
+          .addTo(group);
+      }
     });
   }, [layers.communityForests, zoom]);
 

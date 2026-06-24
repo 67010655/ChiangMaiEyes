@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+import math
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -55,6 +56,14 @@ def parse_float(value: str, default: float = 0) -> float:
         return default
 
 
+def area_to_radius(area_rai: float) -> int:
+    if area_rai <= 0:
+        return 650
+    square_meters = area_rai * 1600
+    radius = math.sqrt(square_meters / math.pi)
+    return max(450, min(2600, round(radius)))
+
+
 def build_rfd_community_forests() -> dict:
     ns = {"k": "http://www.opengis.net/kml/2.2"}
     root = ET.parse(RFD_KML).getroot()
@@ -100,6 +109,7 @@ def build_rfd_community_forests() -> dict:
                 "amphoe": clean_text(fields.get("Amphoe")),
                 "province": clean_text(fields.get("Province")),
                 "areaRai": round(total_area_rai, 2),
+                "estimatedBoundaryRadiusM": area_to_radius(total_area_rai),
                 "lat": lat,
                 "lng": lng,
             }

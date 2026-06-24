@@ -139,9 +139,12 @@ class DataQualityMetadata(BaseModel):
     latest_update: str | None = None
     checked_at: str | None = None
     age_minutes: int | None = None
+    update_cadence_minutes: int | None = None
+    expected_observation_lag_minutes: int | None = None
     confidence: float = Field(ge=0, le=1)
     is_stale: bool = False
     note: str
+    decision_use: str | None = None
 
 
 class HotspotTrendStats(BaseModel):
@@ -231,9 +234,10 @@ class WeeklyForestLeagueResponse(BaseModel):
     scheduled_recompute: str
     rate_limit_rule: str
     ranking: list[WeeklyForestRankingEntry] = Field(default_factory=list)
-    # LIVE when the ranking came from real submitted field reports (Supabase),
-    # PROTOTYPE when it is still the seeded demo data.
-    source_mode: SourceMode = "PROTOTYPE"
+    # LIVE when the ranking came from real submitted field reports (Supabase);
+    # UNAVAILABLE until a verified reporting database is configured. Prototype
+    # data is opt-in only.
+    source_mode: SourceMode = "UNAVAILABLE"
 
 
 class FieldReportSubmission(BaseModel):

@@ -13,22 +13,7 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --bg: #eef3ef;
-  --surface: #ffffff;
-  --surface-soft: #f6faf7;
-  --text: #10231d;
-  --muted: #5a6d63;
-  --line: #e3ece6;
-  --green: #16a34a;
-  --green-deep: #0f6b54;
-  --amber: #eab308;
-  --red: #dc2626;
-  --blue: #3b82f6;
-  --radius: 18px;
-  --shadow: 0 18px 44px rgba(20, 52, 38, 0.1), 0 2px 6px rgba(20, 52, 38, 0.04);
-  --shadow-sm:
-    0 6px 18px rgba(20, 52, 38, 0.06), 0 1px 2px rgba(20, 52, 38, 0.04);
-  --shadow-lg: 0 28px 64px rgba(16, 46, 34, 0.16);
+  /* design tokens moved to styles/tokens.css */
 }
 
 * {
@@ -3334,23 +3319,6 @@ button {
 }
 
 /* ── Dark Theme Variables ── */
-[data-theme="dark"] {
-  --bg: #0b0f0d;
-  --surface: #121815;
-  --surface-soft: #17201c;
-  --text: #eceff1;
-  --muted: #8ba395;
-  --line: #222d28;
-  --green: #22c55e;
-  --green-deep: #10b981;
-  --amber: #f59e0b;
-  --red: #ef4444;
-  --blue: #3b82f6;
-  --shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 2px 6px rgba(0, 0, 0, 0.2);
-  --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.16);
-  --shadow-lg: 0 28px 64px rgba(0, 0, 0, 0.54);
-}
-
 [data-theme="dark"] body {
   background:
     radial-gradient(1200px 620px at 18% -8%, #101c17 0%, transparent 60%),
@@ -3919,19 +3887,6 @@ button {
   --glass-border: 1px solid rgba(16, 35, 29, 0.08);
   --glass-shadow:
     0 12px 32px rgba(16, 35, 29, 0.04), 0 2px 6px rgba(16, 35, 29, 0.02);
-}
-
-[data-theme="dark"] {
-  --bg: #060a08;
-  --surface: rgba(11, 18, 15, 0.75);
-  --surface-soft: rgba(18, 29, 24, 0.78);
-  --text: #eef3ef;
-  --muted: #859c90;
-  --line: rgba(255, 255, 255, 0.06);
-  --glass-blur: blur(16px);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.06);
-  --glass-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 /* Main Dashboard Grid */
@@ -4581,15 +4536,6 @@ button {
 }
 
 /* Redefine variables for Dark Theme */
-[data-theme="dark"] {
-  --bg: #030605; /* Deep rich dark space theme */
-  --surface: #0b100e; /* Solid background to prevent map layers leaking into text */
-  --surface-soft: #121a16;
-  --text: #f8fafc; /* Crisp white text */
-  --muted: #a3bdae; /* Light sage green for contrast */
-  --line: #2a3a32;
-}
-
 /* Strict color contrast for status badges */
 .badge,
 .hourly-pm-badge {
@@ -8920,3 +8866,197 @@ button {
 }
 .deploy-alert-btn:hover { background: #15803d; }
 .deploy-alert-btn:active { transform: scale(0.99); }
+
+/* ==========================================================================
+   ChiangMaiEyes V2.1 UX/UI Redesign & Stacking Fixes
+   ========================================================================== */
+
+/* Define --ink globally mapping to --text to resolve undefined variable bug */
+:root {
+  --ink: var(--text);
+}
+
+/* 1. Layout Flow Spacing (Clean up cramped sidebar widget stacking) */
+.sidebar-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+.tab-pane {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+/* 2. Desktop Map-Hero Specific Fixes (width >= 901px) */
+@media (min-width: 901px) {
+  /* Sidebar Toggle Button dynamic sliding positioning */
+  .sidebar-toggle-btn {
+    left: 0;
+    transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  .sidebar-toggle-btn.open {
+    left: 424px !important;
+  }
+  .sidebar-toggle-btn.closed {
+    left: 84px !important;
+  }
+
+  /* Map Controls bottom-right positioning to avoid collision with top-right layer selector */
+  .map-stage-wrapper .map-controls,
+  .map-stage .map-controls,
+  .map-controls {
+    top: auto !important;
+    bottom: 18px !important;
+    right: 18px !important;
+  }
+}
+
+/* 3. Dark Mode Accessibility, Contrast & Visual Polish (data-theme="dark") */
+[data-theme="dark"] {
+  /* Redefine Deep Green to be bright & WCAG AAA compliant (relative luminance contrast) */
+  --green-deep: #22c55e !important;
+}
+
+/* Situation Metric Card Dark Theme Polish */
+[data-theme="dark"] .situation-metric--yellow .situation-metric__value,
+[data-theme="dark"] .situation-metric--medium .situation-metric__value {
+  color: #fde047 !important;
+}
+[data-theme="dark"] .situation-metric--orange .situation-metric__value,
+[data-theme="dark"] .situation-metric--hot .situation-metric__value {
+  color: #fb923c !important;
+}
+[data-theme="dark"] .situation-metric--red .situation-metric__value,
+[data-theme="dark"] .situation-metric--high .situation-metric__value {
+  color: #f87171 !important;
+}
+[data-theme="dark"] .situation-metric--purple .situation-metric__value {
+  color: #c084fc !important;
+}
+[data-theme="dark"] .situation-metric--green .situation-metric__value {
+  color: #4ade80 !important;
+}
+[data-theme="dark"] .situation-metric:hover {
+  background: var(--surface-soft) !important;
+  border-color: var(--green) !important;
+}
+
+/* PM2.5 Quality Bar Yellow Band text contrast fix (any theme) */
+.pm25-quality-bar .pm25-band:nth-child(2) span {
+  color: #1e1b00 !important;
+  text-shadow: none !important;
+}
+
+/* PM2.5 Scale Marker Dark Mode Contrast */
+[data-theme="dark"] .pm-scale__marker {
+  background: var(--text) !important;
+  box-shadow: 0 0 0 2px var(--surface) !important;
+}
+
+/* Freshness Bar Dark Theme Contrast */
+[data-theme="dark"] .freshness-bar__text strong,
+[data-theme="dark"] .freshness-bar__toggle {
+  color: var(--green) !important;
+}
+
+/* Weekly Forest League Dark Theme Contrast */
+[data-theme="dark"] .forest-ranking-row {
+  background: var(--surface-soft) !important;
+  border-color: var(--line) !important;
+}
+[data-theme="dark"] .forest-ranking-row__score b {
+  color: var(--green) !important;
+}
+
+/* Operational Intel Panel Dark Theme Overrides */
+[data-theme="dark"] .operator-intel-metric,
+[data-theme="dark"] .operator-intel-breakdown__row,
+[data-theme="dark"] .localized-prediction-card {
+  background: var(--surface-soft) !important;
+}
+[data-theme="dark"] .operator-intel-metric b {
+  color: var(--green) !important;
+}
+[data-theme="dark"] .operator-intel-disclaimer,
+[data-theme="dark"] .community-league-disclaimer {
+  background: rgba(251, 191, 36, 0.08) !important;
+  border-color: rgba(251, 191, 36, 0.25) !important;
+  color: #fef08a !important;
+}
+[data-theme="dark"] .operator-intel-notes {
+  color: var(--muted) !important;
+}
+[data-theme="dark"] .localized-prediction-card b {
+  color: var(--text) !important;
+}
+[data-theme="dark"] .localized-prediction-card--high,
+[data-theme="dark"] .localized-prediction-card--critical {
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+}
+
+/* Fire Phase Panel Dark Theme Overrides */
+[data-theme="dark"] .sb-accordion__title {
+  color: var(--green) !important;
+}
+[data-theme="dark"] .fire-phase-row b,
+[data-theme="dark"] .fire-phase-row__score {
+  color: var(--text) !important;
+}
+[data-theme="dark"] .fire-phase-row__phase {
+  color: var(--muted) !important;
+}
+[data-theme="dark"] .fire-phase-row--red {
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.08) !important;
+}
+[data-theme="dark"] .fire-phase-row--yellow {
+  border-color: rgba(245, 158, 11, 0.25) !important;
+  background: rgba(245, 158, 11, 0.08) !important;
+}
+[data-theme="dark"] .fire-phase-row--grey {
+  border-color: rgba(156, 163, 175, 0.2) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+[data-theme="dark"] .fire-phase-row--green {
+  border-color: rgba(34, 197, 94, 0.2) !important;
+  background: rgba(34, 197, 94, 0.08) !important;
+}
+
+/* Inform/Risk Checker Dark Theme Overrides */
+[data-theme="dark"] .btn-pin-map {
+  color: var(--green) !important;
+}
+
+/* Community Forest Cluster Markers */
+.lf-cf-cluster {
+  background: var(--green-deep, #15803d);
+  color: #fff;
+  border-radius: 50%;
+  border: 2px solid var(--paper, #fff);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lf-cf-cluster:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.lf-cf-cluster__emoji {
+  font-size: 10px;
+  margin-right: 2px;
+}
+
+[data-theme="dark"] .lf-cf-cluster {
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+

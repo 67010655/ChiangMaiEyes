@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # blocks some serverless infrastructure. Keep it opt-in so production can
     # run from NASA/GISTDA without a local Thailand PC.
     hotspot_include_rfd: bool = False
+    # Keep demo/seed layers out of production by default. Enable only for local
+    # prototypes or design reviews where clearly-labelled sample data is useful.
+    allow_prototype_data: bool = False
     earth_engine_enabled: bool = False
     earth_engine_project: str | None = None
     earth_engine_service_account: str | None = None

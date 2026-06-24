@@ -118,9 +118,12 @@ export type DataQualityMetadata = {
   latest_update?: string | null;
   checked_at?: string | null;
   age_minutes?: number | null;
+  update_cadence_minutes?: number | null;
+  expected_observation_lag_minutes?: number | null;
   confidence: number;
   is_stale: boolean;
   note: string;
+  decision_use?: string | null;
 };
 
 export type HotspotTrendStats = {

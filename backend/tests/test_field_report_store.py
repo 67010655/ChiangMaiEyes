@@ -42,7 +42,7 @@ def test_submit_in_demo_mode_does_not_pretend_to_store():
     result = submit_field_report(Settings(), _submission())
     assert result.accepted is False
     assert result.stored is False
-    assert result.source_mode == "PROTOTYPE"
+    assert result.source_mode == "UNAVAILABLE"
     assert "สาธิต" in result.message
 
 
@@ -124,10 +124,16 @@ def test_submit_409_from_db_unique_index_maps_to_rate_limit(monkeypatch):
     assert "1 ครั้ง" in result.message
 
 
-def test_load_field_reports_falls_back_to_seed_without_supabase():
+def test_load_field_reports_is_unavailable_without_supabase_by_default():
     reports, mode = _load_field_reports(Settings())
+    assert mode == "UNAVAILABLE"
+    assert reports == []
+
+
+def test_load_field_reports_can_use_seed_when_prototypes_are_enabled():
+    reports, mode = _load_field_reports(Settings(allow_prototype_data=True))
     assert mode == "PROTOTYPE"
-    assert reports  # seeded demo reports
+    assert reports
 
 
 def test_load_field_reports_uses_supabase_rows_when_configured(monkeypatch):

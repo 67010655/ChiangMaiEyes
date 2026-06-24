@@ -1,10 +1,30 @@
 {
-  "count": 0,
+  "count": 1,
   "density_per_100_km2": 0.0,
-  "latest_update": "2026-06-23T16:29:03.451924+07:00",
-  "source": "GISTDA Disaster STAC VIIRS 3-day",
-  "items": [],
+  "latest_update": "2026-06-24T21:19:18.187806+07:00",
+  "source": "GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
+  "items": [
+    {
+      "id": "HS-001",
+      "latitude": 17.97408,
+      "longitude": 98.70197,
+      "district": "ดอยเต่า",
+      "subdistrict": "ท่าเดื่อ",
+      "landuse_type": "A999",
+      "landuse_name": "เกษตรอื่น ๆ",
+      "satellite": "N21",
+      "confidence": 75,
+      "source": "GISTDA Disaster STAC VIIRS 3-day",
+      "detected_at": "2026-06-23T14:29:00+07:00",
+      "sources": [
+        "GISTDA Disaster STAC VIIRS 3-day"
+      ],
+      "source_count": 1
+    }
+  ],
   "source_breakdown": {
-    "GISTDA Disaster STAC VIIRS 3-day": 0
+    "GISTDA Disaster STAC VIIRS 3-day": 1,
+    "GISTDA API Gateway VIIRS 1-day": 0,
+    "NASA FIRMS": 0
   }
 }

@@ -43,9 +43,26 @@ def test_load_satellite_layers_prefers_existing_export(tmp_path: Path):
     assert layers.dryness_zones[0].id == "z1"
 
 
-def test_refresh_satellite_layers_writes_seed_export_without_credentials(tmp_path: Path):
+def test_refresh_satellite_layers_is_unavailable_without_real_source_by_default(tmp_path: Path):
     export_path = tmp_path / "satellite_layers.json"
     settings = Settings(cache_dir=tmp_path, satellite_layers_file=export_path, earth_engine_enabled=False)
+
+    layers = refresh_satellite_layers(settings, now="2026-06-19T10:00:00+07:00")
+
+    assert layers.source_mode == "UNAVAILABLE"
+    assert layers.dataset_ids == []
+    assert layers.dryness_zones == []
+    assert export_path.exists()
+
+
+def test_refresh_satellite_layers_writes_seed_export_when_prototypes_are_enabled(tmp_path: Path):
+    export_path = tmp_path / "satellite_layers.json"
+    settings = Settings(
+        cache_dir=tmp_path,
+        satellite_layers_file=export_path,
+        earth_engine_enabled=False,
+        allow_prototype_data=True,
+    )
 
     layers = refresh_satellite_layers(settings, now="2026-06-19T10:00:00+07:00")
 
