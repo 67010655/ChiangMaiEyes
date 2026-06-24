@@ -185,6 +185,21 @@ export type WeeklyForestScoreBreakdown = {
   ecological_outcome: number;
 };
 
+export type CommunityForestSatelliteContext = {
+  source_mode: SourceMode;
+  nearest_zone_id: string;
+  nearest_zone_name: string;
+  dryness_class: "moderate" | "high" | "critical";
+  distance_km: number;
+  ndvi: number;
+  ndmi: number;
+  nbr: number;
+  rainfall_30d_mm?: number | null;
+  slope_mean_deg?: number | null;
+  hotspot_pressure_7d: number;
+  fire_pressure_index: number;
+};
+
 export type WeeklyForestRankingEntry = {
   forest_id: string;
   forest_name: string;
@@ -199,6 +214,12 @@ export type WeeklyForestRankingEntry = {
   last_report_at: string;
   score_breakdown: WeeklyForestScoreBreakdown;
   reasons: string[];
+  authority_owner?: string | null;
+  boundary_source?: string | null;
+  boundary_confidence?: "official" | "estimated" | "prototype" | null;
+  verification_status?: "verified" | "review_needed" | "prototype" | null;
+  hotspot_activity_delta_percent?: number | null;
+  satellite_context?: CommunityForestSatelliteContext | null;
 };
 
 export type WeeklyForestLeagueResponse = {

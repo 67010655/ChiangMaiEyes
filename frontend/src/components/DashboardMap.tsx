@@ -10,7 +10,6 @@ import {
   Minimize2,
   Minus,
   Plus,
-  Wind,
 } from "lucide-react";
 
 import type { DashboardResponse, FirePhaseResponse, Hotspot, Pm25Station } from "../lib/types";
@@ -2705,8 +2704,9 @@ export function DashboardMap({
           <span
             className="wind-chip__compass"
             style={{ transform: `rotate(${windRotation}deg)` }}
+            aria-hidden="true"
           >
-            <Wind size={15} />
+            ↑
           </span>
 
           <span className="wind-chip__text">

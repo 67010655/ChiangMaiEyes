@@ -21,8 +21,8 @@ import {
   Home,
   Info,
   MapPin,
+  Menu,
   RefreshCcw,
-  Send,
   ShieldCheck,
   Trophy,
   Wind,
@@ -39,6 +39,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Moon,
+  X,
+  Send,
 } from "lucide-react";
 
 import {
@@ -81,12 +84,40 @@ import { windDestinationName, getBearing } from "./lib/wind";
 
 import { getDistrictPhysics, calculateRateOfSpread } from "./lib/firePhysics";
 
+import {
+  buildCommunityForestRowsFromRanking,
+  type CommunityForestRow,
+} from "./features/communityForest/communityForestData";
+
+import { CommunityForestInspector } from "./features/communityForest/CommunityForestInspector";
+
+import { WeeklyForestLeagueTable } from "./features/communityForest/WeeklyForestLeagueTable";
+
+import { WeeklyForestRankList } from "./features/communityForest/WeeklyForestRankList";
+
 const DashboardMap = lazy(() =>
   import("./components/DashboardMap").then((module) => ({
     default: module.DashboardMap,
   })),
 );
 
+const MapLibreTerrainView = lazy(() =>
+  import("./features/threeD/MapLibreTerrainView").then((module) => ({
+    default: module.MapLibreTerrainView,
+  })),
+);
+
+const UserDataPanel = lazy(() =>
+  import("./features/userData/UserDataPanel").then((module) => ({
+    default: module.UserDataPanel,
+  })),
+);
+
+const AiAdvisor = lazy(() =>
+  import("./components/AiAdvisor").then((module) => ({
+    default: module.AiAdvisor,
+  })),
+);
 type LayerState = {
   hotspots: boolean;
 
@@ -2198,10 +2229,27 @@ export function App() {
   const [hoveredDistrict, setHoveredDistrict] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<
-    "overview" | "aqi" | "fire_weather" | "community" | "checker"
+    "overview" | "aqi" | "fire_weather" | "community" | "terrain3d" | "checker"
   >("overview");
 
+  const [selectedCommunityForestId, setSelectedCommunityForestId] = useState<
+    string | null
+  >(null);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 768px)");
+    const syncMobileDrawer = () => {
+      if (media.matches) {
+        setSidebarOpen(false);
+      }
+    };
+
+    syncMobileDrawer();
+    media.addEventListener("change", syncMobileDrawer);
+    return () => media.removeEventListener("change", syncMobileDrawer);
+  }, []);
 
   const selectHomeLocation = useCallback(
     (coords: [number, number]) => {
@@ -2556,6 +2604,70 @@ export function App() {
     1,
   );
 
+  const communityForestRows = useMemo(
+    () =>
+      buildCommunityForestRowsFromRanking(
+        weeklyForestRanking,
+        dashboard.data_quality?.community_forests?.source_mode ?? "PROTOTYPE",
+      ),
+    [weeklyForestRanking, dashboard.data_quality?.community_forests?.source_mode],
+  );
+
+  const selectedCommunityForest =
+    communityForestRows.find((row) => row.id === selectedCommunityForestId) ??
+    communityForestRows[0] ??
+    null;
+
+  const selectCommunityForest = useCallback(
+    (row: CommunityForestRow) => {
+      setSelectedCommunityForestId(row.id);
+      setActiveTab("community");
+      setSidebarOpen(true);
+      setHoveredDistrict(row.amphoe);
+      setLayers((current) => ({
+        ...current,
+        communityForests: true,
+        fireZones: true,
+        hotspots: true,
+        wind: true,
+      }));
+      setMapSelection({
+        eyebrow: "ป่าชุมชน · อันดับรายสัปดาห์",
+        title: row.forestName,
+        lat: row.latitude,
+        lng: row.longitude,
+        detail: `${row.village || row.tambon} · ต.${row.tambon} · อ.${row.amphoe} · คะแนนดูแลไฟป่าสัปดาห์นี้ ${row.score}/100`,
+        mapUrl: `https://www.google.com/maps?q=${row.latitude},${row.longitude}`,
+        sourceLabel: row.sourceMode === "PROTOTYPE" ? "ข้อมูลต้นแบบ" : "ข้อมูลคำนวณ",
+        imageKey: "forest",
+        imageLabel: row.forestName,
+        stats: [
+          {
+            label: "อันดับ",
+            value: `#${row.rank}`,
+            tone: row.rank <= 3 ? "good" : "watch",
+          },
+          { label: "คะแนนรวม", value: `${row.score}/100`, tone: "good" },
+          { label: "รายงาน", value: `${row.reportCount} ครั้ง` },
+          {
+            label: "การจัดการ",
+            value: `${row.scoreBreakdown.management}`,
+          },
+          {
+            label: "การป้องกัน",
+            value: `${row.scoreBreakdown.prevention}`,
+            tone: row.scoreBreakdown.prevention >= 25 ? "good" : "watch",
+          },
+          {
+            label: "กิจกรรมเด่น",
+            value: row.reasons.slice(0, 3).join(" / ") || "รอรายงาน",
+          },
+        ],
+      });
+    },
+    [setMapSelection],
+  );
+
   const allOn =
     layers.hotspots &&
     layers.pm25 &&
@@ -2750,6 +2862,38 @@ export function App() {
       },
     },
   ];
+  const projectLimitActions = [
+    {
+      key: "boundaries",
+      label: "ขอบเขตป่าชุมชน",
+      status: "ต้องนำเข้าข้อมูลทางการ",
+      action: "ใช้ polygon จาก RFD/หน่วยงานพื้นที่ แล้วคงป้าย estimated จนกว่าจะยืนยัน",
+    },
+    {
+      key: "buildings",
+      label: "3D buildings",
+      status: "รอ MapTiler key",
+      action: "ตั้งค่า VITE_MAPTILER_KEY แล้วจำกัด domain key สำหรับ production",
+    },
+    {
+      key: "supabase",
+      label: "บัญชีและ user data",
+      status: "รอ Supabase project จริง",
+      action: "รัน migration, ตั้ง publishable key, แล้วเปิด review queue",
+    },
+    {
+      key: "favicon",
+      label: "404 resource",
+      status: "แก้ใน frontend asset",
+      action: "เพิ่ม favicon/static icon เพื่อไม่ให้ console มี 404 ที่ไม่เกี่ยวกับ app",
+    },
+    {
+      key: "commit",
+      label: "Commit",
+      status: "รอคำสั่งจากคุณ",
+      action: "ผมจะ commit เฉพาะเมื่อคุณอนุมัติให้บันทึกชุดงานนี้",
+    },
+  ];
 
   return (
     <div className="app-shell" data-ui-mode="operator">
@@ -2794,9 +2938,9 @@ export function App() {
             type="button"
             className="theme-toggle-btn"
             onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-            aria-label="สลับโหมดสี"
+            aria-label={theme === "light" ? "เปิดโหมดกลางคืน" : "เปิดโหมดกลางวัน"}
           >
-            {theme === "light" ? "🌙" : "☀️"}
+            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
           <div className="date-pill" aria-label="วันที่และเวลาปัจจุบัน">
@@ -2842,17 +2986,28 @@ export function App() {
           </div>
 
           <button
-            className="icon-button"
+            className="icon-button refresh-btn"
             type="button"
             onClick={loadDashboard}
             aria-label="อัปเดตข้อมูล"
           >
             <RefreshCcw size={18} />
           </button>
+
+          <button
+            className="icon-button mobile-menu-btn"
+            type="button"
+            onClick={() => setSidebarOpen((value) => !value)}
+            aria-label={sidebarOpen ? "ปิดเมนู" : "เปิดเมนู"}
+            aria-expanded={sidebarOpen}
+          >
+            {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
       </header>
 
       {error && <div className="notice">{error}</div>}
+
 
       <div className="main-content-layout">
         {/* LEFT COLLAPSIBLE SIDEBAR */}
@@ -2860,6 +3015,57 @@ export function App() {
         <aside
           className={`sidebar-container ${sidebarOpen ? "open" : "collapsed"}`}
         >
+          <div className="mobile-drawer-head">
+            <div>
+              <span>ChiangMaiEyes menu</span>
+              <strong>เลือกข้อมูลที่ต้องการดู</strong>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(false)}
+              aria-label="ปิดเมนู"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="mobile-status-drawer">
+            {dataStatus && dataStatusCopy && dataFreshness && (
+              <section className={`mobile-status-card mobile-status-card--${dataFreshness.level}`}>
+                <span>สถานะข้อมูล</span>
+                <strong>{dataFreshness.title}</strong>
+                <small>
+                  Hotspot {dataFreshness.hotspotAgeLabel} · PM2.5 {dataFreshness.pm25AgeLabel} · ลม {dataFreshness.weatherAgeLabel}
+                </small>
+              </section>
+            )}
+
+            {qualityItems.length > 0 && (
+              <div className="mobile-quality-list" aria-label="สถานะข้อมูลในเมนูมือถือ">
+                {qualityItems.slice(0, 5).map((item) => (
+                  <span
+                    key={item.label}
+                    className={`quality-chip quality-chip--${item.source_mode.toLowerCase()}`}
+                  >
+                    <b>{truthModeLabel(item.source_mode)}</b>
+                    {qualityDisplayLabel(item.label)}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <section className="mobile-limit-card">
+              <span>ข้อจำกัดที่ต้องปิดงาน</span>
+              {projectLimitActions.map((item) => (
+                <div key={item.key} className="mobile-limit-card__row">
+                  <b>{item.label}</b>
+                  <small>{item.status}</small>
+                  <p>{item.action}</p>
+                </div>
+              ))}
+            </section>
+          </div>
+
           {/* TAB SELECTION HEADER */}
 
           <div className="sidebar-tabs">
@@ -2925,17 +3131,32 @@ export function App() {
 
             <button
               type="button"
+              className={`sidebar-tab-btn ${activeTab === "terrain3d" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("terrain3d");
+
+                setSidebarOpen(true);
+              }}
+              title="3D terrain"
+            >
+              <Compass size={18} />
+
+              <span>3D</span>
+            </button>
+
+            <button
+              type="button"
               className={`sidebar-tab-btn ${activeTab === "checker" ? "active" : ""}`}
               onClick={() => {
                 setActiveTab("checker");
 
                 setSidebarOpen(true);
               }}
-              title="ตรวจสอบความเสี่ยงส่วนบุคคล & สายด่วน"
+              title="ศูนย์รายงาน"
             >
-              <MapPin size={18} />
+              <ClipboardList size={18} />
 
-              <span>แจ้งภัย</span>
+              <span>รายงาน</span>
             </button>
           </div>
 
@@ -3812,89 +4033,21 @@ export function App() {
                   </section>
                   )}
 
-                  {/* Village Report Intake */}
+                  <div className="community-forest-accountability">
+                    <CommunityForestInspector row={selectedCommunityForest} />
 
-                  <div className="community-action-panel community-action-panel--form">
-                    <div className="community-action-panel__head">
-                      <span className="community-action-panel__icon">
-                        <ClipboardList size={18} />
-                      </span>
+                    <WeeklyForestRankList
+                      rows={communityForestRows}
+                      selectedId={selectedCommunityForest?.id ?? null}
+                      onSelect={selectCommunityForest}
+                    />
 
-                      <div>
-                        <span>Village Report Intake</span>
+                    <WeeklyForestLeagueTable
+                      rows={communityForestRows}
+                      selectedId={selectedCommunityForest?.id ?? null}
+                      onSelect={selectCommunityForest}
+                    />
 
-                        <strong>ขั้นตอนรายงานกิจกรรมป่า</strong>
-                      </div>
-                    </div>
-
-                    <div
-                      className="report-flow"
-                      style={{
-                        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                        gap: "8px",
-                      }}
-                    >
-                      {[
-                        ["1", "เลือกป่าชุมชน", "ฐานข้อมูลชาวบ้าน"],
-
-                        ["2", "บันทึกกิจกรรม", "ลาดตระเวน/แนวกันไฟ"],
-
-                        ["3", "แนบรูป + GPS", "ยืนยันหลักฐาน proof"],
-
-                        ["4", "อัปเดตเว็บ", "คำนวณอันดับ ranking"],
-                      ].map(([step, title, text]) => (
-                        <div
-                          key={step}
-                          className="report-flow__step"
-                          style={{ padding: "8px" }}
-                        >
-                          <span
-                            style={{
-                              width: "20px",
-                              height: "20px",
-                              fontSize: "0.74rem",
-                            }}
-                          >
-                            {step}
-                          </span>
-
-                          <b style={{ fontSize: "0.78rem" }}>{title}</b>
-
-                          <small style={{ fontSize: "0.62rem" }}>{text}</small>
-                        </div>
-                      ))}
-                    </div>
-
-                    <button
-                      type="button"
-                      className="report-flow__cta"
-                      onClick={() =>
-                        setMapSelection({
-                          eyebrow: "Google Form Intake",
-
-                          title: "ระบบรับข้อมูลกิจกรรมป้องกันไฟป่า",
-
-                          detail:
-                            "ระบบใช้ Google Form เพื่อให้ชาวบ้านถ่ายภาพและส่งพิกัดจากมือถือได้ทันที โดยจะแปลงเป็นคะแนน Forest League รายสัปดาห์",
-
-                          stats: [
-                            {
-                              label: "ช่องทางส่ง",
-                              value: "LINE Podd / Google Form",
-                            },
-
-                            {
-                              label: "การตรวจสอบ",
-                              value: "ภาพถ่ายระบุเวลา/พิกัด",
-                              tone: "good",
-                            },
-                          ],
-                        })
-                      }
-                    >
-                      <Send size={14} />
-                      ดูรายละเอียด Flow
-                    </button>
                   </div>
 
                   {/* Open government data connectors */}
@@ -3942,11 +4095,58 @@ export function App() {
                 </div>
               )}
 
+              {activeTab === "terrain3d" && (
+                <div className="tab-pane terrain-brief">
+                  <section className="community-action-panel">
+                    <div className="community-action-panel__head">
+                      <span className="community-action-panel__icon">
+                        <Compass size={18} />
+                      </span>
+
+                      <div>
+                        <span>3D TERRAIN</span>
+
+                        <strong>ภูมิประเทศและแนวสันเขา</strong>
+                      </div>
+                    </div>
+
+                    <p>
+                      มุมนี้แยกจากแผนที่ Leaflet หลัก เพื่อดูความสูงต่ำ สันเขา
+                      หุบเขา และพื้นที่เข้าถึงยากรอบป่าชุมชน/เขตไฟป่า.
+                    </p>
+
+                    <div className="terrain-brief__facts">
+                      <span>
+                        <b>Engine</b>
+                        MapLibre GL
+                      </span>
+                      <span>
+                        <b>Terrain</b>
+                        Open DEM fallback
+                      </span>
+                      <span>
+                        <b>Status</b>
+                        MapTiler optional
+                      </span>
+                    </div>
+                  </section>
+                </div>
+              )}
+
               {activeTab === "checker" && (
-                <div className="tab-pane">
+                <div className="tab-pane report-hub">
+                  <section className="report-hub__intro" aria-label="ศูนย์รายงาน">
+                    <span className="report-hub__eyebrow">REPORT CENTER</span>
+                    <h2>ศูนย์รายงานเดียว</h2>
+                    <p>
+                      รวมงานแจ้งเหตุเร่งด่วน รายงานกิจกรรมป่าชุมชน และตำแหน่งของผู้ใช้ไว้ที่เดียว
+                      เพื่อไม่ให้ชุมชนต้องเดาว่าควรกดรายงานจากเมนูไหน
+                    </p>
+                  </section>
+
                   {/* GPS risk assessment */}
 
-                  <section className="card personal-checker-card">
+                  <section className="card personal-checker-card report-hub__section">
                     <div className="card__head">
                       <span className="card__title">
                         🏠 ตรวจสอบความเสี่ยงตำแหน่งพิกัดของฉัน
@@ -4081,9 +4281,32 @@ export function App() {
                     )}
                   </section>
 
+                  <section className="report-hub__section report-hub__section--field">
+                    <div className="report-hub__section-head">
+                      <span className="report-hub__section-icon">
+                        <ClipboardList size={17} />
+                      </span>
+                      <div>
+                        <span>กิจกรรมป่าชุมชน</span>
+                        <strong>ส่งรายงานเข้าระบบคะแนนรายสัปดาห์</strong>
+                      </div>
+                    </div>
+
+                    <Suspense fallback={<div className="user-data-panel">กำลังโหลดระบบรายงาน...</div>}>
+                      <UserDataPanel
+                        forestId={selectedCommunityForest?.id ?? null}
+                        forestName={selectedCommunityForest?.forestName ?? null}
+                        latitude={selectedCommunityForest?.latitude ?? null}
+                        longitude={selectedCommunityForest?.longitude ?? null}
+                      />
+                    </Suspense>
+                  </section>
+
                   {/* Emergency contacts card */}
 
-                  <EmergencyContacts />
+                  <section className="report-hub__section report-hub__section--emergency">
+                    <EmergencyContacts />
+                  </section>
                 </div>
               )}
             </div>
@@ -4125,6 +4348,7 @@ export function App() {
               boxShadow: "none",
             }}
           >
+            {activeTab !== "terrain3d" && (
             <div
               className="map-layer-selector map-layer-selector--v2"
               aria-label="ชั้นข้อมูลแผนที่"
@@ -4342,7 +4566,17 @@ export function App() {
               </div>
               )}
             </div>
+            )}
 
+            {activeTab === "terrain3d" ? (
+              <Suspense fallback={<div className="map-loading">Loading 3D terrain...</div>}>
+                <MapLibreTerrainView
+                  dashboard={dashboard}
+                  layers={layers}
+                  mapTilerKey={import.meta.env.VITE_MAPTILER_KEY as string | undefined}
+                />
+              </Suspense>
+            ) : (
             <Suspense
               fallback={<div className="map-loading">กำลังโหลดแผนที่...</div>}
             >
@@ -4364,6 +4598,7 @@ export function App() {
                 thematicOpacity={thematicOpacity}
               />
             </Suspense>
+            )}
           </section>
 
         </div>
