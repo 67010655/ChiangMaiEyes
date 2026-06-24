@@ -69,6 +69,10 @@ _REMOTE_SNAPSHOT_TTL_SECONDS = 30
 # Historical series are immutable except for "today", so cache them far longer
 # to avoid re-running the heavy multi-request NASA chain every 5 minutes.
 _HISTORY_TTL_SECONDS = 1800  # 30 minutes
+_HOURLY_DECISION_CADENCE_MINUTES = 60
+_SATELLITE_HOTSPOT_EXPECTED_LAG_MINUTES = 300
+_SATELLITE_HOTSPOT_STALE_AFTER_MINUTES = 360
+_LIVE_SENSOR_STALE_AFTER_MINUTES = 180
 
 T = TypeVar("T")
 
@@ -287,6 +291,13 @@ def _read_optional_snapshot_json(settings: Settings, filename: str) -> dict[str,
         return None
 
 
+def _official_community_forest_summary() -> dict[str, Any] | None:
+    try:
+        return read_json(_BUNDLED_DATA_DIR, "community-forests-official.json").get("summary")
+    except Exception:
+        return None
+
+
 def _parse_datetime(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
@@ -307,6 +318,9 @@ def _data_quality(
     confidence: float,
     stale_after_minutes: int,
     note: str,
+    update_cadence_minutes: int | None = None,
+    expected_observation_lag_minutes: int | None = None,
+    decision_use: str | None = None,
 ) -> DataQualityMetadata:
     return DataQualityMetadata(
         label=label,
@@ -315,9 +329,12 @@ def _data_quality(
         latest_update=latest_update,
         checked_at=checked_at,
         age_minutes=age_minutes,
+        update_cadence_minutes=update_cadence_minutes,
+        expected_observation_lag_minutes=expected_observation_lag_minutes,
         confidence=confidence,
         is_stale=age_minutes is not None and age_minutes > stale_after_minutes,
         note=note,
+        decision_use=decision_use,
     )
 
 
@@ -326,6 +343,7 @@ def _build_data_quality(
     pm25: Pm25Response,
     weather: WeatherResponse,
     *,
+    settings: Settings | None = None,
     checked_at: str | None = None,
 ) -> dict[str, DataQualityMetadata]:
     current_time = _parse_datetime(checked_at) if checked_at else datetime.now(tz=_parse_datetime(hotspots.latest_update).tzinfo)
@@ -334,10 +352,44 @@ def _build_data_quality(
     pm25_age = _age_minutes(current_time, pm25.latest_update)
     weather_age = _age_minutes(current_time, weather.latest_update)
     has_rfd = FOREST_FIREMAP_SOURCE in (hotspots.source_breakdown or {}) or "Royal Forest" in hotspots.source
+    hotspot_stale_after = (
+        _LIVE_SENSOR_STALE_AFTER_MINUTES
+        if has_rfd
+        else _SATELLITE_HOTSPOT_STALE_AFTER_MINUTES
+    )
     hotspot_source_mode = (
         "UNAVAILABLE"
-        if hotspot_age > 180
+        if hotspot_age > hotspot_stale_after
         else "SNAPSHOT" if has_rfd else "LIVE"
+    )
+    satellite_layers_configured = bool(
+        settings
+        and (
+            (settings.copernicus_client_id and settings.copernicus_client_secret)
+            or settings.satellite_layers_file
+            or settings.earth_engine_enabled
+        )
+    )
+    field_reports_configured = bool(
+        settings and settings.supabase_url and settings.supabase_service_role_key
+    )
+    official_community_summary = _official_community_forest_summary()
+    official_community_count = (
+        int(official_community_summary.get("recordCount", 0))
+        if isinstance(official_community_summary, dict)
+        else 0
+    )
+    satellite_source_mode: SourceMode = "DERIVED" if satellite_layers_configured else "UNAVAILABLE"
+    satellite_confidence = 0.62 if satellite_layers_configured else 0.3
+    # This entry describes the community-forest POINTS. Official RFD KML points
+    # are a static download → SNAPSHOT (matches the "RFD KML" source label and
+    # takes priority); only fall back to LIVE submitted field reports otherwise.
+    community_source_mode: SourceMode = (
+        "SNAPSHOT"
+        if official_community_count > 0
+        else "LIVE"
+        if field_reports_configured
+        else "UNAVAILABLE"
     )
 
     return {
@@ -348,36 +400,48 @@ def _build_data_quality(
             latest_update=hotspots.latest_update,
             checked_at=checked_at,
             age_minutes=hotspot_age,
-            confidence=0.9 if not hotspot_age > 180 else 0.35,
-            stale_after_minutes=180,
+            confidence=0.9 if not hotspot_age > hotspot_stale_after else 0.35,
+            stale_after_minutes=hotspot_stale_after,
+            update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
+            expected_observation_lag_minutes=(
+                None if has_rfd else _SATELLITE_HOTSPOT_EXPECTED_LAG_MINUTES
+            ),
             note=(
                 "Authoritative RFD-backed data delivered via the Thailand refresh snapshot "
                 "(RFD blocks some serverless infrastructure), not a live request — trust the snapshot age."
                 if has_rfd
-                else "Cloud-fetched satellite hotspot feed from NASA/GISTDA; use the source breakdown and timestamp."
+                else (
+                    "Cloud-fetched NASA/GISTDA satellite hotspot feed. Satellite detections can lag field reality "
+                    "by about 4-5 hours, so use timestamps and local confirmation before dispatch decisions."
+                )
             ),
+            decision_use="Hourly decision-support signal; not proof that fire is still active at this minute.",
         ),
         "pm25": _data_quality(
             label="PM2.5",
             source=pm25.source,
-            source_mode="LIVE" if not pm25_age > 180 else "UNAVAILABLE",
+            source_mode="LIVE" if not pm25_age > _LIVE_SENSOR_STALE_AFTER_MINUTES else "UNAVAILABLE",
             latest_update=pm25.latest_update,
             checked_at=checked_at,
             age_minutes=pm25_age,
-            confidence=0.92 if not pm25_age > 180 else 0.4,
-            stale_after_minutes=180,
+            confidence=0.92 if not pm25_age > _LIVE_SENSOR_STALE_AFTER_MINUTES else 0.4,
+            stale_after_minutes=_LIVE_SENSOR_STALE_AFTER_MINUTES,
+            update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
             note="Station reading from configured air-quality provider.",
+            decision_use="Use for current smoke/health situation and trend monitoring.",
         ),
         "weather": _data_quality(
             label="Wind and weather",
             source=weather.source,
-            source_mode="LIVE" if not weather_age > 180 else "UNAVAILABLE",
+            source_mode="LIVE" if not weather_age > _LIVE_SENSOR_STALE_AFTER_MINUTES else "UNAVAILABLE",
             latest_update=weather.latest_update,
             checked_at=checked_at,
             age_minutes=weather_age,
-            confidence=0.9 if not weather_age > 180 else 0.4,
-            stale_after_minutes=180,
+            confidence=0.9 if not weather_age > _LIVE_SENSOR_STALE_AFTER_MINUTES else 0.4,
+            stale_after_minutes=_LIVE_SENSOR_STALE_AFTER_MINUTES,
+            update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
             note="Weather station reading used for wind direction and smoke movement.",
+            decision_use="Use for hourly wind/smoke movement decisions.",
         ),
         "risk": _data_quality(
             label="Risk score",
@@ -387,8 +451,10 @@ def _build_data_quality(
             checked_at=checked_at,
             age_minutes=max(hotspot_age, pm25_age, weather_age),
             confidence=0.72,
-            stale_after_minutes=180,
+            stale_after_minutes=_SATELLITE_HOTSPOT_STALE_AFTER_MINUTES,
+            update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
             note="Calculated from PM2.5, hotspot count, wind, and fire-spread factors. It is not an official warning.",
+            decision_use="Use to prioritize review areas; confirm with field/local context before operational action.",
         ),
         "summary": _data_quality(
             label="Situation summary",
@@ -398,41 +464,66 @@ def _build_data_quality(
             checked_at=checked_at,
             age_minutes=max(hotspot_age, pm25_age, weather_age),
             confidence=0.82,
-            stale_after_minutes=180,
+            stale_after_minutes=_SATELLITE_HOTSPOT_STALE_AFTER_MINUTES,
+            update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
             note="Rule-based operator briefing generated from PM2.5, hotspot, wind, and risk inputs. No Gen AI call.",
+            decision_use="Use as a concise hourly briefing for decision meetings and local coordination.",
         ),
         "ndvi": _data_quality(
             label="NDVI",
             source="Sentinel-2 NDVI/NDMI/NBR (Copernicus Data Space; seeded until configured)",
-            source_mode="DERIVED",
+            source_mode=satellite_source_mode,
             latest_update=None,
             checked_at=checked_at,
             age_minutes=None,
-            confidence=0.45,
+            confidence=satellite_confidence,
             stale_after_minutes=0,
-            note="Zonal dryness indices from Copernicus Data Space Sentinel-2 when COPERNICUS_CLIENT_ID/SECRET are set; otherwise seeded values until configured.",
+            update_cadence_minutes=1440 if satellite_layers_configured else None,
+            expected_observation_lag_minutes=1440 if satellite_layers_configured else None,
+            note="Zonal dryness indices require Copernicus Data Space, Earth Engine, or a verified export file. Prototype seed values are disabled.",
+            decision_use="Use for prevention planning only after real Sentinel/CDSE export is configured.",
         ),
         "fire_zones": _data_quality(
             label="Fire management zones",
-            source="Prototype community-forest geometry",
-            source_mode="PROTOTYPE",
+            source="Not configured",
+            source_mode="UNAVAILABLE",
             latest_update=None,
             checked_at=checked_at,
             age_minutes=None,
-            confidence=0.35,
+            confidence=0.0,
             stale_after_minutes=0,
-            note="Planning layer for demo and review, not an official boundary dataset.",
+            note="No verified fire-management vector layer is configured. Prototype boundaries are disabled.",
+            decision_use="Import verified shapefile/GeoJSON layers before using this for decisions.",
         ),
         "community_forests": _data_quality(
-            label="Community forest league",
-            source="Seed field reports and prototype community-forest records",
-            source_mode="PROTOTYPE",
+            label="Community forest points",
+            source=(
+                "Royal Forest Department community forest coordinates KML"
+                if official_community_count > 0
+                else "Supabase field reports"
+                if field_reports_configured
+                else "Not configured"
+            ),
+            source_mode=community_source_mode,
             latest_update=None,
             checked_at=checked_at,
             age_minutes=None,
-            confidence=0.4,
+            confidence=0.72 if official_community_count > 0 else 0.0,
             stale_after_minutes=0,
-            note="Ranking is from sample/seed reports until a verified reporting database is connected.",
+            note=(
+                f"Official RFD point coordinates loaded for {official_community_count} Chiang Mai community forests; official polygon boundaries are not included."
+                if official_community_count > 0
+                else "Ranking uses verified submitted field reports."
+                if field_reports_configured
+                else "No verified community forest reporting database is configured. Seed rankings are disabled."
+            ),
+            decision_use=(
+                "Use for locating official RFD community forest point records; request polygon boundaries before area analysis."
+                if official_community_count > 0
+                else "Use as submitted-report evidence for participating forests."
+                if field_reports_configured
+                else "Connect Supabase/PostGIS and verified community forest records before using this layer."
+            ),
         ),
         "predictions": _data_quality(
             label="Localized predictions",
@@ -442,8 +533,10 @@ def _build_data_quality(
             checked_at=checked_at,
             age_minutes=max(hotspot_age, pm25_age, weather_age),
             confidence=0.55,
-            stale_after_minutes=180,
+            stale_after_minutes=_SATELLITE_HOTSPOT_STALE_AFTER_MINUTES,
+            update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
             note="Derived estimate for situational review, not an official forecast.",
+            decision_use="Use as a review prompt, not an official forecast or dispatch instruction.",
         ),
     }
 
@@ -484,10 +577,11 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
         source_breakdown=hotspots.source_breakdown,
         local_refresh_required=local_refresh_required,
         vercel_fetches_rfd_directly=False,
-        data_quality=_build_data_quality(hotspots, pm25, weather, checked_at=checked_at),
+        data_quality=_build_data_quality(hotspots, pm25, weather, settings=settings, checked_at=checked_at),
         notes=(
             [
                 "Hotspots use NASA/GISTDA cloud-friendly satellite feeds so production does not require the local Thailand refresh PC.",
+                "Satellite hotspot detections can lag field reality by about 4-5 hours; use them for hourly decision support with local confirmation.",
                 "RFD Firemap is disabled by default because it blocks some serverless infrastructure.",
                 "Backend responses are cached briefly to protect free upstream APIs while keeping the dashboard current enough for hourly decisions.",
             ]
@@ -911,7 +1005,9 @@ def _load_field_reports(settings: Settings) -> tuple[list[FieldActivityReport], 
             return reports, "LIVE"
         except Exception as exc:  # noqa: BLE001 — never error the dashboard on a store hiccup
             logger.warning("Supabase field reports unavailable, using seed: %s", exc)
-    return list(_FIELD_REPORTS), "PROTOTYPE"
+    if settings.allow_prototype_data:
+        return list(_FIELD_REPORTS), "PROTOTYPE"
+    return [], "UNAVAILABLE"
 
 
 def submit_field_report(settings: Settings, submission: "FieldReportSubmission") -> "FieldReportResult":
@@ -934,7 +1030,7 @@ def submit_field_report(settings: Settings, submission: "FieldReportSubmission")
             accepted=False,
             stored=False,
             message="โหมดสาธิต: ยังไม่ได้เชื่อมฐานข้อมูล รายงานจึงยังไม่ถูกบันทึก",
-            source_mode="PROTOTYPE",
+            source_mode="UNAVAILABLE",
         )
 
     # Only registered community forests may submit — blocks arbitrary forest_id
@@ -1036,9 +1132,10 @@ def get_operational_intelligence(
         latest_report_day = max(report.submitted_at.date() for report in field_reports)
         ranking_week_start = latest_report_day - timedelta(days=(latest_report_day.weekday() + 1) % 7)
         ranking = aggregate_weekly_rankings(_FOREST_RECORDS, field_reports, ranking_week_start)
+    prototype_enabled = settings.allow_prototype_data
     return OperationalIntelligenceResponse(
         hotspot_trend=_hotspot_trend(settings, hotspots),
-        drought_zones=_DROUGHT_ZONES,
+        drought_zones=_DROUGHT_ZONES if prototype_enabled else [],
         satellite_layers=get_satellite_layers(settings or get_settings()),
         landuse_breakdown=_landuse_breakdown(hotspots),
         weekly_forest_league=WeeklyForestLeagueResponse(
@@ -1049,12 +1146,23 @@ def get_operational_intelligence(
             ranking=ranking,
             source_mode=league_mode,
         ),
-        localizedPredictions=_localized_predictions(hotspots, pm25, weather, risk),
-        source_notes=[
+        localizedPredictions=(
+            _localized_predictions(hotspots, pm25, weather, risk)
+            if prototype_enabled
+            else []
+        ),
+        source_notes=(
+            [
+                "Prototype intelligence layers are disabled. Only live, derived-from-live, or configured verified data is returned.",
+                "Community forest boundaries, fire-management zones, and field-report rankings require verified database/vector imports before use.",
+            ]
+            if not prototype_enabled
+            else [
             "ชั้นข้อมูลรอยไหม้และความถี่การไหม้สามารถเปลี่ยนเป็น GISTDA API Gateway WMS/WMTS ได้เมื่อมี API key",
             "ข้อมูลภัยแล้งและความชื้นดินยังเป็นตัวชี้วัดจำลองแนว TAMFIRE ระหว่างรอ feed สาธารณะที่เสถียร",
             "อันดับรายสัปดาห์ใช้ 4 มิติ: การจัดการ การป้องกัน การใช้ประโยชน์ และผลลัพธ์เชิงนิเวศ",
-        ],
+            ]
+        ),
     )
 
 
@@ -1065,7 +1173,7 @@ def get_dashboard(settings: Settings) -> DashboardResponse:
     risk = calculate_risk(pm25, hotspots, weather)
     summary = get_summary(settings, pm25, hotspots, weather, risk)
     intelligence = get_operational_intelligence(hotspots, pm25, weather, risk, settings)
-    data_quality = _build_data_quality(hotspots, pm25, weather)
+    data_quality = _build_data_quality(hotspots, pm25, weather, settings=settings)
     return DashboardResponse(
         hotspots=hotspots,
         pm25=pm25,

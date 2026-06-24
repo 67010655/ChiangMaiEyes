@@ -112,8 +112,9 @@ def test_data_status_reports_snapshot_freshness(tmp_path: Path, monkeypatch):
     assert status.refresh_status == "ok"
     assert status.data_quality["hotspots"].source_mode == "SNAPSHOT"
     assert status.data_quality["hotspots"].age_minutes == 60
-    assert status.data_quality["ndvi"].source_mode == "DERIVED"
-    assert status.data_quality["community_forests"].source_mode == "PROTOTYPE"
+    assert status.data_quality["ndvi"].source_mode == "UNAVAILABLE"
+    assert status.data_quality["community_forests"].source_mode == "SNAPSHOT"
+    assert "RFD point coordinates" in status.data_quality["community_forests"].note
 
 
 def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path, monkeypatch):
@@ -141,7 +142,7 @@ def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path, monkeypatch)
     assert body["vercel_fetches_rfd_directly"] is False
     assert body["data_quality"]["hotspots"]["source_mode"] == "UNAVAILABLE"
     assert body["data_quality"]["hotspots"]["is_stale"] is True
-    assert body["data_quality"]["fire_zones"]["source_mode"] == "PROTOTYPE"
+    assert body["data_quality"]["fire_zones"]["source_mode"] == "UNAVAILABLE"
     assert response.headers["cache-control"] == "no-store, no-cache, must-revalidate, max-age=0"
     assert response.headers["pragma"] == "no-cache"
 
@@ -283,4 +284,36 @@ def test_data_status_reports_cloud_hotspot_mode_without_local_pc(tmp_path: Path,
     assert status.hotspot_count == 3
     assert status.hotspot_age_minutes == 10
     assert status.data_quality["hotspots"].source_mode == "LIVE"
+    assert status.data_quality["hotspots"].update_cadence_minutes == 60
+    assert status.data_quality["hotspots"].expected_observation_lag_minutes == 300
+    assert "4-5 hours" in status.data_quality["hotspots"].note
+    assert status.data_quality["ndvi"].source_mode == "UNAVAILABLE"
     assert "does not require the local Thailand refresh PC" in status.notes[0]
+
+
+def test_data_status_marks_ndvi_derived_when_copernicus_is_configured(tmp_path: Path, monkeypatch):
+    settings = Settings(
+        cache_dir=tmp_path,
+        remote_snapshot_base_url=None,
+        hotspot_include_rfd=False,
+        copernicus_client_id="client-id",
+        copernicus_client_secret="client-secret",
+    )
+    monkeypatch.setattr(
+        "app.services.get_hotspots",
+        lambda _settings: HotspotResponse(
+            count=0,
+            density_per_100_km2=0,
+            latest_update="2026-06-03T01:00:00+07:00",
+            source="NASA FIRMS",
+            items=[],
+            source_breakdown={"NASA FIRMS": 0},
+        ),
+    )
+    monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response())
+    monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response())
+
+    status = get_data_status(settings, now="2026-06-03T01:10:00+07:00")
+
+    assert status.data_quality["ndvi"].source_mode == "DERIVED"
+    assert status.data_quality["ndvi"].update_cadence_minutes == 1440
