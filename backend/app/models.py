@@ -13,6 +13,11 @@ class Hotspot(BaseModel):
     landuse_name: str | None = None
     satellite: str | None = None
     confidence: int = Field(ge=0, le=100)
+    # Fire Radiative Power (megawatts) and brightness temperature (kelvin) when
+    # the upstream feed reports them. NASA FIRMS VIIRS/MODIS carry these; GISTDA
+    # STAC and the Forest Firemap do not, so they stay ``None`` there.
+    frp: float | None = None
+    brightness: float | None = None
     source: str
     detected_at: str
     # Provenance after cross-source reconciliation: every source that reported

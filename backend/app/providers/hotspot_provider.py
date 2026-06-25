@@ -359,6 +359,20 @@ def _nasa_detected_at(acq_date: str | None, acq_time: str | int | None) -> str:
         return f"{fallback_date}T00:00:00+07:00"
 
 
+def _float_or_none(raw: object) -> float | None:
+    """Parse an upstream numeric field (e.g. FRP, brightness) into a float,
+    returning None for blanks or unparseable values rather than raising."""
+    if raw is None:
+        return None
+    text = str(raw).strip()
+    if not text:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
 def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
     # NASA FIRMS Area API bounding box for Chiang Mai (west, south, east, north).
     bbox = "97.25,17.35,99.68,20.28"
@@ -388,6 +402,8 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
                     longitude=lon,
                     district=estimate_district(lat, lon),
                     confidence=confidence,
+                    frp=_float_or_none(row.get("frp")),
+                    brightness=_float_or_none(row.get("bright_ti4") or row.get("brightness")),
                     source="NASA FIRMS",
                     detected_at=_nasa_detected_at(row.get("acq_date"), row.get("acq_time")),
                     satellite=row.get("satellite") or src,
@@ -539,6 +555,10 @@ def reconcile_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
     for idx, cluster in enumerate(clusters, start=1):
         rep: Hotspot = cluster["rep"]
         sources = sorted(cluster["sources"], key=lambda s: _SOURCE_PRIORITY.get(s, 99))
+        # The representative may come from a source without FRP (e.g. GISTDA),
+        # so carry the strongest FRP/brightness any member reported (NASA FIRMS).
+        member_frps = [m.frp for m in cluster["members"] if m.frp is not None]
+        member_brights = [m.brightness for m in cluster["members"] if m.brightness is not None]
         reconciled.append(
             rep.model_copy(
                 update={
@@ -546,6 +566,8 @@ def reconcile_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
                     "sources": sources,
                     "source_count": len(sources),
                     "confidence": max(m.confidence for m in cluster["members"]),
+                    "frp": max(member_frps) if member_frps else None,
+                    "brightness": max(member_brights) if member_brights else None,
                 }
             )
         )
