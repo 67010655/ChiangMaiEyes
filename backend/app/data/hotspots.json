@@ -1,8 +1,8 @@
 {
   "count": 1,
   "density_per_100_km2": 0.0,
-  "latest_update": "2026-06-24T21:19:18.187806+07:00",
-  "source": "GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
+  "latest_update": "2026-06-26T01:08:41.033920+07:00",
+  "source": "GISTDA Disaster STAC VIIRS 3-day",
   "items": [
     {
       "id": "HS-001",
@@ -14,6 +14,8 @@
       "landuse_name": "เกษตรอื่น ๆ",
       "satellite": "N21",
       "confidence": 75,
+      "frp": null,
+      "brightness": null,
       "source": "GISTDA Disaster STAC VIIRS 3-day",
       "detected_at": "2026-06-23T14:29:00+07:00",
       "sources": [
@@ -23,8 +25,6 @@
     }
   ],
   "source_breakdown": {
-    "GISTDA Disaster STAC VIIRS 3-day": 1,
-    "GISTDA API Gateway VIIRS 1-day": 0,
-    "NASA FIRMS": 0
+    "GISTDA Disaster STAC VIIRS 3-day": 1
   }
 }

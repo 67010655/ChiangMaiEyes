@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # neighbouring provinces at the corners; RFD/GISTDA are already province-filtered
 # server-side. We clip every source to this polygon so the map never shows fires
 # outside Chiang Mai.
-_PROVINCE_GEOJSON = Path(__file__).resolve().parent.parent.parent / "data" / "chiangmai-province.json"
+_PROVINCE_GEOJSON = Path(__file__).resolve().parent.parent / "data" / "chiangmai-province.json"
 
 
 @lru_cache(maxsize=1)

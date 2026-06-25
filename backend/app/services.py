@@ -57,7 +57,7 @@ logger = logging.getLogger(__name__)
 # Snapshot files baked into the deployment. Always readable (even on a
 # read-only serverless FS), so they are the last-resort source when neither
 # live providers nor a writable cache can supply data.
-_BUNDLED_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+_BUNDLED_DATA_DIR = Path(__file__).resolve().parent / "data"
 
 # ---------------------------------------------------------------------------
 # Simple TTL cache to avoid hammering upstream APIs on every request.
