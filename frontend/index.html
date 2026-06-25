@@ -2076,8 +2076,18 @@ function fetchJson(path, ms){
     .finally(()=>clearTimeout(id));
 }
 async function fetchLiveData(){
-  // Dashboard is required; history + fire-phases are best-effort.
-  const dash = await fetchJson('/api/dashboard', 15000);
+  // Dashboard is required. The backend runs a heavy NASA/GISTDA chain and can
+  // cold-start, so give a generous timeout and retry ONCE before giving up — a
+  // cold-start timeout must not drop a real visitor into the synthetic DEMO seed.
+  // The first (failed) attempt already starts warming the function instance.
+  let dash;
+  try{
+    dash = await fetchJson('/api/dashboard', 25000);
+  }catch(e){
+    setLoading(true, 'กำลังอุ่นเซิร์ฟเวอร์ แล้วลองใหม่อีกครั้ง…');
+    await new Promise(r=>setTimeout(r,1200));
+    dash = await fetchJson('/api/dashboard', 25000);
+  }
   let history=null, phases=null;
   await Promise.all([
     fetchJson('/api/history', 60000).then(h=>history=h).catch(()=>{}),
@@ -2089,16 +2099,17 @@ async function fetchLiveData(){
 }
 
 // ---- loading overlay ----
-function setLoading(on){
+function setLoading(on, msg){
   let el=document.getElementById('liveLoading');
+  const text=msg||'กำลังเชื่อมต่อข้อมูลสด…';
   if(on){
     if(!el){
       el=document.createElement('div'); el.id='liveLoading';
       el.style.cssText='position:fixed;inset:52px 0 0 66px;z-index:1400;display:flex;align-items:center;justify-content:center;background:rgba(7,10,14,.55);backdrop-filter:blur(2px);font-family:var(--mono);color:var(--muted);font-size:12px;letter-spacing:.08em;gap:12px';
-      el.innerHTML='<span style="width:16px;height:16px;border:2px solid #2c3744;border-top-color:#43b05f;border-radius:50%;display:inline-block;animation:spin 0.8s linear infinite"></span> กำลังเชื่อมต่อข้อมูลสด…';
       const st=document.createElement('style'); st.textContent='@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(st);
       document.body.appendChild(el);
     }
+    el.innerHTML='<span style="width:16px;height:16px;border:2px solid #2c3744;border-top-color:#43b05f;border-radius:50%;display:inline-block;animation:spin 0.8s linear infinite"></span> '+text;
     el.style.display='flex';
   } else if(el){ el.style.display='none'; }
 }
