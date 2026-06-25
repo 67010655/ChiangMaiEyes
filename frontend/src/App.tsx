@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, Box, ClipboardList, Eye, Bell, RefreshCcw } from "lucide-react";
+import { BarChart3, Box, ClipboardList, Eye, Bell, RefreshCcw, Printer, Navigation, FileText } from "lucide-react";
 
 import "./styles/app.css";
 
@@ -7,6 +7,8 @@ import { useDashboard } from "./hooks/useDashboard";
 import { AnalyticsPanel } from "./components/analytics/AnalyticsPanel";
 import { LegendPanel } from "./components/analytics/LegendPanel";
 import { MapView } from "./components/map/MapView";
+import { MapLibreTerrainView } from "./features/threeD/MapLibreTerrainView";
+import { ReportPanel } from "./components/analytics/ReportPanel";
 
 type Tab = "analytics" | "report" | "terrain";
 
@@ -71,25 +73,71 @@ export function App() {
             <AnalyticsPanel dashboard={dashboard} history={history} />
           )}
           {tab === "terrain" && (
-            <div className="chart-card">
-              <p className="chart-empty">มุมมอง 3D — กำลังย้ายมาสู่โครงสร้างใหม่</p>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 16, padding: 18, boxShadow: "var(--shadow-sm)" }}>
+              <h3 style={{ fontSize: "0.95rem", fontWeight: 700, display: "flex", alignItems: "center", gap: 8, margin: "0 0 10px 0" }}>
+                <Navigation size={18} style={{ color: "var(--green-deep)" }} />
+                <span>มุมมอง 3D ภูมิประเทศ</span>
+              </h3>
+              <p style={{ fontSize: "0.8rem", color: "var(--muted)", lineHeight: 1.5, margin: "0 0 12px 0" }}>
+                แผนที่สามมิติวิเคราะห์จุดความร้อนและฝุ่นร่วมกับความชันและความสูงเชิงตัวเลข (DEM) ของจังหวัดเชียงใหม่
+              </p>
+              <div style={{ display: "grid", gap: 8 }}>
+                <div style={{ fontSize: "0.76rem", padding: 10, border: "1px solid var(--line)", borderRadius: 8, background: "var(--surface-soft)" }}>
+                  <b style={{ display: "block", color: "var(--green-deep)", marginBottom: 4 }}>ทิศลากจำลองไฟ:</b>
+                  การแสดงทิศทางลมปลายลมช่วยคาดการณ์พื้นที่เฝ้าระวังป่าชุมชน
+                </div>
+                <div style={{ fontSize: "0.76rem", padding: 10, border: "1px solid var(--line)", borderRadius: 8, background: "var(--surface-soft)" }}>
+                  <b style={{ display: "block", color: "var(--green-deep)", marginBottom: 4 }}>การเปลี่ยนทัศนียภาพ:</b>
+                  คลิกขวาค้างเพื่อลากหมุนปรับก้มเงย (Pitch & Bearing) หรือใช้เมาส์กลางในการขยายมุมมอง
+                </div>
+              </div>
             </div>
           )}
           {tab === "report" && (
-            <div className="chart-card">
-              <p className="chart-empty">ศูนย์รายงาน — กำลังย้ายมาสู่โครงสร้างใหม่</p>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 16, padding: 18, boxShadow: "var(--shadow-sm)", display: "flex", flexDirection: "column", gap: 12 }}>
+              <h3 style={{ fontSize: "0.95rem", fontWeight: 700, display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
+                <FileText size={18} style={{ color: "var(--green-deep)" }} />
+                <span>ศูนย์รายงานประจำวัน</span>
+              </h3>
+              <p style={{ fontSize: "0.8rem", color: "var(--muted)", lineHeight: 1.5, margin: 0 }}>
+                สรุปสถานการณ์ไฟป่าและฝุ่นละอองเชิงลึกเพื่อการตัดสินใจเชิงนโยบายและการสั่งการภาคสนาม
+              </p>
+              <button
+                className="icon-btn icon-btn--primary"
+                type="button"
+                style={{ width: "100%", height: "42px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 4, cursor: "pointer" }}
+                onClick={() => window.print()}
+              >
+                <Printer size={18} />
+                <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>พิมพ์รายงาน / บันทึก PDF</span>
+              </button>
             </div>
           )}
         </aside>
 
         <div className="mapwrap">
-          <MapView hotspots={dashboard.hotspots.items} />
-          <div className="map-legend-overlay">
-            <LegendPanel
-              shownCount={dashboard.hotspots.items.length}
-              totalCount={dashboard.hotspots.count}
-            />
-          </div>
+          {tab !== "report" ? (
+            <>
+              {tab === "terrain" ? (
+                <MapLibreTerrainView
+                  dashboard={dashboard}
+                  mapTilerKey={import.meta.env.VITE_MAPTILER_KEY}
+                />
+              ) : (
+                <MapView hotspots={dashboard.hotspots.items} />
+              )}
+              {tab !== "terrain" && (
+                <div className="map-legend-overlay">
+                  <LegendPanel
+                    shownCount={dashboard.hotspots.items.length}
+                    totalCount={dashboard.hotspots.count}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <ReportPanel dashboard={dashboard} />
+          )}
         </div>
       </div>
     </div>

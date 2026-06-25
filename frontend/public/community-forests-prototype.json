@@ -1,0 +1,2270 @@
+{
+  "summary": {
+    "generatedAt": "2026-06-07",
+    "province": "เชียงใหม่",
+    "officialInfographicCount": 573,
+    "officialInfographicAreaRai": 812848,
+    "rfdCoordinatePoints": 675,
+    "thaicfnetDetailedForests": 52,
+    "thaicfnetGeocodedForests": 52,
+    "detailedForestsWithFireManagement": 47,
+    "sourceNotes": [
+      "RFD KML is point geometry only; prototype boundaries are estimated buffers.",
+      "Thaicfnet records provide community activity and management-plan detail for 52 Chiang Mai forests.",
+      "Official infographic reports 573 community forests in Chiang Mai as of Dec 2023."
+    ]
+  },
+  "forests": [
+    {
+      "id": "thaicfnet-510",
+      "sourceId": 510,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านดงสามหมื่น",
+      "village": "",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 19.03166,
+      "lng": 98.406885,
+      "areaRai": 713.0,
+      "estimatedBoundaryRadiusM": 603,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "พิธีไหว้ดงเซ้ง (มิถุนายน)"
+      ],
+      "uniquePlants": "ก่อ สน ทะโล้ จำปี",
+      "uniqueAnimals": "กระรอก ไก่ฟ้า ไก่ป่า",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-511",
+      "sourceId": 511,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยปู",
+      "village": "บ้านแม่ผาปู",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.939115,
+      "lng": 98.350677,
+      "areaRai": 4505.0,
+      "estimatedBoundaryRadiusM": 1515,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 16,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "สัก เต็ง รัง พลวง ก่อ สน",
+      "uniqueAnimals": "เก้ง หมูป่า อีเห็น แลน กระรอก กระต่าย ไก่ป่า  นก",
+      "uniqueWatersources": "ห้วยผาปู",
+      "committeeMale": 16,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรียง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-508",
+      "sourceId": 508,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตะละม้ง",
+      "village": "แม่ตะละม้ง",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.926879,
+      "lng": 98.441398,
+      "areaRai": 918.0,
+      "estimatedBoundaryRadiusM": 684,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 9,
+      "traditions": [
+        "พิธีไหว้ดงเซ้ง (มิถุนายน)"
+      ],
+      "uniquePlants": "เต็ง รัง ก่อ ทะโล้ สน",
+      "uniqueAnimals": "หมูป่า กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "ห้วยแม่ตะละ",
+      "committeeMale": 9,
+      "committeeFemale": 0,
+      "ethnicity": "ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-506",
+      "sourceId": 506,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตะละเหนือ",
+      "village": "บ้านแม่ตะละเหนือ",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.915294,
+      "lng": 98.414762,
+      "areaRai": 4996.0,
+      "estimatedBoundaryRadiusM": 1595,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา",
+        "อื่นๆ"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ก่อ สน ประดู่ กล้วยป่า",
+      "uniqueAnimals": "หมูป่า  กระรอก นก ปลา",
+      "uniqueWatersources": "ห้วยแม่ตะละ",
+      "committeeMale": 13,
+      "committeeFemale": 1,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-507",
+      "sourceId": 507,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตะละใต้",
+      "village": "บ้านแม่ตะละใต้",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.892097,
+      "lng": 98.375769,
+      "areaRai": 5189.0,
+      "estimatedBoundaryRadiusM": 1626,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง ก่อ ประดู่ สน",
+      "uniqueAnimals": "หมูป่า เก้ง กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "ห้วแม่ตะละ",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรียง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-505",
+      "sourceId": 505,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่แดดน้อย",
+      "village": "บ้านแม่แดดน้อย",
+      "tambon": "แม่แดด",
+      "amphoe": "กัลยาณิวัฒนา",
+      "province": "เชียงใหม่",
+      "lat": 18.946796,
+      "lng": 98.412962,
+      "areaRai": 1559.0,
+      "estimatedBoundaryRadiusM": 891,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบแล้ง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "ก่อ เต็ง รัง ประดู่",
+      "uniqueAnimals": "หมูป่า กระรอก เก้ง อีเห็น นก",
+      "uniqueWatersources": "ห้วยแม่แดด",
+      "committeeMale": 12,
+      "committeeFemale": 3,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-704",
+      "sourceId": 704,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านป่าเกี๊ยะใน",
+      "village": "ป่าเกี๊ยะใน",
+      "tambon": "บ่อแก้ว",
+      "amphoe": "สะเมิง",
+      "province": "เชียงใหม่",
+      "lat": 18.856095,
+      "lng": 98.53341,
+      "areaRai": 526.0,
+      "estimatedBoundaryRadiusM": 518,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2560",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "ก่อ จำปี",
+      "uniqueAnimals": "กระต่าย ไก่ป่า กระรอก นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ม้ง/ปกากะญอ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-705",
+      "sourceId": 705,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านหนองคิซูใน",
+      "village": "หนองคิซูใน",
+      "tambon": "บ่อแก้ว",
+      "amphoe": "สะเมิง",
+      "province": "เชียงใหม่",
+      "lat": 18.913048142857143,
+      "lng": 98.65602614285714,
+      "areaRai": 121.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": false,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "สน ก่อ",
+      "uniqueAnimals": "นก",
+      "uniqueWatersources": "",
+      "committeeMale": 11,
+      "committeeFemale": 4,
+      "ethnicity": "ปกากะญอ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-703",
+      "sourceId": 703,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านเด่นฮ่อม",
+      "village": "บ้านเด่นฮ่อม",
+      "tambon": "บ่อแก้ว",
+      "amphoe": "สะเมิง",
+      "province": "เชียงใหม่",
+      "lat": 18.88785,
+      "lng": 98.531719,
+      "areaRai": 125.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าดิบแล้ง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "สน ก่อ",
+      "uniqueAnimals": "กระต่ายป่า ไก่ป่า กระรอก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ปกากะญอ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-514",
+      "sourceId": 514,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านดอย",
+      "village": "บ้านดอย",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.757775,
+      "lng": 98.360918,
+      "areaRai": 720.0,
+      "estimatedBoundaryRadiusM": 606,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2560",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "ตึง แงะ ไผ่ ก่อ",
+      "uniqueAnimals": "กระรอก กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 2,
+      "ethnicity": "กะเหรี่ยง/ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-516",
+      "sourceId": 516,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านปิตุคี",
+      "village": "บ้านปิตุคี",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.593377,
+      "lng": 98.295373,
+      "areaRai": 1764.0,
+      "estimatedBoundaryRadiusM": 948,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)",
+        "สืบชะตาป่า"
+      ],
+      "uniquePlants": "เต็ง รัง สน ประดู่ สัก",
+      "uniqueAnimals": "นก ไก่ป่า กระรอก กระแต กระต่าย",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-520",
+      "sourceId": 520,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านยางครก",
+      "village": "บ้านยางครก",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.822074,
+      "lng": 98.446439,
+      "areaRai": 3887.0,
+      "estimatedBoundaryRadiusM": 1407,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2561",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "บวชป่า (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "เต็ง รัง สน ประดู่ พะยอม สัก แดง",
+      "uniqueAnimals": "กระรอก กระแต กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-517",
+      "sourceId": 517,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านยางเปียง",
+      "village": "บ้านยางเปียง",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.785624,
+      "lng": 98.478088,
+      "areaRai": 1592.0,
+      "estimatedBoundaryRadiusM": 900,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "ก่อ เต็ง รัง ประดู่",
+      "uniqueAnimals": "กระรอก กระแต อีเห็น ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 2,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-518",
+      "sourceId": 518,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านยางเปียงใต้",
+      "village": "บ้านยางเปียงใต้",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.711516,
+      "lng": 98.483443,
+      "areaRai": 28526.0,
+      "estimatedBoundaryRadiusM": 2600,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14,
+      "traditions": [
+        "สืบชะตาป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "เต็ง รัง ก่อ สน พลวง ไผ่",
+      "uniqueAnimals": "หมูป่า เก้ง อีเห็น กระรอก กระแต ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 2,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-521",
+      "sourceId": 521,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านสบลาน",
+      "village": "บ้านสบลาน",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.613039,
+      "lng": 98.407605,
+      "areaRai": 3671.0,
+      "estimatedBoundaryRadiusM": 1367,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สัก ประดู่ แดง เต็ง รัง มะเดื่ิอ",
+      "uniqueAnimals": "ไก่ป่า นก หนู กระรอก กระแต กระต่าย หมูป่า เก้ง",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-513",
+      "sourceId": 513,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่แฮหลวง",
+      "village": "บ้านแม่แฮหลวง/",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.59215,
+      "lng": 98.337139,
+      "areaRai": 1663.0,
+      "estimatedBoundaryRadiusM": 920,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 12,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "เต็ง รัง พลวง ประดู่ มะค่โบง",
+      "uniqueAnimals": "กวางป่า เก้ง หมูป่า อีเห็น กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง/ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-515",
+      "sourceId": 515,
+      "source": "Thaicfnet citizen database",
+      "name": "ป่าชุมชนบ้านนาไคร้",
+      "village": "บ้านนาไคร้",
+      "tambon": "ยางเปียง",
+      "amphoe": "อมก๋อย",
+      "province": "เชียงใหม่",
+      "lat": 17.601215,
+      "lng": 98.498629,
+      "areaRai": 934.0,
+      "estimatedBoundaryRadiusM": 690,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2561",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 9,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (มิถุนายน)",
+        "สืบชะตามแม่น้ำ"
+      ],
+      "uniquePlants": "ตึง แงะ เปา ก่อ ประดู่",
+      "uniqueAnimals": "กวางป่า เก้ง หมูป่า แลน กระรอก กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "ห้วยไคร้",
+      "committeeMale": 5,
+      "committeeFemale": 4,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-663",
+      "sourceId": 663,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแปกแซม",
+      "village": "แปกแซม",
+      "tambon": "เปยงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 499.0,
+      "estimatedBoundaryRadiusM": 504,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2566",
+      "forestTypes": [
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 10,
+      "traditions": [
+        "เลี้ยงเจ้าป่าเจ้าเขา (พฤษภาคม)",
+        "กินวอปีใหม่ (ธันวาคม)"
+      ],
+      "uniquePlants": "นางพญาเสือโครง ก่อ สน",
+      "uniqueAnimals": "หมูป่า หมาไน เก้ง อีเห็น ตะกวด ไก่ป่า กระรอก นก",
+      "uniqueWatersources": "",
+      "committeeMale": 10,
+      "committeeFemale": 0,
+      "ethnicity": "ลาหู่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-666",
+      "sourceId": 666,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านจอง",
+      "village": "เปียงหลวง",
+      "tambon": "เปียงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 16.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2566",
+      "forestTypes": [
+        "ป่าเบญจพรรณ"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14,
+      "traditions": [
+        "ปอยส่างลอง/ (มีนาคม)"
+      ],
+      "uniquePlants": "",
+      "uniqueAnimals": "",
+      "uniqueWatersources": "",
+      "committeeMale": 13,
+      "committeeFemale": 1,
+      "ethnicity": "ไทยใหญ่/จีนฮ่อ/คนพื้นเมือง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-664",
+      "sourceId": 664,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านม่วงเครือ",
+      "village": "บ้านม่วงเครือ",
+      "tambon": "เปียงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 2000.0,
+      "estimatedBoundaryRadiusM": 1009,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2566",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 6,
+      "traditions": [
+        "บวชป่า (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง พลวง สน ก่อ ไผ่",
+      "uniqueAnimals": "นก ไก่ป่า กระรอก หมูป่า เก้ง อีเห็น",
+      "uniqueWatersources": "",
+      "committeeMale": 6,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง/ไทยใหญ่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-665",
+      "sourceId": 665,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านเปียงหลวง",
+      "village": "บ้านเปียงหลวง",
+      "tambon": "เปียงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 1000.0,
+      "estimatedBoundaryRadiusM": 714,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2566",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 13,
+      "traditions": [
+        "บวชป่า (พฤษภาคม)",
+        "ปอยส่างลอง (มีนาคม)"
+      ],
+      "uniquePlants": "สนเขา  เต็ง รัง มะค่า รักดอกแดง ไผ่",
+      "uniqueAnimals": "นก ไก่ป่า กระรอก กระแต",
+      "uniqueWatersources": "",
+      "committeeMale": 10,
+      "committeeFemale": 3,
+      "ethnicity": "คนพื้นเมือง/ไทยใหญ่/ลีซู/ลาหู",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-667",
+      "sourceId": 667,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านใหม่มะกะยอน",
+      "village": "บ้านใหม่มะกะยอน",
+      "tambon": "เปียงหลวง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.557121444444444,
+      "lng": 98.62116977777778,
+      "areaRai": 600.0,
+      "estimatedBoundaryRadiusM": 553,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า"
+      ],
+      "managementPlan": false,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "ปอยส่างลอง (มีนาคม)"
+      ],
+      "uniquePlants": "สน พลวง เต็ง รัง ไผ่",
+      "uniqueAnimals": "นก ไก่ป่า",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 3,
+      "ethnicity": "คนพื้นเมือง/ไทยใหญ่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-502",
+      "sourceId": 502,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านกองลมใหม่",
+      "village": "กองลมใหม่",
+      "tambon": "เมืองอหง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.587544,
+      "lng": 98.625166,
+      "areaRai": 122.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 16,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สน พลวง ก่อ",
+      "uniqueAnimals": "กระรอก กระต่าย นก",
+      "uniqueWatersources": "",
+      "committeeMale": 11,
+      "committeeFemale": 5,
+      "ethnicity": "คนพื้นเมือง/ไทยใหย่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-500",
+      "sourceId": 500,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านเวียงแหง",
+      "village": "บ้านเวียงแหง",
+      "tambon": "เมืองแหง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.549714,
+      "lng": 98.624521,
+      "areaRai": 734.0,
+      "estimatedBoundaryRadiusM": 611,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 20,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง พลวง ไผ่",
+      "uniqueAnimals": "เก้ง ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 16,
+      "committeeFemale": 4,
+      "ethnicity": "ชนพื้นเมือง/ไทยใหญ่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-501",
+      "sourceId": 501,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่หาด",
+      "village": "บ้านแม่หาด",
+      "tambon": "เมืองแหง",
+      "amphoe": "เวียงแหง",
+      "province": "เชียงใหม่",
+      "lat": 19.588163,
+      "lng": 98.592982,
+      "areaRai": 675.0,
+      "estimatedBoundaryRadiusM": 586,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 10,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง ก่อ สัก แดง",
+      "uniqueAnimals": "กระรอก ไก่ป่า หมูป่า เก้ง อีเห็น นก",
+      "uniqueWatersources": "",
+      "committeeMale": 10,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง/กะเหรี่ยง/ไทยใหญ่",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-529",
+      "sourceId": 529,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านป่ากล้วย",
+      "village": "บ้านป่าหล้วย",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.663425,
+      "lng": 98.540026,
+      "areaRai": 1609.0,
+      "estimatedBoundaryRadiusM": 905,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (มิถุนายน)"
+      ],
+      "uniquePlants": "สัก ตะเคียน เต็ง รัง ก่อ สน ทะโล้ มณฑาดอย",
+      "uniqueAnimals": "หมูป่า เก้ง ไก่ป่า ไก่ฟ้า กระรอก อีเห็น นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-534",
+      "sourceId": 534,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านม่อนยะ",
+      "village": "ม่อนยะ",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.780978,
+      "lng": 98.541944,
+      "areaRai": 622.0,
+      "estimatedBoundaryRadiusM": 563,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "พิธีไหว้ดงเซ้ง (มิถุนายน)"
+      ],
+      "uniquePlants": "ก่อ สน สัก",
+      "uniqueAnimals": "เก้ง หมูป่า กระรอก ไก่ป่า  นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ม้ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-535",
+      "sourceId": 535,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านสบวิน",
+      "village": "สบวิน",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.667209,
+      "lng": 98.706572,
+      "areaRai": 1004.0,
+      "estimatedBoundaryRadiusM": 715,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีฝาย (มิถุนายน)",
+        "สืบชะตาแม่น้ำ (กรกฎาคม)"
+      ],
+      "uniquePlants": "สัก ประดู่ มะค่า แดง ตะแบก เต็ง รัง",
+      "uniqueAnimals": "เก้ง หมาป่า กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 14,
+      "committeeFemale": 1,
+      "ethnicity": "",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-536",
+      "sourceId": 536,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยยาว",
+      "village": "ห้วยยาว",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.645279,
+      "lng": 98.548793,
+      "areaRai": 2420.0,
+      "estimatedBoundaryRadiusM": 1110,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ก่อ สน จำปี จำปาป่า",
+      "uniqueAnimals": "ลิง เก้ง หมูป่า กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 13,
+      "committeeFemale": 1,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-537",
+      "sourceId": 537,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยหยวก",
+      "village": "บ้านห้วยหยวก",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.690419,
+      "lng": 98.711282,
+      "areaRai": 366.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": false,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเบญจพรรณ"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ประดู่ แดง สัก",
+      "uniqueAnimals": "กระรอก กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-538",
+      "sourceId": 538,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยหอย",
+      "village": "บ้านห้วบหอย",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.616121,
+      "lng": 98.645601,
+      "areaRai": 1193.0,
+      "estimatedBoundaryRadiusM": 779,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ทะโล้ ประดู่ ก่อ สน แดง",
+      "uniqueAnimals": "หมูป่า เก้ง แลน ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-524",
+      "sourceId": 524,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่มูด",
+      "village": "แม่มูด",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.670199666666665,
+      "lng": 98.67012813333334,
+      "areaRai": 286.0,
+      "estimatedBoundaryRadiusM": 450,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (มีนาคม)"
+      ],
+      "uniquePlants": "สัก พลวง เต็ง รัง  ไผ่",
+      "uniqueAnimals": "ไก่ป่า กระรอก หนู นก",
+      "uniqueWatersources": "",
+      "committeeMale": 14,
+      "committeeFemale": 0,
+      "ethnicity": "คนพิ้นเมือง/กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-526",
+      "sourceId": 526,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่สะป้อก",
+      "village": "บ้านแม่สะป้อก",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.672104,
+      "lng": 98.656023,
+      "areaRai": 502.0,
+      "estimatedBoundaryRadiusM": 506,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 19,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "สัก เต็ง รัง ก่อ ประดู่",
+      "uniqueAnimals": "หมูป่า เก้ง ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 9,
+      "committeeFemale": 10,
+      "ethnicity": "กะเหรี่ยง/และคนพื้นเมือง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-523",
+      "sourceId": 523,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่เตียน",
+      "village": "แม่เตียน",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.760265,
+      "lng": 98.550426,
+      "areaRai": 3034.0,
+      "estimatedBoundaryRadiusM": 1243,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2561",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (มีนาคม)"
+      ],
+      "uniquePlants": "สน ก่อ ทะโล้ จำปี รัก เติม มะขามป้อม",
+      "uniqueAnimals": "เก้ง หมูป่า ชะนี กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง/กะเหรี่นง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-528",
+      "sourceId": 528,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านใหม่วังผาปูน",
+      "village": "บ้านใหม่วังผาปูน",
+      "tambon": "แม่วิน",
+      "amphoe": "แม่วาง",
+      "province": "เชียงใหม่",
+      "lat": 18.684387,
+      "lng": 98.681747,
+      "areaRai": 2196.0,
+      "estimatedBoundaryRadiusM": 1058,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "สัก แดง ประดู่ มะค่า เต็งรัง",
+      "uniqueAnimals": "หมูป่า อีเห็น กระรอก กระต่าย ไก่ป่า นก",
+      "uniqueWatersources": "ห้วบโป่ง ห้วยเป้า ห้วยริน",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-91",
+      "sourceId": 91,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านป่างิ้ว",
+      "village": "ป่างิ้ว",
+      "tambon": "ทาเหนือ",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.663559,
+      "lng": 99.29993,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": false,
+      "fireActivities": [],
+      "managementPlan": true,
+      "managementPlanYear": "2563",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าดิบชื้น"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "ยาง",
+      "uniqueAnimals": "หมูป่า ไก่ป่า เก้ง",
+      "uniqueWatersources": "",
+      "committeeMale": 14,
+      "committeeFemale": 1,
+      "ethnicity": "กะเหรี่ยงสะกอ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-284",
+      "sourceId": 284,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยบง",
+      "village": "บ้านห้วยบง",
+      "tambon": "ทาเหนือ",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.67663,
+      "lng": 99.29384,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": false,
+      "fireActivities": [],
+      "managementPlan": true,
+      "managementPlanYear": "2550",
+      "forestTypes": [
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ",
+        "โฉนด"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "สัก พะยูง ยางนา",
+      "uniqueAnimals": "",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 3,
+      "ethnicity": "ไทย",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-79",
+      "sourceId": 79,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยยาบ",
+      "village": "ห้วยยาบ",
+      "tambon": "ทาเหนือ",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.65088,
+      "lng": 99.29964,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": false,
+      "fireActivities": [],
+      "managementPlan": true,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "อื่นๆ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "ตะเคียน",
+      "uniqueAnimals": "หมูป่า",
+      "uniqueWatersources": "",
+      "committeeMale": 12,
+      "committeeFemale": 3,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-104",
+      "sourceId": 104,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตะไคร้",
+      "village": "แม่ตะไคร้",
+      "tambon": "ทาเหนือ",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.739466,
+      "lng": 99.304948,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": false,
+      "fireActivities": [],
+      "managementPlan": true,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่",
+        "ป่าดิบชื้น"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [],
+      "uniquePlants": "เหียง ก่อ ยาง ตะเคียน เต็ง รัง",
+      "uniqueAnimals": "",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กระเหรี่ยงแม่ต๋ง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-285",
+      "sourceId": 285,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านใหม่",
+      "village": "บ้านใหม่",
+      "tambon": "ทาเหนือ",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.71636,
+      "lng": 99.30237,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": false,
+      "fireActivities": [],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 12,
+      "traditions": [],
+      "uniquePlants": "ยาง ตะเคียน เต็ง รัง ประดู่",
+      "uniqueAnimals": "กระรอก อีเห็น หมูป่า หมาป่า นกยูง",
+      "uniqueWatersources": "ห้วย",
+      "committeeMale": 9,
+      "committeeFemale": 3,
+      "ethnicity": "ไทย",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-345",
+      "sourceId": 345,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านค้อกลาง",
+      "village": "บ้านค้อกลาง",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.597397,
+      "lng": 99.328509,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (มีนาคม)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ ยางฮี่ แดง สัก ประดู่ ตะแบก เต็ง รัง เหียง กระยาเลย",
+      "uniqueAnimals": "",
+      "uniqueWatersources": "ห้วยแม่แทน",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ไทยยวน/หรือคนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
+    },
+    {
+      "id": "thaicfnet-348",
+      "sourceId": 348,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านดอนชัย",
+      "village": "บ้านดอนชัย",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.591284,
+      "lng": 99.248046,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (มีนาคม)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ มะม่วงป่า สัก ประดู่ เกล็ด เหียง มะเดื่อ มะกอก แฟน เปา ติ้ว คอแลน",
+      "uniqueAnimals": "หมูป่า หมาป่า ตุ่น ตะกวด กระรอก อีเห็น ไก่ป่า บ่างแจ๊ะ งู ตัวนิ่ม",
+      "uniqueWatersources": "ลำห้วยป่ากล้วย",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
+    },
+    {
+      "id": "thaicfnet-330",
+      "sourceId": 330,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านทาม่อน ม.1",
+      "village": "บ้านทาม่อน",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.641955,
+      "lng": 99.273932,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": false,
+      "managementPlanYear": "0",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)",
+        "สืบชะตาป่า"
+      ],
+      "uniquePlants": "สัก แดง เต็ง รัง พลวง",
+      "uniqueAnimals": "ไก่ป่า หมูป่า กระรอก แลน นก",
+      "uniqueWatersources": "ประปาภูเขา",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "-",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-344",
+      "sourceId": 344,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านท่าข้าม หมู่ที่ 2",
+      "village": "บ้านท่าข้าม",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.610484,
+      "lng": 99.334061,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 20,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาป่า"
+      ],
+      "uniquePlants": "ยางใหญ่ มะม่วงป่า สัก ประดู่ เกล็ด เหียง มะเดื่อ มะกอก เปา ติ้ว คอแลน",
+      "uniqueAnimals": "หมูป่า ตะกวด กระรอก อีเห็น ไก่ป่า งู",
+      "uniqueWatersources": "ห้วยแม่บอนบก ห้วยหวายฝาด",
+      "committeeMale": 20,
+      "committeeFemale": 0,
+      "ethnicity": "",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
+    },
+    {
+      "id": "thaicfnet-347",
+      "sourceId": 347,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านป่านอต",
+      "village": "บ้านป่านอต",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.607535,
+      "lng": 99.240401,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "สืบชะตาป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ แดง สัก ประดู่ ตะแบก เต็ง รัง เหียง มะขามป้อม ติ้ว กระพี้ควาย มะตูม กายาเลย",
+      "uniqueAnimals": "เก้ง หมูป่า วอก(ชะนี) งู ตัวนิ่ม อีเห็น ไก่ป่า เม่น นกยูง ตะกวด",
+      "uniqueWatersources": "บ่อเก็บน้ำดิบห้วยเขียดขาป๊อด",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
+    },
+    {
+      "id": "thaicfnet-346",
+      "sourceId": 346,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านห้วยทราย",
+      "village": "บ้านห้วยทราย",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.631483,
+      "lng": 99.263074,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 23,
+      "traditions": [
+        "สืบชะตาป่า (มีนาคม)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ มะม่วงป่า สัก ประดู่ เกล็ด เหียง มะเดื่อ มะกอก แฟน เปา ติ้ว คอแลน",
+      "uniqueAnimals": "หมูป่า หมาป่า ตุ่น ตะกวด กระรอก อีเห็น ไก่ป่า บ่าง งู ตัวนิ่ม",
+      "uniqueWatersources": "",
+      "committeeMale": 23,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
+    },
+    {
+      "id": "thaicfnet-349",
+      "sourceId": 349,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านใหม่ดอนชัย",
+      "village": "บ้านใหม่ดอนชัย",
+      "tambon": "แม่ทา",
+      "amphoe": "แม่ออน",
+      "province": "เชียงใหม่",
+      "lat": 18.554461,
+      "lng": 99.300444,
+      "areaRai": 0.0,
+      "estimatedBoundaryRadiusM": 650,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2564",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 21,
+      "traditions": [
+        "บวชป่า (มีนาคม)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "ยางใหญ่ มะม่วงป่า สัก ประดู่ เกล็ด เหียง มะเดื่อ มะกอก แฟน เปา ติ้ว คอแลน",
+      "uniqueAnimals": "หมูป่า หมาป่า ตุ่น ตะกวด กระรอก อีเห็น ไก่ป่า บ่างแจ๊ะ งู ตัวนิ่ม",
+      "uniqueWatersources": "อ่างเก็บน้ำห้วยต้นเดื่อ",
+      "committeeMale": 21,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง",
+      "biodiversityCheck": [
+        "มี"
+      ],
+      "biodiversitySurveyCheck": [
+        "รีคอฟ (RECOFTC: ศูนย์วนศาสตร์ชุมชนเพื่อคนกับป่า)",
+        "อบต. (องค์การบริหารส่วนตำบล)"
+      ]
+    },
+    {
+      "id": "thaicfnet-522",
+      "sourceId": 522,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ยางส้าน",
+      "village": "แม่ยางส้าน",
+      "tambon": "ท่าผา",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.490257,
+      "lng": 98.443321,
+      "areaRai": 2538.0,
+      "estimatedBoundaryRadiusM": 1137,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่",
+        "ป่าดิบเขา"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)",
+        "สืบชะตาแม่น้ำ (กุมภาพันธ์)"
+      ],
+      "uniquePlants": "เต็ง รัง ประดู่ ยอป่า แดง ก่อ จำปาป่า",
+      "uniqueAnimals": "เก้ง หมูป่า ชะนี ลิง กระรอก ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "ปกากะยอ/หรือกะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-654",
+      "sourceId": 654,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแปะ",
+      "village": "ย้านแปะ",
+      "tambon": "ปางหินฝน",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.493471,
+      "lng": 98.119357,
+      "areaRai": 552.0,
+      "estimatedBoundaryRadiusM": 530,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 14,
+      "traditions": [
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สัก แดง เต็ง รัง ก่อ",
+      "uniqueAnimals": "หมูป่า ไก่ป่า กระรอก กระแต นก",
+      "uniqueWatersources": "",
+      "committeeMale": 14,
+      "committeeFemale": 0,
+      "ethnicity": "ลั้วะ",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-655",
+      "sourceId": 655,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่ตูม",
+      "village": "แม่ตูม/",
+      "tambon": "ปางหินฝน",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.545479,
+      "lng": 98.175695,
+      "areaRai": 1035.0,
+      "estimatedBoundaryRadiusM": 726,
+      "fireManagement": true,
+      "fireActivities": [
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (พฤษภาคม)"
+      ],
+      "uniquePlants": "เต็ง รัง สะเดา ไผ่",
+      "uniqueAnimals": "หมูป่า เก้ง ไก่ป่า กระรอก กระแต นก",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-653",
+      "sourceId": 653,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านแม่แฮใต้",
+      "village": "บ้านแม่แฮใต้",
+      "tambon": "ปางหินฝน",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.442205,
+      "lng": 98.154132,
+      "areaRai": 2551.0,
+      "estimatedBoundaryRadiusM": 1140,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าไผ่"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 15,
+      "traditions": [
+        "บวชป่า (กุมภาพันธ์)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สัก จำปี ไผ่ มะม่วงป่า",
+      "uniqueAnimals": "หมูป่า เก้ง ชะนี ไก่ป่า กระต่ายป่า กระรอก กระแต",
+      "uniqueWatersources": "",
+      "committeeMale": 15,
+      "committeeFemale": 0,
+      "ethnicity": "กะเหรี่ยง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    },
+    {
+      "id": "thaicfnet-533",
+      "sourceId": 533,
+      "source": "Thaicfnet citizen database",
+      "name": "บ้านสบวาก",
+      "village": "สบวาก",
+      "tambon": "แม่นาจร",
+      "amphoe": "แม่แจ่ม",
+      "province": "เชียงใหม่",
+      "lat": 18.630433,
+      "lng": 98.38391,
+      "areaRai": 1320.0,
+      "estimatedBoundaryRadiusM": 820,
+      "fireManagement": true,
+      "fireActivities": [
+        "ลาดตระเวนในพื้นที่ป่าชุมชน",
+        "ทำแนวป้องกันไฟป่า",
+        "กำจัดเชื้อเพลิง, ชิงเผา"
+      ],
+      "managementPlan": true,
+      "managementPlanYear": "2562",
+      "forestTypes": [
+        "ป่าเบญจพรรณ",
+        "ป่าเต็งรัง"
+      ],
+      "deedTypes": [
+        "ป่าสงวนแห่งชาติ"
+      ],
+      "households": 0,
+      "villagesCount": 1,
+      "committeeTotal": 11,
+      "traditions": [
+        "สืบชะตาแม่น้ำ (มิถุนายน)",
+        "เลี้ยงผีขุนน้ำ (พฤษภาคม)"
+      ],
+      "uniquePlants": "สัก ประดู่ มะค่า สะแก ตะเคียน เต็ง รัง ไผ่",
+      "uniqueAnimals": "เก้ง หมูป่า หมาป่า กระรอก กระต่าย นกยูง ไก่ป่า นก",
+      "uniqueWatersources": "",
+      "committeeMale": 11,
+      "committeeFemale": 0,
+      "ethnicity": "คนพื้นเมือง/กะเหี่นง",
+      "biodiversityCheck": [],
+      "biodiversitySurveyCheck": []
+    }
+  ]
+}

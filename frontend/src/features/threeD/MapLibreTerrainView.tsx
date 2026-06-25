@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import "../../styles/terrain.css";
 
 import communityForestData from "../../data/community-forests-prototype.json";
 import fireZoneData from "../../data/fire-management-zones-prototype.json";

@@ -1,4 +1,4 @@
-﻿export type Hotspot = {
+export type Hotspot = {
   id: string;
   latitude: number;
   longitude: number;
@@ -8,6 +8,8 @@
   landuse_name?: string | null;
   satellite?: string | null;
   confidence: number;
+  frp?: number | null;
+  brightness?: number | null;
   source: string;
   detected_at: string;
   sources?: string[];
