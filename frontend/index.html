@@ -1942,6 +1942,11 @@ function rerenderAll(){
 }
 
 function applyLive(dash, history, phases){
+  // Enter LIVE mode BEFORE rendering: renderSituation/renderFreshness/
+  // renderRiskScore/markLiveProvenance all gate on dataMode==='live', and this
+  // runs while goLive() is still awaiting (mode would otherwise be 'demo' and
+  // they'd hide themselves). Reached only after /api/dashboard succeeded.
+  setMode('live');
   currentDashboard = dash;
   hotspots = normHotspots(dash.hotspots && dash.hotspots.items);
   pmStations = normStations(dash.pm25 && dash.pm25.stations);
