@@ -595,6 +595,30 @@
         <svg class="chart" id="roseChart" height="150" viewBox="0 0 180 150" style="margin:0 auto"></svg>
       </div>
 
+      <div class="block" id="riskScoreBlock" style="display:none">
+        <h2>ความเสี่ยงหมอกควัน</h2>
+        <div id="riskScoreBody" style="display:flex;align-items:center;gap:14px;padding:6px 0">
+          <div id="riskGauge" style="position:relative;width:64px;height:64px;flex:none">
+            <svg viewBox="0 0 64 64" width="64" height="64">
+              <circle cx="32" cy="32" r="26" fill="none" stroke="#1a212b" stroke-width="8"/>
+              <circle id="riskArc" cx="32" cy="32" r="26" fill="none" stroke="#43b05f" stroke-width="8"
+                stroke-dasharray="163.4" stroke-dashoffset="163.4"
+                stroke-linecap="round" transform="rotate(-90 32 32)"
+                style="transition:stroke-dashoffset .6s ease,stroke .6s ease"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1">
+              <span id="riskScore" style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--txt)">—</span>
+              <span style="font-size:8px;color:var(--dim);letter-spacing:.06em">/10</span>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div id="riskCategory" style="font-size:12px;font-weight:600;color:var(--good);margin-bottom:4px">—</div>
+            <div id="riskFactors" style="font-size:10px;color:var(--muted);line-height:1.6"></div>
+          </div>
+        </div>
+        <div id="riskLiveNote" style="display:none;font-size:9px;color:var(--dim);margin-top:4px;letter-spacing:.04em">คำนวณจาก PM2.5 + จุดความร้อน + ลม (ไม่ใช่การเตือนภัยทางการ)</div>
+      </div>
+
       <div class="block">
         <h2>District risk ranking</h2>
         <div id="rankList"></div>
@@ -770,7 +794,17 @@
    ============================================================ */
 
 const CM = [18.79, 98.99];               // Chiang Mai center
-let PREVAILING = { deg: 215, kmh: 14 };  // SW wind (deg = FROM direction)
+let PREVAILING = null;  // live wind only — null until first LIVE fetch (topbar shows "—")
+// Demo/synthetic geometry still needs *a* wind vector to draw cones & arrows.
+// This is used ONLY for map geometry and for generated artifacts (report/analytics),
+// never for the LIVE topbar — so a 200 with no weather can't masquerade as a real reading.
+const DEMO_WIND = { deg: 215, kmh: 14 };   // SW (deg = direction wind comes FROM)
+function wind(){ return PREVAILING || DEMO_WIND; }
+// 8-point Thai compass from a "comes-from" bearing in degrees.
+function _degToCompass(deg){
+  const c=['เหนือ','ตอน.','ตะวันออก','ตอ.ใต้','ใต้','ตต.ใต้','ตะวันตก','ตต.เหนือ'];
+  return c[Math.round(((deg%360)+360)%360/45)%8];
+}
 // Backend base. The API is a SEPARATE Vercel project (no /api rewrite on the
 // frontend origin), so we always call it by absolute URL. Its CORS_ORIGINS must
 // include wherever this file is served from (chiangmaieyes.vercel.app and
@@ -928,10 +962,11 @@ function renderHotspots(){
 // ---- Fire spread forecast cones (signature element) ----
 // Cone points DOWNWIND (wind FROM 'deg' → blows TO deg+180)
 function spreadCone(h){
-  const blowTo = (PREVAILING.deg+180)%360;
+  const W = wind();
+  const blowTo = (W.deg+180)%360;
   const rad = blowTo*Math.PI/180;
   // length scales with wind + FRP; risk by combo
-  const km = 2 + PREVAILING.kmh*0.18 + intensity(h)*0.03;
+  const km = 2 + W.kmh*0.18 + intensity(h)*0.03;
   const spreadDeg = 26;                 // half-angle
   const pts=[[h.lat,h.lon]];
   for(let a=-spreadDeg;a<=spreadDeg;a+=4){
@@ -940,7 +975,7 @@ function spreadCone(h){
     const dLon = (km/(111*Math.cos(h.lat*Math.PI/180)))*Math.sin(ar);
     pts.push([h.lat+dLat, h.lon+dLon]);
   }
-  const risk = Math.min(1,(intensity(h)/120 + PREVAILING.kmh/40)/1.6);
+  const risk = Math.min(1,(intensity(h)/120 + W.kmh/40)/1.6);
   const col = risk>0.75?'#ff4d4d': risk>0.5?'#f5640a': risk>0.3?'#ff8a3d':'#facc15';
   return {pts,col,risk,km};
 }
@@ -958,7 +993,7 @@ function renderSpread(){
 // ---- Wind vector field ----
 function renderWind(){
   layers.wind.clearLayers();
-  const blowTo=(PREVAILING.deg+180)%360;
+  const blowTo=(wind().deg+180)%360;
   for(let la=17.7; la<19.5; la+=0.22){
     for(let lo=98.2; lo<99.5; lo+=0.22){
       const local=blowTo + rnd(-12,12);
@@ -1002,7 +1037,7 @@ function selectHotspot(h){
   const s=spreadCone(h);
   const body=document.getElementById('detailBody');
   const compass=['N','NE','E','SE','S','SW','W','NW'];
-  const blowTo=(PREVAILING.deg+180)%360;
+  const blowTo=(wind().deg+180)%360;
   
   const title = document.querySelector('#detailBlock h2');
   if (title) title.textContent = 'Hotspot detail';
@@ -1114,8 +1149,13 @@ function buildAlerts(){
   const hipm=pmStations.filter(s=>s.pm>90).sort((a,b)=>b.pm-a.pm)[0];
   if(hipm)list.push({lv:'WARN',crit:false,t:`PM2.5 เกินเกณฑ์ · ${hipm.name.replace('สถานี ','')}`,
     d:`${hipm.pm} µg/m³ · ระดับ${pmAqiLabel(hipm.pm)}`});
-  list.push({lv:'WARN',crit:false,t:'ลมกระโชก SW เพิ่มขึ้น',
-    d:`${PREVAILING.kmh} km/h · เพิ่มความเร็วการลามของไฟทางลม`});
+  // Only surface the wind-gust alert when we actually have a wind reading
+  // (live weather, or the demo seed) — never invent one under a LIVE label.
+  if(PREVAILING || dataMode!=='live'){
+    const W=wind();
+    list.push({lv:'WARN',crit:false,t:`ลมกระโชกจากทิศ ${_degToCompass(W.deg)} เพิ่มขึ้น`,
+      d:`${W.kmh} km/h · เพิ่มความเร็วการลามของไฟทางลม`});
+  }
   document.getElementById('alertList').innerHTML=list.map(a=>`
     <div class="alert ${a.crit?'crit':''}" ${a.h?`data-id="${a.h.id}"`:''}>
       <div class="bar"></div>
@@ -1146,10 +1186,16 @@ function setKpis(){
   document.getElementById('pm24now').textContent=pmAvg;
 }
 function setWindBadge(){
+  if(!PREVAILING){
+    // No live data yet — show placeholders, hide arrow rotation
+    document.getElementById('windSpd').innerHTML='—<small> km/h</small>';
+    document.getElementById('windDir').textContent='— → —';
+    return;
+  }
   const blowTo=(PREVAILING.deg+180)%360;
   document.getElementById('windSpd').innerHTML=PREVAILING.kmh+'<small> km/h</small>';
-  const compass=['เหนือ','ตอน','ออก','ตอ.','ใต้','ตต.','ตก','ตน.'];
-  document.getElementById('windDir').textContent='SW → NE · '+blowTo.toFixed(0)+'°';
+  const fromCompass=_degToCompass(PREVAILING.deg), toCompass=_degToCompass(blowTo);
+  document.getElementById('windDir').textContent=fromCompass+' → '+toCompass+' · '+blowTo.toFixed(0)+'°';
   document.getElementById('windArrowG').setAttribute('transform',`rotate(${blowTo} 20 20)`);
 }
 function tick(){
@@ -1504,7 +1550,7 @@ hbar('anDist',drows,{});
     <div class="dl"><span class="dk">อำเภอที่มีจุดความร้อน</span><span class="dv">${drows.filter(d=>d.v>0).length} / ${districts.length} อำเภอ</span></div>
     <div class="dl"><span class="dk">สัดส่วน confidence สูง</span><span class="dv">${Math.round(hi/hotspots.length*100)}%</span></div>
     <div class="dl"><span class="dk">ดัชนีความสัมพันธ์ HS×PM2.5</span><span class="dv ${rr>0.6?'crit':'hot'}">r = ${rr.toFixed(2)}</span></div>
-    <div class="dl"><span class="dk">ทิศลมหลัก</span><span class="dv">ตะวันตกเฉียงใต้ (SW) ${PREVAILING.kmh} km/h</span></div>`;
+    <div class="dl"><span class="dk">ทิศลมหลัก</span><span class="dv">${_degToCompass(wind().deg)} ${wind().kmh} km/h</span></div>`;
 }
 
 function normalizeDistrictName(name) {
@@ -1900,9 +1946,12 @@ function applyLive(dash, history, phases){
   hotspots = normHotspots(dash.hotspots && dash.hotspots.items);
   pmStations = normStations(dash.pm25 && dash.pm25.stations);
   if(dash.weather){
+    // PREVAILING may still be null on the first live fetch, so fall back to the
+    // previous live value if present, else the demo vector — never deref null.
+    const prev = PREVAILING || DEMO_WIND;
     PREVAILING = {
-      deg: dash.weather.wind_direction_deg!=null?dash.weather.wind_direction_deg:PREVAILING.deg,
-      kmh: dash.weather.wind_speed_kmh!=null?Math.round(dash.weather.wind_speed_kmh):PREVAILING.kmh,
+      deg: dash.weather.wind_direction_deg!=null?dash.weather.wind_direction_deg:prev.deg,
+      kmh: dash.weather.wind_speed_kmh!=null?Math.round(dash.weather.wind_speed_kmh):prev.kmh,
     };
   }
   // Real daily trends from /api/history (oldest→newest daily counts).
@@ -1931,6 +1980,7 @@ function applyLive(dash, history, phases){
   liveIntel    = dash.intelligence || null;
   liveSummary  = (dash.summary && dash.summary.text) || null;
   renderSituation();
+  renderRiskScore();
   renderFreshness();
   markLiveProvenance();
   rerenderAll();
@@ -1962,6 +2012,31 @@ function rankListLive(){
       <span class="track"><span class="fill" style="width:${score}%;background:${col}"></span></span>
       <span class="sc">${score}</span></div>`;
   }).join('');
+}
+
+// Smoke-risk score gauge — real composite from /api/dashboard (dash.risk).
+// score 0..10, category Low/Medium/High, factors = pm25/hotspot/spread points.
+const RISK_C={Low:{c:'#43b05f',t:'ต่ำ'},Medium:{c:'#facc15',t:'ปานกลาง'},High:{c:'#ff4d4d',t:'สูง'}};
+function renderRiskScore(){
+  const block=document.getElementById('riskScoreBlock'); if(!block)return;
+  const risk=(dataMode==='live' && currentDashboard) ? currentDashboard.risk : null;
+  if(!risk){ block.style.display='none'; return; }
+  block.style.display='block';
+  const score=Math.max(0,Math.min(10,risk.score||0));
+  const meta=RISK_C[risk.category]||{c:'#ff8a3d',t:risk.category||'—'};
+  const CIRC=163.4;                                  // 2πr, r=26
+  const arc=document.getElementById('riskArc');
+  arc.setAttribute('stroke',meta.c);
+  arc.setAttribute('stroke-dashoffset',(CIRC*(1-score/10)).toFixed(1));
+  const sc=document.getElementById('riskScore'); sc.textContent=score; sc.style.color=meta.c;
+  const cat=document.getElementById('riskCategory'); cat.textContent=meta.t+' ('+score+'/10)'; cat.style.color=meta.c;
+  const f=risk.factors||{};
+  const fmt=(v)=>v==null?'—':(typeof v==='number'?v.toFixed(1):v);
+  document.getElementById('riskFactors').innerHTML=
+    `PM2.5 <b style="color:var(--txt)">${fmt(f.pm25_points)}</b>/3 · `+
+    `จุดความร้อน <b style="color:var(--txt)">${fmt(f.hotspot_points)}</b>/3 · `+
+    `การลามตามลม <b style="color:var(--txt)">${fmt(f.spread_points)}</b>/4`;
+  document.getElementById('riskLiveNote').style.display='block';
 }
 
 // Persistent situation card fed by the backend's deterministic briefing.
@@ -2092,7 +2167,8 @@ function buildReport(){
   const pmMean=Math.round(mean(pmStations.map(s=>s.pm)));
   const pmPeakV=Math.max(...pmStations.map(s=>s.pm));
   const aqi=Math.round(pmMean*1.6+20);
-  const blowTo=(PREVAILING.deg+180)%360;
+  const W=wind();
+  const blowTo=(W.deg+180)%360;
   const compass=['เหนือ','ตะวันออกเฉียงเหนือ','ตะวันออก','ตะวันออกเฉียงใต้','ใต้','ตะวันตกเฉียงใต้','ตะวันตก','ตะวันตกเฉียงเหนือ'];
   const blowDir=compass[Math.round(blowTo/45)%8];
   const ranked=districts.map(d=>{const hs=hotspots.filter(h=>h.district===d.name);
@@ -2118,7 +2194,7 @@ function buildReport(){
 
   const recs=[];
   if(crit.length) recs.push(`ส่งชุดดับไฟ/อาสาสมัครเข้าพื้นที่ <b>${ranked[0].name}</b> และ <b>${ranked[1].name}</b> ซึ่งมีความเสี่ยงสูงสุด`);
-  recs.push(`เฝ้าระวังการลามไปทาง<b>${blowDir}</b>ตามทิศลม (${PREVAILING.kmh} กม./ชม.) โดยเฉพาะแนวป่าชุมชนปลายลม`);
+  recs.push(`เฝ้าระวังการลามไปทาง<b>${blowDir}</b>ตามทิศลม (${W.kmh} กม./ชม.) โดยเฉพาะแนวป่าชุมชนปลายลม`);
   if(pmMean>55) recs.push(`ออกประกาศเตือนคุณภาพอากาศ — PM2.5 เฉลี่ย <b>${pmMean}</b> µg/m³ แนะนำกลุ่มเสี่ยงงดกิจกรรมกลางแจ้ง`);
   if(pmPeakV>90) recs.push(`พิจารณาแจกหน้ากาก/เปิดห้องปลอดฝุ่นในพื้นที่ที่ PM2.5 แตะ <b>${pmPeakV}</b> µg/m³`);
   recs.push(`ประสานเครือข่ายป่าชุมชนทำแนวกันไฟเชิงรุกในอำเภอเฝ้าระวังสูงสุด ก่อนลมแรงช่วงบ่าย`);
@@ -2135,7 +2211,7 @@ function buildReport(){
 
     <p class="lead">วันนี้ตรวจพบจุดความร้อนทั้งหมด <b>${hotspots.length}</b> จุด ในจำนวนนี้เป็นจุดวิกฤต <b>${crit.length}</b> จุด
     ค่าฝุ่น PM2.5 เฉลี่ยอยู่ที่ <b>${pmMean}</b> µg/m³ (AQI ${aqi}) ระดับ${pmAqiLabel(pmMean)}
-    ลมพัดจากทิศตะวันตกเฉียงใต้ ${PREVAILING.kmh} กม./ชม. ทำให้ควันและความเสี่ยงไฟลามไปทาง${blowDir}
+    ลมพัดจากทิศ${_degToCompass(W.deg)} ${W.kmh} กม./ชม. ทำให้ควันและความเสี่ยงไฟลามไปทาง${blowDir}
     พื้นที่ที่ต้องเฝ้าระวังสูงสุดคือ <b>${ranked[0].name}</b></p>
 
     <h2><span class="no">1</span>ตัวเลขสำคัญ</h2>
