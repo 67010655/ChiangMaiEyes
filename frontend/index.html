@@ -7,6 +7,22 @@
 <!-- Point at the SVG favicon that already ships; without this the browser
      auto-requests /favicon.ico and logs a 404 (no .ico file exists). -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="description" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศจังหวัดเชียงใหม่ แบบเรียลไทม์: จุดความร้อน (NASA/GISTDA), PM2.5, ทิศทางลม, การลามของไฟ และคะแนนความเสี่ยงหมอกควัน" />
+<meta name="theme-color" content="#0b0e13" />
+<!-- Open Graph / Twitter — link previews on LINE, Facebook, X, etc. -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="ChiangMaiEyes" />
+<meta property="og:title" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศเชียงใหม่" />
+<meta property="og:description" content="จุดความร้อน PM2.5 ทิศทางลม การลามของไฟ และคะแนนความเสี่ยงหมอกควันจังหวัดเชียงใหม่ แบบเรียลไทม์จาก NASA/GISTDA" />
+<meta property="og:url" content="https://chiangmaieyes.vercel.app/" />
+<meta property="og:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="th_TH" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศเชียงใหม่" />
+<meta name="twitter:description" content="จุดความร้อน PM2.5 ทิศทางลม และคะแนนความเสี่ยงหมอกควันเชียงใหม่ แบบเรียลไทม์" />
+<meta name="twitter:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -424,10 +440,31 @@
     .main{grid-template-columns:66px 240px 1fr}
     .side.right{display:none}
   }
+  /* Phones: stack everything into one scrollable column instead of hiding the
+     data panels. Previously both side panels were display:none on mobile, so a
+     phone user saw only the map and the body overflowed horizontally. */
   @media(max-width:820px){
-    .main{grid-template-columns:56px 1fr}
-    .side.left{display:none}
-    .stat-strip .stat:nth-child(n+3){display:none}
+    html,body{overflow:auto;height:auto}
+    .app{height:auto;min-height:100vh}
+    .main{display:flex;flex-direction:column;min-height:0}
+    /* nav rail becomes a horizontal toolbar on top */
+    .navrail{flex-direction:row;flex-wrap:wrap;justify-content:flex-start;
+      border-right:none;border-bottom:1px solid var(--line);padding:6px 8px;gap:4px}
+    .navrail .nav-spacer,.navrail .nav-sep{display:none}
+    .nav-item{width:auto;flex-direction:row;gap:6px;padding:7px 10px}
+    /* map needs an explicit height because #map is position:absolute */
+    .mapwrap{height:58vh;min-height:320px}
+    /* show BOTH data panels full width, flowing (no internal scroll cap) */
+    .side.left,.side.right{display:flex;border-left:none;border-right:none;
+      border-top:1px solid var(--line);overflow:visible}
+    /* keep the topbar to one row; let it scroll rather than widen the body */
+    .topbar{gap:10px;overflow-x:auto}
+    .brand{min-width:0}
+    .brand .sub{display:none}
+    .clock{min-width:0;padding-left:10px}
+    .stat{min-width:0;padding:0 10px}
+    /* full-screen overlays: the rail is on top now, so drop the left offset */
+    .analytics,.reportview,.threedview,.leagueview{left:0}
   }
 </style>
 </head>
@@ -544,7 +581,7 @@
 
     <!-- MAP -->
     <main class="mapwrap">
-      <div id="map"></div>
+      <div id="map" role="application" aria-label="แผนที่จุดความร้อน คุณภาพอากาศ และทิศทางลมจังหวัดเชียงใหม่ (โต้ตอบได้)"></div>
       <div class="map-overlay basemap-toggle">
         <button class="active" data-base="dark">DARK</button>
         <button data-base="osm">OSM</button>
@@ -2091,12 +2128,18 @@ async function fetchLiveData(){
     await new Promise(r=>setTimeout(r,1200));
     dash = await fetchJson('/api/dashboard', 25000);
   }
-  let history=null, phases=null;
-  await Promise.all([
-    fetchJson('/api/history', 60000).then(h=>history=h).catch(()=>{}),
-    fetchJson('/api/fire-phases', 15000).then(p=>phases=p).catch(()=>{}),
-  ]);
-  applyLive(dash, history, phases);
+  // Progressive render: paint the core dashboard (hotspots, PM2.5, wind, risk,
+  // alerts, freshness — all carried by /api/dashboard) immediately, instead of
+  // blocking first paint on the best-effort history + fire-phases calls (history
+  // alone allows 60s). Those enrich the trend charts and district phase ranking
+  // in the background and are patched in when they arrive.
+  applyLive(dash, null, null);
+  Promise.all([
+    fetchJson('/api/history', 60000).then(h=>h).catch(()=>null),
+    fetchJson('/api/fire-phases', 15000).then(p=>p).catch(()=>null),
+  ]).then(([history,phases])=>{
+    if(history||phases) applyLive(dash, history, phases);
+  });
   const n = (dash.hotspots && dash.hotspots.count)||0;
   return n;
 }
