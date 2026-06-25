@@ -1,0 +1,32 @@
+name: Warm backend
+
+# Keeps the Vercel backend (Hobby plan — native Vercel crons are limited to
+# once/day) warm so the first real visitor lands on an already-warm Fluid
+# Compute instance with a populated 15-minute data cache, instead of paying a
+# cold-start that could exceed the frontend's timeout and drop them into DEMO.
+#
+# Hits /api/dashboard, which runs the full NASA/GISTDA chain and primes the
+# cache — not just /health, which would warm the instance but leave the cache
+# cold. GitHub-hosted runners reach Vercel fine (unlike RFD).
+#
+# Note: GitHub may add delay under load, and disables scheduled workflows after
+# ~60 days of repo inactivity — re-enable from the Actions tab if that happens.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping dashboard (warms instance + data cache)
+        run: |
+          URL="https://backend-mocha-tau-49.vercel.app/api/dashboard"
+          echo "Warming $URL ..."
+          code=$(curl -s -o /dev/null -w "%{http_code}" -m 60 "$URL") || true
+          echo "Dashboard responded: HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::warning::Warm ping returned HTTP $code (non-200)"
+          fi

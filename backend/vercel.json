@@ -7,11 +7,5 @@
   ],
   "git": {
     "deploymentEnabled": false
-  },
-  "crons": [
-    {
-      "path": "/api/dashboard",
-      "schedule": "*/10 * * * *"
-    }
-  ]
+  }
 }
