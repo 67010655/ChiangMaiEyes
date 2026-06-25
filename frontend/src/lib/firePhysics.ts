@@ -75,13 +75,14 @@ export function getDistrictPhysics(districtName: string | undefined): DistrictPh
   return DISTRICT_PHYSICS[name] || DEFAULT_PHYSICS;
 }
 
-// Calculate the Rate of Spread (ROS) multiplier based on wind speed, slope, flammability
+// Calculate the Rate of Spread (ROS) multiplier based on wind speed, slope, flammability, and vegetation fuel (NDVI)
 export function calculateRateOfSpread(
   slope: number,
   flammability: number,
   historyMult: number,
   windSpeedKmh: number,
-  windPushes: boolean
+  windPushes: boolean,
+  ndvi?: number
 ): { rosMultiplier: number; description: string; slopeEffect: number } {
   // Slope effect: fire spreads faster uphill. e^(0.0693 * slope)
   const slopeEffect = Math.exp(0.0693 * slope) / 4.0; // normalized around 20 deg slope (~1.0)
@@ -91,15 +92,19 @@ export function calculateRateOfSpread(
   
   // Wind direction multiplier
   const windDirEffect = windPushes ? 1.4 : 0.8;
+
+  // Fuel density effect based on NDVI (higher NDVI = more fuel biomass = faster spread)
+  const safeNdvi = typeof ndvi === 'number' ? ndvi : 0.4;
+  const fuelEffect = 0.6 + (safeNdvi * 1.0); // e.g. ndvi 0.4 -> 1.0, ndvi 0.8 -> 1.4, ndvi 0.1 -> 0.7
   
   // Combined ROS multiplier
-  const rosMultiplier = flammability * slopeEffect * historyMult * windEffect * windDirEffect;
+  const rosMultiplier = flammability * slopeEffect * historyMult * windEffect * windDirEffect * fuelEffect;
   
   let description = 'การลามไฟต่ำมาก';
   if (rosMultiplier >= 3.0) {
-    description = 'การลามไฟรวดเร็วอย่างวิกฤต (ความชันและแรงลมขับเคลื่อนรุนแรง)';
+    description = 'การลามไฟรวดเร็วอย่างวิกฤต (ความชัน แรงลม และปริมาณเชื้อเพลิงพืชพรรณสูงมาก)';
   } else if (rosMultiplier >= 1.8) {
-    description = 'การลามไฟเร็วสูง (พื้นที่แห้งแล้ง/ความลาดชันมีผลส่งเสริม)';
+    description = 'การลามไฟเร็วสูง (พื้นที่แห้งแล้งและพืชพรรณหนาแน่นมีผลส่งเสริม)';
   } else if (rosMultiplier >= 1.0) {
     description = 'การลามไฟระดับปานกลางตามมาตรฐานป่าเบญจพรรณ';
   } else if (rosMultiplier >= 0.5) {

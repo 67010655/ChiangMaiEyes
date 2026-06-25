@@ -84,6 +84,12 @@ import { windDestinationName, getBearing } from "./lib/wind";
 
 import { getDistrictPhysics, calculateRateOfSpread } from "./lib/firePhysics";
 
+import { AnalyticsPanel } from "./components/analytics/AnalyticsPanel";
+
+import { LegendPanel } from "./components/analytics/LegendPanel";
+
+import { mockDashboard, mockHistory } from "./lib/devMock";
+
 import {
   buildCommunityForestRowsFromRanking,
   type CommunityForestRow,
@@ -140,7 +146,9 @@ type LayerState = {
   firePhase: boolean;
 };
 
-const fallback = dashboardSnapshot as DashboardResponse;
+const fallback = import.meta.env.DEV
+  ? mockDashboard
+  : (dashboardSnapshot as DashboardResponse);
 
 type CommunityForestSummary = {
   generatedAt?: string;
@@ -2171,7 +2179,9 @@ export function App() {
   const [dataStatus, setDataStatus] = useState<DataStatusResponse | null>(null);
   const lastAutoRefreshAt = useRef(0);
 
-  const [history, setHistory] = useState<HistoryResponse | null>(null);
+  const [history, setHistory] = useState<HistoryResponse | null>(
+    import.meta.env.DEV ? mockHistory : null,
+  );
 
   const [firePhases, setFirePhases] = useState<FirePhaseResponse | null>(null);
 
@@ -2443,6 +2453,12 @@ export function App() {
 
       const phys = getDistrictPhysics(nearest.district);
 
+      // Average NDVI from dryness_zones
+      const drynessZones = dashboard.intelligence?.satellite_layers?.dryness_zones ?? [];
+      const avgNdvi = drynessZones.length > 0
+        ? drynessZones.reduce((sum: number, zone: any) => sum + (zone.ndvi || 0), 0) / drynessZones.length
+        : 0.4;
+
       const {
         rosMultiplier,
         description: rosDesc,
@@ -2457,6 +2473,7 @@ export function App() {
         dashboard.weather.wind_speed_kmh,
 
         windPushes,
+        avgNdvi,
       );
 
       let riskVal = "ปลอดภัย";
@@ -2522,6 +2539,12 @@ export function App() {
           { label: "สภาพเชื้อเพลิง", value: phys.forest_type },
 
           {
+            label: "ดัชนีพืชพรรณ (NDVI)",
+            value: `${avgNdvi.toFixed(2)} (ความหนาแน่นเชื้อเพลิง)`,
+            tone: avgNdvi >= 0.5 ? "risk" : "watch",
+          },
+
+          {
             label: "ความชันภูมิประเทศ",
             value: `${phys.slope_deg}° (ลามเร็ว ${slopeEffect.toFixed(1)}x)`,
             tone: phys.slope_deg >= 25 ? "risk" : "watch",
@@ -2549,6 +2572,7 @@ export function App() {
     dashboard.weather.wind_direction_deg,
     dashboard.pm25.current_pm25,
     dashboard.weather.wind_speed_kmh,
+    dashboard.intelligence,
   ]);
 
   const updatedAt = useMemo(() => {
@@ -3077,56 +3101,11 @@ export function App() {
 
                 setSidebarOpen(true);
               }}
-              title="ภาพรวมสถานการณ์"
+              title="วิเคราะห์สถานการณ์"
             >
               <Home size={18} />
 
-              <span>ภาพรวม</span>
-            </button>
-
-            <button
-              type="button"
-              className={`sidebar-tab-btn ${activeTab === "aqi" ? "active" : ""}`}
-              onClick={() => {
-                setActiveTab("aqi");
-
-                setSidebarOpen(true);
-              }}
-              title="คุณภาพอากาศ & สารมลพิษ"
-            >
-              <CloudSun size={18} />
-
-              <span>ฝุ่น PM2.5</span>
-            </button>
-
-            <button
-              type="button"
-              className={`sidebar-tab-btn ${activeTab === "fire_weather" ? "active" : ""}`}
-              onClick={() => {
-                setActiveTab("fire_weather");
-
-                setSidebarOpen(true);
-              }}
-              title="พยากรณ์จุดไฟ & สภาพอากาศ"
-            >
-              <Flame size={18} />
-
-              <span>ไฟ & ลม</span>
-            </button>
-
-            <button
-              type="button"
-              className={`sidebar-tab-btn ${activeTab === "community" ? "active" : ""}`}
-              onClick={() => {
-                setActiveTab("community");
-
-                setSidebarOpen(true);
-              }}
-              title="เครือข่ายป่าชุมชน"
-            >
-              <Trophy size={18} />
-
-              <span>ป่าชุมชน</span>
+              <span>วิเคราะห์</span>
             </button>
 
             <button
@@ -3216,36 +3195,7 @@ export function App() {
                 </div>
               )}
 
-              <section className="card situation-card" aria-label="สรุปสถานการณ์ปัจจุบัน">
-                <div className="card__head">
-                  <span className="card__title">ตอนนี้เป็นยังไง</span>
-                </div>
-                <div className="situation-card__grid">
-                  {[
-                    situationItems[0],
-                    situationItems[3],
-                    situationItems[1],
-                    situationItems[2],
-                  ].map((item) => {
-                    const isWind = item.key === "wind";
-                    const bigValue = isWind ? item.detail : item.value;
-                    const subLabel = isWind
-                      ? `${item.label} · ${item.value}`
-                      : `${item.label} · ${item.detail}`;
-                    return (
-                      <button
-                        key={item.key}
-                        type="button"
-                        className={`situation-metric situation-metric--${item.tone}`}
-                        onClick={item.onClick}
-                      >
-                        <b className="situation-metric__value">{bigValue}</b>
-                        <span className="situation-metric__label">{subLabel}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
+              {/* situation-card removed — KPIs now live in AnalyticsPanel StatTiles (no duplication) */}
 
               <button
                 type="button"
@@ -3261,6 +3211,8 @@ export function App() {
 
               {activeTab === "overview" && (
                 <div className="tab-pane">
+                  <AnalyticsPanel dashboard={dashboard} history={history} />
+
                   {/* Weekly Forest League */}
 
                   {leagueIsLive && weeklyForestRanking.length > 0 && (
@@ -3398,6 +3350,15 @@ export function App() {
                   </details>
 
 
+
+                  <details className="sb-accordion">
+                    <summary>
+                      <span className="sb-accordion__title">
+                        ความเสี่ยง &amp; คำแนะนำเจ้าหน้าที่
+                        <span className="truth-badge truth-badge--derived">ตัวช่วยประเมิน</span>
+                      </span>
+                      <ChevronDown size={16} aria-hidden />
+                    </summary>
 
                   {/* Risk Card */}
 
@@ -3543,6 +3504,7 @@ export function App() {
                       </p>
                     </div>
                   </section>
+                  </details>
                 </div>
               )}
 
@@ -3703,9 +3665,17 @@ export function App() {
                         </div>
                       </div>
 
-                      <div className="metric-bento-item">
-                        <div className="metric-bento-icon">
+                      <div className="metric-bento-item" title={`ทิศทางลมพัดมาจาก ${dashboard.weather.wind_direction_deg}°`}>
+                        <div className="metric-bento-icon" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                           <Wind size={16} />
+                          <Compass
+                            size={14}
+                            style={{
+                              transform: `rotate(${dashboard.weather.wind_direction_deg}deg)`,
+                              transition: "transform 0.5s ease",
+                              opacity: 0.8,
+                            }}
+                          />
                         </div>
 
                         <div className="metric-bento-content">
@@ -3717,9 +3687,29 @@ export function App() {
                             ไป{windDestinationText}
                           </span>
 
-                          <span className="metric-bento-sub">
-                            {dashboard.weather.wind_speed_kmh} km/h (ทิศ{" "}
-                            {windSourceText})
+                          <span className="metric-bento-sub" style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                            <span>
+                              {dashboard.weather.wind_speed_kmh} km/h (ทิศ{" "}
+                              {windSourceText})
+                            </span>
+                            <a
+                              href="https://www.windy.com/?18.660,99.818,9,p:cities"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="windy-ref-link"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "2px",
+                                fontSize: "0.72rem",
+                                color: "var(--blue)",
+                                textDecoration: "underline",
+                                marginTop: "2px",
+                                fontWeight: 500,
+                              }}
+                            >
+                              <ExternalLink size={10} /> เปิดใน Windy เพื่อเทียบ
+                            </a>
                           </span>
                         </div>
                       </div>
@@ -4566,6 +4556,15 @@ export function App() {
               </div>
               )}
             </div>
+            )}
+
+            {activeTab !== "terrain3d" && (
+              <div className="map-legend-overlay">
+                <LegendPanel
+                  shownCount={visibleHotspots.items.length}
+                  totalCount={dashboard.hotspots.count}
+                />
+              </div>
             )}
 
             {activeTab === "terrain3d" ? (

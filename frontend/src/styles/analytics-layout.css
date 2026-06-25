@@ -1,0 +1,49 @@
+/* Analytics redesign — layout overrides loaded AFTER global.css.
+   Uses the [data-ui-mode="operator"] prefix to OUT-SPECIFY the existing
+   `!important` rules in global.css (bare `.main-content-layout` = specificity
+   0,1,0; ours = 0,2,0 and wins). Desktop-only so mobile stacking is untouched. */
+
+@media (min-width: 1024px) {
+  /* Exact-viewport shell: no page scroll, panels scroll internally instead. */
+  [data-ui-mode="operator"].app-shell {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+    padding-bottom: 12px !important;
+  }
+
+  /* Kill the brittle `height: calc(100vh - 104px)` magic number — flex-fill
+     whatever space is left after the topbar. */
+  [data-ui-mode="operator"] .main-content-layout {
+    height: auto !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+
+  [data-ui-mode="operator"] .map-stage.map-hero {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  /* Sidebar scrolls on its own rather than stretching the page. */
+  [data-ui-mode="operator"] .sidebar-panel-content {
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+
+  /* The source-list footer was the white band under the map — fold it away in
+     the fill-viewport layout (sources still shown in the freshness bar). */
+  [data-ui-mode="operator"] .page-foot {
+    display: none !important;
+  }
+}
+
+/* Layer-control labels were blending into the panel — force readable colour. */
+.map-layer-selector .layer-btn > span:not(.layer-dot):not(.layer-truth-badge),
+.map-layer-selector .layer-selector-title > span,
+.map-layer-selector .layer-selector-toggle > span {
+  color: var(--text) !important;
+}
+.map-layer-selector .hotspot-age-legend__title {
+  color: var(--muted) !important;
+}
