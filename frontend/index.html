@@ -585,6 +585,7 @@
       <div class="map-overlay basemap-toggle">
         <button class="active" data-base="dark">DARK</button>
         <button data-base="osm">OSM</button>
+        <button data-base="sat">ดาวเทียม</button>
         <button data-base="terrain">TERRAIN</button>
       </div>
       <div class="map-overlay wind-badge">
@@ -866,14 +867,35 @@ const map = L.map('map',{zoomControl:true,attributionControl:true}).setView([18.
 L.control.zoom({position:'bottomright'}); // keep default top-left actually
 map.zoomControl.setPosition('topleft');
 
+// Dedicated pane for the satellite "hybrid" label tiles: above base imagery
+// (tilePane=200) but below the data layers/markers (overlayPane=400), so place
+// and street names never sit on top of a hotspot.
+map.createPane('labels');
+map.getPane('labels').style.zIndex = 350;
+map.getPane('labels').style.pointerEvents = 'none';
+
 const bases = {
   dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     {maxZoom:19,attribution:'© OpenStreetMap contributors © CARTO'}),
   osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     {maxZoom:19,attribution:'© OpenStreetMap contributors'}),
+  // Esri World Imagery — real satellite photo, no labels of its own.
+  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:19,attribution:'© Esri, Maxar, Earthstar Geographics'}),
   terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
     {maxZoom:17,attribution:'© OpenStreetMap contributors, SRTM | © OpenTopoMap'})
 };
+
+// Transparent label/reference overlays drawn over the satellite photo — this is
+// what gives the "ดาวเทียม" view its Google-style hybrid look (place + road
+// names appearing as you zoom). Free, no API key.
+const satLabels = L.layerGroup([
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:19,pane:'labels'}),
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:19,pane:'labels'})
+]);
+
 let currentBase = bases.dark.addTo(map);
 document.querySelectorAll('.basemap-toggle button').forEach(b=>{
   b.onclick=()=>{
@@ -882,6 +904,8 @@ document.querySelectorAll('.basemap-toggle button').forEach(b=>{
     map.removeLayer(currentBase);
     currentBase = bases[b.dataset.base].addTo(map);
     currentBase.bringToBack();
+    // labels only make sense over the photo basemap
+    if(b.dataset.base==='sat') satLabels.addTo(map); else map.removeLayer(satLabels);
   };
 });
 
