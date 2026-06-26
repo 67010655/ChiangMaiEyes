@@ -1477,8 +1477,8 @@ function buildAlerts(){
 // ============================================================
 function setKpis(){
   const crit=hotspots.filter(h=>h.frp>90).length;
-  const pmAvg=Math.round(pmStations.reduce((s,x)=>s+x.pm,0)/pmStations.length);
-  const pmPeak=Math.max(...pmStations.map(x=>x.pm));
+  const pmAvg=pmStations.length?Math.round(pmStations.reduce((s,x)=>s+x.pm,0)/pmStations.length):0;
+  const pmPeak=pmStations.length?Math.max(...pmStations.map(x=>x.pm)):0;
   const aqi=Math.round(pmAvg*1.6+20);
   document.getElementById('kpiHot').textContent=hotspots.length;
   document.getElementById('kpiCrit').textContent=crit;
@@ -1492,7 +1492,7 @@ function setKpis(){
   document.getElementById('pmPeakTr').textContent = pmTrendPct != null
     ? (pmTrendPct >= 0 ? '▲ ' : '▼ ') + Math.abs(pmTrendPct) + '% vs เมื่อวาน'
     : '— vs เมื่อวาน';
-  const visKm = Math.round((28-pmPeak/6)*10)/10;
+  const visKm = pmPeak > 0 ? Math.round((28-Math.min(pmPeak,168)/6)*10)/10 : 28.0;
   document.getElementById('visKm').innerHTML = visKm + '<small> km</small>';
   document.getElementById('visTr').textContent = pmPeak > 150 ? '▼ ทัศนวิสัยต่ำมาก'
     : pmPeak > 75 ? '▼ ทัศนวิสัยลดลง' : '— ทัศนวิสัยปกติ';
@@ -2535,7 +2535,7 @@ function setLoading(on, msg){
   if(on){
     if(!el){
       el=document.createElement('div'); el.id='liveLoading';
-      el.style.cssText='position:fixed;inset:52px 0 0 66px;z-index:1400;display:flex;align-items:center;justify-content:center;background:rgba(7,10,14,.55);backdrop-filter:blur(2px);font-family:var(--mono);color:var(--muted);font-size:12px;letter-spacing:.08em;gap:12px';
+      el.style.cssText='position:fixed;inset:52px 0 0 66px;z-index:1400;display:flex;align-items:flex-start;justify-content:center;padding-top:18px;pointer-events:none;font-family:var(--mono);color:var(--muted);font-size:12px;letter-spacing:.08em;gap:12px';
       const st=document.createElement('style'); st.textContent='@keyframes spin{to{transform:rotate(360deg)}}'; document.head.appendChild(st);
       document.body.appendChild(el);
     }
