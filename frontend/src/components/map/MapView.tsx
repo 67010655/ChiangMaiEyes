@@ -11,24 +11,44 @@ import {
 
 export type Basemap = "light" | "satellite" | "terrain";
 
-const BASEMAPS: Record<Basemap, { label: string; url: string; attribution: string; maxZoom: number }> = {
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
+
+function mtUrl(style: string, ext: "jpg" | "png") {
+  return `https://api.maptiler.com/maps/${style}/{z}/{x}/{y}.${ext}?key=${MAPTILER_KEY}`;
+}
+
+const MAPTILER_ATTR = '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">MapTiler</a> &copy; OpenStreetMap';
+
+type BasemapCfg = { label: string; url: string; attribution: string; maxZoom: number; labelUrl?: string };
+
+const BASEMAPS: Record<Basemap, BasemapCfg> = {
   light: {
     label: "สว่าง",
-    url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    attribution: "&copy; OpenStreetMap &copy; CARTO",
+    url: MAPTILER_KEY
+      ? mtUrl("dataviz", "png")
+      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    attribution: MAPTILER_KEY ? MAPTILER_ATTR : "&copy; OpenStreetMap &copy; CARTO",
     maxZoom: 20,
   },
   satellite: {
     label: "ดาวเทียม",
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "&copy; Esri, Maxar, Earthstar Geographics",
-    maxZoom: 19,
+    // MapTiler hybrid = imagery + labels in one tile; Esri imagery needs a separate label layer
+    url: MAPTILER_KEY
+      ? mtUrl("hybrid", "jpg")
+      : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution: MAPTILER_KEY ? MAPTILER_ATTR : "&copy; Esri, Maxar, Earthstar Geographics",
+    maxZoom: MAPTILER_KEY ? 20 : 19,
+    labelUrl: MAPTILER_KEY
+      ? undefined
+      : "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
   },
   terrain: {
     label: "ภูมิประเทศ",
-    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-    attribution: "&copy; OpenStreetMap &copy; OpenTopoMap",
-    maxZoom: 17,
+    url: MAPTILER_KEY
+      ? mtUrl("outdoor-v2", "png")
+      : "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    attribution: MAPTILER_KEY ? MAPTILER_ATTR : "&copy; OpenStreetMap &copy; OpenTopoMap",
+    maxZoom: MAPTILER_KEY ? 20 : 17,
   },
 };
 
@@ -51,6 +71,7 @@ export function MapView({
   const elRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const tileRef = useRef<L.TileLayer | null>(null);
+  const labelRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
   const velRef = useRef<any>(null);
   const [basemap, setBasemap] = useState<Basemap>(initialBasemap);
@@ -69,13 +90,17 @@ export function MapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // basemap tile layer
+  // basemap tile layer + optional hybrid label overlay
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     if (tileRef.current) tileRef.current.remove();
+    if (labelRef.current) { labelRef.current.remove(); labelRef.current = null; }
     const cfg = BASEMAPS[basemap];
     tileRef.current = L.tileLayer(cfg.url, { attribution: cfg.attribution, maxZoom: cfg.maxZoom }).addTo(map);
+    if (cfg.labelUrl) {
+      labelRef.current = L.tileLayer(cfg.labelUrl, { maxZoom: cfg.maxZoom, opacity: 1 }).addTo(map);
+    }
   }, [basemap]);
 
   // hotspot markers, coloured by age

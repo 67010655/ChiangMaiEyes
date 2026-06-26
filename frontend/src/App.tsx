@@ -21,7 +21,7 @@ const TABS: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
 ];
 
 export function App() {
-  const { dashboard, history, loading, refresh } = useDashboard();
+  const { dashboard, history, loading, refresh, demoMode, setDemoMode } = useDashboard();
   const [tab, setTab] = useState<Tab>("analytics");
 
   return (
@@ -37,6 +37,23 @@ export function App() {
               จุดความร้อน · ฝุ่น PM2.5 · ทิศทางลม
             </p>
           </div>
+        </div>
+
+        <div className="topbar__mode-toggle" role="group" aria-label="โหมดข้อมูล">
+          <button
+            type="button"
+            className={`mode-btn${demoMode ? " is-active" : ""}`}
+            onClick={() => setDemoMode(true)}
+          >
+            DEMO
+          </button>
+          <button
+            type="button"
+            className={`mode-btn${!demoMode ? " is-active" : ""}`}
+            onClick={() => setDemoMode(false)}
+          >
+            LIVE
+          </button>
         </div>
 
         <div className="topbar__actions">

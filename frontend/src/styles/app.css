@@ -45,6 +45,14 @@ button { font: inherit; cursor: pointer; }
 .topbar__title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
 .topbar__subtitle { font-size: 0.8rem; color: var(--muted); margin: 0; }
 .topbar__actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.topbar__mode-toggle {
+  display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; flex: 0 0 auto;
+}
+.mode-btn {
+  padding: 7px 14px; border: none; background: transparent; color: var(--muted);
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; transition: background 0.15s, color 0.15s;
+}
+.mode-btn.is-active { background: var(--green); color: #fff; }
 .icon-btn {
   width: 40px; height: 40px; display: grid; place-items: center;
   border-radius: 12px; border: 1px solid var(--line); background: var(--surface-soft); color: var(--text);

@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { fetchDashboard, fetchHistory } from "../lib/api";
 import { mockDashboard, mockHistory } from "../lib/devMock";
 import type { DashboardResponse, HistoryResponse } from "../lib/types";
-
-const DEV = import.meta.env.DEV;
 
 export type DashboardState = {
   dashboard: DashboardResponse;
@@ -13,22 +11,21 @@ export type DashboardState = {
   error: string | null;
   updatedAt: Date;
   refresh: () => void;
+  demoMode: boolean;
+  setDemoMode: (v: boolean) => void;
 };
 
-// Single source of dashboard data. In dev (no backend) it falls back to mock
-// data so the UI renders fully; in prod it fetches the live API.
 export function useDashboard(): DashboardState {
-  const [dashboard, setDashboard] = useState<DashboardResponse>(
-    DEV ? mockDashboard : mockDashboard,
-  );
-  const [history, setHistory] = useState<HistoryResponse | null>(
-    DEV ? mockHistory : null,
-  );
+  const [dashboard, setDashboard] = useState<DashboardResponse>(mockDashboard);
+  const [history, setHistory] = useState<HistoryResponse | null>(mockHistory);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState(new Date());
+  const [demoMode, setDemoModeState] = useState(false);
+  const demoRef = useRef(false);
 
   const refresh = useCallback(() => {
+    if (demoRef.current) return;
     setLoading(true);
     setError(null);
     fetchDashboard()
@@ -40,17 +37,26 @@ export function useDashboard(): DashboardState {
         setError(err instanceof Error ? err.message : "โหลดข้อมูลไม่สำเร็จ");
       })
       .finally(() => setLoading(false));
-
     fetchHistory()
       .then(setHistory)
-      .catch(() => {
-        /* keep existing history (mock in dev) on failure */
-      });
+      .catch(() => {});
   }, []);
+
+  const setDemoMode = useCallback((v: boolean) => {
+    demoRef.current = v;
+    setDemoModeState(v);
+    if (v) {
+      setDashboard(mockDashboard);
+      setHistory(mockHistory);
+      setError(null);
+    } else {
+      refresh();
+    }
+  }, [refresh]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  return { dashboard, history, loading, error, updatedAt, refresh };
+  return { dashboard, history, loading, error, updatedAt, refresh, demoMode, setDemoMode };
 }
