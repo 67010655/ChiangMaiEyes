@@ -343,6 +343,8 @@ class DistrictFirePhase(BaseModel):
     nearby_forests: list[NearbyForest] = Field(default_factory=list)
     spread_projection: SpreadProjection | None = None
     coordination_note: str | None = None
+    # Calculation transparency: raw numbers used to derive danger_score + wind
+    calc_breakdown: dict | None = None
 
 
 class FirePhaseResponse(BaseModel):

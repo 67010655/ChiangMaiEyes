@@ -239,6 +239,7 @@ def classify_fire_phases(
     community_forests: list[CommunityForest] | None = None,
     hotspot_history: list[tuple[str, int]] | None = None,
     pm25_history: list[tuple[str, float]] | None = None,
+    district_winds: dict[str, tuple[float, float]] | None = None,
 ) -> FirePhaseResponse:
     cf_list = community_forests or []
 
@@ -257,18 +258,43 @@ def classify_fire_phases(
 
     dryness = _air_dryness(weather)
     humidity = weather.humidity_percent if weather.humidity_percent is not None else 50.0
-    wind_speed = weather.wind_speed_kmh
-    wind_dir = weather.wind_direction_deg
-
-    # Fire spreads in the direction the wind blows TO (wind_dir is FROM).
-    spread_dir_global = (wind_dir + 180) % 360
+    global_wind_speed = weather.wind_speed_kmh
+    global_wind_dir = weather.wind_direction_deg
 
     phases: list[DistrictFirePhase] = []
     for district, phys in DISTRICT_PHYSICS.items():
+        # Per-district wind from Open-Meteo centroid fetch; fall back to synoptic station.
+        if district_winds and district in district_winds:
+            dist_wind_speed, dist_wind_dir = district_winds[district]
+            wind_source_label = "Open-Meteo (per-district centroid)"
+        else:
+            dist_wind_speed, dist_wind_dir = global_wind_speed, global_wind_dir
+            wind_source_label = "สถานีอุตุนิยมวิทยา (synoptic)"
+
+        spread_dir_dist = (dist_wind_dir + 180) % 360
+
         active = active_by_district.get(district, 0)
         fuel_norm = min(1.0, phys["fuel_flammability"] / 1.8)
         history_norm = min(1.0, max(0.0, (phys["history_multiplier"] - 1.0) / 0.5))
         danger = round(0.4 * fuel_norm + 0.2 * history_norm + 0.4 * dryness, 2)
+
+        calc_breakdown = {
+            "formula": "danger = 0.4×fuel + 0.2×history + 0.4×dryness",
+            "fuel_flammability": phys["fuel_flammability"],
+            "fuel_norm": round(fuel_norm, 3),
+            "history_level": phys.get("history_level", "ปานกลาง"),
+            "history_multiplier": phys.get("history_multiplier", 1.0),
+            "history_norm": round(history_norm, 3),
+            "dryness": round(dryness, 3),
+            "humidity_pct": round(humidity, 1),
+            "rain_24h_mm": round(weather.rain_today_mm or 0, 1),
+            "wind_speed_kmh": round(dist_wind_speed, 1),
+            "wind_dir_deg": round(dist_wind_dir, 1),
+            "wind_source": wind_source_label,
+            "fuel_contrib": round(0.4 * fuel_norm, 3),
+            "history_contrib": round(0.2 * history_norm, 3),
+            "dryness_contrib": round(0.4 * dryness, 3),
+        }
 
         spread: SpreadProjection | None = None
         nearby: list[NearbyForest] = []
@@ -278,13 +304,13 @@ def classify_fire_phases(
             phase = "during"
             danger = max(danger, _DURING_FLOOR)
             reasons = [f"พบจุดความร้อน {active} จุดในพื้นที่ตอนนี้"]
-            spread = _build_spread_projection(district, wind_speed, wind_dir)
+            spread = _build_spread_projection(district, dist_wind_speed, dist_wind_dir)
             nearby, coord_note = _nearby_forests(district, spread.direction_deg, cf_list)
         elif district in burned:
             phase = "after"
             dnbr_value, severity = burned[district]
             reasons = [f"พบรอยไหม้จากดาวเทียม (dNBR {dnbr_value}, ความรุนแรง {severity}) — ระยะฟื้นฟู"]
-            nearby, _ = _nearby_forests(district, spread_dir_global, cf_list)
+            nearby, _ = _nearby_forests(district, spread_dir_dist, cf_list)
         elif dryness < _DRY_AIR_GATE:
             phase = "normal"
             reasons = [f"อากาศชื้น ความชื้น {humidity:.0f}% เชื้อเพลิงไม่แห้งพอจะติดไฟ"]
@@ -294,7 +320,7 @@ def classify_fire_phases(
                 f"เชื้อเพลิงติดไฟง่าย ({phys['history_level']})",
                 f"อากาศแห้ง ความชื้น {humidity:.0f}%",
             ]
-            nearby, coord_note = _nearby_forests(district, spread_dir_global, cf_list)
+            nearby, coord_note = _nearby_forests(district, spread_dir_dist, cf_list)
         else:
             phase = "normal"
             reasons = ["ยังไม่มีจุดความร้อน และดัชนีความเสี่ยงอยู่ระดับต่ำ"]
@@ -312,6 +338,7 @@ def classify_fire_phases(
             nearby_forests=nearby,
             spread_projection=spread,
             coordination_note=coord_note,
+            calc_breakdown=calc_breakdown,
         ))
 
     phases.sort(key=lambda p: -p.danger_score)

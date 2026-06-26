@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     # enforces the 1-report-per-forest/village/day rule before inserting.
     supabase_url: str | None = None
     supabase_service_role_key: str | None = None
+    aqicn_token: str | None = None
     satellite_layers_file: Path | None = None
     remote_snapshot_base_url: str | None = (
         "https://raw.githubusercontent.com/67010655/ChiangMaiEyes/"

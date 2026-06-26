@@ -49,6 +49,36 @@
     --mono:'JetBrains Mono',ui-monospace,monospace;
     --disp:'Space Grotesk',system-ui,sans-serif;
   }
+  /* ── Light mode overrides ─────────────────── */
+  body.light-mode{
+    --bg:#eef2f7;
+    --panel:#ffffff;
+    --panel-2:#f4f7fb;
+    --line:#d8e0ec;
+    --line-soft:#e4eaf4;
+    --txt:#0f1a2a;
+    --muted:#3d4f66;
+    --dim:#6b7a8f;
+    --good:#1f7a42;
+  }
+  body.light-mode .topbar{background:linear-gradient(180deg,#ffffff,#f0f4fa);border-bottom-color:var(--line)}
+  body.light-mode .navrail{background:linear-gradient(180deg,#f7fafd,#eef2f7)}
+  body.light-mode .side{background:var(--panel)}
+  body.light-mode .analytics,
+  body.light-mode .reportview,
+  body.light-mode .threedview,
+  body.light-mode .leagueview,
+  body.light-mode .phaseview{background:rgba(238,242,247,.97)}
+  body.light-mode .an-head,
+  body.light-mode .ph-head,
+  body.light-mode .rp-toolbar{background:linear-gradient(180deg,#f0f4fa,rgba(240,244,250,.7))}
+  body.light-mode .kpi{background:var(--panel-2);border-color:var(--line)}
+  body.light-mode .alert{background:var(--panel-2)}
+  body.light-mode .an-card,.an-panel{background:var(--panel);border-color:var(--line-soft)}
+  body.light-mode .ph-card{background:var(--panel);border-color:var(--line)}
+  body.light-mode .ph-spread{background:var(--panel-2)}
+  body.light-mode .leaflet-container{background:#e0e6ee!important}
+  body.light-mode #liveLoading{background:rgba(238,242,247,.55)}
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{
@@ -456,10 +486,18 @@
   .dl .dk{color:var(--dim)} .dl .dv{color:var(--txt);font-weight:500}
   .dv.hot{color:var(--ember)} .dv.crit{color:var(--danger)}
 
-  .leaflet-popup-content-wrapper{background:#11161d;color:#e6edf3;border:1px solid var(--ember);border-radius:8px}
-  .leaflet-popup-tip{background:#11161d;border:1px solid var(--ember)}
-  .leaflet-popup-content{font-family:var(--mono);font-size:11px;margin:11px 13px}
-  .leaflet-popup-content b{color:var(--ember)}
+  .leaflet-popup-content-wrapper{background:#0d1117;color:#e6edf3;border:1px solid var(--ember);border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.6)}
+  .leaflet-popup-tip{background:#0d1117}
+  .leaflet-popup-content{font-family:var(--mono);font-size:11px;margin:11px 13px;line-height:1.6}
+  .leaflet-popup-content b{color:#f5a623}
+  /* District popup: cyan accent, dark bg, readable at all zoom levels */
+  .district-popup .leaflet-popup-content-wrapper{background:#0d1117cc;backdrop-filter:blur(8px);border-color:#22d3ee55}
+  .district-popup .leaflet-popup-tip{background:#0d1117}
+  /* 3D popup (Leaflet3D / pane overlays): force dark bg + high contrast text */
+  .leaflet-3d-popup .leaflet-popup-content-wrapper,
+  .popup-3d .leaflet-popup-content-wrapper{background:#0d1117 !important;color:#f0f6fc !important;border:1px solid #30363d !important}
+  .leaflet-3d-popup .leaflet-popup-tip,
+  .popup-3d .leaflet-popup-tip{background:#0d1117 !important}
 
   .hotspot-pulse{animation:hp 2s infinite}
   @keyframes hp{0%{transform:scale(1);opacity:.9}50%{transform:scale(1.5);opacity:.2}100%{transform:scale(1);opacity:.9}}
@@ -534,6 +572,12 @@
       <div class="stat"><span class="k">PM2.5 avg</span><span class="v" id="kpiPm">—<small> µg/m³</small></span></div>
       <div class="stat"><span class="k">AQI</span><span class="v" id="kpiAqi">—</span></div>
     </div>
+    <button id="themeToggle" onclick="toggleTheme()" title="สลับ Dark / Light mode"
+      style="margin-left:auto;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;transition:.15s">
+      <svg id="themeIcon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+    </button>
     <div class="clock" id="clock">
       <span class="live"><span class="dot"></span>LIVE</span><br>
       <b id="clockTime">--:--:--</b> ICT
@@ -588,12 +632,7 @@
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
         <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">NDVI ความหนาแน่นพืชพรรณ<small>MODIS 8-day · NASA GIBS</small></div><span class="cnt">off</span></div>
-        <div class="datamode">
-          <div class="seg">
-            <button class="on" id="dmDemo">● DEMO</button>
-            <button id="dmLive">○ LIVE</button>
-          </div>
-        </div>
+        <!-- DEMO mode removed — always LIVE -->
       </div>
 
       <div class="block">
@@ -619,7 +658,7 @@
         <span class="src-pill"><span class="ok">●</span> GISTDA</span>
         <span class="src-pill"><span class="ok">●</span> PCD</span>
         <span class="src-pill"><span class="ok">●</span> OpenWeather</span>
-        <br>UPDATED <span id="footUpd">—</span> · DEMO DATA
+        <br>UPDATED <span id="footUpd">—</span> · <span id="footMode" style="color:var(--good)">LIVE</span>
       </div>
     </aside>
 
@@ -897,11 +936,25 @@
 
 const CM = [18.79, 98.99];               // Chiang Mai center
 let PREVAILING = null;  // live wind only — null until first LIVE fetch (topbar shows "—")
-// Demo/synthetic geometry still needs *a* wind vector to draw cones & arrows.
-// This is used ONLY for map geometry and for generated artifacts (report/analytics),
-// never for the LIVE topbar — so a 200 with no weather can't masquerade as a real reading.
-const DEMO_WIND = { deg: 215, kmh: 14 };   // SW (deg = direction wind comes FROM)
+const DEMO_WIND = { deg: 215, kmh: 14 };   // SW fallback when LIVE fetch hasn't arrived
 function wind(){ return PREVAILING || DEMO_WIND; }
+
+// ── Dark / Light mode toggle ────────────────────────
+(function initTheme(){
+  const saved = (() => { try { return localStorage.getItem('cme_theme'); } catch(_){} return null; })();
+  if(saved === 'light') document.body.classList.add('light-mode');
+})();
+function toggleTheme(){
+  const isLight = document.body.classList.toggle('light-mode');
+  try { localStorage.setItem('cme_theme', isLight ? 'light' : 'dark'); } catch(_){}
+  // Swap icon: sun↔moon
+  const icon = document.getElementById('themeIcon');
+  if(icon){
+    icon.innerHTML = isLight
+      ? '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'  // moon
+      : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';  // sun
+  }
+}
 // 8-point Thai compass from a "comes-from" bearing in degrees.
 function _degToCompass(deg){
   const c=['เหนือ','ตอน.','ตะวันออก','ตอ.ใต้','ใต้','ตต.ใต้','ตะวันตก','ตต.เหนือ'];
@@ -923,7 +976,7 @@ function formatAge(minutes){
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'
   : '';
-let dataMode = 'demo';                    // 'demo' = synthetic seed · 'live' = backend
+let dataMode = 'live';                    // always LIVE; 'offline' if backend unreachable
 let currentDashboard = null;              // Full API dashboard payload
 // Real backend intelligence captured on each LIVE fetch (null in DEMO mode).
 let livePhases = null;                     // /api/fire-phases → per-district phase
@@ -1408,9 +1461,8 @@ function windRose(id,bins){
 }
 
 function rankList(){
-  // In LIVE mode use the backend's real per-district fire phase instead of the
-  // client-side FRP heuristic below.
-  if(dataMode==='live' && livePhases && livePhases.length) return rankListLive();
+  // Prefer backend's real per-district fire phase when available
+  if(livePhases && livePhases.length) return rankListLive();
   const scored=districts.map(d=>{
     const hs=hotspots.filter(h=>h.district===d.name);
     const score=Math.min(100, hs.reduce((s,h)=>s+h.frp,0)/3 + hs.length*8);
@@ -1438,7 +1490,7 @@ function buildAlerts(){
     d:`${hipm.pm} µg/m³ · ระดับ${pmAqiLabel(hipm.pm)}`});
   // Only surface the wind-gust alert when we actually have a wind reading
   // (live weather, or the demo seed) — never invent one under a LIVE label.
-  if(PREVAILING || dataMode!=='live'){
+  if(PREVAILING){
     const W=wind();
     list.push({lv:'WARN',crit:false,t:`ลมกระโชกจากทิศ ${_degToCompass(W.deg)} เพิ่มขึ้น`,
       d:`${W.kmh} km/h · เพิ่มความเร็วการลามของไฟทางลม`});
@@ -1776,7 +1828,7 @@ function rangeData(r){
 function renderAnalytics(r){
   const rd=rangeData(r);
   // Real recent-vs-previous trend from the backend replaces the random demo delta.
-  const trend=(dataMode==='live'&&liveIntel&&liveIntel.hotspot_trend)?liveIntel.hotspot_trend:null;
+  const trend=(liveIntel&&liveIntel.hotspot_trend)?liveIntel.hotspot_trend:null;
   const delta = trend ? trend.change_percent : (rd.prev?((rd.total-rd.prev)/rd.prev*100):0);
   const prevText = trend ? `${trend.previous_count} จุด ช่วงก่อนหน้า (${trend.window_days} วัน)` : `${rd.prev} จุด ช่วงก่อน`;
   const pmMean=pmStations.length?Math.round(mean(pmStations.map(s=>s.pm))):0;
@@ -1805,16 +1857,14 @@ function renderAnalytics(r){
   // modelled diurnal pattern even in LIVE mode. Say so rather than imply it is live.
   histogram('anHour',hourly,Array.from({length:24},(_,h)=>h%3===0?h:''),{color:'#ff8a3d'});
   const peakH=hourly.indexOf(Math.max(...hourly));
-  document.getElementById('anHourIns').textContent = dataMode==='live'
-    ? 'รูปแบบจำลอง — backend ยังไม่มีข้อมูลจุดความร้อนรายชั่วโมง'
-    : `ช่วงเผาสูงสุดเวลา ${peakH}:00–${peakH+2}:00 น. — สอดคล้องกับการเผาช่วงบ่ายแก่`;
+  document.getElementById('anHourIns').textContent = 'รูปแบบจำลอง — backend ยังไม่มีข้อมูลจุดความร้อนรายชั่วโมง';
 
   // frp histogram
   const fb=[0,0,0,0,0,0,0];frpSamples.forEach(f=>{fb[Math.min(6,Math.floor(f/20))]++;});
   histogram('anFrp',fb,['0','20','40','60','80','100','120+'],{color:'#f5640a'});
   document.getElementById('anFrpIns').textContent = frpSamples.length
     ? `${Math.round(fb.slice(0,2).reduce((a,b)=>a+b,0)/frpSamples.length*100)}% ของจุดเป็นไฟเล็ก (<40 MW) · ลักษณะการเผาเศษวัสดุการเกษตร`
-    : (dataMode==='live' ? 'ยังไม่มีค่า FRP จากแหล่งข้อมูลสด (ต้อง redeploy backend ให้ดึง FRP จาก FIRMS)' : '—');
+    : 'ยังไม่มีค่า FRP จากแหล่งข้อมูลสด (ต้อง redeploy backend ให้ดึง FRP จาก FIRMS)';
 
   // scatter corr
   const rr=scatterReg('anScatter',pmPairs,{});
@@ -1822,10 +1872,10 @@ function renderAnalytics(r){
 
   // district hbar — real per-district active hotspot counts in LIVE mode.
   let drows;
-  if(dataMode==='live' && livePhases && livePhases.length){
+  if(livePhases && livePhases.length){
     drows=livePhases.map(p=>({name:p.district,v:p.active_hotspots})).sort((a,b)=>b.v-a.v);
   } else {
-    drows=districts.map(d=>{const base=hotspots.filter(h=>h.district===d.name).length;return{name:d.name,v:Math.round(base*rd.mult*rnd(.7,1.3))+base};}).sort((a,b)=>b.v-a.v);
+    drows=districts.map(d=>{const base=hotspots.filter(h=>h.district===d.name).length;return{name:d.name,v:base};}).sort((a,b)=>b.v-a.v);
   }
 hbar('anDist',drows,{});
 
@@ -1918,17 +1968,19 @@ function renderDistrictDetailsOnMap(distName) {
   });
 }
 
-// Clear district detail when clicking directly on map background
-map.on('click', function(e) {
-  if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.id === 'map') {
-    layers.districtDetails.clearLayers();
-    const title = document.querySelector('#detailBlock h2');
-    const empty = document.getElementById('detailEmpty');
-    const body = document.getElementById('detailBody');
-    title.textContent = 'Hotspot detail';
-    empty.style.display = 'block';
-    body.style.display = 'none';
+// Track the currently selected district layer for hover-style persistence
+let _selectedDistrictLayer = null;
+const _DISTRICT_DEFAULT_STYLE = {color:'#334155',weight:1.2,fillColor:'#1e293b',fillOpacity:0.03};
+const _DISTRICT_ACTIVE_STYLE  = {color:'#22d3ee',fillColor:'#22d3ee',fillOpacity:0.12,weight:1.8};
+
+// Clear all district selection on map background click (including clicking outside CM)
+map.on('click', function() {
+  if (_selectedDistrictLayer) {
+    _selectedDistrictLayer.setStyle(_DISTRICT_DEFAULT_STYLE);
+    _selectedDistrictLayer = null;
   }
+  map.closePopup();
+  layers.districtDetails.clearLayers();
 });
 
 async function loadBoundaries() {
@@ -1972,30 +2024,27 @@ async function loadBoundaries() {
         }
         
         layer.on('mouseover', function() {
-          layer.setStyle({
-            color: '#22d3ee',
-            fillColor: '#22d3ee',
-            fillOpacity: 0.12,
-            weight: 1.8
-          });
-        });
-        
-        layer.on('mouseout', function() {
-          layer.setStyle({
-            color: '#334155',
-            fillColor: '#1e293b',
-            fillOpacity: 0.03,
-            weight: 1.2
-          });
+          if (_selectedDistrictLayer !== layer) layer.setStyle(_DISTRICT_ACTIVE_STYLE);
         });
 
-        // Click: zoom + show compact popup ON the district + render detail markers
+        layer.on('mouseout', function() {
+          if (_selectedDistrictLayer !== layer) layer.setStyle(_DISTRICT_DEFAULT_STYLE);
+        });
+
+        // Click: hover-style stays, popup with tambon ranking, clears on map click
         layer.on('click', function(e) {
           if (e.originalEvent) L.DomEvent.stopPropagation(e);
+          // Reset previous selection
+          if (_selectedDistrictLayer && _selectedDistrictLayer !== layer) {
+            _selectedDistrictLayer.setStyle(_DISTRICT_DEFAULT_STYLE);
+          }
+          _selectedDistrictLayer = layer;
+          layer.setStyle(_DISTRICT_ACTIVE_STYLE);
+
           map.fitBounds(layer.getBounds(), { padding: [20, 20], maxZoom: 12 });
           const nameTh = feature.properties.nameTh || feature.properties.name;
           renderDistrictDetailsOnMap(nameTh);
-          // Build district popup ON the map (centroid of bounds)
+
           const bounds = layer.getBounds();
           const center = bounds.getCenter();
           const distNorm = normalizeDistrictName(nameTh);
@@ -2004,7 +2053,31 @@ async function loadBoundaries() {
           const frpSum = distHs.reduce((s,h)=>s+(h.frp||0),0);
           const riskScore = Math.min(100, frpSum/3 + distHs.length*8);
           const riskCol = riskScore>70?'#ff4d4d':riskScore>40?'#f5640a':'#facc15';
-          L.popup({closeButton:true, maxWidth:240, className:'district-popup'})
+
+          // Tambon ranking: group hotspots by subdistrict, sort by FRP desc
+          const tambonMap = {};
+          distHs.forEach(h => {
+            const tb = h.subdistrict || h.tambon || '—';
+            if (!tambonMap[tb]) tambonMap[tb] = {count:0, frp:0};
+            tambonMap[tb].count++;
+            tambonMap[tb].frp += h.frp || 0;
+          });
+          const tambonRanked = Object.entries(tambonMap)
+            .sort((a,b) => b[1].frp - a[1].frp || b[1].count - a[1].count)
+            .slice(0, 5);
+          const tambonHtml = tambonRanked.length
+            ? `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:6px">
+                <div style="color:#8b97a7;font-size:9px;letter-spacing:.12em;margin-bottom:4px">ตำบลเสี่ยงสูงสุด</div>
+                ${tambonRanked.map(([tb, d], i) =>
+                  `<div style="display:flex;justify-content:space-between;padding:2px 0;color:${i===0?'#ff8a3d':'#e6edf3'}">
+                    <span>${i+1}. ต.${tb}</span>
+                    <span style="color:#8b97a7">${d.count}จุด ${d.frp>0?d.frp.toFixed(0)+'MW':''}</span>
+                  </div>`
+                ).join('')}
+              </div>`
+            : '';
+
+          L.popup({closeButton:true, maxWidth:270, className:'district-popup'})
             .setLatLng(center)
             .setContent(
               `<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6">
@@ -2013,6 +2086,7 @@ async function loadBoundaries() {
               FRP รวม: <b>${frpSum>0?frpSum.toFixed(1)+' MW':'—'}</b><br>
               ป่าชุมชน: <b style="color:#43b05f">${distFs.length} แห่ง</b><br>
               ความเสี่ยง: <b style="color:${riskCol}">${riskScore>0?Math.round(riskScore):'ต่ำ'}</b>
+              ${tambonHtml}
               </div>`
             ).openOn(map);
         });
@@ -2028,15 +2102,8 @@ async function loadBoundaries() {
   }
 }
 
-setInterval(()=>{
-  // DEMO-only animation; never mutate real backend data in LIVE mode.
-  if(dataMode!=='demo' || !hotspots.length) return;
-  const h=hotspots[Math.floor(Math.random()*hotspots.length)];
-  if(h.frp!=null) h.frp=Math.max(8,Math.min(150,h.frp+Math.round(rnd(-8,8))));
-  h.detected=Math.max(1,h.detected-1);
-  renderHotspots(); renderSpread(); setKpis(); rankList();
-  document.getElementById('footUpd').textContent=stamp();
-},9000);
+// Auto-refresh every 10 minutes in LIVE mode
+setInterval(()=>goLive(false), 10*60*1000);
 
 /* ============================================================
    FEATURE ENGINE — heat/forest layers · report · 3D · data mode
@@ -2191,9 +2258,8 @@ function applyLive(dash, history, phases){
 // The wind rose needs hourly wind history the backend doesn't expose, so flag it
 // as PROTOTYPE in LIVE mode instead of implying the distribution is measured.
 function markLiveProvenance(){
-  // Wind rose label now managed by fetchWindRose() — it updates to "· จริง" on success.
-  // Only reset to plain title if we're back in demo mode.
-  if(dataMode!=='live'){
+  // Wind rose label managed by fetchWindRose()
+  if(false){  // no-op: kept as anchor
     document.querySelectorAll('.side.right .block h2').forEach(h=>{
       if(h.textContent.includes('Wind rose')) h.innerHTML='Wind rose — 24h';
     });
@@ -2236,8 +2302,8 @@ document.getElementById('phaseClose').onclick=()=>{
 
 function renderPhasePanel(){
   const body=document.getElementById('phaseBody');
-  if(dataMode!=='live'||!livePhases||!livePhases.length){
-    body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">เปิด <b style="color:var(--good)">LIVE</b> mode เพื่อดูข้อมูลเฟสไฟจาก backend</div>';
+  if(!livePhases||!livePhases.length){
+    body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">กำลังโหลดข้อมูลเฟสไฟจาก backend…</div>';
     return;
   }
   const sorted=[...livePhases].sort((a,b)=>(PHASE_ORDER[a.phase]??9)-(PHASE_ORDER[b.phase]??9)||(b.danger_score||0)-(a.danger_score||0));
@@ -2261,9 +2327,9 @@ function phaseCard(p){
       <div class="arrow" style="font-size:22px;transform:rotate(${sp.direction_deg||0}deg)">↑</div>
       <div class="data">
         <div class="row"><span>ทิศลาม</span><b>${dirTh} (${Math.round(sp.direction_deg||0)}°)</b></div>
-        <div class="row"><span>อัตรา</span><b>${(sp.rate_ha_per_hour||0).toFixed(1)} ไร่/ชม.</b></div>
-        <div class="row"><span>6ชม.</span><b>${(sp.estimated_area_6h||0).toFixed(0)} ไร่</b></div>
-        <div class="row"><span>24ชม.</span><b>${(sp.estimated_area_24h||0).toFixed(0)} ไร่</b></div>
+        <div class="row"><span>อัตรา</span><b>${(sp.rate_kmh||0).toFixed(1)} กม./ชม.</b></div>
+        <div class="row"><span>6ชม.</span><b>${(sp.km_6h||0).toFixed(1)} กม.</b></div>
+        <div class="row"><span>24ชม.</span><b>${(sp.km_24h||0).toFixed(1)} กม.</b></div>
       </div>
     </div>`;
   }
@@ -2297,6 +2363,37 @@ function phaseCard(p){
     </div>`;
   }
 
+  // Calculation breakdown panel
+  let calcHtml='';
+  if(p.calc_breakdown){
+    const b=p.calc_breakdown;
+    const windDirTh=DIR_COMPASS[Math.round(((b.wind_dir_deg||0)%360+360)%360/45)%8];
+    calcHtml=`<details style="margin-top:10px">
+      <summary style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.1em;cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:6px">
+        <span style="color:var(--wind)">▸</span> วิเคราะห์เชิงตัวเลข (${b.wind_source||'—'})
+      </summary>
+      <div style="margin-top:8px;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:10px">
+        <div style="color:var(--dim);margin-bottom:6px;letter-spacing:.04em">${b.formula}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px">
+          <div style="color:var(--muted)">เชื้อเพลิง (fuel_norm)</div>
+          <div style="color:var(--txt)">${(b.fuel_flammability||0).toFixed(2)}/1.8 → <b>${(b.fuel_norm||0).toFixed(3)}</b></div>
+          <div style="color:var(--muted)">ประวัติไฟ (history_norm)</div>
+          <div style="color:var(--txt)">×${(b.history_multiplier||1).toFixed(2)} → <b>${(b.history_norm||0).toFixed(3)}</b></div>
+          <div style="color:var(--muted)">ความแห้ง (dryness)</div>
+          <div style="color:var(--txt)">ชื้น ${b.humidity_pct||0}% → <b>${(b.dryness||0).toFixed(3)}</b></div>
+          <div style="color:var(--muted)">ฝน 24ชม.</div>
+          <div style="color:var(--txt)">${b.rain_24h_mm||0} mm</div>
+          <div style="color:var(--muted)">ลม (อำเภอนี้)</div>
+          <div style="color:var(--wind)">${b.wind_speed_kmh||0} km/h → ${windDirTh} (${Math.round(b.wind_dir_deg||0)}°)</div>
+        </div>
+        <div style="margin-top:8px;padding-top:6px;border-top:1px dashed var(--line-soft);color:var(--dim)">
+          = 0.4×${(b.fuel_norm||0).toFixed(3)} + 0.2×${(b.history_norm||0).toFixed(3)} + 0.4×${(b.dryness||0).toFixed(3)}
+          = <b style="color:${col}">${((b.fuel_contrib||0)+(b.history_contrib||0)+(b.dryness_contrib||0)).toFixed(3)}</b>
+        </div>
+      </div>
+    </details>`;
+  }
+
   return `<div class="ph-card">
     <span class="ph-badge ${phase}">${label.toUpperCase()}</span>
     <h3>
@@ -2304,6 +2401,7 @@ function phaseCard(p){
       <span style="font-family:var(--mono);font-size:11px;color:${col}">${score}/100</span>
     </h3>
     ${(p.reasons||[]).map(r=>`<div style="font-family:var(--mono);font-size:10px;color:var(--muted);padding:2px 0">· ${r}</div>`).join('')}
+    ${calcHtml}
     ${spreadHtml}
     ${forestRows?`<div style="margin-top:10px;font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.1em;margin-bottom:4px">ป่าชุมชนใกล้เคียง</div>${forestRows}`:''}
     ${actions?`<div style="margin-top:8px;border-top:1px solid var(--line-soft);padding-top:8px">${actions}</div>`:''}
@@ -2317,7 +2415,7 @@ function phaseCard(p){
 const RISK_C={Low:{c:'#43b05f',t:'ต่ำ'},Medium:{c:'#facc15',t:'ปานกลาง'},High:{c:'#ff4d4d',t:'สูง'}};
 function renderRiskScore(){
   const block=document.getElementById('riskScoreBlock'); if(!block)return;
-  const risk=(dataMode==='live' && currentDashboard) ? currentDashboard.risk : null;
+  const risk=currentDashboard ? currentDashboard.risk : null;
   if(!risk){ block.style.display='none'; return; }
   block.style.display='block';
   const score=Math.max(0,Math.min(10,risk.score||0));
@@ -2340,7 +2438,7 @@ function renderRiskScore(){
 // Persistent situation card fed by the backend's deterministic briefing.
 function renderSituation(){
   const el=document.getElementById('situationBody'); if(!el)return;
-  if(dataMode==='live' && liveSummary){
+  if(liveSummary){
     el.textContent=liveSummary;
     el.parentElement.style.display='block';
   } else { el.parentElement.style.display='none'; }
@@ -2350,7 +2448,7 @@ function renderSituation(){
 const MODE_COLOR={LIVE:'#4ade80',SNAPSHOT:'#37d1d6',DERIVED:'#facc15',PROTOTYPE:'#a855f7',UNAVAILABLE:'#ff4d4d'};
 function renderFreshness(){
   const el=document.getElementById('freshBar'); if(!el)return;
-  if(dataMode!=='live' || !liveDataQ){ el.style.display='none'; return; }
+  if(!liveDataQ){ el.style.display='none'; return; }
   const order=['hotspots','pm25','weather','risk'];
   const pills=order.filter(k=>liveDataQ[k]).map(k=>{
     const q=liveDataQ[k], col=MODE_COLOR[q.source_mode]||'#8b97a7';
@@ -2413,47 +2511,28 @@ function setLoading(on, msg){
   } else if(el){ el.style.display='none'; }
 }
 
-// ---- DATA MODE (DEMO / LIVE) ----
+// ---- DATA MODE (always LIVE) ----
 function setMode(m){
   dataMode=m;
-  const demo=document.getElementById('dmDemo'),live=document.getElementById('dmLive');
-  demo.classList.toggle('on',m==='demo');
-  live.classList.toggle('on',m==='live');
-  live.classList.toggle('live',m==='live');
-  // Topbar/footer LIVE vs DEMO labelling.
-  const foot=document.querySelector('.foot');
-  if(foot) foot.innerHTML=foot.innerHTML.replace(/DEMO DATA|LIVE DATA/,(m==='live'?'LIVE DATA':'DEMO DATA'));
+  const footMode=document.getElementById('footMode');
+  if(footMode) footMode.textContent=m==='live'?'LIVE':'OFFLINE';
+  if(footMode) footMode.style.color=m==='live'?'var(--good)':'var(--warn)';
 }
-document.getElementById('dmDemo').onclick=()=>{
-  if(dataMode==='demo')return;
-  // Persist intent so the boot auto-LIVE below doesn't immediately flip back,
-  // then reload to rebuild the pristine synthetic seed.
-  try{ sessionStorage.setItem('cme_mode','demo'); }catch(_){}
-  location.reload();
-};
-document.getElementById('dmLive').onclick=()=>{
-  try{ sessionStorage.setItem('cme_mode','live'); }catch(_){}
-  goLive(true);
-};
 
 async function goLive(userInitiated){
   setLoading(true);
   try{
     const n=await fetchLiveData();
     setMode('live');
-    toast(n>0 ? `เชื่อมต่อข้อมูลสดสำเร็จ · ${n} จุดความร้อน` : 'เชื่อมต่อสำเร็จ · ไม่มีจุดความร้อนในขณะนี้ (นอกฤดู)');
+    if(userInitiated) toast(n>0 ? `เชื่อมต่อข้อมูลสดสำเร็จ · ${n} จุดความร้อน` : 'เชื่อมต่อสำเร็จ · ไม่มีจุดความร้อนในขณะนี้ (นอกฤดู)');
   }catch(e){
-    setMode('demo');
-    if(userInitiated) toast('เชื่อมต่อ backend ไม่ได้ — ใช้โหมด DEMO ต่อ ('+(e&&e.message||'error')+')');
+    setMode('offline');
+    toast('ไม่สามารถเชื่อมต่อ backend ('+(e&&e.message||'error')+') — แสดงข้อมูลล่าสุดที่มี');
   }finally{ setLoading(false); }
 }
 
-// On boot, try LIVE automatically; silently fall back to the DEMO seed already
-// on screen if the backend is unreachable. Honour an explicit DEMO choice the
-// user made before reloading.
-let __bootMode='live';
-try{ __bootMode=sessionStorage.getItem('cme_mode')||'live'; }catch(_){}
-if(__bootMode==='demo'){ setMode('demo'); } else { goLive(false); }
+// Boot: always LIVE
+goLive(false);
 
 // ============================================================
 //  REPORT (executive situation report)
@@ -2554,7 +2633,7 @@ function buildReport(){
 
     <div class="pfoot">
       แหล่งข้อมูล: NASA FIRMS (VIIRS/MODIS) · GISTDA · กรมควบคุมมลพิษ (PCD) · OpenWeather<br>
-      รายงานนี้สร้างอัตโนมัติโดย ChiangMaiEyes — ${dataMode==='live'?'ข้อมูลสด (LIVE) จาก backend':'ข้อมูลชุดสาธิต (DEMO)'} · ออกเมื่อ ${dateStr} ${timeStr}
+      รายงานนี้สร้างอัตโนมัติโดย ChiangMaiEyes — ข้อมูลสด (LIVE) จาก backend · ออกเมื่อ ${dateStr} ${timeStr}
     </div>`;
 }
 

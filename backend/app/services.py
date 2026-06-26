@@ -1,3 +1,4 @@
+import concurrent.futures
 import json
 import logging
 import time
@@ -702,7 +703,7 @@ def get_pm25(settings: Settings) -> Pm25Response:
     if cached is not None:
         return cached
     try:
-        response = fetch_live_pm25()
+        response = fetch_live_pm25(aqicn_token=settings.aqicn_token)
         response = Pm25Response(**repair_thai_mojibake_tree(response.model_dump()))
         write_json(settings.cache_dir, "pm25.json", response.model_dump())
         _set_cached("pm25", response)
@@ -924,8 +925,41 @@ def get_satellite_layers(settings: Settings, now: str | None = None) -> Satellit
     return load_satellite_layers(settings, now=now)
 
 
+def _fetch_district_winds(
+    centroids: dict[str, tuple[float, float]],
+) -> dict[str, tuple[float, float]]:
+    """Parallel Open-Meteo wind fetch for each district centroid.
+
+    Returns {district_name: (wind_speed_kmh, wind_direction_deg)}.
+    Silently skips any district whose request fails.
+    """
+    def _one(item: tuple[str, tuple[float, float]]) -> tuple[str, tuple[float, float] | None]:
+        district, (lat, lon) = item
+        url = (
+            f"https://api.open-meteo.com/v1/forecast"
+            f"?latitude={lat}&longitude={lon}"
+            f"&current=wind_speed_10m,wind_direction_10m"
+            f"&wind_speed_unit=kmh"
+            f"&timezone=Asia%2FBangkok"
+        )
+        try:
+            r = httpx.get(url, timeout=8.0)
+            r.raise_for_status()
+            cur = r.json().get("current", {})
+            return district, (float(cur.get("wind_speed_10m", 0)), float(cur.get("wind_direction_10m", 0)))
+        except Exception:
+            return district, None
+
+    results: dict[str, tuple[float, float]] = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+        for district, wind in pool.map(_one, centroids.items()):
+            if wind is not None:
+                results[district] = wind
+    return results
+
+
 def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
-    from app.fire_phase import classify_fire_phases
+    from app.fire_phase import classify_fire_phases, _DISTRICT_CENTROIDS
     from app.providers.community_forest_provider import fetch_community_forests
     from app.providers.history_provider import fetch_pm25_history
     from app.providers.hotspot_provider import fetch_hotspot_history
@@ -949,6 +983,13 @@ def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
     except Exception as e:  # noqa: BLE001
         logger.warning("PM2.5 history for correlation failed: %s", e)
 
+    district_winds: dict[str, tuple[float, float]] = {}
+    try:
+        district_winds = _fetch_district_winds(_DISTRICT_CENTROIDS)
+        logger.info("Per-district winds fetched for %d districts", len(district_winds))
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Per-district wind fetch failed, using synoptic fallback: %s", e)
+
     return classify_fire_phases(
         hotspots,
         weather,
@@ -956,6 +997,7 @@ def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
         community_forests=community_forests,
         hotspot_history=hotspot_hist,
         pm25_history=pm25_hist,
+        district_winds=district_winds,
     )
 
 
