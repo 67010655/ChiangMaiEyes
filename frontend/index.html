@@ -1095,7 +1095,7 @@ function jitter([la,lo],r){return [la+rnd(-r,r), lo+rnd(-r,r)]}
 // Hotspots and PM stations — empty until goLive() fills them from backend
 let hotspots = [];
 let pmStations = [];
-let daily30=(()=>{let a=[],v=14;for(let i=0;i<30;i++){v+=Math.sin(i/4)*4+rnd(-5,6);v=Math.max(2,Math.min(60,v));a.push(Math.round(v));}a[29]=hotspots.length;return a;})();
+let daily30 = new Array(30).fill(0);
 
 // ---- Color helpers ----
 // f may be null when the reporting source (e.g. GISTDA) carries no FRP. In that
@@ -1346,12 +1346,12 @@ function buildSeries(n,base,amp,noise){
   for(let i=0;i<n;i++){v += Math.sin(i/3)*amp*0.4 + rnd(-noise,noise); v=Math.max(8,v); a.push(Math.round(v));}
   return a;
 }
-let pm24 = buildSeries(24,62,18,9);
-let hot7 = [12,18,9,24,31,27,hotspots.length];
+let pm24 = new Array(24).fill(0);
+let hot7 = new Array(7).fill(0);
 
 function lineChart(id,data,{w=300,h=92,color='#a855f7',fill='rgba(168,85,247,.16)',thr=null}){
-  const max=Math.max(...data,thr||0)*1.12, min=Math.min(...data)*0.85;
-  const X=i=>i/(data.length-1)*w, Y=v=>h-(v-min)/(max-min)*h;
+  const max=Math.max(...data,thr||0)*1.12||1, min=Math.min(...data)*0.85;
+  const X=i=>i/Math.max(1,data.length-1)*w, Y=v=>h-(v-min)/((max-min)||1)*h;
   let d='', area='';
   data.forEach((v,i)=>{d+=(i?'L':'M')+X(i)+' '+Y(v)+' '; });
   area=`M0 ${h} `+data.map((v,i)=>`L${X(i)} ${Y(v)}`).join(' ')+` L${w} ${h} Z`;
@@ -1367,7 +1367,7 @@ function lineChart(id,data,{w=300,h=92,color='#a855f7',fill='rgba(168,85,247,.16
 }
 
 function barChart(id,data,labels,{w=300,h=86}){
-  const max=Math.max(...data)*1.15, bw=w/data.length*0.6, gap=w/data.length;
+  const max=Math.max(...data)*1.15||1, bw=w/data.length*0.6, gap=w/data.length;
   let bars='';
   data.forEach((v,i)=>{
     const bh=v/max*(h-16), x=i*gap+(gap-bw)/2, y=h-16-bh;
@@ -1724,7 +1724,7 @@ function corr(xs,ys){const mx=mean(xs),my=mean(ys);let n=0,dx=0,dy=0;for(let i=0
 // ---- synthetic statistical datasets ----
 let hourly=Array.from({length:24},(_,h)=>{const peak=Math.exp(-((h-15)**2)/14),morn=Math.exp(-((h-10)**2)/22)*0.45;return Math.max(0,Math.round((peak+morn)*22+rnd(0,2)));});
 let frpSamples=Array.from({length:240},()=>Math.pow(Math.random(),1.8)*150);
-let pmPairs=daily30.map(h=>({x:h,y:Math.round(30+h*1.7+rnd(-12,13))}));
+let pmPairs=[];
 
 // ---- chart primitives ----
 function donut(id,segs,{cx=100,cy=58,r=44,thick=20}){
@@ -1749,6 +1749,7 @@ function histogram(id,bins,labels,{w=480,h=170,color='#ff8a3d',pad=22}){
   document.getElementById(id).innerHTML=g;
 }
 function scatterReg(id,pts,{w=480,h=200,pad=30}){
+  if(!pts||pts.length<2){document.getElementById(id).innerHTML='<text x="240" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#3a4757">รอข้อมูล history จาก backend…</text>';return 0;}
   const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
   const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
   const X=x=>pad+(x-xmin)/((xmax-xmin)||1)*(w-pad-8),Y=y=>(h-pad)-(y-ymin)/((ymax-ymin)||1)*(h-pad-8);
@@ -1764,7 +1765,7 @@ function scatterReg(id,pts,{w=480,h=200,pad=30}){
 }
 function trendChart(id,daily,{w=640,h=180,pad=22}){
   const ma=daily.map((_,i)=>mean(daily.slice(Math.max(0,i-6),i+1)));
-  const max=Math.max(...daily)*1.15||1,n=daily.length,gap=w/n,bw=gap*0.58;
+  const max=Math.max(...daily)*1.15||1,n=daily.length||1,gap=w/n,bw=gap*0.58;
   const Y=v=>(h-pad)-v/max*(h-pad-8);let g='';
   for(let t=0;t<=3;t++){const y=(h-pad)-(h-pad-8)*t/3;g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/><text x="2" y="${y-2}" font-family="JetBrains Mono" font-size="8" fill="#3a4757">${Math.round(max*t/3)}</text>`;}
   daily.forEach((v,i)=>{const bh=v/max*(h-pad-8),x=i*gap+(gap-bw)/2;g+=`<rect x="${x}" y="${(h-pad)-bh}" width="${bw}" height="${bh}" rx="1.5" fill="${i===n-1?'#43b05f':'#2c3744'}"/>`;});
@@ -1870,7 +1871,9 @@ function renderAnalytics(r){
 
   // scatter corr
   const rr=scatterReg('anScatter',pmPairs,{});
-  document.getElementById('anCorr').textContent=` = ${rr.toFixed(2)} — ${rr>0.6?'สัมพันธ์เชิงบวกสูง: จุดความร้อนมากขึ้น PM2.5 มักสูงขึ้นตาม':'มีความสัมพันธ์ระดับปานกลาง'}`;
+  document.getElementById('anCorr').textContent = pmPairs.length>=2
+    ? ` = ${isNaN(rr)?'—':rr.toFixed(2)} — ${rr>0.6?'สัมพันธ์เชิงบวกสูง: จุดความร้อนมากขึ้น PM2.5 มักสูงขึ้นตาม':'มีความสัมพันธ์ระดับปานกลาง'}`
+    : ' — รอข้อมูล history';
 
   // district hbar — real per-district active hotspot counts in LIVE mode.
   let drows;
@@ -1889,7 +1892,7 @@ hbar('anDist',drows,{});
     <div class="dl"><span class="dk">ส่วนเบี่ยงเบนมาตรฐาน (SD)</span><span class="dv">${std(ds).toFixed(1)}</span></div>
     <div class="dl"><span class="dk">วันที่มากที่สุด</span><span class="dv hot">${Math.max(...ds)} จุด</span></div>
     <div class="dl"><span class="dk">อำเภอที่มีจุดความร้อน</span><span class="dv">${drows.filter(d=>d.v>0).length} / ${districts.length} อำเภอ</span></div>
-    <div class="dl"><span class="dk">สัดส่วน confidence สูง</span><span class="dv">${Math.round(hi/hotspots.length*100)}%</span></div>
+    <div class="dl"><span class="dk">สัดส่วน confidence สูง</span><span class="dv">${hotspots.length?Math.round(hi/hotspots.length*100)+'%':'—'}</span></div>
     <div class="dl"><span class="dk">ดัชนีความสัมพันธ์ HS×PM2.5</span><span class="dv ${rr>0.6?'crit':'hot'}">r = ${rr.toFixed(2)}</span></div>
     <div class="dl"><span class="dk">ทิศลมหลัก</span><span class="dv">${_degToCompass(wind().deg)} ${wind().kmh} km/h</span></div>`;
 }
