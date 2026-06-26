@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
+import "leaflet-velocity";
 
-import type { Hotspot } from "../../lib/types";
+import type { Hotspot, WeatherResponse } from "../../lib/types";
 import { getAgeColor } from "../../lib/hotspotAge";
+import {
+  buildWindFieldFromStation,
+  fetchWindGrid,
+} from "../../lib/windGrid";
 
 export type Basemap = "light" | "satellite" | "terrain";
 
@@ -29,16 +34,16 @@ const BASEMAPS: Record<Basemap, { label: string; url: string; attribution: strin
 
 type MapViewProps = {
   hotspots: Hotspot[];
+  weather?: WeatherResponse | null;
   /** [lat, lng] — defaults to Chiang Mai but is fully overridable */
   center?: [number, number];
   zoom?: number;
   basemap?: Basemap;
 };
 
-// Clean Leaflet base map. No business logic baked in — just a configurable map
-// with a hotspot layer. Centre/zoom/basemap are props, not hardcoded.
 export function MapView({
   hotspots,
+  weather,
   center = [18.79, 98.98],
   zoom = 9,
   basemap: initialBasemap = "satellite",
@@ -47,7 +52,9 @@ export function MapView({
   const mapRef = useRef<L.Map | null>(null);
   const tileRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
+  const velRef = useRef<any>(null);
   const [basemap, setBasemap] = useState<Basemap>(initialBasemap);
+  const [showWind, setShowWind] = useState(true);
 
   // init map once
   useEffect(() => {
@@ -86,17 +93,68 @@ export function MapView({
         fillOpacity: 0.9,
       })
         .bindPopup(
-          `<b>จุดความร้อน</b><br/>อ.${h.district || "ไม่ระบุ"}<br/>${
-            h.landuse_name || h.landuse_type || ""
-          }<br/>แหล่ง: ${h.source}`,
+          `<b>จุดความร้อน</b><br/>อ.${h.district || "ไม่ระบุ"}<br/>` +
+          `${h.landuse_name || h.landuse_type || ""}<br/>` +
+          (h.frp != null ? `FRP: ${h.frp.toFixed(1)} MW<br/>` : "") +
+          `แหล่ง: ${h.source}`,
         )
         .addTo(group);
     }
   }, [hotspots]);
 
+  // wind velocity layer — try real spatial grid first, fall back to station uniform field
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (velRef.current) {
+      velRef.current.remove();
+      velRef.current = null;
+    }
+    if (!showWind) return;
+
+    const addVelocityLayer = (field: ReturnType<typeof buildWindFieldFromStation>) => {
+      if (!mapRef.current) return;
+      velRef.current = (L as any).velocityLayer({
+        displayValues: true,
+        displayOptions: {
+          velocityType: "Wind",
+          position: "bottomleft",
+          emptyString: "ไม่มีข้อมูลลม",
+          angleConvention: "bearingCW",
+          speedUnit: "m/s",
+        },
+        data: field,
+        maxVelocity: 20,
+        colorScale: ["#93c5fd", "#60a5fa", "#3b82f6", "#1d4ed8", "#1e3a8a"],
+        velocityScale: 0.006,
+        opacity: 0.85,
+        particleAge: 64,
+        lineWidth: 1.5,
+      }).addTo(mapRef.current);
+    };
+
+    // Try Open-Meteo spatial grid; fall back to station uniform field
+    fetchWindGrid()
+      .then(addVelocityLayer)
+      .catch(() => {
+        if (weather) {
+          addVelocityLayer(
+            buildWindFieldFromStation(
+              weather.wind_speed_kmh,
+              weather.wind_direction_deg,
+              weather.latest_update,
+            ),
+          );
+        }
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showWind, weather?.wind_direction_deg, weather?.wind_speed_kmh]);
+
   return (
     <div className="mapview">
       <div ref={elRef} className="mapview__canvas" />
+
       <div className="mapview__basemaps" role="group" aria-label="เลือกแผนที่ฐาน">
         {(Object.keys(BASEMAPS) as Basemap[]).map((key) => (
           <button
@@ -108,6 +166,14 @@ export function MapView({
             {BASEMAPS[key].label}
           </button>
         ))}
+        <button
+          type="button"
+          className={`mapview__basemap-btn${showWind ? " is-active" : ""}`}
+          onClick={() => setShowWind((v) => !v)}
+          title="แสดง/ซ่อน Animation ทิศทางลม"
+        >
+          {showWind ? "ลม ✓" : "ลม"}
+        </button>
       </div>
     </div>
   );

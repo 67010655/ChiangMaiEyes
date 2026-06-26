@@ -280,6 +280,52 @@ class LocalizedPrediction(BaseModel):
     lead_time_hours: int = 12
 
 
+class CommunityForest(BaseModel):
+    forest_id: str
+    name: str
+    village: str
+    tambon: str
+    amphoe: str
+    latitude: float
+    longitude: float
+    forest_types: list[str] = Field(default_factory=list)
+    fire_management_active: bool = False
+    fire_activities: list[str] = Field(default_factory=list)
+
+
+class CommunityForestsResponse(BaseModel):
+    forests: list[CommunityForest] = Field(default_factory=list)
+    total: int = 0
+    source: str
+    cached_at: str
+
+
+class NearbyForest(BaseModel):
+    name: str
+    amphoe: str
+    distance_km: float
+    bearing_deg: float
+    in_spread_path: bool
+    fire_management_active: bool
+
+
+class SpreadProjection(BaseModel):
+    direction_deg: float
+    direction_text: str
+    rate_kmh: float
+    km_6h: float
+    km_12h: float
+    km_24h: float
+
+
+class FirePm25Correlation(BaseModel):
+    date: str
+    hotspot_count: int
+    pm25_same_day: float | None = None
+    pm25_next_day: float | None = None
+    elevated: bool = False
+
+
 class DistrictFirePhase(BaseModel):
     # Fire lifecycle phase per district: before(yellow) / during(red) /
     # after(grey) / normal(green). A decision aid, not an official warning.
@@ -289,6 +335,11 @@ class DistrictFirePhase(BaseModel):
     danger_score: float = Field(ge=0, le=1)
     active_hotspots: int = 0
     reasons: list[str] = Field(default_factory=list)
+    # Enhanced 3-phase fields (all optional — old callers unaffected)
+    recommended_actions: list[str] = Field(default_factory=list)
+    nearby_forests: list[NearbyForest] = Field(default_factory=list)
+    spread_projection: SpreadProjection | None = None
+    coordination_note: str | None = None
 
 
 class FirePhaseResponse(BaseModel):
@@ -296,6 +347,8 @@ class FirePhaseResponse(BaseModel):
     source_mode: SourceMode = "DERIVED"
     phases: list[DistrictFirePhase] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
+    community_forests_source: str = "thaicfnet.org"
+    fire_pm25_correlation: list[FirePm25Correlation] = Field(default_factory=list)
 
 
 class OperationalIntelligenceResponse(BaseModel):

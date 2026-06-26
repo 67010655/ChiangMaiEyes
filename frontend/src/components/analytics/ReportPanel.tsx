@@ -291,12 +291,14 @@ export function ReportPanel({ dashboard }: ReportPanelProps) {
               critHotspots.slice(0, 6).map((h) => {
                 const km = spreadCone(h, weather.wind_direction_deg, weather.wind_speed_kmh)
                   .km.toFixed(1);
-                // Calculate age in minutes from detected_at
+                // Calculate age from detected_at
                 const diffMs = Date.now() - new Date(h.detected_at).getTime();
-                const ageMinutes = Math.max(0, Math.floor(diffMs / 60000));
-                const detectedText = ageMinutes > 60
-                  ? `${Math.floor(ageMinutes / 60)} ชม. ก่อน`
-                  : `${ageMinutes} นาที ก่อน`;
+                const ageMin = Math.max(0, Math.floor(diffMs / 60000));
+                const detectedText = ageMin >= 1440
+                  ? `${Math.floor(ageMin / 1440)} วัน ${Math.floor((ageMin % 1440) / 60)} ชม. ก่อน`
+                  : ageMin >= 60
+                  ? `${Math.floor(ageMin / 60)} ชม. ${ageMin % 60} นาที ก่อน`
+                  : `${ageMin} นาที ก่อน`;
 
                 return (
                   <tr key={h.id}>

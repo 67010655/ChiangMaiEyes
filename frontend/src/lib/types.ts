@@ -254,6 +254,52 @@ export type OperationalIntelligenceResponse = {
   source_notes: string[];
 };
 
+export type CommunityForest = {
+  forest_id: string;
+  name: string;
+  village: string;
+  tambon: string;
+  amphoe: string;
+  latitude: number;
+  longitude: number;
+  forest_types: string[];
+  fire_management_active: boolean;
+  fire_activities: string[];
+};
+
+export type CommunityForestsResponse = {
+  forests: CommunityForest[];
+  total: number;
+  source: string;
+  cached_at: string;
+};
+
+export type NearbyForest = {
+  name: string;
+  amphoe: string;
+  distance_km: number;
+  bearing_deg: number;
+  in_spread_path: boolean;
+  fire_management_active: boolean;
+};
+
+export type SpreadProjection = {
+  direction_deg: number;
+  direction_text: string;
+  rate_kmh: number;
+  km_6h: number;
+  km_12h: number;
+  km_24h: number;
+};
+
+export type FirePm25Correlation = {
+  date: string;
+  hotspot_count: number;
+  pm25_same_day: number | null;
+  pm25_next_day: number | null;
+  elevated: boolean;
+};
+
 export type DistrictFirePhase = {
   district: string;
   phase: 'normal' | 'before' | 'during' | 'after';
@@ -261,6 +307,10 @@ export type DistrictFirePhase = {
   danger_score: number;
   active_hotspots: number;
   reasons: string[];
+  recommended_actions: string[];
+  nearby_forests: NearbyForest[];
+  spread_projection: SpreadProjection | null;
+  coordination_note: string | null;
 };
 
 export type FirePhaseResponse = {
@@ -268,6 +318,8 @@ export type FirePhaseResponse = {
   source_mode: SourceMode;
   phases: DistrictFirePhase[];
   notes: string[];
+  community_forests_source: string;
+  fire_pm25_correlation: FirePm25Correlation[];
 };
 
 export type DashboardResponse = {

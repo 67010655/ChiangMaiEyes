@@ -5,11 +5,20 @@ const HOTSPOT_STALE_MINUTES = 180;
 
 export type FreshnessLevel = 'fresh' | 'watch' | 'stale';
 
-function formatAge(minutes: number) {
+function formatAge(minutes: number): string {
   if (minutes < 60) return `${minutes} นาที`;
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  return rest === 0 ? `${hours} ชม.` : `${hours} ชม. ${rest} นาที`;
+  if (minutes < 1440) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m === 0 ? `${h} ชม.` : `${h} ชม. ${m} นาที`;
+  }
+  const d = Math.floor(minutes / 1440);
+  const rem = minutes % 1440;
+  const h = Math.floor(rem / 60);
+  const m = rem % 60;
+  if (h === 0 && m === 0) return `${d} วัน`;
+  if (m === 0) return `${d} วัน ${h} ชม.`;
+  return `${d} วัน ${h} ชม. ${m} นาที`;
 }
 
 function formatBreakdown(sourceBreakdown?: Record<string, number>) {

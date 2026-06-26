@@ -13,6 +13,7 @@ from app.models import (
     AdvisorBriefingRequest,
     AdvisorChatRequest,
     AdvisorResponse,
+    CommunityForestsResponse,
     DataStatusResponse,
     DashboardResponse,
     FieldReportResult,
@@ -115,6 +116,20 @@ def dashboard(settings: Settings = Depends(get_settings)) -> DashboardResponse:
 @app.get("/api/fire-phases", response_model=FirePhaseResponse)
 def fire_phases(settings: Settings = Depends(get_settings)) -> FirePhaseResponse:
     return get_fire_phases(settings)
+
+
+@app.get("/api/community-forests", response_model=CommunityForestsResponse)
+def community_forests() -> CommunityForestsResponse:
+    from app.providers.community_forest_provider import fetch_community_forests
+    import datetime
+
+    forests = fetch_community_forests()
+    return CommunityForestsResponse(
+        forests=forests,
+        total=len(forests),
+        source="thaicfnet.org",
+        cached_at=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).isoformat(),
+    )
 
 
 @app.get("/api/data-status", response_model=DataStatusResponse)

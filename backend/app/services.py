@@ -926,11 +926,36 @@ def get_satellite_layers(settings: Settings, now: str | None = None) -> Satellit
 
 def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
     from app.fire_phase import classify_fire_phases
+    from app.providers.community_forest_provider import fetch_community_forests
+    from app.providers.history_provider import fetch_pm25_history
+    from app.providers.hotspot_provider import fetch_hotspot_history
+
+    hotspots = get_hotspots(settings)
+    weather = get_weather(settings)
+    satellite_layers = get_satellite_layers(settings)
+
+    community_forests = fetch_community_forests()
+
+    hotspot_hist: list[tuple[str, int]] = []
+    if settings.nasa_firms_map_key:
+        try:
+            hotspot_hist = fetch_hotspot_history(settings.nasa_firms_map_key, 30)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Hotspot history for correlation failed: %s", e)
+
+    pm25_hist: list[tuple[str, float]] = []
+    try:
+        pm25_hist = fetch_pm25_history(30)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("PM2.5 history for correlation failed: %s", e)
 
     return classify_fire_phases(
-        get_hotspots(settings),
-        get_weather(settings),
-        get_satellite_layers(settings),
+        hotspots,
+        weather,
+        satellite_layers,
+        community_forests=community_forests,
+        hotspot_history=hotspot_hist,
+        pm25_history=pm25_hist,
     )
 
 

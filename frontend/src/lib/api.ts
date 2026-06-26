@@ -1,4 +1,4 @@
-import type { DashboardResponse, DataStatusResponse, FirePhaseResponse, HistoryResponse, HotspotHistoryResponse } from './types';
+import type { CommunityForestsResponse, DashboardResponse, DataStatusResponse, FirePhaseResponse, HistoryResponse, HotspotHistoryResponse } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -84,6 +84,21 @@ export async function fetchFirePhases(): Promise<FirePhaseResponse> {
       throw new Error(`Fire phases API failed with ${response.status}`);
     }
 
+    return response.json();
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export async function fetchCommunityForests(): Promise<CommunityForestsResponse> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30_000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/community-forests`, {
+      ...LIVE_FETCH_OPTIONS,
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`Community forests API failed with ${response.status}`);
     return response.json();
   } finally {
     clearTimeout(timeoutId);

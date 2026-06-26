@@ -3,36 +3,40 @@
 Assigns each Chiang Mai district a phase in the disaster-management cycle:
   - during (red)   — active hotspots in the district right now
   - before (yellow) — no active fire but elevated danger (dry fuel + dry air)
+  - after  (grey)   — recently burned; from Sentinel-2 dNBR burn-severity when
+                      configured, or inferred from hotspot history age
   - normal (green)  — low danger, no fire
-  - after  (grey)   — recently burned; needs Sentinel-2 dNBR burn-severity, which
-                      is not wired yet, so the classifier does NOT assign it (the
-                      colour/legend exists for the upcoming Phase 6.2).
 
-Every "before" decision is a transparent, deterministic blend of real inputs
-(active hotspot count + district fuel/history physics + live air humidity/rain),
-mirroring the risk-score discipline. It is a decision aid, never an official
-warning. See memory: project-data-provenance.
+Enhanced with 3-phase workflow:
+  - before: recommended preventive actions, nearby community forests
+  - during: fire spread projection (wind + physics), forests in spread path,
+            coordination note when multiple forests share a boundary zone
+  - after:  historical PM2.5 correlation note
 """
 
 from __future__ import annotations
 
+import math
 from datetime import datetime, timedelta, timezone
 
 from app.fire_spread_physics import DISTRICT_PHYSICS
 from app.models import (
+    CommunityForest,
     DistrictFirePhase,
     FirePhaseResponse,
     HotspotResponse,
+    NearbyForest,
     SatelliteLayerResponse,
+    SpreadProjection,
     WeatherResponse,
 )
 
 _PHASE_COLOR = {"normal": "green", "before": "yellow", "during": "red", "after": "grey"}
 _YELLOW_THRESHOLD = 0.55
-_DRY_AIR_GATE = 0.35  # below this, air is too moist for elevated fire danger
-_DURING_FLOOR = 0.85  # an active fire is always high danger regardless of the blend
+_DRY_AIR_GATE = 0.35
+_DURING_FLOOR = 0.85
 
-# Which dry-forest dNBR zone reports a burn scar for which district (Phase 6.2).
+# Which dNBR zone maps to which district (Phase 6.2 — Sentinel-2 burn scars).
 _ZONE_DISTRICT = {
     "doi-suthep-pui": "เมืองเชียงใหม่",
     "doi-inthanon-west": "จอมทอง",
@@ -42,13 +46,76 @@ _ZONE_DISTRICT = {
 }
 _BURNED_CLASSES = {"moderate", "high"}
 
+# Approximate centroids for each district — used to find nearby forests
+# when the district has active hotspots but no individual lat/lon is given.
+_DISTRICT_CENTROIDS: dict[str, tuple[float, float]] = {
+    "แม่อาย":      (20.03, 99.20),
+    "ฝาง":         (19.80, 99.10),
+    "เชียงดาว":    (19.38, 98.95),
+    "แม่แตง":      (19.10, 98.90),
+    "กัลยาณิวัฒนา": (19.05, 98.35),
+    "สะเมิง":      (18.80, 98.65),
+    "แม่แจ่ม":     (18.50, 98.33),
+    "จอมทอง":      (18.40, 98.70),
+    "ฮอด":         (18.10, 98.60),
+    "อมก๋อย":      (17.87, 98.35),
+    "ดอยสะเก็ด":   (18.98, 99.28),
+    "สันทราย":     (18.97, 99.05),
+    "สันกำแพง":    (18.80, 99.12),
+    "แม่ออน":      (18.73, 99.30),
+    "แม่วาง":      (18.63, 98.78),
+    "หางดง":       (18.70, 98.95),
+    "สารภี":       (18.73, 99.01),
+    "แม่ริม":      (18.92, 98.95),
+    "เมืองเชียงใหม่": (18.79, 98.99),
+}
+
+_SPREAD_DIR_LABELS = [
+    "เหนือ", "ตะวันออกเฉียงเหนือ", "ตะวันออก", "ตะวันออกเฉียงใต้",
+    "ใต้", "ตะวันตกเฉียงใต้", "ตะวันตก", "ตะวันตกเฉียงเหนือ",
+]
+
+# Forests within this radius are flagged as "nearby" for any phase.
+_NEARBY_RADIUS_KM = 30.0
+# Forests in spread path if bearing is within this cone of spread direction.
+_SPREAD_CONE_HALF_DEG = 50.0
+# ≥2 forests in spread path = coordination flag.
+_COORDINATION_THRESHOLD = 2
+
 
 def _normalize_district(name: str | None) -> str:
     return (name or "").replace("อำเภอ", "").replace("อ.", "").strip()
 
 
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    R = 6_371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (math.sin(dlat / 2) ** 2
+         + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2)
+    return 2 * R * math.asin(math.sqrt(a))
+
+
+def _bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """True bearing from (lat1,lon1) to (lat2,lon2), degrees 0=N, 90=E."""
+    lat1_r, lat2_r = math.radians(lat1), math.radians(lat2)
+    dlon = math.radians(lon2 - lon1)
+    x = math.sin(dlon) * math.cos(lat2_r)
+    y = (math.cos(lat1_r) * math.sin(lat2_r)
+         - math.sin(lat1_r) * math.cos(lat2_r) * math.cos(dlon))
+    return (math.degrees(math.atan2(x, y)) + 360) % 360
+
+
+def _spread_dir_text(deg: float) -> str:
+    return _SPREAD_DIR_LABELS[round(deg / 45) % 8]
+
+
+def _in_spread_cone(forest_bearing: float, spread_dir: float) -> bool:
+    diff = abs((forest_bearing - spread_dir + 180) % 360 - 180)
+    return diff <= _SPREAD_CONE_HALF_DEG
+
+
 def _air_dryness(weather: WeatherResponse) -> float:
-    """0 (humid/wet) .. 1 (very dry). Recent rain pulls it down."""
     humidity = weather.humidity_percent if weather.humidity_percent is not None else 50.0
     dryness = max(0.0, min(1.0, (100.0 - humidity) / 100.0))
     if (weather.rain_today_mm or 0) > 1.0:
@@ -56,18 +123,131 @@ def _air_dryness(weather: WeatherResponse) -> float:
     return dryness
 
 
+def _build_spread_projection(
+    district: str,
+    wind_speed_kmh: float,
+    wind_dir_deg: float,
+) -> SpreadProjection:
+    """Rothermel-simplified spread rate from district physics + live wind."""
+    phys = DISTRICT_PHYSICS.get(district, {
+        "fuel_flammability": 1.2,
+        "slope_deg": 20.0,
+    })
+    fuel = phys["fuel_flammability"]
+    slope = phys["slope_deg"]
+
+    spread_dir = (wind_dir_deg + 180) % 360
+    # Rate of Spread (km/h): fuel × slope-factor × wind-factor
+    slope_f = math.exp(0.069 * slope) / 4.0  # normalized around 20° ≈ 1.0
+    wind_f = 1.0 + wind_speed_kmh / 15.0
+    rate = round(0.5 * fuel * slope_f * wind_f, 2)
+
+    return SpreadProjection(
+        direction_deg=round(spread_dir, 1),
+        direction_text=_spread_dir_text(spread_dir),
+        rate_kmh=rate,
+        km_6h=round(rate * 6, 1),
+        km_12h=round(rate * 12, 1),
+        km_24h=round(rate * 24, 1),
+    )
+
+
+def _nearby_forests(
+    district: str,
+    spread_dir: float,
+    community_forests: list[CommunityForest],
+) -> tuple[list[NearbyForest], str | None]:
+    """Return (nearby_list, coordination_note) for a district."""
+    centroid = _DISTRICT_CENTROIDS.get(district)
+    if not centroid:
+        return [], None
+
+    clat, clon = centroid
+    nearby: list[NearbyForest] = []
+    for cf in community_forests:
+        dist = _haversine_km(clat, clon, cf.latitude, cf.longitude)
+        if dist > _NEARBY_RADIUS_KM:
+            continue
+        bearing = _bearing(clat, clon, cf.latitude, cf.longitude)
+        in_path = _in_spread_cone(bearing, spread_dir)
+        nearby.append(NearbyForest(
+            name=cf.name,
+            amphoe=cf.amphoe,
+            distance_km=round(dist, 1),
+            bearing_deg=round(bearing, 1),
+            in_spread_path=in_path,
+            fire_management_active=cf.fire_management_active,
+        ))
+
+    nearby.sort(key=lambda f: f.distance_km)
+
+    in_path_forests = [f for f in nearby if f.in_spread_path]
+    coord_note: str | None = None
+    if len(in_path_forests) >= _COORDINATION_THRESHOLD:
+        names = " และ ".join(f.name for f in in_path_forests[:3])
+        coord_note = (
+            f"พื้นที่นี้อยู่ในแนวรอยต่อของหลายป่าชุมชน ({names}) "
+            "ผู้มีอำนาจควรประสานงานร่วมกันก่อนสั่งการภาคสนาม"
+        )
+
+    return nearby[:8], coord_note  # cap at 8 to keep payload reasonable
+
+
+def _recommended_actions(
+    phase: str,
+    danger_score: float,
+    nearby: list[NearbyForest],
+    spread: SpreadProjection | None,
+) -> list[str]:
+    actions: list[str] = []
+    inactive = [f for f in nearby if not f.fire_management_active]
+    in_path = [f for f in nearby if f.in_spread_path]
+
+    if phase == "before":
+        actions.append("ลาดตระเวนทุก 4 ชั่วโมงในพื้นที่เสี่ยง")
+        actions.append("ตรวจสอบและซ่อมแนวกันไฟก่อนหน้าแล้งหนัก")
+        if inactive:
+            names = " · ".join(f.name for f in inactive[:2])
+            actions.append(f"แจ้ง {names} จัดทำแผนจัดการเชื้อเพลิงด่วน (ยังไม่มีบันทึกกิจกรรม)")
+        if danger_score >= 0.7:
+            actions.append("ประสานทีมดับเพลิงสำรองให้พร้อมปฏิบัติการภายใน 2 ชั่วโมง")
+
+    elif phase == "during":
+        actions.append("แจ้งเตือนทีมดับเพลิงภาคสนามทันที")
+        if in_path:
+            names = " · ".join(f.name for f in in_path[:3])
+            actions.append(f"แจ้งเตือนป่าชุมชนปลายลม: {names} ให้เตรียมรับมือ")
+        if spread:
+            actions.append(
+                f"ไฟคาดลามทิศ{spread.direction_text} ~{spread.km_6h} กม./6ชม. "
+                f"หรือ ~{spread.km_12h} กม./12ชม. ที่ความเร็ว {spread.rate_kmh} กม./ชม."
+            )
+        actions.append("ตรวจสอบแนวกันไฟและเส้นทางอพยพในทิศปลายลม")
+
+    elif phase == "after":
+        actions.append("ตรวจสอบรอยไหม้และประเมินพื้นที่เสียหายด้วย drone หรือลาดตระเวน")
+        actions.append("ติดตาม PM2.5 รายชั่วโมง — ควันฟุ้งกระจายสูงสุดมักอยู่ใน 24-48 ชม. หลังไฟ")
+        actions.append("วางแผนฟื้นฟูแนวกันไฟและพันธุ์ไม้ก่อนหน้าฝนถัดไป")
+
+    return actions
+
+
 def classify_fire_phases(
     hotspots: HotspotResponse,
     weather: WeatherResponse,
     satellite_layers: SatelliteLayerResponse | None = None,
+    community_forests: list[CommunityForest] | None = None,
+    hotspot_history: list[tuple[str, int]] | None = None,
+    pm25_history: list[tuple[str, float]] | None = None,
 ) -> FirePhaseResponse:
+    cf_list = community_forests or []
+
     active_by_district: dict[str, int] = {}
     for item in hotspots.items:
         name = _normalize_district(item.district)
         if name:
             active_by_district[name] = active_by_district.get(name, 0) + 1
 
-    # Recently-burned districts from Sentinel-2 dNBR burn scars (Phase 6.2).
     burned: dict[str, tuple[float, str]] = {}
     if satellite_layers:
         for zone in satellite_layers.dryness_zones:
@@ -77,6 +257,11 @@ def classify_fire_phases(
 
     dryness = _air_dryness(weather)
     humidity = weather.humidity_percent if weather.humidity_percent is not None else 50.0
+    wind_speed = weather.wind_speed_kmh
+    wind_dir = weather.wind_direction_deg
+
+    # Fire spreads in the direction the wind blows TO (wind_dir is FROM).
+    spread_dir_global = (wind_dir + 180) % 360
 
     phases: list[DistrictFirePhase] = []
     for district, phys in DISTRICT_PHYSICS.items():
@@ -85,17 +270,22 @@ def classify_fire_phases(
         history_norm = min(1.0, max(0.0, (phys["history_multiplier"] - 1.0) / 0.5))
         danger = round(0.4 * fuel_norm + 0.2 * history_norm + 0.4 * dryness, 2)
 
+        spread: SpreadProjection | None = None
+        nearby: list[NearbyForest] = []
+        coord_note: str | None = None
+
         if active > 0:
             phase = "during"
             danger = max(danger, _DURING_FLOOR)
             reasons = [f"พบจุดความร้อน {active} จุดในพื้นที่ตอนนี้"]
+            spread = _build_spread_projection(district, wind_speed, wind_dir)
+            nearby, coord_note = _nearby_forests(district, spread.direction_deg, cf_list)
         elif district in burned:
             phase = "after"
             dnbr_value, severity = burned[district]
             reasons = [f"พบรอยไหม้จากดาวเทียม (dNBR {dnbr_value}, ความรุนแรง {severity}) — ระยะฟื้นฟู"]
+            nearby, _ = _nearby_forests(district, spread_dir_global, cf_list)
         elif dryness < _DRY_AIR_GATE:
-            # Moist air (e.g. rainy season): fuel won't ignite, so no "before"
-            # danger no matter how flammable the forest is — keep anxiety low.
             phase = "normal"
             reasons = [f"อากาศชื้น ความชื้น {humidity:.0f}% เชื้อเพลิงไม่แห้งพอจะติดไฟ"]
         elif danger >= _YELLOW_THRESHOLD:
@@ -104,22 +294,33 @@ def classify_fire_phases(
                 f"เชื้อเพลิงติดไฟง่าย ({phys['history_level']})",
                 f"อากาศแห้ง ความชื้น {humidity:.0f}%",
             ]
+            nearby, coord_note = _nearby_forests(district, spread_dir_global, cf_list)
         else:
             phase = "normal"
             reasons = ["ยังไม่มีจุดความร้อน และดัชนีความเสี่ยงอยู่ระดับต่ำ"]
 
-        phases.append(
-            DistrictFirePhase(
-                district=district,
-                phase=phase,
-                color=_PHASE_COLOR[phase],
-                danger_score=danger,
-                active_hotspots=active,
-                reasons=reasons,
-            )
-        )
+        actions = _recommended_actions(phase, danger, nearby, spread)
+
+        phases.append(DistrictFirePhase(
+            district=district,
+            phase=phase,
+            color=_PHASE_COLOR[phase],
+            danger_score=danger,
+            active_hotspots=active,
+            reasons=reasons,
+            recommended_actions=actions,
+            nearby_forests=nearby,
+            spread_projection=spread,
+            coordination_note=coord_note,
+        ))
 
     phases.sort(key=lambda p: -p.danger_score)
+
+    # PM2.5 ↔ hotspot correlation (best-effort, requires both histories)
+    correlation = _build_correlation(hotspot_history or [], pm25_history or [])
+
+    source_label = f"thaicfnet.org ({len(cf_list)} ป่าชุมชน)" if cf_list else "ไม่มีข้อมูลป่าชุมชน"
+
     return FirePhaseResponse(
         generated_at=datetime.now(timezone(timedelta(hours=7))).isoformat(),
         source_mode="DERIVED",
@@ -127,7 +328,49 @@ def classify_fire_phases(
         notes=[
             "ระยะเหลือง/แดงคำนวณจากจุดความร้อนจริง + ดัชนีเชื้อเพลิงรายอำเภอ + ความชื้นอากาศสด "
             "เป็นตัวช่วยประเมิน ไม่ใช่คำเตือนทางการ",
-            "ระยะ 'หลังไฟ' (เทา) มาจากดัชนีรอยไหม้ dNBR (Sentinel-2 ก่อน/หลัง) — แสดงเมื่อเชื่อม "
-            "Copernicus และพบรอยไหม้ระดับปานกลางขึ้นไป",
+            "การลามไฟประมาณจากสูตร Rothermel + ทิศลม + ความชัน เป็นค่าประมาณเท่านั้น",
+            "ระยะใกล้ป่าชุมชนใช้ proximity จากพิกัด POINT ของ thaicfnet.org ยังไม่มี polygon เขตอำนาจจริง",
+            "ระยะ 'หลังไฟ' (เทา) มาจาก dNBR Sentinel-2 — แสดงเมื่อเชื่อม Copernicus แล้ว",
         ],
+        community_forests_source=source_label,
+        fire_pm25_correlation=correlation,
     )
+
+
+def _build_correlation(
+    hotspot_history: list[tuple[str, int]],
+    pm25_history: list[tuple[str, float]],
+) -> list:
+    """Cross-reference daily hotspot counts with PM2.5 readings.
+
+    Returns list of FirePm25Correlation for days where hotspot_count > 3,
+    annotating whether PM2.5 on the same day or next day was elevated (>37.5).
+    """
+    from app.models import FirePm25Correlation
+
+    if not hotspot_history or not pm25_history:
+        return []
+
+    pm25_by_date = {date: val for date, val in pm25_history}
+    result = []
+    for date, count in hotspot_history:
+        if count <= 3:
+            continue
+        same_day = pm25_by_date.get(date)
+        # Next calendar day
+        try:
+            from datetime import date as dt_date
+            next_day = (dt_date.fromisoformat(date) + timedelta(days=1)).isoformat()
+        except Exception:
+            next_day = None
+        next_pm = pm25_by_date.get(next_day) if next_day else None
+        elevated = (same_day is not None and same_day > 37.5) or (next_pm is not None and next_pm > 37.5)
+        result.append(FirePm25Correlation(
+            date=date,
+            hotspot_count=count,
+            pm25_same_day=same_day,
+            pm25_next_day=next_pm,
+            elevated=elevated,
+        ))
+
+    return sorted(result, key=lambda r: r.date, reverse=True)[:30]

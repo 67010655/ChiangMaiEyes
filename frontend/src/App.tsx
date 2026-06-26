@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, Box, ClipboardList, Eye, Bell, RefreshCcw, Printer, Navigation, FileText } from "lucide-react";
+import { BarChart3, Box, ClipboardList, Eye, Bell, RefreshCcw, Printer, Navigation, FileText, Flame } from "lucide-react";
 
 import "./styles/app.css";
 
@@ -9,11 +9,13 @@ import { LegendPanel } from "./components/analytics/LegendPanel";
 import { MapView } from "./components/map/MapView";
 import { MapLibreTerrainView } from "./features/threeD/MapLibreTerrainView";
 import { ReportPanel } from "./components/analytics/ReportPanel";
+import { FirePhasePanel } from "./features/firePhase/FirePhasePanel";
 
-type Tab = "analytics" | "report" | "terrain";
+type Tab = "analytics" | "report" | "terrain" | "phase";
 
 const TABS: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
   { id: "analytics", label: "วิเคราะห์", icon: BarChart3 },
+  { id: "phase", label: "เฟสไฟ", icon: Flame },
   { id: "terrain", label: "3D", icon: Box },
   { id: "report", label: "รายงาน", icon: ClipboardList },
 ];
@@ -72,6 +74,9 @@ export function App() {
           {tab === "analytics" && (
             <AnalyticsPanel dashboard={dashboard} history={history} />
           )}
+          {tab === "phase" && (
+            <FirePhasePanel dashboard={dashboard} />
+          )}
           {tab === "terrain" && (
             <div style={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 16, padding: 18, boxShadow: "var(--shadow-sm)" }}>
               <h3 style={{ fontSize: "0.95rem", fontWeight: 700, display: "flex", alignItems: "center", gap: 8, margin: "0 0 10px 0" }}>
@@ -124,7 +129,7 @@ export function App() {
                   mapTilerKey={import.meta.env.VITE_MAPTILER_KEY}
                 />
               ) : (
-                <MapView hotspots={dashboard.hotspots.items} />
+                <MapView hotspots={dashboard.hotspots.items} weather={dashboard.weather} />
               )}
               {tab !== "terrain" && (
                 <div className="map-legend-overlay">
