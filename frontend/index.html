@@ -462,6 +462,12 @@
   .hotspot-pulse{animation:hp 2s infinite}
   @keyframes hp{0%{transform:scale(1);opacity:.9}50%{transform:scale(1.5);opacity:.2}100%{transform:scale(1);opacity:.9}}
 
+  /* Fire emoji hotspot markers */
+  .fire-marker{display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;filter:drop-shadow(0 0 3px rgba(255,100,0,.6))}
+  .fire-marker.high{animation:fire-flicker 0.7s ease-in-out infinite alternate;filter:drop-shadow(0 0 6px rgba(255,80,0,.9))}
+  .fire-marker.low{opacity:0.55;filter:none}
+  @keyframes fire-flicker{0%{transform:scale(1) rotate(-4deg)}100%{transform:scale(1.18) rotate(4deg)}}
+
   .foot{margin-top:auto;padding:11px 16px;border-top:1px solid var(--line-soft);
     font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.08em;line-height:1.7}
   .src-pill{display:inline-block;padding:1px 6px;border:1px solid var(--line);border-radius:4px;margin:2px 4px 2px 0;color:var(--muted)}
@@ -576,7 +582,7 @@
         <div class="layer on" data-layer="spread"><div class="sw"></div><div class="lbl">Fire spread forecast<small>downwind risk cones</small></div><span class="cnt" id="lcSpread">0</span></div>
         <div class="layer on wind" data-layer="wind"><div class="sw"></div><div class="lbl">Wind field<small>vector arrows</small></div><span class="cnt">grid</span></div>
         <div class="layer on pm" data-layer="pm"><div class="sw"></div><div class="lbl">PM2.5 stations<small>PCD / sensor mesh</small></div><span class="cnt" id="lcPm">0</span></div>
-        <div class="layer heat" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">off</span></div>
+        <div class="layer heat on" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
         <div class="datamode">
@@ -1067,17 +1073,24 @@ let selected=null;
 function renderHotspots(){
   layers.hotspots.clearLayers();
   hotspots.forEach(h=>{
-    const col=frpColor(h.frp);
-    const r = 5 + intensity(h)/22;
-    const m = L.circleMarker([h.lat,h.lon],{
-      radius:r, color:col, weight: h.conf==='high'?2:1.6,
-      fillColor: h.conf==='high'?col:'#11161d',
-      fillOpacity: h.conf==='high'?0.85:0.25
-    }).addTo(layers.hotspots);
-    if(h.frp>90){
-      L.circleMarker([h.lat,h.lon],{radius:r,color:col,weight:1,fillOpacity:0,className:'hotspot-pulse'}).addTo(layers.hotspots);
-    }
-    m.bindPopup(`<b>${h.id}</b> · ${h.district}<br>${fmtFrp(h)} · ${h.conf} conf<br>${h.sat} · ${formatAge(h.detected)} ที่แล้ว`);
+    const isHigh = h.conf==='high';
+    const frpVal = h.frp||0;
+    // Scale emoji: high+FRP>50 = big fire, high = medium, low = small
+    const sz = isHigh ? (frpVal>50?28:22) : 15;
+    const icon = L.divIcon({
+      className:'',
+      html:`<div class="fire-marker ${isHigh?'high':'low'}" style="font-size:${sz}px;line-height:1">🔥</div>`,
+      iconSize:[sz+4, sz+4],
+      iconAnchor:[(sz+4)/2, sz+4]
+    });
+    const m = L.marker([h.lat,h.lon],{icon,zIndexOffset:isHigh?100:0}).addTo(layers.hotspots);
+    m.bindPopup(
+      `<b>${h.id}</b> · ${h.district}<br>`+
+      `${fmtFrp(h)} · ${isHigh?'confidence สูง':'confidence ต่ำ'}<br>`+
+      `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
+      `<span style="cursor:pointer;color:var(--wind);text-decoration:underline" `+
+      `onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${h.lon},${h.lat}],zoom:12,pitch:55,bearing:0,duration:1200}),600)">📍 ดูใน 3D</span>`
+    );
     m.on('click',()=>selectHotspot(h));
   });
   document.getElementById('lcHot').textContent=hotspots.length;
@@ -1307,6 +1320,33 @@ function barChart(id,data,labels,{w=300,h=86}){
   document.getElementById(id).innerHTML=bars;
 }
 
+async function fetchWindRose(){
+  try{
+    // Open-Meteo: hourly wind for past 24h at CM centroid
+    const url='https://api.open-meteo.com/v1/forecast?latitude=18.79&longitude=98.99'+
+      '&hourly=wind_direction_10m,wind_speed_10m&past_days=1&forecast_days=0'+
+      '&timezone=Asia%2FBangkok&timeformat=unixtime';
+    const r=await fetch(url); if(!r.ok) return;
+    const d=await r.json();
+    const dirs=d.hourly&&d.hourly.wind_direction_10m;
+    const speeds=d.hourly&&d.hourly.wind_speed_10m;
+    if(!dirs||!dirs.length) return;
+    // Take last 24 samples, bin into 8 directions weighted by speed
+    const bins=[0,0,0,0,0,0,0,0]; // N,NE,E,SE,S,SW,W,NW
+    const n=Math.min(24, dirs.length);
+    const start=dirs.length-n;
+    for(let i=start;i<dirs.length;i++){
+      const idx=Math.round(dirs[i]/45)%8;
+      bins[idx]+=(speeds[i]||0)+0.5; // speed-weighted + count bonus
+    }
+    windRose('roseChart',bins);
+    // Remove the "จำลอง" label since this is now real data
+    document.querySelectorAll('.side.right .block h2').forEach(h=>{
+      if(h.textContent.includes('Wind rose')) h.innerHTML='Wind rose — 24h <span style="color:var(--good);font-family:var(--mono);font-size:8px">· จริง</span>';
+    });
+  }catch(e){ /* keep placeholder bins */ }
+}
+
 function windRose(id,bins){
   const cx=90,cy=72,R=58;
   const dirs=['N','NE','E','SE','S','SW','W','NW'];
@@ -1433,7 +1473,8 @@ loadBoundaries();
 
 lineChart('pmChart',pm24,{color:'#a855f7',fill:'rgba(168,85,247,.16)',thr:55});
 barChart('hotChart',hot7,['-6','-5','-4','-3','-2','-1','วันนี้'],{});
-windRose('roseChart',[4,6,9,12,8,28,14,7]); // SW dominant
+windRose('roseChart',[4,6,9,12,8,28,14,7]); // placeholder until fetchWindRose() resolves
+fetchWindRose();
 document.getElementById('footUpd').textContent=stamp();
 
 tick(); setInterval(tick,1000);
@@ -1779,7 +1820,7 @@ function showDistrictDetail(distName) {
 
   // 1. Filter community forests in this district
   const distForests = allForests.filter(f => normalizeDistrictName(f.amphoe) === normalizeDistrictName(distName));
-  const totalRai = distForests.reduce((sum, f) => sum + (f.areaRai || 0), 0);
+  const totalRai = distForests.reduce((sum, f) => sum + (f.area_rai || 0), 0);
 
   // 2. Filter hotspots in this district
   const distHotspots = hotspots.filter(h => normalizeDistrictName(h.district) === normalizeDistrictName(distName));
@@ -1826,37 +1867,36 @@ function renderDistrictDetailsOnMap(distName) {
   // 1. Draw community forests in this district
   const distForests = allForests.filter(f => normalizeDistrictName(f.amphoe) === distNameNorm);
   distForests.forEach(f => {
-    const lat = f.lat;
-    const lng = f.lng;
+    const lat = f.latitude;
+    const lng = f.longitude;
     if (!lat || !lng) return;
-    const radius = f.estimatedBoundaryRadiusM || 650;
-    
-    // Circle boundary
+    const radius = f.boundary_radius_m || 650;
+    const active = f.fire_management_active;
+    const fcolor = active ? '#22c55e' : '#37d1d6';
     L.circle([lat, lng], {
-      radius: radius,
-      color: '#22c55e',
+      radius,
+      color: fcolor,
       weight: 1.5,
-      fillColor: '#22c55e',
+      fillColor: fcolor,
       fillOpacity: 0.08,
       dashArray: '4 4'
     }).addTo(layers.districtDetails);
-    
-    // Center point marker
     L.circleMarker([lat, lng], {
       radius: 5,
       color: '#ffffff',
       weight: 1.2,
-      fillColor: '#22c55e',
+      fillColor: fcolor,
       fillOpacity: 0.95
-    }).bindPopup(`
-      <div style="font-family:sans-serif;font-size:11px;color:#e6edf3">
-        <b>ป่าชุมชน:</b> ${f.name}<br>
-        <b>แหล่งข้อมูล:</b> ${f.sourceLabel}<br>
-        <b>พื้นที่:</b> ${f.areaRai ? f.areaRai.toLocaleString() + ' ไร่' : 'ไม่ระบุ'}<br>
-        <b>ตำบล:</b> ${f.tambon || 'ไม่ระบุ'}<br>
-        <b>พิกัด:</b> ${lat.toFixed(5)}, ${lng.toFixed(5)}
-      </div>
-    `).addTo(layers.districtDetails);
+    }).bindPopup(
+      `<div style="font-family:var(--mono);font-size:11px;color:#e6edf3">
+        <b>${f.name||'ป่าชุมชน'}</b><br>
+        ต.${f.tambon||'—'} อ.${f.amphoe||'—'}<br>
+        พื้นที่: ${f.area_rai?f.area_rai.toLocaleString()+' ไร่':'ไม่ระบุ'}<br>
+        จัดการไฟ: <span style="color:${fcolor}">${active?'● ใช้งานอยู่':'○ ไม่ระบุ'}</span><br>
+        แหล่ง: ${f.source||'—'}<br>
+        พิกัด: ${lat.toFixed(5)}, ${lng.toFixed(5)}
+      </div>`
+    ).addTo(layers.districtDetails);
   });
   
   // 2. Draw active landuse points (hotspots grouped by landuse class)
@@ -1958,16 +1998,32 @@ async function loadBoundaries() {
           });
         });
 
-        // Click handler to zoom and show detailed NRF, ALRO, AGRI landuse points + Community Forests!
+        // Click: zoom + show compact popup ON the district + render detail markers
         layer.on('click', function(e) {
-          if (e.originalEvent) {
-            L.DomEvent.stopPropagation(e);
-          }
+          if (e.originalEvent) L.DomEvent.stopPropagation(e);
           map.fitBounds(layer.getBounds(), { padding: [20, 20], maxZoom: 12 });
-          
           const nameTh = feature.properties.nameTh || feature.properties.name;
-          showDistrictDetail(nameTh);
           renderDistrictDetailsOnMap(nameTh);
+          // Build district popup ON the map (centroid of bounds)
+          const bounds = layer.getBounds();
+          const center = bounds.getCenter();
+          const distNorm = normalizeDistrictName(nameTh);
+          const distHs = hotspots.filter(h=>normalizeDistrictName(h.district)===distNorm);
+          const distFs = allForests.filter(f=>normalizeDistrictName(f.amphoe)===distNorm);
+          const frpSum = distHs.reduce((s,h)=>s+(h.frp||0),0);
+          const riskScore = Math.min(100, frpSum/3 + distHs.length*8);
+          const riskCol = riskScore>70?'#ff4d4d':riskScore>40?'#f5640a':'#facc15';
+          L.popup({closeButton:true, maxWidth:240, className:'district-popup'})
+            .setLatLng(center)
+            .setContent(
+              `<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6">
+              <b style="font-size:13px;color:#22d3ee">อ.${distNorm}</b><br>
+              จุดความร้อน: <b style="color:${distHs.length?'#f5640a':'#43b05f'}">${distHs.length} จุด</b><br>
+              FRP รวม: <b>${frpSum>0?frpSum.toFixed(1)+' MW':'—'}</b><br>
+              ป่าชุมชน: <b style="color:#43b05f">${distFs.length} แห่ง</b><br>
+              ความเสี่ยง: <b style="color:${riskCol}">${riskScore>0?Math.round(riskScore):'ต่ำ'}</b>
+              </div>`
+            ).openOn(map);
         });
       }
     }).addTo(layers.boundaries);
@@ -2048,6 +2104,7 @@ function buildHeat(){
     : L.layerGroup();
 }
 layers.heat = buildHeat();
+map.addLayer(layers.heat); // heatmap on by default
 
 // ============================================================
 //  LIVE DATA LAYER — fetch real backend, normalize, re-render
@@ -2136,19 +2193,20 @@ function applyLive(dash, history, phases){
   renderRiskScore();
   renderFreshness();
   markLiveProvenance();
+  fetchWindRose(); // refresh wind rose with real 24h data
   rerenderAll();
 }
 
 // The wind rose needs hourly wind history the backend doesn't expose, so flag it
 // as PROTOTYPE in LIVE mode instead of implying the distribution is measured.
 function markLiveProvenance(){
-  document.querySelectorAll('.side.right .block h2.wind').forEach(h=>{
-    if(h.textContent.indexOf('Wind rose')===0){
-      h.innerHTML = (dataMode==='live')
-        ? 'Wind rose — 24h <span style="color:var(--pm-purple);font-family:var(--mono);font-size:8px;letter-spacing:.1em">· จำลอง</span>'
-        : 'Wind rose — 24h';
-    }
-  });
+  // Wind rose label now managed by fetchWindRose() — it updates to "· จริง" on success.
+  // Only reset to plain title if we're back in demo mode.
+  if(dataMode!=='live'){
+    document.querySelectorAll('.side.right .block h2').forEach(h=>{
+      if(h.textContent.includes('Wind rose')) h.innerHTML='Wind rose — 24h';
+    });
+  }
 }
 
 // Real per-district fire phase from /api/fire-phases (replaces the client
@@ -2638,6 +2696,15 @@ function initMapLibre3D(){
     mlMap.on('mouseleave','hotspots-core',()=>{mlMap.getCanvas().style.cursor='';});
     mlMap.on('mouseenter','forests-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','forests-circle',()=>{mlMap.getCanvas().style.cursor='';});
+
+    // Chiang Mai province boundary
+    fetch('/chiangmai-province.json').then(r=>r.ok?r.json():null).then(geo=>{
+      if(!geo) return;
+      mlMap.addSource('cm-boundary',{type:'geojson',data:geo});
+      mlMap.addLayer({id:'cm-boundary-line',type:'line',source:'cm-boundary',paint:{
+        'line-color':'#22d3ee','line-width':2.5,'line-opacity':0.7,'line-dasharray':[4,3]
+      }});
+    }).catch(()=>{});
   });
 
   // Navigation controls
