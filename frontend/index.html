@@ -1118,15 +1118,13 @@ function renderHotspots(){
   hotspots.forEach(h=>{
     const isHigh = h.conf==='high';
     const frpVal = h.frp||0;
-    // Scale emoji: high+FRP>50 = big fire, high = medium, low = small
-    const sz = isHigh ? (frpVal>50?28:22) : 15;
-    const icon = L.divIcon({
-      className:'',
-      html:`<div class="fire-marker ${isHigh?'high':'low'}" style="font-size:${sz}px;line-height:1">🔥</div>`,
-      iconSize:[sz+4, sz+4],
-      iconAnchor:[(sz+4)/2, sz+4]
-    });
-    const m = L.marker([h.lat,h.lon],{icon,zIndexOffset:isHigh?100:0}).addTo(layers.hotspots);
+    const r = isHigh ? (frpVal>50?10:7) : 5;
+    const col = frpColor(frpVal||null);
+    const m = L.circleMarker([h.lat,h.lon],{
+      radius:r, color:'#fff', weight:1.2,
+      fillColor:col, fillOpacity:0.9,
+      zIndexOffset:isHigh?100:0
+    }).addTo(layers.hotspots);
     m.bindPopup(
       `<b>${h.id}</b> · ${h.district}<br>`+
       `${fmtFrp(h)} · ${isHigh?'confidence สูง':'confidence ต่ำ'}<br>`+
