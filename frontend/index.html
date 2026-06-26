@@ -631,7 +631,7 @@
         <div class="layer heat on" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
-        <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">NDVI ความหนาแน่นพืชพรรณ<small>MODIS 8-day · NASA GIBS</small></div><span class="cnt">off</span></div>
+        <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">EVI ความหนาแน่นพืชพรรณ<small>MODIS Terra rolling 8-day · NASA GIBS</small></div><span class="cnt">off</span></div>
         <!-- DEMO mode removed — always LIVE -->
       </div>
 
@@ -1043,20 +1043,11 @@ const layers = {
   ndvi: null  // created on first toggle
 };
 
-// ---- NDVI tile layer (MODIS Terra 8-day, NASA GIBS, keyless) ----
-function _ndviDate(){
-  // Most recent complete 8-day MODIS period, offset 16 days for processing lag.
-  const d = new Date(Date.now() - 16*86400000);
-  const y = d.getUTCFullYear();
-  const doy = Math.floor((d - new Date(y,0,1)) / 86400000);
-  const period = Math.floor(doy/8)*8;
-  const pd = new Date(y,0,1+period);
-  return pd.toISOString().split('T')[0];
-}
+// ---- EVI tile layer (MODIS Terra rolling 8-day, NASA GIBS, keyless) ----
 function _buildNdviLayer(){
   return L.tileLayer(
-    `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/${_ndviDate()}/GoogleMapsCompatible/{z}/{y}/{x}.png`,
-    {attribution:'NASA GIBS · MODIS Terra NDVI 8-day',opacity:0.72,maxZoom:9,maxNativeZoom:9}
+    'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_EVI_8Day/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png',
+    {attribution:'NASA GIBS · MODIS Terra EVI rolling 8-day',opacity:0.72,maxZoom:9,maxNativeZoom:9}
   );
 }
 
