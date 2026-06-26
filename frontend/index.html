@@ -1092,43 +1092,9 @@ const districts = [
 function rnd(a,b){return a+Math.random()*(b-a)}
 function jitter([la,lo],r){return [la+rnd(-r,r), lo+rnd(-r,r)]}
 
-// Build hotspots (DEMO seed; replaced wholesale in LIVE mode)
-let hotspots=[];
-let hid=100;
-const landuseTypes = ['NRF', 'CONSERVATION', 'ALRO', 'AGRI', 'OTHER'];
-const landuseNames = {
-  'NRF': 'ป่าสงวนแห่งชาติ',
-  'CONSERVATION': 'ป่าอนุรักษ์',
-  'ALRO': 'เขต ส.ป.ก.',
-  'AGRI': 'พื้นที่เกษตร',
-  'OTHER': 'ชุมชนและอื่น ๆ'
-};
-districts.forEach((d,i)=>{
-  const n = 1+Math.floor(Math.random()*4);
-  for(let k=0;k<n;k++){
-    const frp = Math.round(rnd(8,140));
-    const conf = Math.random()>0.32 ? 'high':'low';
-    const [la,lo]=jitter(d.c,0.10);
-    const type = landuseTypes[Math.floor(Math.random()*landuseTypes.length)];
-    hotspots.push({
-      id:'HS-'+(hid++), lat:la, lon:lo, frp, conf, district:d.name,
-      sat: Math.random()>0.5?'VIIRS S-NPP':'MODIS Aqua',
-      detected: Math.floor(rnd(4,180)), // minutes ago
-      landuse_type: type,
-      landuse_name: landuseNames[type]
-    });
-  }
-});
-
-// PM2.5 stations (DEMO seed; replaced wholesale in LIVE mode)
-let pmStations=[
-  {name:'สถานี อ.เมือง',     c:[18.79,98.98], pm:Math.round(rnd(48,92))},
-  {name:'สถานี ศาลากลาง',   c:[18.84,98.97], pm:Math.round(rnd(45,88))},
-  {name:'สถานี แม่แจ่ม',     c:[18.50,98.36], pm:Math.round(rnd(70,150))},
-  {name:'สถานี จอมทอง',     c:[18.41,98.67], pm:Math.round(rnd(60,130))},
-  {name:'สถานี ดอยสะเก็ด',  c:[18.92,99.14], pm:Math.round(rnd(50,100))},
-  {name:'สถานี เชียงดาว',   c:[19.36,98.96], pm:Math.round(rnd(55,120))},
-];
+// Hotspots and PM stations — empty until goLive() fills them from backend
+let hotspots = [];
+let pmStations = [];
 
 // ---- Color helpers ----
 // f may be null when the reporting source (e.g. GISTDA) carries no FRP. In that
