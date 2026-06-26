@@ -162,6 +162,8 @@
   /* green layer toggle variant */
   .layer.on.green .sw{background:rgba(67,176,95,.2);border-color:var(--green)}
   .layer.on.green .sw::after{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .layer.on[data-layer="ndvi"] .sw{background:rgba(132,204,22,.2);border-color:#84cc16}
+  .layer.on[data-layer="ndvi"] .sw::after{background:#84cc16;box-shadow:0 0 8px #84cc16}
   .layer.on.heat .sw{background:rgba(255,77,77,.2);border-color:var(--danger)}
   .layer.on.heat .sw::after{background:var(--danger);box-shadow:0 0 8px var(--danger)}
 
@@ -585,6 +587,7 @@
         <div class="layer heat on" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
+        <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">NDVI ความหนาแน่นพืชพรรณ<small>MODIS 8-day · NASA GIBS</small></div><span class="cnt">off</span></div>
         <div class="datamode">
           <div class="seg">
             <button class="on" id="dmDemo">● DEMO</button>
@@ -983,8 +986,26 @@ const layers = {
   pm:       L.layerGroup().addTo(map),
   forest:   L.layerGroup(),
   boundaries: L.layerGroup().addTo(map),
-  districtDetails: L.layerGroup().addTo(map)
+  districtDetails: L.layerGroup().addTo(map),
+  ndvi: null  // created on first toggle
 };
+
+// ---- NDVI tile layer (MODIS Terra 8-day, NASA GIBS, keyless) ----
+function _ndviDate(){
+  // Most recent complete 8-day MODIS period, offset 16 days for processing lag.
+  const d = new Date(Date.now() - 16*86400000);
+  const y = d.getUTCFullYear();
+  const doy = Math.floor((d - new Date(y,0,1)) / 86400000);
+  const period = Math.floor(doy/8)*8;
+  const pd = new Date(y,0,1+period);
+  return pd.toISOString().split('T')[0];
+}
+function _buildNdviLayer(){
+  return L.tileLayer(
+    `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/${_ndviDate()}/GoogleMapsCompatible/{z}/{y}/{x}.png`,
+    {attribution:'NASA GIBS · MODIS Terra NDVI 8-day',opacity:0.72,maxZoom:9,maxNativeZoom:9}
+  );
+}
 
 // ---- Mock geographic data (Chiang Mai districts) ----
 const districts = [
@@ -1237,6 +1258,20 @@ function renderPm(){
 document.querySelectorAll('.layer').forEach(el=>{
   el.onclick=()=>{
     const key=el.dataset.layer;
+    if(key==='ndvi'){
+      el.classList.toggle('on');
+      if(el.classList.contains('on')){
+        if(!layers.ndvi) layers.ndvi=_buildNdviLayer();
+        // Insert below hotspots so fires remain visible
+        layers.ndvi.addTo(map);
+        layers.ndvi.setZIndex(200);
+        el.querySelector('.cnt').textContent='on';
+      } else {
+        if(layers.ndvi) map.removeLayer(layers.ndvi);
+        el.querySelector('.cnt').textContent='off';
+      }
+      return;
+    }
     el.classList.toggle('on');
     if(el.classList.contains('on')) map.addLayer(layers[key]);
     else map.removeLayer(layers[key]);
@@ -1812,55 +1847,6 @@ function normalizeDistrictName(name) {
   return name.replace("อำเภอ", "").replace("อ.", "").replace("กิ่งอำเภอ", "").trim();
 }
 
-function showDistrictDetail(distName) {
-  const body = document.getElementById('detailBody');
-  const empty = document.getElementById('detailEmpty');
-  const title = document.querySelector('#detailBlock h2');
-  
-  empty.style.display = 'none';
-  body.style.display = 'block';
-  title.textContent = `ข้อมูล อ. ${distName}`;
-
-  // 1. Filter community forests in this district
-  const distForests = allForests.filter(f => normalizeDistrictName(f.amphoe) === normalizeDistrictName(distName));
-  const totalRai = distForests.reduce((sum, f) => sum + (f.area_rai || 0), 0);
-
-  // 2. Filter hotspots in this district
-  const distHotspots = hotspots.filter(h => normalizeDistrictName(h.district) === normalizeDistrictName(distName));
-  const landuseCounts = { NRF: 0, CONSERVATION: 0, ALRO: 0, AGRI: 0, OTHER: 0 };
-  distHotspots.forEach(h => {
-    const t = h.landuse_type || 'OTHER';
-    if (landuseCounts[t] !== undefined) landuseCounts[t]++;
-    else landuseCounts.OTHER++;
-  });
-
-  // Calculate risk rating
-  const score = Math.min(100, distHotspots.reduce((sum, h) => sum + (h.frp || 25), 0) / 3 + distHotspots.length * 8);
-  const riskLabel = score > 70 ? 'วิกฤต' : score > 45 ? 'สูง' : score > 25 ? 'ปานกลาง' : 'เฝ้าระวัง';
-  const riskColor = score > 70 ? 'var(--danger)' : score > 45 ? '#f5640a' : score > 25 ? '#ff8a3d' : '#facc15';
-
-  body.innerHTML = `
-    <div style="font-size:12px;line-height:1.65;color:var(--txt)">
-      <div class="dl"><span class="dk">ระดับความเสี่ยง</span><span class="dv" style="color:${riskColor};font-weight:bold">${riskLabel} (${Math.round(score)}/100)</span></div>
-      <div class="dl"><span class="dk">จุดความร้อนรวม</span><span class="dv hot">${distHotspots.length} จุด</span></div>
-      
-      <h3 style="font-size:10px;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:0.05em">ข้อมูลป่าชุมชน</h3>
-      <div class="dl"><span class="dk">จำนวนป่าชุมชน</span><span class="dv" style="color:var(--green);font-weight:bold">${distForests.length} แห่ง</span></div>
-      <div class="dl"><span class="dk">พื้นที่ป่ารวม</span><span class="dv">${totalRai.toLocaleString()} ไร่</span></div>
-      
-      <h3 style="font-size:10px;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:0.05em">การจำแนกพื้นที่เกิดไฟ (จุดความร้อน)</h3>
-      <div class="dl"><span class="dk"><span style="display:inline-block;width:8px;height:8px;background:#38bdf8;border-radius:50%;margin-right:6px"></span>ป่าสงวนแห่งชาติ (NRF)</span><span class="dv" style="color:#60a5fa">${landuseCounts.NRF} จุด</span></div>
-      <div class="dl"><span class="dk"><span style="display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;margin-right:6px"></span>ป่าอนุรักษ์ (Conservation)</span><span class="dv" style="color:#4ade80">${landuseCounts.CONSERVATION} จุด</span></div>
-      <div class="dl"><span class="dk"><span style="display:inline-block;width:8px;height:8px;background:#eab308;border-radius:50%;margin-right:6px"></span>พื้นที่ ส.ป.ก. (ALRO)</span><span class="dv" style="color:#facc15">${landuseCounts.ALRO} จุด</span></div>
-      <div class="dl"><span class="dk"><span style="display:inline-block;width:8px;height:8px;background:#ef4444;border-radius:50%;margin-right:6px"></span>พื้นที่เกษตรกรรม (AGRI)</span><span class="dv" style="color:#f87171">${landuseCounts.AGRI} จุด</span></div>
-      <div class="dl"><span class="dk"><span style="display:inline-block;width:8px;height:8px;background:#6b7280;border-radius:50%;margin-right:6px"></span>ชุมชนและพื้นที่อื่นๆ</span><span class="dv" style="color:var(--dim)">${landuseCounts.OTHER} จุด</span></div>
-      
-      <div style="margin-top:14px;padding:8px;background:rgba(255,255,255,0.02);border-radius:6px;font-size:10.5px;color:var(--muted)">
-        💡 บนแผนที่ได้แสดงพิกัดและขอบเขตป่าชุมชน (วงกลมสีเขียว) และพิกัดจุดเกิดไฟแยกตามประเภทผังที่ดิน เพื่อให้คุณวิเคราะห์แยกรายประเภทได้ทันที
-      </div>
-    </div>
-  `;
-}
 
 function renderDistrictDetailsOnMap(distName) {
   layers.districtDetails.clearLayers();
@@ -2127,7 +2113,7 @@ function normHotspots(items){
     id: it.id,
     lat: it.latitude, lon: it.longitude,
     frp: (it.frp==null?null:it.frp),
-    conf: (it.confidence>=80?'high':'low'),
+    conf: (it.confidence>=60?'high':'low'),
     district: it.district||'—',
     sat: it.satellite||'—',
     detected: minutesAgo(it.detected_at),

@@ -127,7 +127,7 @@ def community_forests() -> CommunityForestsResponse:
     return CommunityForestsResponse(
         forests=forests,
         total=len(forests),
-        source="thaicfnet.org",
+        source="Royal Forest Department + thaicfnet.org",
         cached_at=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).isoformat(),
     )
 

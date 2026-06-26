@@ -291,6 +291,9 @@ class CommunityForest(BaseModel):
     forest_types: list[str] = Field(default_factory=list)
     fire_management_active: bool = False
     fire_activities: list[str] = Field(default_factory=list)
+    area_rai: float | None = None
+    boundary_radius_m: int | None = None
+    source: str | None = None
 
 
 class CommunityForestsResponse(BaseModel):
