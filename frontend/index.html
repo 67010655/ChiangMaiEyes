@@ -1095,6 +1095,7 @@ function jitter([la,lo],r){return [la+rnd(-r,r), lo+rnd(-r,r)]}
 // Hotspots and PM stations — empty until goLive() fills them from backend
 let hotspots = [];
 let pmStations = [];
+let daily30=(()=>{let a=[],v=14;for(let i=0;i<30;i++){v+=Math.sin(i/4)*4+rnd(-5,6);v=Math.max(2,Math.min(60,v));a.push(Math.round(v));}a[29]=hotspots.length;return a;})();
 
 // ---- Color helpers ----
 // f may be null when the reporting source (e.g. GISTDA) carries no FRP. In that
@@ -1721,7 +1722,6 @@ const std=a=>{const m=mean(a);return Math.sqrt(mean(a.map(x=>(x-m)**2)));};
 function corr(xs,ys){const mx=mean(xs),my=mean(ys);let n=0,dx=0,dy=0;for(let i=0;i<xs.length;i++){n+=(xs[i]-mx)*(ys[i]-my);dx+=(xs[i]-mx)**2;dy+=(ys[i]-my)**2;}return n/Math.sqrt(dx*dy);}
 
 // ---- synthetic statistical datasets ----
-let daily30=(()=>{let a=[],v=14;for(let i=0;i<30;i++){v+=Math.sin(i/4)*4+rnd(-5,6);v=Math.max(2,Math.min(60,v));a.push(Math.round(v));}a[29]=hotspots.length;return a;})();
 let hourly=Array.from({length:24},(_,h)=>{const peak=Math.exp(-((h-15)**2)/14),morn=Math.exp(-((h-10)**2)/22)*0.45;return Math.max(0,Math.round((peak+morn)*22+rnd(0,2)));});
 let frpSamples=Array.from({length:240},()=>Math.pow(Math.random(),1.8)*150);
 let pmPairs=daily30.map(h=>({x:h,y:Math.round(30+h*1.7+rnd(-12,13))}));
