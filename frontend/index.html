@@ -1062,6 +1062,8 @@ let pmStations=[
 function frpColor(f){ if(f==null)return '#6b7787'; return f>100?'#ff4d4d': f>60?'#f5640a': f>30?'#ff8a3d':'#facc15'; }
 // Honest FRP label: real megawatts when known, otherwise "ไม่มีข้อมูล".
 function fmtFrp(h){ return h.frp==null ? 'FRP ไม่มีข้อมูล' : `FRP ${Math.round(h.frp)} MW`; }
+// Google Maps navigation link for field officers
+function gMapsLink(lat, lng){ return `<a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;text-decoration:none;font-weight:600">🗺 นำทาง Google Maps</a>`; }
 // Sizing/intensity scalar: real FRP if present, else a confidence-based proxy so
 // markers still have a sensible radius (never shown as MW).
 function intensity(h){ return h.frp!=null ? h.frp : (h.conf==='high'?55:22); }
@@ -1088,6 +1090,7 @@ function renderHotspots(){
       `<b>${h.id}</b> · ${h.district}<br>`+
       `${fmtFrp(h)} · ${isHigh?'confidence สูง':'confidence ต่ำ'}<br>`+
       `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
+      `${gMapsLink(h.lat,h.lon)}<br>`+
       `<span style="cursor:pointer;color:var(--wind);text-decoration:underline" `+
       `onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${h.lon},${h.lat}],zoom:12,pitch:55,bearing:0,duration:1200}),600)">📍 ดูใน 3D</span>`
     );
@@ -1224,7 +1227,7 @@ function renderPm(){
     const col=pmColor(s.pm);
     L.circle(s.c,{radius:4500,color:col,weight:1,fillColor:col,fillOpacity:0.10}).addTo(layers.pm);
     L.circleMarker(s.c,{radius:7,color:'#fff',weight:1.5,fillColor:col,fillOpacity:0.95})
-      .bindPopup(`<b>${s.name}</b><br>PM2.5 ${s.pm} µg/m³<br>${pmAqiLabel(s.pm)}`)
+      .bindPopup(`<b>${s.name}</b><br>PM2.5 ${s.pm} µg/m³<br>${pmAqiLabel(s.pm)}<br>${gMapsLink(s.c[0],s.c[1])}`)
       .addTo(layers.pm);
   });
   document.getElementById('lcPm').textContent=pmStations.length;
@@ -1894,7 +1897,8 @@ function renderDistrictDetailsOnMap(distName) {
         พื้นที่: ${f.area_rai?f.area_rai.toLocaleString()+' ไร่':'ไม่ระบุ'}<br>
         จัดการไฟ: <span style="color:${fcolor}">${active?'● ใช้งานอยู่':'○ ไม่ระบุ'}</span><br>
         แหล่ง: ${f.source||'—'}<br>
-        พิกัด: ${lat.toFixed(5)}, ${lng.toFixed(5)}
+        พิกัด: ${lat.toFixed(5)}, ${lng.toFixed(5)}<br>
+        ${gMapsLink(lat,lng)}
       </div>`
     ).addTo(layers.districtDetails);
   });
@@ -1921,7 +1925,8 @@ function renderDistrictDetailsOnMap(distName) {
         <b>รหัสจุด:</b> ${h.id}<br>
         <b>ค่า FRP:</b> ${h.frp == null ? 'ไม่มีข้อมูล' : h.frp + ' MW'}<br>
         <b>ดาวเทียม:</b> ${h.sat}<br>
-        <b>พิกัด:</b> ${h.lat.toFixed(5)}, ${h.lon.toFixed(5)}
+        <b>พิกัด:</b> ${h.lat.toFixed(5)}, ${h.lon.toFixed(5)}<br>
+        ${gMapsLink(h.lat,h.lon)}
       </div>
     `).addTo(layers.districtDetails);
   });
@@ -2082,7 +2087,7 @@ async function loadCommunityForests(){
           `อ.${f.amphoe||'—'} ต.${f.tambon||'—'}<br>`+
           `พื้นที่: ${f.area_rai?f.area_rai.toLocaleString()+' ไร่':'ไม่ระบุ'}<br>`+
           `จัดการไฟ: <span style="color:${color}">${active?'● ใช้งานอยู่':'○ ไม่ระบุ'}</span><br>`+
-          `แหล่ง: ${f.source||'—'}`
+          `แหล่ง: ${f.source||'—'}<br>${gMapsLink(lat,lng)}`
         )
         .addTo(layers.forest);
     });
@@ -2676,7 +2681,7 @@ function initMapLibre3D(){
       }
       new maplibregl.Popup({closeButton:true,maxWidth:'240px'})
         .setLngLat([lng,lat])
-        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:${props.color}">${props.id||'hotspot'}</b><br>อ.${props.district||'—'}<br>FRP: ${props.frp!=null?Math.round(props.frp)+' MW':'—'}<br>ความสูง: ${elevStr}${nearestHtml}</div>`)
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:${props.color}">${props.id||'hotspot'}</b><br>อ.${props.district||'—'}<br>FRP: ${props.frp!=null?Math.round(props.frp)+' MW':'—'}<br>ความสูง: ${elevStr}${nearestHtml}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
         .addTo(mlMap);
     });
 
@@ -2688,7 +2693,7 @@ function initMapLibre3D(){
       try{ elev=mlMap.queryTerrainElevation([lng,lat]); }catch(_){}
       new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
         .setLngLat([lng,lat])
-        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>ความสูง: ${elev!=null?Math.round(elev)+' เมตร (MSL)':'—'}<br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}</div>`)
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>ความสูง: ${elev!=null?Math.round(elev)+' เมตร (MSL)':'—'}<br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
         .addTo(mlMap);
     });
 
