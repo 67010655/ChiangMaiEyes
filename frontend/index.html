@@ -1519,9 +1519,16 @@ function setKpis(){
   document.getElementById('kpiAqi').textContent=aqi;
   document.getElementById('kpiAqi').style.color = aqi>150?'#ff4d4d':aqi>100?'#ff8a3d':'#facc15';
   document.getElementById('pmPeak').innerHTML=pmPeak+'<small> µg/m³</small>';
-  document.getElementById('pmPeakTr').textContent='▲ '+Math.round(rnd(6,18))+'% vs เมื่อวาน';
-  document.getElementById('visKm').innerHTML=(Math.round((28-pmPeak/6)*10)/10)+'<small> km</small>';
-  document.getElementById('visTr').textContent='▼ '+Math.round(rnd(8,22))+'% ทัศนวิสัยลดลง';
+  // PM trend: compare current avg vs yesterday's daily value if available
+  const prevDayPm = daily30.length >= 2 ? daily30[daily30.length-2] : null;
+  const pmTrendPct = (prevDayPm && prevDayPm > 0) ? Math.round((pmAvg-prevDayPm)/prevDayPm*100) : null;
+  document.getElementById('pmPeakTr').textContent = pmTrendPct != null
+    ? (pmTrendPct >= 0 ? '▲ ' : '▼ ') + Math.abs(pmTrendPct) + '% vs เมื่อวาน'
+    : '— vs เมื่อวาน';
+  const visKm = Math.round((28-pmPeak/6)*10)/10;
+  document.getElementById('visKm').innerHTML = visKm + '<small> km</small>';
+  document.getElementById('visTr').textContent = pmPeak > 150 ? '▼ ทัศนวิสัยต่ำมาก'
+    : pmPeak > 75 ? '▼ ทัศนวิสัยลดลง' : '— ทัศนวิสัยปกติ';
   document.getElementById('pm24now').textContent=pmAvg;
 }
 function setWindBadge(){
@@ -1819,18 +1826,47 @@ document.querySelectorAll('#anRange button').forEach(b=>{
 });
 
 function rangeData(r){
-  if(r==='24h')return {total:hotspots.length,prev:Math.round(hotspots.length*rnd(.8,1.2)),mult:1,label:'24 ชั่วโมง'};
-  if(r==='7d'){const s=daily30.slice(-7).reduce((a,b)=>a+b,0);return{total:s,prev:daily30.slice(-14,-7).reduce((a,b)=>a+b,0),mult:7,label:'7 วัน'};}
-  if(r==='30d'){const s=daily30.reduce((a,b)=>a+b,0);return{total:s,prev:Math.round(s*rnd(.85,1.05)),mult:30,label:'30 วัน'};}
-  const s=Math.round(daily30.reduce((a,b)=>a+b,0)*4.2);return{total:s,prev:Math.round(s*rnd(.9,1.1)),mult:120,label:'ทั้งฤดู (ธ.ค.–เม.ย.)'};
+  const trend = (liveIntel && liveIntel.hotspot_trend) ? liveIntel.hotspot_trend : null;
+  if(r==='24h'){
+    // Use live trend recent_count when window is short enough, else live hotspot count
+    const total = hotspots.length;
+    const prev = trend ? Math.round(trend.previous_count / Math.max(1, trend.window_days)) : null;
+    return {total, prev: prev || total, mult:1, label:'24 ชั่วโมง'};
+  }
+  if(r==='7d'){
+    const s=daily30.slice(-7).reduce((a,b)=>a+b,0);
+    const p=daily30.slice(-14,-7).reduce((a,b)=>a+b,0);
+    return {total:s, prev:p||s, mult:7, label:'7 วัน'};
+  }
+  if(r==='30d'){
+    const s=daily30.reduce((a,b)=>a+b,0);
+    // prev = first 15 days doubled as proxy for prior 30 (no deeper history yet)
+    const p=daily30.slice(0,15).reduce((a,b)=>a+b,0)*2;
+    return {total:s, prev:p||s, mult:30, label:'30 วัน'};
+  }
+  // season: use backend trend.recent_count + previous_count if available
+  const s = trend ? trend.recent_count + trend.previous_count
+                  : daily30.reduce((a,b)=>a+b,0);
+  const p = trend ? trend.previous_count : Math.round(s*0.9);
+  return {total:s, prev:p, mult:120, label:'ทั้งฤดู (ธ.ค.–เม.ย.)'};
 }
 
 function renderAnalytics(r){
   const rd=rangeData(r);
-  // Real recent-vs-previous trend from the backend replaces the random demo delta.
   const trend=(liveIntel&&liveIntel.hotspot_trend)?liveIntel.hotspot_trend:null;
-  const delta = trend ? trend.change_percent : (rd.prev?((rd.total-rd.prev)/rd.prev*100):0);
-  const prevText = trend ? `${trend.previous_count} จุด ช่วงก่อนหน้า (${trend.window_days} วัน)` : `${rd.prev} จุด ช่วงก่อน`;
+  // For 7d/30d we compute delta from the two halves of daily30 (real data).
+  // For 24h/season we use backend trend.change_percent when available.
+  let delta, prevText;
+  if(r==='7d'||r==='30d'){
+    delta = rd.prev ? ((rd.total-rd.prev)/rd.prev*100) : 0;
+    prevText = `${rd.prev} จุด ช่วงก่อนหน้า`;
+  } else if(trend) {
+    delta = trend.change_percent;
+    prevText = `${trend.previous_count} จุด ช่วงก่อนหน้า (${trend.window_days} วัน)`;
+  } else {
+    delta = rd.prev ? ((rd.total-rd.prev)/rd.prev*100) : 0;
+    prevText = `${rd.prev} จุด ช่วงก่อน`;
+  }
   const pmMean=pmStations.length?Math.round(mean(pmStations.map(s=>s.pm))):0;
   const realFrps=hotspots.map(h=>h.frp).filter(f=>f!=null);
   const peakFrp=realFrps.length?Math.max(...realFrps):null;
@@ -2252,6 +2288,7 @@ function applyLive(dash, history, phases){
   renderFreshness();
   markLiveProvenance();
   fetchWindRose(); // refresh wind rose with real 24h data
+  fetchCamsHourly(); // Open-Meteo CAMS hourly PM2.5 (replaces mock / daily fallback)
   rerenderAll();
 }
 
@@ -2263,6 +2300,36 @@ function markLiveProvenance(){
     document.querySelectorAll('.side.right .block h2').forEach(h=>{
       if(h.textContent.includes('Wind rose')) h.innerHTML='Wind rose — 24h';
     });
+  }
+}
+
+// Open-Meteo CAMS Reanalysis — hourly PM2.5 for Chiang Mai centroid
+// Free, no key, operational/government-usable. Updates ~hourly with ~6h lag.
+async function fetchCamsHourly(){
+  const lat = 18.787, lon = 98.993;
+  const url = `https://air-quality-api.open-meteo.com/v1/air-quality`
+    + `?latitude=${lat}&longitude=${lon}&hourly=pm2_5`
+    + `&timezone=Asia%2FBangkok&past_days=1&forecast_days=0`;
+  try {
+    const r = await fetch(url, {signal: AbortSignal.timeout(10000)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d = await r.json();
+    const vals = (d.hourly && d.hourly.pm2_5) || [];
+    const times = (d.hourly && d.hourly.time) || [];
+    // Filter to last 24 hours of non-null readings
+    const now = Date.now();
+    const paired = times.map((t,i) => ({t: new Date(t).getTime(), v: vals[i]}))
+      .filter(x => x.v != null && x.t <= now && x.t >= now - 25*3600*1000)
+      .slice(-24);
+    if(paired.length < 3) return; // too sparse — keep whatever we had
+    pm24 = paired.map(x => Math.round(x.v));
+    // Retitle chart to indicate real hourly source
+    document.querySelectorAll('.side.right .block h2').forEach(h => {
+      if(h.textContent.indexOf('PM2.5') === 0) h.textContent = 'PM2.5 — 24h (CAMS)';
+    });
+    lineChart('pmChart', pm24, {color:'#a855f7', fill:'rgba(168,85,247,.16)', thr:55});
+  } catch(e) {
+    // Silently fall back to whatever pm24 already contains (daily history or mock)
   }
 }
 
