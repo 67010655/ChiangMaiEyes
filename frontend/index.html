@@ -2392,26 +2392,28 @@ function buildBurnScarLayer(){
       if(!document.querySelector('.layer[data-layer="burnScar"]').classList.contains('on')) return;
       L.geoJSON(gj,{
         style(feat){
-          const name=(feat.properties&&(feat.properties.NAME_2||feat.properties.name))||'';
-          const matchKey=Object.keys(byDistrict).find(k=>name.includes(k)||k.includes(name));
-          const ph=byDistrict[name]||byDistrict[matchKey]||null;
+          const p=feat.properties||{};
+          // use amp_th (Thai name) for matching with livePhases which also uses Thai
+          const nameTh=p.amp_th||p.nameTh||'';
+          const ph=byDistrict[nameTh]||byDistrict[Object.keys(byDistrict).find(k=>nameTh&&(k.includes(nameTh)||nameTh.includes(k)))||'']||null;
           const score=ph?(ph.danger_score||0):0;
-          if(score<0.05) return {fillColor:'transparent',fillOpacity:0,weight:0};
-          count++;
+          if(score>0) count++;
+          // always show all districts; opacity conveys risk level (green=safe, red=danger)
           const col=score>0.6?'#ff4d4d':score>0.35?'#ff8a3d':score>0.15?'#facc15':'#43b05f';
-          return {fillColor:col,fillOpacity:0.35,color:col,weight:1.5,opacity:0.7};
+          const opacity=score>0.05?0.38:0.10;
+          return {fillColor:col,fillOpacity:opacity,color:col,weight:score>0.05?1.5:0.5,opacity:score>0.05?0.7:0.2};
         },
         onEachFeature(feat,layer){
-          const name=(feat.properties&&(feat.properties.NAME_2||feat.properties.name))||'';
-          const matchKey=Object.keys(byDistrict).find(k=>name.includes(k)||k.includes(name));
-          const ph=byDistrict[name]||byDistrict[matchKey]||null;
-          if(ph){
-            const score=Math.round((ph.danger_score||0)*100);
-            layer.bindPopup(`<b>${name}</b><br>คะแนนอันตราย: ${score}/100<br>เฟส: ${PHASE_LABEL_TH[ph.phase]||ph.phase||'—'}<br>จุดความร้อน: ${ph.active_hotspots||0} จุด`);
-          }
+          const p=feat.properties||{};
+          const nameTh=p.amp_th||p.nameTh||'';
+          const ph=byDistrict[nameTh]||byDistrict[Object.keys(byDistrict).find(k=>nameTh&&(k.includes(nameTh)||nameTh.includes(k)))||'']||null;
+          const score=Math.round((ph?ph.danger_score||0:0)*100);
+          const hotspots=ph?ph.active_hotspots||0:0;
+          layer.bindPopup(`<b>${nameTh||p.amp_en||'—'}</b><br>คะแนนอันตราย: ${score}/100<br>เฟส: ${PHASE_LABEL_TH[ph&&ph.phase]||ph&&ph.phase||'ปกติ'}<br>จุดความร้อน: ${hotspots} จุด`);
         }
       }).addTo(layers.burnScar);
-      document.getElementById('lcBurn').textContent=count>0?`${count} อำเภอ`:'ปกติ';
+      const lbl=count>0?`${count} อำเภอเสี่ยง`:'นอกฤดูไฟ';
+      document.getElementById('lcBurn').textContent=lbl;
     })
     .catch(()=>{document.getElementById('lcBurn').textContent='error';});
 }
