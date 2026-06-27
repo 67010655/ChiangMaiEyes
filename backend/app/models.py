@@ -210,65 +210,6 @@ class LanduseBreakdownItem(BaseModel):
     percent: float
 
 
-class WeeklyForestScoreBreakdown(BaseModel):
-    management: int
-    prevention: int
-    utilization: int
-    ecological_outcome: int
-
-
-class WeeklyForestRankingEntry(BaseModel):
-    forest_id: str
-    forest_name: str
-    village: str
-    tambon: str
-    amphoe: str
-    latitude: float
-    longitude: float
-    total_score: int
-    rank: int
-    report_count: int
-    last_report_at: str
-    score_breakdown: WeeklyForestScoreBreakdown
-    reasons: list[str] = Field(default_factory=list)
-
-
-class WeeklyForestLeagueResponse(BaseModel):
-    week_id: str
-    scoring_window: str
-    scheduled_recompute: str
-    rate_limit_rule: str
-    ranking: list[WeeklyForestRankingEntry] = Field(default_factory=list)
-    # LIVE when the ranking came from real submitted field reports (Supabase);
-    # UNAVAILABLE until a verified reporting database is configured. Prototype
-    # data is opt-in only.
-    source_mode: SourceMode = "UNAVAILABLE"
-
-
-class FieldReportSubmission(BaseModel):
-    """Public field-report submission from a community operator."""
-
-    forest_id: str = Field(min_length=1)
-    village_id: str = Field(min_length=1)
-    reporter_hash: str = Field(min_length=1, max_length=120)
-    patrol_count: int = Field(default=0, ge=0, le=100)
-    firebreak_km: float = Field(default=0, ge=0, le=500)
-    fuel_management_rai: float = Field(default=0, ge=0, le=100000)
-    water_points_checked: int = Field(default=0, ge=0, le=1000)
-    committee_meeting: bool = False
-    budget_used_baht: float = Field(default=0, ge=0, le=10_000_000)
-    community_use_activity: bool = False
-    biodiversity_note: str = Field(default="", max_length=500)
-    no_burn_agreement: bool = False
-
-
-class FieldReportResult(BaseModel):
-    accepted: bool
-    stored: bool
-    message: str
-    source_mode: SourceMode
-
-
 class LocalizedPrediction(BaseModel):
     id: str
     locationName: str
@@ -361,7 +302,6 @@ class OperationalIntelligenceResponse(BaseModel):
     drought_zones: list[DroughtZone] = Field(default_factory=list)
     satellite_layers: SatelliteLayerResponse | None = None
     landuse_breakdown: list[LanduseBreakdownItem] = Field(default_factory=list)
-    weekly_forest_league: WeeklyForestLeagueResponse
     localizedPredictions: list[LocalizedPrediction] = Field(default_factory=list)
     source_notes: list[str] = Field(default_factory=list)
 

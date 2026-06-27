@@ -67,7 +67,6 @@
   body.light-mode .analytics,
   body.light-mode .reportview,
   body.light-mode .threedview,
-  body.light-mode .leagueview,
   body.light-mode .phaseview{background:rgba(238,242,247,.97)}
   body.light-mode .an-head,
   body.light-mode .ph-head,
@@ -211,44 +210,6 @@
   .reportview{background:rgba(7,10,14,.97);backdrop-filter:blur(4px);overflow-y:auto}
   .reportview::-webkit-scrollbar{width:10px}
   .reportview::-webkit-scrollbar-thumb{background:#222b36;border-radius:5px}
-
-  /* ── League overlay ────────────────────────── */
-  .leagueview{position:fixed;inset:52px 0 0 66px;z-index:1500;display:none;background:rgba(7,10,14,.97);backdrop-filter:blur(4px);overflow-y:auto}
-  @media(max-width:820px){.leagueview{left:56px}}
-  .leagueview.open{display:block}
-  .leagueview::-webkit-scrollbar{width:10px}
-  .leagueview::-webkit-scrollbar-thumb{background:#222b36;border-radius:5px}
-
-  #leagueTable th, #leagueTable td {
-    padding: 12px 10px;
-    border-bottom: 1px solid var(--line-soft);
-  }
-  #leagueTable tr:hover {
-    background: rgba(255,255,255,0.02);
-  }
-  .league-badge {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(67,176,95,0.12);
-    color: var(--green);
-  }
-  .league-badge.top1 {
-    background: rgba(250,204,21,0.2);
-    color: #facc15;
-    font-weight: bold;
-    box-shadow: 0 0 8px rgba(250,204,21,0.2);
-  }
-  .score-breakdown-bar {
-    display: inline-flex;
-    height: 6px;
-    border-radius: 3px;
-    overflow: hidden;
-    background: #1e293b;
-    width: 120px;
-  }
-  .sbar { height: 100%; }
 
   .district-tooltip {
     background: #0f172a !important;
@@ -554,7 +515,7 @@
     .stat{min-width:0;padding:0 10px}
     .clock{min-width:0;padding-left:10px;font-size:11px}
     /* full-screen overlays: the rail is gone, so no left offset */
-    .analytics,.reportview,.threedview,.leagueview,.phaseview{left:0;bottom:calc(52px + env(safe-area-inset-bottom,0))}
+    .analytics,.reportview,.threedview,.phaseview{left:0;bottom:calc(52px + env(safe-area-inset-bottom,0))}
     /* conditions badge */
     .cond-badge{flex-wrap:wrap}
   }
@@ -629,11 +590,6 @@
         <span>รายงาน</span>
       </div>
       <div class="nav-spacer"></div>
-      <div class="nav-sep"></div>
-      <div class="nav-item" data-view="league">
-        <svg viewBox="0 0 24 24"><path d="M8 4h8v4a4 4 0 01-8 0z"/><path d="M8 6H5v2a3 3 0 003 3M16 6h3v2a3 3 0 01-3 3"/><path d="M10 14h4v3h-4z"/><path d="M8 20h8"/></svg>
-        <span>ลีกป่า</span>
-      </div>
     </nav>
 
     <!-- LEFT PANEL -->
@@ -913,60 +869,6 @@
     </div>
     <div class="ph-body" id="phaseBody">
       <div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted);font-family:var(--mono)">กำลังโหลดข้อมูลเฟสไฟ…</div>
-    </div>
-  </div>
-
-  <!-- FOREST LEAGUE OVERLAY -->
-  <div class="leagueview" id="leagueview">
-    <div class="an-head">
-      <div>
-        <div class="ttl">ลีก<b>ป่าชุมชน</b> · Community Forest League</div>
-        <div class="sub" id="leagueSub">WEEKLY REPORT — PERFORMANCE & ECO-OUTCOMES</div>
-      </div>
-      <button class="an-close" id="leagueClose">✕</button>
-    </div>
-    <div class="an-body">
-      <div class="an-cards">
-        <div class="an-card">
-          <div class="k">สัปดาห์ปัจจุบัน</div>
-          <div class="v" id="leagueWeekId">—</div>
-        </div>
-        <div class="an-card ember">
-          <div class="k">ป่าชุมชนที่ร่วมจัดอันดับ</div>
-          <div class="v" id="leagueCount">0</div>
-        </div>
-        <div class="an-card danger">
-          <div class="k">ยอดรายงานความปลอดภัย</div>
-          <div class="v" id="leagueSafeRatio">—</div>
-        </div>
-        <div class="an-card purple">
-          <div class="k">แหล่งข้อมูลหลัก</div>
-          <div class="v" id="leagueSource" style="font-size:18px;margin-top:14px;color:var(--good)">—</div>
-        </div>
-      </div>
-
-      <div class="an-panel col-12">
-        <h3 style="margin-bottom:12px">อันดับและคะแนนการจัดการไฟป่ารายป่าชุมชน</h3>
-        <div class="hint">จัดอันดับโดยใช้เกณฑ์การมีส่วนร่วม การตรวจตรา ลาดตระเวน การทำแนวกันไฟป่า และอุบัติการณ์ไฟในพื้นที่รอบ 7 วันย้อนหลัง</div>
-        <div style="overflow-x:auto">
-          <table style="width:100%;border-collapse:collapse;text-align:left" id="leagueTable">
-            <thead>
-              <tr style="border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--muted)">
-                <th style="padding:10px">อันดับ</th>
-                <th style="padding:10px">ป่าชุมชน / พื้นที่</th>
-                <th style="padding:10px">ตำบล / อำเภอ</th>
-                <th style="padding:10px">คะแนนรวม</th>
-                <th style="padding:10px">แยกตามมิติ (การจัดการ / การป้องกัน / การใช้ประโยชน์ / เชิงนิเวศ)</th>
-                <th style="padding:10px">จำนวนรายงาน / ล่าสุด</th>
-                <th style="padding:10px">เหตุผล / กิจกรรมล่าสุด</th>
-              </tr>
-            </thead>
-            <tbody id="leagueRows" style="font-size:12px;color:var(--txt)">
-              <!-- Dynapop -->
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1591,12 +1493,6 @@ const analyticsEl=document.getElementById('analytics');
 document.querySelectorAll('.nav-item').forEach(it=>{
   it.onclick=()=>{
     const v=it.dataset.view;
-    if(v==='league'){
-      document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-      it.classList.add('active');
-      openLeague();
-      return;
-    }
     document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
     it.classList.add('active');
     closeAllOverlays();
@@ -1613,13 +1509,6 @@ document.getElementById('anClose').onclick=()=>{
   document.querySelector('.nav-item[data-view="home"]').classList.add('active');
   setTimeout(()=>map.invalidateSize(),60);
 };
-document.getElementById('leagueClose').onclick=()=>{
-  closeAllOverlays();
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  document.querySelector('.nav-item[data-view="home"]').classList.add('active');
-  setTimeout(()=>map.invalidateSize(),60);
-};
-
 function toast(msg){
   let t=document.createElement('div');
   t.textContent=msg;
@@ -1627,133 +1516,6 @@ function toast(msg){
   document.body.appendChild(t);
   setTimeout(()=>{t.style.transition='.4s';t.style.opacity='0';},2200);
   setTimeout(()=>t.remove(),2700);
-}
-
-function getMockLeagueData() {
-  return {
-    week_id: "2026-W25",
-    scoring_window: "2026-06-21 to 2026-06-27",
-    scheduled_recompute: "คำนวณใหม่ทุกวันอาทิตย์ 23:55 น. เวลาไทย",
-    rate_limit_rule: "รับรายงานกิจกรรมภาคสนามได้ 1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน",
-    source_mode: "PROTOTYPE (ข้อมูลจำลอง)",
-    ranking: [
-      {
-        forest_id: "forest-1",
-        forest_name: "ป่าชุมชนบ้านปง",
-        village: "บ้านปง",
-        tambon: "บ้านปง",
-        amphoe: "หางดง",
-        latitude: 18.723,
-        longitude: 98.854,
-        total_score: 95,
-        rank: 1,
-        report_count: 5,
-        last_report_at: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
-        score_breakdown: { management: 25, prevention: 25, utilization: 20, ecological_outcome: 25 },
-        reasons: ["ทำแนวกันไฟ 5.2 กม.", "ลาดตระเวนร่วม 3 ครั้ง"]
-      },
-      {
-        forest_id: "forest-2",
-        forest_name: "ป่าชุมชนดอยสุเทพ",
-        village: "ศรีวิชัย",
-        tambon: "สุเทพ",
-        amphoe: "เมืองเชียงใหม่",
-        latitude: 18.804,
-        longitude: 98.921,
-        total_score: 88,
-        rank: 2,
-        report_count: 3,
-        last_report_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-        score_breakdown: { management: 20, prevention: 25, utilization: 20, ecological_outcome: 23 },
-        reasons: ["ดับไฟป่าเฉียบพลัน 2 จุด", "แนวกันไฟ 3.0 กม."]
-      },
-      {
-        forest_id: "forest-3",
-        forest_name: "ป่าชุมชนบ้านทา",
-        village: "บ้านทา",
-        tambon: "ทาทุ่งหลวง",
-        amphoe: "แม่ทา",
-        latitude: 18.521,
-        longitude: 98.712,
-        total_score: 82,
-        rank: 3,
-        report_count: 2,
-        last_report_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
-        score_breakdown: { management: 20, prevention: 20, utilization: 20, ecological_outcome: 22 },
-        reasons: ["ลาดตระเวนร่วม 2 ครั้ง", "ประชาสัมพันธ์งดเผา"]
-      }
-    ]
-  };
-}
-
-function openLeague(){
-  closeAllOverlays();
-  document.getElementById('leagueview').classList.add('open');
-  
-  const league = (currentDashboard && currentDashboard.intelligence && currentDashboard.intelligence.weekly_forest_league)
-    ? currentDashboard.intelligence.weekly_forest_league
-    : getMockLeagueData();
-
-  document.getElementById('leagueWeekId').textContent = league.week_id;
-  document.getElementById('leagueSub').textContent = `ช่วงเวลาคำนวณคะแนน: ${league.scoring_window} · ${league.scheduled_recompute}`;
-  document.getElementById('leagueCount').textContent = league.ranking.length;
-  document.getElementById('leagueSource').textContent = league.source_mode || 'PROTOTYPE (ข้อมูลจำลอง)';
-  
-  const reportSum = league.ranking.reduce((s, r) => s + r.report_count, 0);
-  document.getElementById('leagueSafeRatio').innerHTML = `${reportSum} <small>รายงานสะสม</small>`;
-
-  const tbody = document.getElementById('leagueRows');
-  tbody.innerHTML = '';
-
-  if (!league.ranking || league.ranking.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--dim)">ไม่พบข้อมูลการจัดอันดับป่าชุมชนในขณะนี้</td></tr>`;
-    return;
-  }
-
-  league.ranking.forEach(r => {
-    const isTop1 = r.rank === 1;
-    const badgeClass = isTop1 ? 'league-badge top1' : 'league-badge';
-    const b = r.score_breakdown || { management: 0, prevention: 0, utilization: 0, ecological_outcome: 0 };
-    
-    const pM = (b.management / 25) * 100;
-    const pP = (b.prevention / 35) * 100;
-    const pU = (b.utilization / 20) * 100;
-    const pE = ((b.ecological_outcome || b.ecologicalOutcome || 0) / 20) * 100;
-
-    const barHtml = `
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-family:var(--mono);font-size:11px;color:var(--muted);width:20px">${r.total_score}</span>
-        <div class="score-breakdown-bar" title="การจัดการ: ${b.management}/25, ป้องกัน: ${b.prevention}/35, ใช้ประโยชน์: ${b.utilization}/20, เชิงนิเวศ: ${b.ecological_outcome || b.ecologicalOutcome || 0}/20">
-          <div class="sbar" style="width:${pM * 0.25}%;background:#3b82f6" title="การจัดการ"></div>
-          <div class="sbar" style="width:${pP * 0.35}%;background:#ef4444" title="การป้องกัน"></div>
-          <div class="sbar" style="width:${pU * 0.20}%;background:#eab308" title="การใช้ประโยชน์"></div>
-          <div class="sbar" style="width:${pE * 0.20}%;background:#22c55e" title="เชิงนิเวศ"></div>
-        </div>
-      </div>
-    `;
-
-    const lastRep = r.last_report_at ? minutesAgo(r.last_report_at) : null;
-    const lastRepStr = lastRep != null ? (lastRep === 0 ? 'เพิ่งรายงาน' : `${lastRep} นาทีก่อน`) : 'ไม่มีรายงาน';
-
-    const reasonsHtml = (r.reasons || []).map(re => `<span style="display:inline-block;background:#1e293b;color:#94a3b8;font-size:10px;padding:2px 6px;border-radius:4px;margin:2px">${re}</span>`).join('');
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><span class="${badgeClass}">#${r.rank}</span></td>
-      <td><b style="color:#e6edf3;cursor:pointer" onclick="map.flyTo([${r.latitude},${r.longitude}],13);closeAllOverlays();">${r.forest_name}</b><br><small style="color:var(--dim)">ID: ${r.forest_id}</small></td>
-      <td>${r.tambon || '—'}<br><small style="color:var(--dim)">อ. ${r.amphoe}</small></td>
-      <td>${barHtml}</td>
-      <td style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">
-        <span style="color:#60a5fa">จ: ${b.management}</span> /
-        <span style="color:#f87171">ป: ${b.prevention}</span> /
-        <span style="color:#facc15">ปย: ${b.utilization}</span> /
-        <span style="color:#4ade80">น: ${b.ecological_outcome || b.ecologicalOutcome || 0}</span>
-      </td>
-      <td>${r.report_count} ครั้ง<br><small style="color:var(--dim)">${lastRepStr}</small></td>
-      <td>${reasonsHtml || '<span style="color:var(--dim)">—</span>'}</td>
-    `;
-    tbody.appendChild(tr);
-  });
 }
 
 // ---- stats helpers ----
@@ -2189,7 +1951,6 @@ function closeAllOverlays(){
   document.getElementById('analytics').classList.remove('open');
   document.getElementById('reportview').classList.remove('open');
   document.getElementById('threedview').classList.remove('open');
-  document.getElementById('leagueview').classList.remove('open');
   document.getElementById('phaseview').classList.remove('open');
 }
 

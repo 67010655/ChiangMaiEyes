@@ -45,11 +45,6 @@ class Settings(BaseSettings):
     # Free and operational/government-usable (unlike GEE noncommercial tier).
     copernicus_client_id: str | None = None
     copernicus_client_secret: str | None = None
-    # Supabase (Postgres + PostGIS) for real community field-report submissions.
-    # service_key is server-only (never expose to the browser): the write path
-    # enforces the 1-report-per-forest/village/day rule before inserting.
-    supabase_url: str | None = None
-    supabase_service_role_key: str | None = None
     aqicn_token: str | None = None
     satellite_layers_file: Path | None = None
     remote_snapshot_base_url: str | None = (

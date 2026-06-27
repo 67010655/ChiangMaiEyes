@@ -16,8 +16,6 @@ from app.models import (
     CommunityForestsResponse,
     DataStatusResponse,
     DashboardResponse,
-    FieldReportResult,
-    FieldReportSubmission,
     FirePhaseResponse,
     HistoryResponse,
     HotspotHistoryResponse,
@@ -38,7 +36,6 @@ from app.services import (
     get_fire_phases,
     get_summary,
     get_weather,
-    submit_field_report,
 )
 
 app = FastAPI(title="ChiangMaiEyes API", version="0.1.0")
@@ -135,14 +132,6 @@ def community_forests() -> CommunityForestsResponse:
 @app.get("/api/data-status", response_model=DataStatusResponse)
 def data_status(settings: Settings = Depends(get_settings)) -> DataStatusResponse:
     return get_data_status(settings)
-
-
-@app.post("/api/field-reports", response_model=FieldReportResult)
-def field_reports(
-    submission: FieldReportSubmission,
-    settings: Settings = Depends(get_settings),
-) -> FieldReportResult:
-    return submit_field_report(settings, submission)
 
 
 @app.post("/api/advisor/briefing", response_model=AdvisorResponse)

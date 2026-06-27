@@ -13,8 +13,6 @@ from app.config import Settings, get_settings
 from app.models import (
     HotspotTrendStats,
     DailyMetric,
-    FieldReportResult,
-    FieldReportSubmission,
     FirePhaseResponse,
     DataQualityMetadata,
     DataStatusResponse,
@@ -32,7 +30,6 @@ from app.models import (
     SatelliteLayerResponse,
     SummaryResponse,
     SourceMode,
-    WeeklyForestLeagueResponse,
     WeatherHistoryDay,
     WeatherResponse,
 )
@@ -46,12 +43,6 @@ from app.providers.hotspot_provider import (
 )
 from app.providers.earth_engine_provider import load_satellite_layers
 from app.text import repair_thai_mojibake_tree
-from app.weekly_forest_league import (
-    CommunityForestRecord,
-    FieldActivityReport,
-    aggregate_weekly_rankings,
-    sunday_week_id,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -78,87 +69,6 @@ _LIVE_SENSOR_STALE_AFTER_MINUTES = 180
 T = TypeVar("T")
 
 _cache: dict[str, tuple[float, Any]] = {}
-
-_FOREST_RECORDS = [
-    CommunityForestRecord(
-        forest_id="cf-mae-chaem-001",
-        forest_name="ป่าชุมชนแม่แจ่ม",
-        village="บ้านแม่ปาน",
-        tambon="ช่างเคิ่ง",
-        amphoe="แม่แจ่ม",
-        latitude=18.503,
-        longitude=98.361,
-    ),
-    CommunityForestRecord(
-        forest_id="cf-chiang-dao-001",
-        forest_name="ป่าชุมชนสันเขาเชียงดาว",
-        village="บ้านถ้ำ",
-        tambon="เชียงดาว",
-        amphoe="เชียงดาว",
-        latitude=19.367,
-        longitude=98.964,
-    ),
-    CommunityForestRecord(
-        forest_id="cf-samoeng-001",
-        forest_name="ป่าชุมชนสะเมิงตะวันตก",
-        village="บ้านแม่สาบ",
-        tambon="สะเมิงใต้",
-        amphoe="สะเมิง",
-        latitude=18.848,
-        longitude=98.732,
-    ),
-]
-
-_FIELD_REPORTS = [
-    FieldActivityReport(
-        report_id="rpt-001",
-        forest_id="cf-mae-chaem-001",
-        village_id="ban-mae-pan",
-        reporter_hash="op-101",
-        submitted_at=datetime.fromisoformat("2026-06-07T07:30:00+07:00"),
-        patrol_count=3,
-        firebreak_km=1.8,
-        fuel_management_rai=28,
-        water_points_checked=3,
-        committee_meeting=True,
-        budget_used_baht=4500,
-        community_use_activity=True,
-        biodiversity_note="ตรวจอัตรารอดของกล้าไม้",
-        no_burn_agreement=True,
-    ),
-    FieldActivityReport(
-        report_id="rpt-002",
-        forest_id="cf-chiang-dao-001",
-        village_id="ban-tham",
-        reporter_hash="op-202",
-        submitted_at=datetime.fromisoformat("2026-06-06T16:20:00+07:00"),
-        patrol_count=2,
-        firebreak_km=1.1,
-        fuel_management_rai=12,
-        water_points_checked=2,
-        committee_meeting=True,
-        budget_used_baht=2000,
-        community_use_activity=False,
-        biodiversity_note="ตรวจแนวไผ่แห้ง",
-        no_burn_agreement=True,
-    ),
-    FieldActivityReport(
-        report_id="rpt-003",
-        forest_id="cf-samoeng-001",
-        village_id="ban-mae-sap",
-        reporter_hash="op-303",
-        submitted_at=datetime.fromisoformat("2026-06-05T09:10:00+07:00"),
-        patrol_count=1,
-        firebreak_km=0.6,
-        fuel_management_rai=8,
-        water_points_checked=1,
-        committee_meeting=False,
-        budget_used_baht=0,
-        community_use_activity=True,
-        biodiversity_note="เชื้อเพลิงสะสมยังสูงใกล้สันเขา",
-        no_burn_agreement=False,
-    ),
-]
 
 _DROUGHT_ZONES = [
     DroughtZone(
@@ -371,9 +281,6 @@ def _build_data_quality(
             or settings.earth_engine_enabled
         )
     )
-    field_reports_configured = bool(
-        settings and settings.supabase_url and settings.supabase_service_role_key
-    )
     official_community_summary = _official_community_forest_summary()
     official_community_count = (
         int(official_community_summary.get("recordCount", 0))
@@ -382,16 +289,7 @@ def _build_data_quality(
     )
     satellite_source_mode: SourceMode = "DERIVED" if satellite_layers_configured else "UNAVAILABLE"
     satellite_confidence = 0.62 if satellite_layers_configured else 0.3
-    # This entry describes the community-forest POINTS. Official RFD KML points
-    # are a static download → SNAPSHOT (matches the "RFD KML" source label and
-    # takes priority); only fall back to LIVE submitted field reports otherwise.
-    community_source_mode: SourceMode = (
-        "SNAPSHOT"
-        if official_community_count > 0
-        else "LIVE"
-        if field_reports_configured
-        else "UNAVAILABLE"
-    )
+    community_source_mode: SourceMode = "SNAPSHOT" if official_community_count > 0 else "UNAVAILABLE"
 
     return {
         "hotspots": _data_quality(
@@ -498,33 +396,15 @@ def _build_data_quality(
         ),
         "community_forests": _data_quality(
             label="Community forest points",
-            source=(
-                "Royal Forest Department community forest coordinates KML"
-                if official_community_count > 0
-                else "Supabase field reports"
-                if field_reports_configured
-                else "Not configured"
-            ),
+            source="Royal Forest Department community forest coordinates KML" if official_community_count > 0 else "Not configured",
             source_mode=community_source_mode,
             latest_update=None,
             checked_at=checked_at,
             age_minutes=None,
             confidence=0.72 if official_community_count > 0 else 0.0,
             stale_after_minutes=0,
-            note=(
-                f"Official RFD point coordinates loaded for {official_community_count} Chiang Mai community forests; official polygon boundaries are not included."
-                if official_community_count > 0
-                else "Ranking uses verified submitted field reports."
-                if field_reports_configured
-                else "No verified community forest reporting database is configured. Seed rankings are disabled."
-            ),
-            decision_use=(
-                "Use for locating official RFD community forest point records; request polygon boundaries before area analysis."
-                if official_community_count > 0
-                else "Use as submitted-report evidence for participating forests."
-                if field_reports_configured
-                else "Connect Supabase/PostGIS and verified community forest records before using this layer."
-            ),
+            note=f"Official RFD point coordinates loaded for {official_community_count} Chiang Mai community forests; official polygon boundaries are not included." if official_community_count > 0 else "No verified community forest records configured.",
+            decision_use="Use for locating official RFD community forest point records; request polygon boundaries before area analysis.",
         ),
         "predictions": _data_quality(
             label="Localized predictions",
@@ -1061,89 +941,6 @@ def _localized_predictions(
     ]
 
 
-def _load_field_reports(settings: Settings) -> tuple[list[FieldActivityReport], SourceMode]:
-    """Real submitted reports from Supabase when configured, else the seed demo
-    set. Returns the reports and the provenance mode for the league response."""
-    from app.providers.field_report_store import fetch_field_reports, supabase_enabled
-
-    if supabase_enabled(settings):
-        try:
-            reports = fetch_field_reports(settings)
-            return reports, "LIVE"
-        except Exception as exc:  # noqa: BLE001 — never error the dashboard on a store hiccup
-            logger.warning("Supabase field reports unavailable, using seed: %s", exc)
-    if settings.allow_prototype_data:
-        return list(_FIELD_REPORTS), "PROTOTYPE"
-    return [], "UNAVAILABLE"
-
-
-def submit_field_report(settings: Settings, submission: "FieldReportSubmission") -> "FieldReportResult":
-    """Validate + persist a community field report, enforcing the daily limit.
-
-    In demo mode (no Supabase) nothing is stored — we say so plainly rather than
-    pretending the report was saved."""
-    from uuid import uuid4
-
-    import httpx
-
-    from app.providers.field_report_store import (
-        insert_field_report,
-        report_exists_today,
-        supabase_enabled,
-    )
-
-    if not supabase_enabled(settings):
-        return FieldReportResult(
-            accepted=False,
-            stored=False,
-            message="โหมดสาธิต: ยังไม่ได้เชื่อมฐานข้อมูล รายงานจึงยังไม่ถูกบันทึก",
-            source_mode="UNAVAILABLE",
-        )
-
-    # Only registered community forests may submit — blocks arbitrary forest_id
-    # injection that would bloat the store (junk rows never reach the league,
-    # which filters to known forests, but must not be storable in the first place).
-    known_forest_ids = {record.forest_id for record in _FOREST_RECORDS}
-    if submission.forest_id not in known_forest_ids:
-        return FieldReportResult(
-            accepted=False,
-            stored=False,
-            message="ไม่พบรหัสป่าชุมชนนี้ในทะเบียน — ส่งรายงานได้เฉพาะป่าชุมชนที่ลงทะเบียนไว้",
-            source_mode="LIVE",
-        )
-
-    rate_limited = FieldReportResult(
-        accepted=False,
-        stored=False,
-        message="วันนี้ป่าชุมชน/หมู่บ้านนี้ส่งรายงานแล้ว (จำกัด 1 ครั้งต่อวัน)",
-        source_mode="LIVE",
-    )
-
-    submitted_at = datetime.now(tz=timezone(timedelta(hours=7)))
-    if report_exists_today(settings, submission.forest_id, submission.village_id, submitted_at.date()):
-        return rate_limited
-
-    report = FieldActivityReport(
-        report_id=f"rpt-{uuid4().hex[:12]}",
-        submitted_at=submitted_at,
-        **submission.model_dump(),
-    )
-    try:
-        insert_field_report(settings, report)
-    except httpx.HTTPStatusError as exc:
-        # DB unique index is the authoritative rate-limit; a 409 means another
-        # report for this forest/village landed today between our check and insert.
-        if exc.response.status_code == 409:
-            return rate_limited
-        raise
-    return FieldReportResult(
-        accepted=True,
-        stored=True,
-        message="บันทึกรายงานภาคสนามเรียบร้อย ขอบคุณที่ช่วยกันดูแลป่า",
-        source_mode="LIVE",
-    )
-
-
 def _hotspot_trend(settings: Settings, hotspots: HotspotResponse, window_days: int = 30) -> HotspotTrendStats:
     """Real in-province cumulative from NASA VIIRS daily counts, split recent vs
     previous half so the change is computed, never invented. Falls back to the
@@ -1190,29 +987,12 @@ def get_operational_intelligence(
     settings: Settings | None = None,
 ) -> OperationalIntelligenceResponse:
     settings = settings or get_settings()
-    field_reports, league_mode = _load_field_reports(settings)
-    today = datetime.now().date()
-    week_start = today - timedelta(days=(today.weekday() + 1) % 7)
-    ranking = aggregate_weekly_rankings(_FOREST_RECORDS, field_reports, week_start)
-    ranking_week_start = week_start
-    if not ranking and field_reports:
-        latest_report_day = max(report.submitted_at.date() for report in field_reports)
-        ranking_week_start = latest_report_day - timedelta(days=(latest_report_day.weekday() + 1) % 7)
-        ranking = aggregate_weekly_rankings(_FOREST_RECORDS, field_reports, ranking_week_start)
     prototype_enabled = settings.allow_prototype_data
     return OperationalIntelligenceResponse(
         hotspot_trend=_hotspot_trend(settings, hotspots),
         drought_zones=_DROUGHT_ZONES if prototype_enabled else [],
         satellite_layers=get_satellite_layers(settings or get_settings()),
         landuse_breakdown=_landuse_breakdown(hotspots),
-        weekly_forest_league=WeeklyForestLeagueResponse(
-            week_id=sunday_week_id(ranking_week_start),
-            scoring_window=f"{ranking_week_start.isoformat()} to {(ranking_week_start + timedelta(days=6)).isoformat()}",
-            scheduled_recompute="คำนวณใหม่ทุกวันอาทิตย์ 23:55 น. เวลาไทย และรีเฟรชรายคืนเพื่ออัปเดตคะแนนย้อนหลัง 7 วัน",
-            rate_limit_rule="รับรายงานกิจกรรมภาคสนามได้ 1 ครั้งต่อป่าชุมชน/หมู่บ้าน/วัน",
-            ranking=ranking,
-            source_mode=league_mode,
-        ),
         localizedPredictions=(
             _localized_predictions(hotspots, pm25, weather, risk)
             if prototype_enabled
@@ -1221,13 +1001,11 @@ def get_operational_intelligence(
         source_notes=(
             [
                 "Prototype intelligence layers are disabled. Only live, derived-from-live, or configured verified data is returned.",
-                "Community forest boundaries, fire-management zones, and field-report rankings require verified database/vector imports before use.",
             ]
             if not prototype_enabled
             else [
-            "ชั้นข้อมูลรอยไหม้และความถี่การไหม้สามารถเปลี่ยนเป็น GISTDA API Gateway WMS/WMTS ได้เมื่อมี API key",
-            "ข้อมูลภัยแล้งและความชื้นดินยังเป็นตัวชี้วัดจำลองแนว TAMFIRE ระหว่างรอ feed สาธารณะที่เสถียร",
-            "อันดับรายสัปดาห์ใช้ 4 มิติ: การจัดการ การป้องกัน การใช้ประโยชน์ และผลลัพธ์เชิงนิเวศ",
+                "ชั้นข้อมูลรอยไหม้และความถี่การไหม้สามารถเปลี่ยนเป็น GISTDA API Gateway WMS/WMTS ได้เมื่อมี API key",
+                "ข้อมูลภัยแล้งและความชื้นดินยังเป็นตัวชี้วัดจำลองแนว TAMFIRE ระหว่างรอ feed สาธารณะที่เสถียร",
             ]
         ),
     )
