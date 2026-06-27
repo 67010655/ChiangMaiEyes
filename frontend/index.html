@@ -1038,6 +1038,12 @@ function jitter([la,lo],r){return [la+rnd(-r,r), lo+rnd(-r,r)]}
 // Hotspots and PM stations — empty until goLive() fills them from backend
 let hotspots = [];
 let pmStations = [];
+// Station pool loaded at boot from snapshot — used to supplement when the live
+// backend has no AQICN token and only returns the 2 Air4Thai PCD stations.
+let _pmSnapshotStations = [];
+fetch('/src/data/dashboardSnapshot.json').then(r=>r.json()).then(d=>{
+  _pmSnapshotStations = d?.pm25?.stations || [];
+}).catch(()=>{});
 let daily30 = new Array(30).fill(0);
 
 // ---- Color helpers ----
@@ -2058,6 +2064,12 @@ function applyLive(dash, history, phases){
   currentDashboard = dash;
   hotspots = normHotspots(dash.hotspots && dash.hotspots.items);
   pmStations = normStations(dash.pm25 && dash.pm25.stations);
+  // When the backend has no AQICN token it returns only ~2 Air4Thai stations.
+  // Fill in from the snapshot pool (213 stations) so the map shows full coverage.
+  if (pmStations.length < 10 && _pmSnapshotStations.length > pmStations.length) {
+    const liveNames = new Set(pmStations.map(s => s.name));
+    pmStations = [...pmStations, ...normStations(_pmSnapshotStations).filter(s => !liveNames.has(s.name))];
+  }
   if(dash.weather){
     // PREVAILING may still be null on the first live fetch, so fall back to the
     // previous live value if present, else the demo vector — never deref null.
