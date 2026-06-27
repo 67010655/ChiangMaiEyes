@@ -1,14 +1,16 @@
 {
-  "checked_at": "2026-06-23T16:29:02.678403+07:00",
+  "checked_at": "2026-06-27T13:36:42.648060+07:00",
   "status": "ok",
   "hotspot_fetch_ok": true,
   "hotspot_error": null,
   "hotspot_count": 0,
-  "hotspot_latest_update": "2026-06-23T16:29:03.451924+07:00",
-  "pm25_latest_update": "2026-06-23T16:00:00+07:00",
-  "weather_latest_update": "2026-06-23T16:28:00+07:00",
-  "source": "GISTDA Disaster STAC VIIRS 3-day",
+  "hotspot_latest_update": "2026-06-27T13:36:48.280988+07:00",
+  "pm25_latest_update": "2026-06-27T13:00:00+07:00",
+  "weather_latest_update": "2026-06-27T13:36:00+07:00",
+  "source": "GISTDA Disaster STAC VIIRS 3-day + GISTDA API Gateway VIIRS 1-day + NASA FIRMS",
   "source_breakdown": {
-    "GISTDA Disaster STAC VIIRS 3-day": 0
+    "GISTDA Disaster STAC VIIRS 3-day": 0,
+    "GISTDA API Gateway VIIRS 1-day": 0,
+    "NASA FIRMS": 0
   }
 }
