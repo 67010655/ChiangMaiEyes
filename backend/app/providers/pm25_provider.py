@@ -84,6 +84,16 @@ def _point_in_geometry(x: float, y: float, geom: dict) -> bool:
                 return True
     return False
 
+def _is_in_cm(lat: float, lon: float) -> bool:
+    """Return True only if the point is inside a Chiang Mai district polygon (no centroid fallback)."""
+    geojson = _load_districts_geojson()
+    for feat in geojson.get("features", []):
+        geom = feat.get("geometry")
+        if geom and _point_in_geometry(lon, lat, geom):
+            return True
+    return False
+
+
 def find_district_for_point(lat: float, lon: float) -> str:
     geojson = _load_districts_geojson()
     for feat in geojson.get("features", []):
@@ -149,6 +159,8 @@ def fetch_aqicn_stations(token: str) -> list[Pm25Station]:
             lat = float(s.get("lat", 0))
             lon = float(s.get("lon", 0))
             if not (17.0 < lat < 21.0 and 97.0 < lon < 101.0):
+                continue
+            if not _is_in_cm(lat, lon):
                 continue
             pm25 = round(_aqi_to_pm25(aqi), 1)
             station_info = s.get("station", {})

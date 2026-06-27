@@ -1066,23 +1066,29 @@ function renderHotspots(){
   layers.hotspots.clearLayers();
   hotspots.forEach(h=>{
     const isHigh = h.conf==='high';
-    const frpVal = h.frp||0;
-    const r = isHigh ? (frpVal>50?10:7) : 5;
-    const col = frpColor(frpVal||null);
-    const m = L.circleMarker([h.lat,h.lon],{
-      radius:r, color:'#fff', weight:1.2,
-      fillColor:col, fillOpacity:0.9,
-      zIndexOffset:isHigh?100:0
-    }).addTo(layers.hotspots);
+    const big = isHigh && (h.frp||0) > 50;
+    const sz = big ? 28 : isHigh ? 22 : 16;
+    // solid (high conf) vs hollow/faded (low conf)
+    const iconStyle = isHigh
+      ? `font-size:${sz}px;line-height:1;display:block;text-shadow:0 0 6px rgba(0,0,0,.7)`
+      : `font-size:${sz}px;line-height:1;display:block;opacity:.45;filter:grayscale(.7)`;
+    const icon = L.divIcon({
+      html: `<span style="${iconStyle}">🔥</span>`,
+      className: '',
+      iconSize: [sz, sz],
+      iconAnchor: [sz/2, sz/2]
+    });
+    const m = L.marker([h.lat,h.lon],{icon, zIndexOffset:isHigh?100:0});
     m.bindPopup(
       `<b>${h.id}</b> · ${h.district}<br>`+
-      `${fmtFrp(h)} · ${isHigh?'confidence สูง':'confidence ต่ำ'}<br>`+
+      `${fmtFrp(h)} · ${isHigh?'🔥 confidence สูง':'🔥 confidence ต่ำ'}<br>`+
       `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
       `${gMapsLink(h.lat,h.lon)}<br>`+
       `<span style="cursor:pointer;color:var(--wind);text-decoration:underline" `+
       `onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${h.lon},${h.lat}],zoom:12,pitch:55,bearing:0,duration:1200}),600)">📍 ดูใน 3D</span>`
     );
     m.on('click',()=>selectHotspot(h));
+    layers.hotspots.addLayer(m);
   });
   document.getElementById('lcHot').textContent=hotspots.length;
 }
@@ -1532,7 +1538,7 @@ function corr(xs,ys){const mx=mean(xs),my=mean(ys);let n=0,dx=0,dy=0;for(let i=0
 
 // ---- synthetic statistical datasets ----
 let hourly=Array.from({length:24},(_,h)=>{const peak=Math.exp(-((h-15)**2)/14),morn=Math.exp(-((h-10)**2)/22)*0.45;return Math.max(0,Math.round((peak+morn)*22+rnd(0,2)));});
-let frpSamples=Array.from({length:240},()=>Math.pow(Math.random(),1.8)*150);
+let frpSamples=[];
 let pmPairs=[];
 
 // ---- chart primitives ----
@@ -1797,6 +1803,29 @@ let _selectedDistrictLayer = null;
 const _DISTRICT_DEFAULT_STYLE = {color:'#334155',weight:1.2,fillColor:'#1e293b',fillOpacity:0.03};
 const _DISTRICT_ACTIVE_STYLE  = {color:'#22d3ee',fillColor:'#22d3ee',fillOpacity:0.12,weight:1.8};
 const districtLayerRef = {}; // normalizedName → Leaflet layer, populated by loadBoundaries
+let _districtFeatures = []; // GeoJSON features for PiP, set in loadBoundaries()
+
+function _ptInPoly(x, y, ring) {
+  let inside = false, j = ring.length - 1;
+  for (let i = 0; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+// Returns the Thai amp_th district name if [lat,lng] falls inside a CM district polygon,
+// or null if outside every CM district.
+function districtForPoint(lat, lng) {
+  for (const feat of _districtFeatures) {
+    const g = feat.geometry;
+    if (!g) continue;
+    const polys = g.type === 'Polygon' ? [g.coordinates[0]]
+                : g.type === 'MultiPolygon' ? g.coordinates.map(c => c[0]) : [];
+    for (const poly of polys) if (_ptInPoly(lng, lat, poly)) return feat.properties.amp_th || '';
+  }
+  return null;
+}
 
 // Clear all district selection on map background click (including clicking outside CM)
 map.on('click', function() {
@@ -1822,14 +1851,15 @@ async function loadBoundaries() {
     ]);
 
     layers.boundaries.clearLayers();
+    _districtFeatures = resDistricts.features || [];
 
-    // 1. Draw Chiang Mai Province boundary (Dashed, thick, no fill)
+    // 1. Draw Chiang Mai Province boundary (Dashed, bright, no fill)
     L.geoJSON(resProvince, {
       style: {
-        color: '#64748b',
-        weight: 2.2,
+        color: '#e2e8f0',
+        weight: 3.0,
         fillOpacity: 0,
-        dashArray: '6 4'
+        dashArray: '8 5'
       }
     }).addTo(layers.boundaries);
 
@@ -2063,12 +2093,22 @@ function applyLive(dash, history, phases){
   setMode('live');
   currentDashboard = dash;
   hotspots = normHotspots(dash.hotspots && dash.hotspots.items);
+  // Re-assign district via frontend PiP so marker position always matches the label.
+  // _districtFeatures is populated by loadBoundaries(); if not ready yet, keep backend value.
+  if (_districtFeatures.length) {
+    hotspots = hotspots.map(h => ({ ...h, district: districtForPoint(h.lat, h.lon) || h.district }));
+  }
   pmStations = normStations(dash.pm25 && dash.pm25.stations);
   // When the backend has no AQICN token it returns only ~2 Air4Thai stations.
-  // Fill in from the snapshot pool (213 stations) so the map shows full coverage.
+  // Fill in from the snapshot pool so the map shows full CM coverage, but filter
+  // non-CM stations via PiP (snapshot was built before the backend CM-only filter).
   if (pmStations.length < 10 && _pmSnapshotStations.length > pmStations.length) {
     const liveNames = new Set(pmStations.map(s => s.name));
-    pmStations = [...pmStations, ...normStations(_pmSnapshotStations).filter(s => !liveNames.has(s.name))];
+    const extra = normStations(_pmSnapshotStations).filter(s =>
+      !liveNames.has(s.name) &&
+      (_districtFeatures.length ? districtForPoint(s.c[0], s.c[1]) !== null : true)
+    );
+    pmStations = [...pmStations, ...extra];
   }
   if(dash.weather){
     // PREVAILING may still be null on the first live fetch, so fall back to the
@@ -2840,36 +2880,32 @@ function initMapLibre3D(){
       'circle-stroke-width':1
     }});
 
-    // Hotspot glow
-    mlMap.addLayer({id:'hotspots-glow',type:'circle',source:'hotspots-3d',paint:{
-      'circle-radius':['interpolate',['linear'],['zoom'],8,12,12,20],
-      'circle-color':['get','color'],
-      'circle-opacity':0.18,
-      'circle-blur':1
-    }});
-
-    // Hotspot core
-    mlMap.addLayer({id:'hotspots-core',type:'circle',source:'hotspots-3d',paint:{
-      'circle-radius':['interpolate',['linear'],['zoom'],8,4,12,8],
-      'circle-color':['get','color'],
-      'circle-opacity':0.9,
-      'circle-stroke-color':'#fff',
-      'circle-stroke-width':1.5
+    // Hotspot fire emoji — solid=high conf, faded=low conf (mirrors 2D markers)
+    mlMap.addLayer({id:'hotspots-fire',type:'symbol',source:'hotspots-3d',layout:{
+      'text-field':'🔥',
+      'text-size':['interpolate',['linear'],['zoom'],8,14,12,26],
+      'text-allow-overlap':true,
+      'text-anchor':'center',
+    },paint:{
+      'text-opacity':['case',['==',['get','conf'],'high'],1.0,0.45]
     }});
 
     // Populate with current data
     _sync3DHotspots();
     _sync3DForests();
 
-    // Click: hotspot elevation inspector
-    mlMap.on('click','hotspots-core',e=>{
+    // Click: 3D hotspot — opens the same detail panel as the 2D marker (linked)
+    mlMap.on('click','hotspots-fire',e=>{
       const f=e.features[0]; if(!f) return;
       const props=f.properties;
       const [lng,lat]=f.geometry.coordinates;
+      // Try to open the shared 2D detail panel for full data (elevation + forests)
+      const h=hotspots.find(x=>x.id===props.id);
+      if(h){ selectHotspot(h); return; }
+      // Fallback popup when hotspot isn't in the 2D array (shouldn't happen normally)
       let elev=null;
       try{ elev=mlMap.queryTerrainElevation([lng,lat]); }catch(_){}
       const elevStr=elev!=null?Math.round(elev)+' เมตร (MSL)':'—';
-      // Find nearest forest + elevation
       let nearestHtml='';
       if(allForests.length){
         const nearest=allForests.reduce((best,f2)=>{
@@ -2887,7 +2923,7 @@ function initMapLibre3D(){
       }
       new maplibregl.Popup({closeButton:true,maxWidth:'240px'})
         .setLngLat([lng,lat])
-        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:${props.color}">${props.id||'hotspot'}</b><br>อ.${props.district||'—'}<br>FRP: ${props.frp!=null?Math.round(props.frp)+' MW':'—'}<br>ความสูง: ${elevStr}${nearestHtml}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:${props.color||'#ff4d4d'}">${props.id||'hotspot'}</b><br>อ.${props.district||'—'}<br>FRP: ${props.frp!=null?Math.round(props.frp)+' MW':'—'}<br>ความสูง: ${elevStr}${nearestHtml}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
         .addTo(mlMap);
     });
 
@@ -2903,8 +2939,8 @@ function initMapLibre3D(){
         .addTo(mlMap);
     });
 
-    mlMap.on('mouseenter','hotspots-core',()=>{mlMap.getCanvas().style.cursor='pointer';});
-    mlMap.on('mouseleave','hotspots-core',()=>{mlMap.getCanvas().style.cursor='';});
+    mlMap.on('mouseenter','hotspots-fire',()=>{mlMap.getCanvas().style.cursor='pointer';});
+    mlMap.on('mouseleave','hotspots-fire',()=>{mlMap.getCanvas().style.cursor='';});
     mlMap.on('mouseenter','forests-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','forests-circle',()=>{mlMap.getCanvas().style.cursor='';});
 
