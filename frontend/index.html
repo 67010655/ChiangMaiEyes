@@ -1307,7 +1307,7 @@ function renderPm(){
     const col=pmColor(s.pm);
     L.circle(s.c,{radius:4500,color:col,weight:1,fillColor:col,fillOpacity:0.10}).addTo(layers.pm);
     L.circleMarker(s.c,{radius:7,color:'#fff',weight:1.5,fillColor:col,fillOpacity:0.95})
-      .bindPopup(`<b>${s.name}</b><br>PM2.5 ${s.pm} µg/m³<br>${pmAqiLabel(s.pm)}<br>${gMapsLink(s.c[0],s.c[1])}`)
+      .bindPopup(`<b>${s.name}</b> · อ. ${s.district || '—'}<br>PM2.5 ${s.pm} µg/m³<br>${pmAqiLabel(s.pm)}<br>${gMapsLink(s.c[0],s.c[1])}`)
       .addTo(layers.pm);
   });
   document.getElementById('lcPm').textContent=pmStations.length;
@@ -2099,6 +2099,22 @@ async function loadBoundaries() {
           const riskScore = Math.min(100, frpSum/3 + distHs.length*8);
           const riskCol = riskScore>70?'#ff4d4d':riskScore>40?'#f5640a':'#facc15';
 
+          // Local PM2.5 calculation
+          const distPmStations = pmStations.filter(s => normalizeDistrictName(s.district) === distNorm);
+          const hasPm = distPmStations.length > 0;
+          const distPmAvg = hasPm ? Math.round(distPmStations.reduce((s, x) => s + x.pm, 0) / distPmStations.length) : null;
+          const pmHtml = hasPm 
+            ? `<span style="color:${pmColor(distPmAvg)}">${distPmAvg} µg/m³</span> (${distPmStations.length} สถานี)` 
+            : `<span style="color:#8b97a7">— (ไม่มีสถานีวัดในพื้นที่)</span>`;
+
+          // Fire and PM correlation warning
+          let correlationNote = '';
+          if (distHs.length > 0 && hasPm && distPmAvg > 37) {
+            correlationNote = `<div style="margin-top:6px;padding:6px;background:rgba(239,68,68,0.15);border:1.5px solid #ef444455;border-radius:4px;color:#fca5a5;font-size:10px;text-align:center;line-height:1.4">
+              ⚠️ ตรวจพบไฟป่าและฝุ่นพุ่งสูงผิดปกติในอำเภอ!
+            </div>`;
+          }
+
           // Tambon ranking: group hotspots by subdistrict, sort by FRP desc
           const tambonMap = {};
           distHs.forEach(h => {
@@ -2127,10 +2143,12 @@ async function loadBoundaries() {
             .setContent(
               `<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6">
               <b style="font-size:13px;color:#22d3ee">อ.${distNorm}</b><br>
+              PM2.5 เฉลี่ย: <b>${pmHtml}</b><br>
               จุดความร้อน: <b style="color:${distHs.length?'#f5640a':'#43b05f'}">${distHs.length} จุด</b><br>
               FRP รวม: <b>${frpSum>0?frpSum.toFixed(1)+' MW':'—'}</b><br>
               ป่าชุมชน: <b style="color:#43b05f">${distFs.length} แห่ง</b><br>
               ความเสี่ยง: <b style="color:${riskCol}">${riskScore>0?Math.round(riskScore):'ต่ำ'}</b>
+              ${correlationNote}
               ${tambonHtml}
               </div>`
             ).openOn(map);
@@ -2234,7 +2252,7 @@ function normHotspots(items){
   }));
 }
 function normStations(st){
-  return (st||[]).map(s=>({name:s.name, c:[s.latitude,s.longitude], pm:Math.round(s.pm25)}));
+  return (st||[]).map(s=>({name:s.name, c:[s.latitude,s.longitude], pm:Math.round(s.pm25), district:s.district}));
 }
 
 function rerenderAll(){

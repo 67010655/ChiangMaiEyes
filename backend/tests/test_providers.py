@@ -180,7 +180,7 @@ def test_fetch_live_pm25_success(mock_get):
     assert pm25.stations[0].id == "CM-35T"
     assert pm25.stations[0].pm25 == 24.5
     assert pm25.stations[0].district == "Meuang"
-    assert pm25.source == "Air4Thai Live API"
+    assert pm25.source == "Air4Thai PCD"
 
 @patch("httpx.get")
 def test_fetch_live_hotspots_nasa_fallback(mock_get):

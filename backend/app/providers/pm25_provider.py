@@ -1,5 +1,8 @@
 import datetime
+import json
 import logging
+import math
+from pathlib import Path
 
 import httpx
 
@@ -7,6 +10,99 @@ from app.models import Pm25Response, Pm25Station
 from app.text import repair_thai_mojibake
 
 logger = logging.getLogger(__name__)
+
+_DISTRICTS_GEOJSON = Path(__file__).resolve().parent.parent / "data" / "chiangmai-districts.json"
+_cached_districts = None
+
+_DISTRICT_CENTROIDS = {
+    "แม่อาย":      (20.03, 99.20),
+    "ฝาง":         (19.80, 99.10),
+    "เชียงดาว":    (19.38, 98.95),
+    "แม่แตง":      (19.10, 98.90),
+    "กัลยาณิวัฒนา": (19.05, 98.35),
+    "สะเมิง":      (18.80, 98.65),
+    "แม่แจ่ม":     (18.50, 98.33),
+    "จอมทอง":      (18.40, 98.70),
+    "ฮอด":         (18.10, 98.60),
+    "อมก๋อย":      (17.87, 98.35),
+    "ดอยสะเก็ด":   (18.98, 99.28),
+    "สันทราย":     (18.97, 99.05),
+    "สันกำแพง":    (18.80, 99.12),
+    "แม่ออน":      (18.73, 99.30),
+    "แม่วาง":      (18.63, 98.78),
+    "หางดง":       (18.70, 98.95),
+    "สารภี":       (18.73, 99.01),
+    "แม่ริม":      (18.92, 98.95),
+    "เมืองเชียงใหม่": (18.79, 98.99),
+    "ดอยเต่า":      (17.95, 98.68),
+    "ดอยหล่อ":      (18.47, 98.78),
+    "พร้าว":        (19.35, 99.20),
+    "เวียงแหง":     (19.55, 98.63),
+    "สันป่าตอง":    (18.62, 98.88),
+}
+
+def _load_districts_geojson():
+    global _cached_districts
+    if _cached_districts is not None:
+        return _cached_districts
+    try:
+        with open(_DISTRICTS_GEOJSON, "r", encoding="utf-8") as f:
+            _cached_districts = json.load(f)
+    except Exception as e:
+        logger.error("Failed to load chiangmai-districts.json: %s", e)
+        _cached_districts = {"type": "FeatureCollection", "features": []}
+    return _cached_districts
+
+def _point_in_polygon(x: float, y: float, polygon: list[list[float]]) -> bool:
+    inside = False
+    n = len(polygon)
+    if n == 0:
+        return False
+    p1x, p1y = polygon[0]
+    for i in range(n + 1):
+        p2x, p2y = polygon[i % n]
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+                if x <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                    if p1x == p2x or x <= xinters:
+                        inside = not inside
+        p1x, p1y = p2x, p2y
+    return inside
+
+def _point_in_geometry(x: float, y: float, geom: dict) -> bool:
+    g_type = geom.get("type")
+    coords = geom.get("coordinates") or []
+    if g_type == "Polygon":
+        if not coords:
+            return False
+        return _point_in_polygon(x, y, coords[0])
+    elif g_type == "MultiPolygon":
+        for poly in coords:
+            if poly and _point_in_polygon(x, y, poly[0]):
+                return True
+    return False
+
+def find_district_for_point(lat: float, lon: float) -> str:
+    geojson = _load_districts_geojson()
+    for feat in geojson.get("features", []):
+        geom = feat.get("geometry")
+        if geom and _point_in_geometry(lon, lat, geom):
+            name = feat.get("properties", {}).get("amp_th")
+            if name:
+                return name
+    
+    # centroid fallback
+    min_dist = float("inf")
+    nearest_district = "เมืองเชียงใหม่"
+    for name, centroid in _DISTRICT_CENTROIDS.items():
+        d = (lat - centroid[0])**2 + (lon - centroid[1])**2
+        if d < min_dist:
+            min_dist = d
+            nearest_district = name
+    return nearest_district
+
 
 
 def _aqi_to_pm25(aqi: float) -> float:
@@ -56,10 +152,11 @@ def fetch_aqicn_stations(token: str) -> list[Pm25Station]:
                 continue
             pm25 = round(_aqi_to_pm25(aqi), 1)
             station_info = s.get("station", {})
+            district = find_district_for_point(lat, lon)
             stations.append(Pm25Station(
                 id=f"AQICN-{s.get('uid', 'x')}",
                 name=station_info.get("name", "AQICN"),
-                district="เชียงใหม่",
+                district=district,
                 latitude=lat,
                 longitude=lon,
                 pm25=pm25,
