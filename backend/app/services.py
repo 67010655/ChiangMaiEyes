@@ -746,17 +746,76 @@ def deterministic_hourly_summary(
     )
     updated_label = _parse_datetime(updated).strftime("%H:%M")
     source_text = _source_summary(hotspots)
-    wind_towards = "ทิศปลายลมควรดูประกอบบนแผนที่"
-    if isinstance(weather.wind_direction_deg, (int, float)):
-        wind_towards = f"ลมมาจาก {weather.wind_direction_text} ความเร็ว {weather.wind_speed_kmh:.0f} กม./ชม."
 
-    text = (
-        f"สรุปสถานการณ์รอบ {updated_label} น.: PM2.5 เฉลี่ย {pm25.current_pm25:.0f} µg/m³ "
-        f"อยู่ในระดับ {pm25.category}; พบจุดความร้อนในเชียงใหม่ {hotspots.count} จุด "
-        f"จากแหล่งข้อมูล {source_text}. "
-        f"{wind_towards}; คะแนนความเสี่ยงหมอกควัน {risk.score}/10 ({_risk_meaning(risk)}). "
-        f"{_risk_action(risk, hotspots, pm25)}."
+    # ── PM2.5 paragraph ──────────────────────────────────────────────────────
+    pm_val = pm25.current_pm25
+    if pm_val <= 15:
+        pm_desc = "คุณภาพอากาศอยู่ในเกณฑ์ดีมาก สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ"
+    elif pm_val <= 25:
+        pm_desc = "คุณภาพอากาศดี ยังเหมาะสำหรับกิจกรรมกลางแจ้งทั่วไป"
+    elif pm_val <= 37.5:
+        pm_desc = "ฝุ่นอยู่ในระดับปานกลาง กลุ่มเปราะบาง (เด็ก ผู้สูงอายุ ผู้มีโรคระบบทางเดินหายใจ) ควรลดเวลาอยู่กลางแจ้ง"
+    elif pm_val <= 75:
+        pm_desc = "ฝุ่นเริ่มมีผลกระทบต่อสุขภาพ ทุกคนควรสวมหน้ากาก N95 หากต้องอยู่กลางแจ้งนานกว่า 30 นาที"
+    elif pm_val <= 120:
+        pm_desc = "ฝุ่นมีผลกระทบต่อสุขภาพชัดเจน แนะนำให้ประชาชนอยู่ในอาคาร ปิดประตูหน้าต่าง และเปิดเครื่องฟอกอากาศ"
+    else:
+        pm_desc = "ฝุ่นอยู่ในระดับอันตราย ควรหลีกเลี่ยงการออกนอกอาคารโดยเด็ดขาด และพิจารณาอพยพกลุ่มเสี่ยงออกจากพื้นที่"
+
+    pm_para = (
+        f"🌫️ ฝุ่น PM2.5: ค่าเฉลี่ยรอบนี้ {pm_val:.0f} µg/m³ ({pm25.category})\n"
+        f"{pm_desc}"
     )
+
+    # ── Hotspot paragraph ─────────────────────────────────────────────────────
+    hs_count = hotspots.count
+    if hs_count == 0:
+        hs_desc = "ไม่พบจุดความร้อนในเขตจังหวัดเชียงใหม่ช่วงนี้"
+    elif hs_count <= 3:
+        hs_desc = f"พบ {hs_count} จุด — อยู่ในระดับต่ำ เจ้าหน้าที่ควรลาดตระเวนยืนยันพื้นที่"
+    elif hs_count <= 10:
+        hs_desc = f"พบ {hs_count} จุด — อยู่ในระดับปานกลาง ควรติดตามแนวลมและพื้นที่ใกล้เคียงชุมชน"
+    elif hs_count <= 25:
+        hs_desc = f"พบ {hs_count} จุด — อยู่ในระดับสูง ให้ศูนย์สั่งการตรวจสอบจุดสำคัญและประสานหน่วยพื้นที่ทันที"
+    else:
+        hs_desc = f"พบ {hs_count} จุด — วิกฤต ต้องเปิดห้องปฏิบัติการฉุกเฉินและระดมกำลังดับไฟทุกหน่วย"
+
+    hs_para = (
+        f"🔥 จุดความร้อน: {hs_desc}\n"
+        f"ที่มาข้อมูล: {source_text}"
+    )
+
+    # ── Weather paragraph ─────────────────────────────────────────────────────
+    wind_spd = weather.wind_speed_kmh
+    wind_dir = weather.wind_direction_text
+    temp = weather.temperature_c
+    hum = weather.humidity_percent
+    if wind_spd >= 30:
+        wind_risk = "ลมแรง — ไฟจะลุกลามเร็ว ควรเตรียมแนวกันไฟล่วงหน้า"
+    elif wind_spd >= 15:
+        wind_risk = "ลมปานกลาง — ควรระวังการลุกลามตามทิศทางลม"
+    else:
+        wind_risk = "ลมเบา — ความเสี่ยงลุกลามต่ำ แต่ควันอาจสะสมในหุบเขาได้"
+
+    weather_para = (
+        f"🌬️ สภาพอากาศ: อุณหภูมิ {temp:.0f}°C ความชื้นสัมพัทธ์ {hum:.0f}%\n"
+        f"ลมมาจากทิศ{wind_dir} {wind_spd:.0f} กม./ชม. — {wind_risk}"
+    )
+
+    # ── Risk + recommendation paragraph ──────────────────────────────────────
+    risk_para = (
+        f"⚠️ ระดับความเสี่ยง: {risk.score}/10 ({_risk_meaning(risk)})\n"
+        f"{_risk_action(risk, hotspots, pm25)}"
+    )
+
+    # ── Assemble ──────────────────────────────────────────────────────────────
+    text = "\n\n".join([
+        f"สถานการณ์เชียงใหม่ — รอบข้อมูล {updated_label} น.",
+        pm_para,
+        hs_para,
+        weather_para,
+        risk_para,
+    ])
     return SummaryResponse(language="th", text=repair_thai_mojibake_tree(text), source="deterministic hourly summary")
 
 

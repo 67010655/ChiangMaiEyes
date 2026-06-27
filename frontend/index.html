@@ -6,7 +6,7 @@
 <title>ChiangMaiEyes — Wildfire Operations Console</title>
 <!-- Point at the SVG favicon that already ships; without this the browser
      auto-requests /favicon.ico and logs a 404 (no .ico file exists). -->
-<link rel="icon" type="image/svg+xml" href="/public/favicon.svg" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <meta name="description" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศจังหวัดเชียงใหม่ แบบเรียลไทม์: จุดความร้อน (NASA/GISTDA), PM2.5, ทิศทางลม, การลามของไฟ และคะแนนความเสี่ยงหมอกควัน" />
 <meta name="theme-color" content="#0b0e13" />
 <!-- Open Graph / Twitter — link previews on LINE, Facebook, X, etc. -->
@@ -15,14 +15,14 @@
 <meta property="og:title" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศเชียงใหม่" />
 <meta property="og:description" content="จุดความร้อน PM2.5 ทิศทางลม การลามของไฟ และคะแนนความเสี่ยงหมอกควันจังหวัดเชียงใหม่ แบบเรียลไทม์จาก NASA/GISTDA" />
 <meta property="og:url" content="https://chiangmaieyes.vercel.app/" />
-<meta property="og:image" content="https://chiangmaieyes.vercel.app/public/og-image.png" />
+<meta property="og:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:locale" content="th_TH" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศเชียงใหม่" />
 <meta name="twitter:description" content="จุดความร้อน PM2.5 ทิศทางลม และคะแนนความเสี่ยงหมอกควันเชียงใหม่ แบบเรียลไทม์" />
-<meta name="twitter:image" content="https://chiangmaieyes.vercel.app/public/og-image.png" />
+<meta name="twitter:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1840,11 +1840,11 @@ map.on('click', function() {
 async function loadBoundaries() {
   try {
     const [resProvince, resDistricts] = await Promise.all([
-      fetch('/public/chiangmai-province.json').then(r => {
+      fetch('/chiangmai-province.json').then(r => {
         if (!r.ok) throw new Error("Province boundary load failed");
         return r.json();
       }),
-      fetch('/public/chiangmai-districts.json').then(r => {
+      fetch('/chiangmai-districts.json').then(r => {
         if (!r.ok) throw new Error("Districts boundary load failed");
         return r.json();
       })
@@ -2238,7 +2238,7 @@ function buildBurnScarLayer(){
   const byDistrict=Object.fromEntries(livePhases.map(p=>[p.district,p]));
   let count=0;
 
-  fetch('/public/chiangmai-districts.json')
+  fetch('/chiangmai-districts.json')
     .then(r=>r.json())
     .then(gj=>{
       if(!document.querySelector('.layer[data-layer="burnScar"]').classList.contains('on')) return;
@@ -2619,11 +2619,21 @@ function renderRiskScore(){
 // Persistent situation card fed by the backend's deterministic briefing.
 function renderSituation(){
   const el=document.getElementById('situationBody'); if(!el)return;
-  if(liveSummary){
-    el.textContent=liveSummary;
-    el.parentElement.style.display='block';
-  } else { el.parentElement.style.display='none'; }
+  if(!liveSummary){ el.parentElement.style.display='none'; return; }
+  // Render each \n\n block as a <p>, \n within a block as <br>
+  const paras=liveSummary.split('\n\n').map(p=>{
+    const lines=p.split('\n');
+    if(!lines.length) return '';
+    // First line may be a section header (starts with emoji or "สถานการณ์")
+    const isHeader=/^[🌫️🔥🌬️⚠️]/.test(lines[0])||lines[0].startsWith('สถานการณ์');
+    const headerHtml=isHeader?`<strong style="color:var(--wind);font-size:11px">${esc(lines[0])}</strong>`:`<span>${esc(lines[0])}</span>`;
+    const rest=lines.slice(1).map(l=>`<span style="color:#c8d0da">${esc(l)}</span>`).join('<br>');
+    return `<p style="margin:0 0 8px">${headerHtml}${rest?'<br>'+rest:''}</p>`;
+  });
+  el.innerHTML=paras.join('');
+  el.parentElement.style.display='block';
 }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // Collapsed freshness bar from data_quality (LIVE/SNAPSHOT/DERIVED/PROTOTYPE).
 const MODE_COLOR={LIVE:'#4ade80',SNAPSHOT:'#37d1d6',DERIVED:'#facc15',PROTOTYPE:'#a855f7',UNAVAILABLE:'#ff4d4d'};
@@ -2880,52 +2890,14 @@ function initMapLibre3D(){
       'circle-stroke-width':1
     }});
 
-    // Hotspot fire emoji — solid=high conf, faded=low conf (mirrors 2D markers)
-    mlMap.addLayer({id:'hotspots-fire',type:'symbol',source:'hotspots-3d',layout:{
-      'text-field':'🔥',
-      'text-size':['interpolate',['linear'],['zoom'],8,14,12,26],
-      'text-allow-overlap':true,
-      'text-anchor':'center',
-    },paint:{
-      'text-opacity':['case',['==',['get','conf'],'high'],1.0,0.45]
-    }});
+    // Hotspot 🔥 emoji markers — rendered as HTML (MapLibre SDF can't render color emoji)
+    // _sync3DHotspots() creates maplibregl.Marker elements to mirror the 2D style exactly
 
     // Populate with current data
     _sync3DHotspots();
     _sync3DForests();
 
-    // Click: 3D hotspot — opens the same detail panel as the 2D marker (linked)
-    mlMap.on('click','hotspots-fire',e=>{
-      const f=e.features[0]; if(!f) return;
-      const props=f.properties;
-      const [lng,lat]=f.geometry.coordinates;
-      // Try to open the shared 2D detail panel for full data (elevation + forests)
-      const h=hotspots.find(x=>x.id===props.id);
-      if(h){ selectHotspot(h); return; }
-      // Fallback popup when hotspot isn't in the 2D array (shouldn't happen normally)
-      let elev=null;
-      try{ elev=mlMap.queryTerrainElevation([lng,lat]); }catch(_){}
-      const elevStr=elev!=null?Math.round(elev)+' เมตร (MSL)':'—';
-      let nearestHtml='';
-      if(allForests.length){
-        const nearest=allForests.reduce((best,f2)=>{
-          if(!f2.latitude||!f2.longitude) return best;
-          const d=Math.hypot(f2.latitude-lat,f2.longitude-lng);
-          return d<best.d?{f:f2,d}:best;
-        },{f:null,d:Infinity});
-        if(nearest.f){
-          let fElev=null;
-          try{ fElev=mlMap.queryTerrainElevation([nearest.f.longitude,nearest.f.latitude]); }catch(_){}
-          const fElevStr=fElev!=null?Math.round(fElev)+' ม.':'—';
-          const relStr=(elev!=null&&fElev!=null)?(fElev>elev?'⬆ สูงกว่า '+Math.round(fElev-elev)+' ม.':'⬇ ต่ำกว่า '+Math.round(elev-fElev)+' ม.'):'—';
-          nearestHtml=`<hr style="border-color:#2c3744;margin:8px 0"><b style="color:#43b05f">ป่าชุมชนใกล้สุด</b><br>${nearest.f.name||'ป่าชุมชน'}<br>ระยะ: ${(nearest.d*111).toFixed(1)} กม.<br>ความสูง: ${fElevStr}<br>เทียบกับไฟ: ${relStr}`;
-        }
-      }
-      new maplibregl.Popup({closeButton:true,maxWidth:'240px'})
-        .setLngLat([lng,lat])
-        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:${props.color||'#ff4d4d'}">${props.id||'hotspot'}</b><br>อ.${props.district||'—'}<br>FRP: ${props.frp!=null?Math.round(props.frp)+' MW':'—'}<br>ความสูง: ${elevStr}${nearestHtml}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
-        .addTo(mlMap);
-    });
+    // 3D hotspot clicks are handled inline in _sync3DHotspots() Marker elements
 
     // Click: forest elevation inspector
     mlMap.on('click','forests-circle',e=>{
@@ -2939,13 +2911,12 @@ function initMapLibre3D(){
         .addTo(mlMap);
     });
 
-    mlMap.on('mouseenter','hotspots-fire',()=>{mlMap.getCanvas().style.cursor='pointer';});
-    mlMap.on('mouseleave','hotspots-fire',()=>{mlMap.getCanvas().style.cursor='';});
+    // cursor for forests only; hotspot cursor handled by marker element style;
     mlMap.on('mouseenter','forests-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','forests-circle',()=>{mlMap.getCanvas().style.cursor='';});
 
     // Chiang Mai province boundary
-    fetch('/public/chiangmai-province.json').then(r=>r.ok?r.json():null).then(geo=>{
+    fetch('/chiangmai-province.json').then(r=>r.ok?r.json():null).then(geo=>{
       if(!geo) return;
       mlMap.addSource('cm-boundary',{type:'geojson',data:geo});
       mlMap.addLayer({id:'cm-boundary-line',type:'line',source:'cm-boundary',paint:{
@@ -2971,15 +2942,22 @@ function cycleTerrain(){
   toast('Terrain ×'+_terrainExag);
 }
 
+let _3dMarkers = [];
+
 function _sync3DHotspots(){
-  if(!mlMap||!mlMap.getSource('hotspots-3d')) return;
-  mlMap.getSource('hotspots-3d').setData({
-    type:'FeatureCollection',
-    features:hotspots.map(h=>({
-      type:'Feature',
-      geometry:{type:'Point',coordinates:[h.lon,h.lat]},
-      properties:{id:h.id,district:h.district,frp:h.frp,conf:h.conf,color:frpColor(h.frp),detected:h.detected}
-    }))
+  // Remove old markers
+  _3dMarkers.forEach(m=>m.remove());
+  _3dMarkers=[];
+  if(!mlMap) return;
+  hotspots.forEach(h=>{
+    const isHigh=h.conf==='high';
+    const big=isHigh&&(h.frp||0)>50;
+    const sz=big?28:isHigh?22:16;
+    const el=document.createElement('span');
+    el.textContent='🔥';
+    el.style.cssText=`font-size:${sz}px;line-height:1;cursor:pointer;display:block;user-select:none;${isHigh?'':'opacity:.45;filter:grayscale(.7)'}`;
+    el.addEventListener('click',()=>selectHotspot(h));
+    _3dMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([h.lon,h.lat]).addTo(mlMap));
   });
 }
 

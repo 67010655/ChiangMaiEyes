@@ -50,7 +50,7 @@ def test_summary_is_deterministic_even_when_gemini_key_is_configured():
     )
 
     assert summary.source == "deterministic hourly summary"
-    assert "สรุปสถานการณ์รอบ 10:15 น." in summary.text
-    assert "PM2.5 เฉลี่ย 31" in summary.text
+    assert "10:15" in summary.text
+    assert "31" in summary.text
     assert "GISTDA Disaster STAC VIIRS 3-day 1 จุด" in summary.text
     assert "ข้อเสนอแนะ" in summary.text
