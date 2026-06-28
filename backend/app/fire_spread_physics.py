@@ -1,5 +1,33 @@
 # Physics based fire spread and risk factors for Chiang Mai districts
 
+CHIANG_MAI_DISTRICTS = [
+    "เมืองเชียงใหม่",
+    "จอมทอง",
+    "แม่แจ่ม",
+    "เชียงดาว",
+    "ดอยสะเก็ด",
+    "แม่แตง",
+    "แม่ริม",
+    "สะเมิง",
+    "ฝาง",
+    "แม่อาย",
+    "พร้าว",
+    "สันป่าตอง",
+    "สันกำแพง",
+    "สันทราย",
+    "หางดง",
+    "ฮอด",
+    "ดอยเต่า",
+    "อมก๋อย",
+    "สารภี",
+    "เวียงแหง",
+    "ไชยปราการ",
+    "แม่วาง",
+    "แม่ออน",
+    "ดอยหล่อ",
+    "กัลยาณิวัฒนา",
+]
+
 DISTRICT_PHYSICS = {
     "แม่แจ่ม": {
         "slope_deg": 28.0,
@@ -59,6 +87,11 @@ DEFAULT_PHYSICS = {
     "history_level": "เกิดไฟป่าซ้ำซากปานกลาง",
     "history_multiplier": 1.2,
 }
+
+
+for district in CHIANG_MAI_DISTRICTS:
+    DISTRICT_PHYSICS.setdefault(district, DEFAULT_PHYSICS.copy())
+
 
 def get_district_physics(district_name: str | None) -> dict:
     if not district_name:

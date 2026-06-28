@@ -17,6 +17,7 @@ from app.models import (
     DataQualityMetadata,
     DataStatusResponse,
     DashboardResponse,
+    DistrictHistoryDay,
     DroughtZone,
     HistoryResponse,
     HotspotHistoryDay,
@@ -65,6 +66,7 @@ _HOURLY_DECISION_CADENCE_MINUTES = 60
 _SATELLITE_HOTSPOT_EXPECTED_LAG_MINUTES = 300
 _SATELLITE_HOTSPOT_STALE_AFTER_MINUTES = 360
 _LIVE_SENSOR_STALE_AFTER_MINUTES = 180
+_AIR_QUALITY_STALE_AFTER_MINUTES = 360
 
 T = TypeVar("T")
 
@@ -202,6 +204,64 @@ def _read_optional_snapshot_json(settings: Settings, filename: str) -> dict[str,
         return None
 
 
+def _history_archive_rows(settings: Settings) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    archive = _read_optional_snapshot_json(settings, "season_history.json")
+    if not archive:
+        return [], {}
+
+    metadata = archive.get("metadata", {}) if isinstance(archive.get("metadata"), dict) else {}
+    seasons = archive.get("seasons")
+    if not isinstance(seasons, dict):
+        seasons = {k: v for k, v in archive.items() if isinstance(v, list)}
+
+    if not seasons:
+        return [], metadata
+
+    season_label = metadata.get("season_label")
+    if not season_label or season_label not in seasons:
+        season_label = sorted(seasons.keys())[-1]
+
+    rows = seasons.get(season_label) or []
+    if not isinstance(rows, list):
+        return [], metadata
+    return rows, {**metadata, "season_label": season_label}
+
+
+def _history_archive_quality(
+    *,
+    checked_at: str,
+    archive_rows: list[dict[str, Any]],
+    archive_meta: dict[str, Any],
+) -> DataQualityMetadata:
+    latest_update = archive_meta.get("build_date") or archive_meta.get("latest_update")
+    if archive_rows:
+        return DataQualityMetadata(
+            label="History archive",
+            source=archive_meta.get("source") or "Precomputed season_history.json",
+            source_mode="SNAPSHOT",
+            latest_update=latest_update,
+            checked_at=checked_at,
+            update_cadence_minutes=1440,
+            confidence=0.82,
+            is_stale=False,
+            note=f"Precomputed archive for season {archive_meta.get('season_label', 'latest')}.",
+            decision_use="Use for season totals, year-over-year views, district ranking, and hourly distribution.",
+        )
+
+    return DataQualityMetadata(
+        label="History archive",
+        source="season_history.json",
+        source_mode="UNAVAILABLE",
+        latest_update=None,
+        checked_at=checked_at,
+        update_cadence_minutes=1440,
+        confidence=0.0,
+        is_stale=True,
+        note="No precomputed archive is bundled or cached yet; no season/YoY numbers are fabricated.",
+        decision_use="Hide season/YoY archive views until the refresh job writes real data.",
+    )
+
+
 def _official_community_forest_summary() -> dict[str, Any] | None:
     try:
         return read_json(_BUNDLED_DATA_DIR, "community-forests-official.json").get("summary")
@@ -216,6 +276,11 @@ def _parse_datetime(value: str) -> datetime:
 def _age_minutes(current_time: datetime, updated_at: str) -> int:
     age_seconds = max(0, (current_time - _parse_datetime(updated_at)).total_seconds())
     return round(age_seconds / 60)
+
+
+def _latest_update_and_age(current_time: datetime, *updates: str) -> tuple[str, int]:
+    latest_update = max(updates, key=_parse_datetime)
+    return latest_update, _age_minutes(current_time, latest_update)
 
 
 def _data_quality(
@@ -262,6 +327,12 @@ def _build_data_quality(
     hotspot_age = _age_minutes(current_time, hotspots.latest_update)
     pm25_age = _age_minutes(current_time, pm25.latest_update)
     weather_age = _age_minutes(current_time, weather.latest_update)
+    derived_latest_update, derived_age = _latest_update_and_age(
+        current_time,
+        hotspots.latest_update,
+        pm25.latest_update,
+        weather.latest_update,
+    )
     has_rfd = FOREST_FIREMAP_SOURCE in (hotspots.source_breakdown or {}) or "Royal Forest" in hotspots.source
     hotspot_stale_after = (
         _LIVE_SENSOR_STALE_AFTER_MINUTES
@@ -319,12 +390,12 @@ def _build_data_quality(
         "pm25": _data_quality(
             label="PM2.5",
             source=pm25.source,
-            source_mode="LIVE" if not pm25_age > _LIVE_SENSOR_STALE_AFTER_MINUTES else "UNAVAILABLE",
+            source_mode="LIVE" if not pm25_age > _AIR_QUALITY_STALE_AFTER_MINUTES else "UNAVAILABLE",
             latest_update=pm25.latest_update,
             checked_at=checked_at,
             age_minutes=pm25_age,
-            confidence=0.92 if not pm25_age > _LIVE_SENSOR_STALE_AFTER_MINUTES else 0.4,
-            stale_after_minutes=_LIVE_SENSOR_STALE_AFTER_MINUTES,
+            confidence=0.92 if not pm25_age > _AIR_QUALITY_STALE_AFTER_MINUTES else 0.4,
+            stale_after_minutes=_AIR_QUALITY_STALE_AFTER_MINUTES,
             update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
             note="Station reading from configured air-quality provider.",
             decision_use="Use for current smoke/health situation and trend monitoring.",
@@ -346,9 +417,9 @@ def _build_data_quality(
             label="Risk score",
             source="ChiangMaiEyes deterministic formula",
             source_mode="DERIVED",
-            latest_update=max(hotspots.latest_update, pm25.latest_update, weather.latest_update, key=_parse_datetime),
+            latest_update=derived_latest_update,
             checked_at=checked_at,
-            age_minutes=max(hotspot_age, pm25_age, weather_age),
+            age_minutes=derived_age,
             confidence=0.72,
             stale_after_minutes=_SATELLITE_HOTSPOT_STALE_AFTER_MINUTES,
             update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
@@ -359,9 +430,9 @@ def _build_data_quality(
             label="Situation summary",
             source="ChiangMaiEyes deterministic hourly summary",
             source_mode="DERIVED",
-            latest_update=max(hotspots.latest_update, pm25.latest_update, weather.latest_update, key=_parse_datetime),
+            latest_update=derived_latest_update,
             checked_at=checked_at,
-            age_minutes=max(hotspot_age, pm25_age, weather_age),
+            age_minutes=derived_age,
             confidence=0.82,
             stale_after_minutes=_SATELLITE_HOTSPOT_STALE_AFTER_MINUTES,
             update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
@@ -394,6 +465,19 @@ def _build_data_quality(
             note="No verified fire-management vector layer is configured. Prototype boundaries are disabled.",
             decision_use="Import verified shapefile/GeoJSON layers before using this for decisions.",
         ),
+        "burned_area": _data_quality(
+            label="Burned area",
+            source="Not configured",
+            source_mode="UNAVAILABLE",
+            latest_update=None,
+            checked_at=checked_at,
+            age_minutes=None,
+            confidence=0.0,
+            stale_after_minutes=0,
+            update_cadence_minutes=None,
+            note="No verified burned-area provider is configured. Area in rai is not estimated from hotspot counts.",
+            decision_use="Connect GISTDA burned-area, MODIS MCD64A1, or VIIRS VNP64 before using burn-area numbers.",
+        ),
         "community_forests": _data_quality(
             label="Community forest points",
             source="Royal Forest Department community forest coordinates KML" if official_community_count > 0 else "Not configured",
@@ -410,9 +494,9 @@ def _build_data_quality(
             label="Localized predictions",
             source="Rule-based estimate from dashboard inputs",
             source_mode="DERIVED",
-            latest_update=max(hotspots.latest_update, pm25.latest_update, weather.latest_update, key=_parse_datetime),
+            latest_update=derived_latest_update,
             checked_at=checked_at,
-            age_minutes=max(hotspot_age, pm25_age, weather_age),
+            age_minutes=derived_age,
             confidence=0.55,
             stale_after_minutes=_SATELLITE_HOTSPOT_STALE_AFTER_MINUTES,
             update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
@@ -534,7 +618,8 @@ def get_history(settings: Settings, days: int = 30) -> HistoryResponse:
     """Combined backward trends (hotspots · PM2.5 · weather) for the authority
     view. Every series is best-effort, so one failing provider never sinks the
     others or errors the request."""
-    cached = _get_cached("history", ttl=_HISTORY_TTL_SECONDS)
+    cache_key = f"history:{days}"
+    cached = _get_cached(cache_key, ttl=_HISTORY_TTL_SECONDS)
     if cached is not None:
         return cached
 
@@ -560,21 +645,62 @@ def get_history(settings: Settings, days: int = 30) -> HistoryResponse:
         logger.warning("Weather history failed: %s", e)
         weather = []
 
+    archive_rows, archive_meta = _history_archive_rows(settings)
+    archive_window = archive_rows[-days:] if archive_rows else []
+    archive_covers_window = len(archive_window) >= days
+    if not hotspots and archive_covers_window:
+        hotspots = [
+            HotspotHistoryDay(date=str(row.get("date")), count=int(row.get("count") or 0))
+            for row in archive_window
+            if row.get("date")
+        ]
+
+    by_district = [
+        DistrictHistoryDay(
+            date=str(row.get("date")),
+            count=int(row.get("count") or 0),
+            districts={str(k): int(v or 0) for k, v in (row.get("districts") or {}).items()},
+        )
+        for row in archive_window
+        if archive_covers_window and row.get("date") and isinstance(row.get("districts"), dict)
+    ]
+
+    hour_histogram = [0] * 24
+    has_hour_histogram = False
+    for row in archive_window if archive_covers_window else []:
+        buckets = row.get("hour_histogram")
+        if not isinstance(buckets, list) or len(buckets) != 24:
+            continue
+        has_hour_histogram = True
+        for hour, count in enumerate(buckets):
+            hour_histogram[hour] += int(count or 0)
+
+    checked_at = datetime.now(timezone(timedelta(hours=7))).isoformat()
     response = HistoryResponse(
         days=days,
         hotspots=hotspots,
         pm25=pm25,
         weather=weather,
+        by_district=by_district,
+        hour_histogram=hour_histogram if has_hour_histogram else [],
         sources={
             "hotspots": "NASA VIIRS (SNPP/NOAA-20/NOAA-21)",
             "pm25": "Open-Meteo Air Quality",
             "weather": "Open-Meteo (ECMWF/GFS)",
+            "history_archive": archive_meta.get("source") or "season_history.json",
         },
-        latest_update=datetime.now().isoformat(),
+        data_quality={
+            "history_archive": _history_archive_quality(
+                checked_at=checked_at,
+                archive_rows=archive_rows,
+                archive_meta=archive_meta,
+            )
+        },
+        latest_update=checked_at,
     )
     # Cache only when we actually got something, so transient failures retry.
     if hotspots or pm25 or weather:
-        _set_cached("history", response)
+        _set_cached(cache_key, response)
     return response
 
 

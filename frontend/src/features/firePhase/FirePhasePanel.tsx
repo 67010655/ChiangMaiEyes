@@ -325,21 +325,33 @@ export function FirePhasePanel({ dashboard }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
     setLoading(true);
+    setError(null);
     fetchFirePhases()
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ"))
-      .finally(() => setLoading(false));
+      .then((nextData) => {
+        if (active) setData(nextData);
+      })
+      .catch((e) => {
+        if (!active) return;
+        setError(e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [dashboard.hotspots.latest_update]);
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div style={{ padding: 24, color: "var(--muted)", fontSize: "0.85rem", textAlign: "center" }}>
         กำลังโหลดข้อมูลเฟสไฟ…
       </div>
     );
   }
-  if (error || !data) {
+  if (!data) {
     return (
       <div style={{ padding: 16, color: "#dc2626", fontSize: "0.82rem" }}>
         ⚠ {error ?? "ไม่มีข้อมูล"}

@@ -4,10 +4,7 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
-DEFAULT_GISTDA_DISASTER_API_KEY = (
-    "yZz5eESM7vN9gJjTYco5af31iNytEKNO8TaqWqGjI7Cu5Xckb8eLQoeAfg5hT0az"
-)
+DEFAULT_GISTDA_DISASTER_API_KEY = os.getenv("DEFAULT_GISTDA_DISASTER_API_KEY")
 
 
 class Settings(BaseSettings):

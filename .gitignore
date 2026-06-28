@@ -29,3 +29,6 @@ Thumbs.db
 .vscode/
 scripts/refresh.log
 backend/uvicorn-local*.log
+
+.vercel
+.env*

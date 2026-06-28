@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "season_label": "2569",
+    "build_date": "2026-06-28T15:19:30.404119+07:00",
+    "source": "NASA FIRMS VIIRS Area API archive",
+    "days": 1,
+    "note": "Rows are grouped from real in-province FIRMS detections; no district/hour values are fabricated."
+  },
+  "seasons": {
+    "2569": [
+      {
+        "date": "2026-06-28",
+        "count": 0,
+        "districts": {},
+        "hour_histogram": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ]
+  }
+}

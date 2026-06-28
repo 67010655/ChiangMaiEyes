@@ -1,4 +1,6 @@
-from fastapi import Depends, FastAPI, Request, Response
+from typing import Annotated
+
+from fastapi import Depends, FastAPI, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.advisor import (
@@ -80,8 +82,11 @@ def hotspots_history(settings: Settings = Depends(get_settings)) -> HotspotHisto
 
 
 @app.get("/api/history", response_model=HistoryResponse)
-def history(settings: Settings = Depends(get_settings)) -> HistoryResponse:
-    return get_history(settings, days=30)
+def history(
+    days: Annotated[int, Query(ge=1, le=180)] = 30,
+    settings: Settings = Depends(get_settings),
+) -> HistoryResponse:
+    return get_history(settings, days=days)
 
 
 @app.get("/api/pm25", response_model=Pm25Response)

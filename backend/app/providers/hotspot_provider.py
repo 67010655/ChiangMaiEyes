@@ -479,6 +479,70 @@ def fetch_hotspot_history(map_key: str, days: int = 5) -> list[tuple[str, int]]:
     ]
 
 
+def fetch_hotspot_history_detections(map_key: str, days: int = 31) -> list[dict[str, object]]:
+    """Raw in-province NASA FIRMS detections for archive jobs.
+
+    This is intentionally not used on request-time endpoints: longer windows
+    can require many FIRMS calls. The refresh job groups these real detections
+    into daily totals, district totals, and 24-hour histograms.
+    """
+    ring = _province_ring()
+    bbox = "97.25,17.35,99.68,20.28"
+    span = max(1, min(days, 180))
+    today = datetime.datetime.now(BANGKOK_TZ).date()
+    earliest = today - datetime.timedelta(days=span - 1)
+
+    urls: list[str] = []
+    window_start = earliest
+    while window_start <= today:
+        chunk = min(5, (today - window_start).days + 1)
+        start_str = window_start.isoformat()
+        for src in NASA_VIIRS_SOURCES:
+            urls.append(f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{chunk}/{start_str}")
+        window_start += datetime.timedelta(days=5)
+
+    def _fetch(url: str) -> str | None:
+        try:
+            response = httpx.get(url, timeout=25.0)
+            response.raise_for_status()
+            return response.content.decode("utf-8")
+        except Exception as ex:  # noqa: BLE001
+            logger.warning("NASA FIRMS archive fetch failed (%s): %s", url[-40:], ex)
+            return None
+
+    detections: list[dict[str, object]] = []
+    seen: set[tuple[float, float, str]] = set()
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for body in pool.map(_fetch, urls):
+            if not body:
+                continue
+            for row in csv.DictReader(body.splitlines()):
+                try:
+                    lat = float(row["latitude"])
+                    lon = float(row["longitude"])
+                    if ring and not _point_in_ring(lon, lat, ring):
+                        continue
+                    detected_at = _nasa_detected_at(row.get("acq_date"), row.get("acq_time"))
+                    day = detected_at[:10]
+                    key = (round(lat, 3), round(lon, 3), day)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    detections.append({
+                        "date": day,
+                        "hour": int(detected_at[11:13]),
+                        "district": estimate_district(lat, lon),
+                        "latitude": lat,
+                        "longitude": lon,
+                        "detected_at": detected_at,
+                        "satellite": row.get("satellite") or row.get("instrument") or "NASA FIRMS",
+                    })
+                except Exception:  # noqa: BLE001
+                    continue
+
+    return sorted(detections, key=lambda item: (str(item["date"]), int(item["hour"]), str(item["district"])))
+
+
 def merge_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
     merged: list[Hotspot] = []
     seen: set[tuple[float, float, str]] = set()

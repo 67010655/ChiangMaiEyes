@@ -3,6 +3,32 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
+# LIVE      = fetched live from the upstream provider at request time
+# SNAPSHOT  = authoritative source data, but delivered via a periodic refresh
+#             snapshot (e.g. RFD hotspots, which only a Thai-network worker can
+#             fetch) — real, but NOT a live request, so freshness rides on the
+#             snapshot age, never on "the API returned 200".
+# DERIVED   = computed by ChiangMaiEyes from other inputs (risk, NDVI, summary)
+# PROTOTYPE = sample/seed geometry or records, not an official dataset yet
+# UNAVAILABLE = too stale or missing to trust as current
+SourceMode = Literal["LIVE", "SNAPSHOT", "DERIVED", "PROTOTYPE", "UNAVAILABLE"]
+
+
+class DataQualityMetadata(BaseModel):
+    label: str
+    source: str
+    source_mode: SourceMode
+    latest_update: str | None = None
+    checked_at: str | None = None
+    age_minutes: int | None = None
+    update_cadence_minutes: int | None = None
+    expected_observation_lag_minutes: int | None = None
+    confidence: float = Field(ge=0, le=1)
+    is_stale: bool = False
+    note: str
+    decision_use: str | None = None
+
+
 class Hotspot(BaseModel):
     id: str
     latitude: float
@@ -62,6 +88,12 @@ class WeatherHistoryDay(BaseModel):
     humidity: float
 
 
+class DistrictHistoryDay(BaseModel):
+    date: str
+    count: int
+    districts: dict[str, int] = Field(default_factory=dict)
+
+
 class HistoryResponse(BaseModel):
     # Combined N-day backward trends for the authority view. Each series is
     # oldest→newest and best-effort (may be empty if its provider is down).
@@ -69,7 +101,10 @@ class HistoryResponse(BaseModel):
     hotspots: list[HotspotHistoryDay] = Field(default_factory=list)
     pm25: list[DailyMetric] = Field(default_factory=list)
     weather: list[WeatherHistoryDay] = Field(default_factory=list)
+    by_district: list[DistrictHistoryDay] = Field(default_factory=list)
+    hour_histogram: list[int] = Field(default_factory=list)
     sources: dict[str, str] = Field(default_factory=dict)
+    data_quality: dict[str, DataQualityMetadata] = Field(default_factory=dict)
     latest_update: str
 
 
@@ -124,32 +159,6 @@ class SummaryResponse(BaseModel):
     language: str
     text: str
     source: str
-
-
-# LIVE      = fetched live from the upstream provider at request time
-# SNAPSHOT  = authoritative source data, but delivered via a periodic refresh
-#             snapshot (e.g. RFD hotspots, which only a Thai-network worker can
-#             fetch) — real, but NOT a live request, so freshness rides on the
-#             snapshot age, never on "the API returned 200".
-# DERIVED   = computed by ChiangMaiEyes from other inputs (risk, NDVI, summary)
-# PROTOTYPE = sample/seed geometry or records, not an official dataset yet
-# UNAVAILABLE = too stale or missing to trust as current
-SourceMode = Literal["LIVE", "SNAPSHOT", "DERIVED", "PROTOTYPE", "UNAVAILABLE"]
-
-
-class DataQualityMetadata(BaseModel):
-    label: str
-    source: str
-    source_mode: SourceMode
-    latest_update: str | None = None
-    checked_at: str | None = None
-    age_minutes: int | None = None
-    update_cadence_minutes: int | None = None
-    expected_observation_lag_minutes: int | None = None
-    confidence: float = Field(ge=0, le=1)
-    is_stale: bool = False
-    note: str
-    decision_use: str | None = None
 
 
 class HotspotTrendStats(BaseModel):

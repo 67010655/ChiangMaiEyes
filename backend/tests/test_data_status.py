@@ -74,6 +74,18 @@ def _pm25_response() -> Pm25Response:
     )
 
 
+def _pm25_response_at(updated_at: str) -> Pm25Response:
+    return Pm25Response(
+        current_pm25=13.8,
+        category="good",
+        color="green",
+        trend="stable",
+        latest_update=updated_at,
+        source="Air4Thai PCD + AQICN",
+        stations=[],
+    )
+
+
 def _weather_response() -> WeatherResponse:
     return WeatherResponse(
         wind_speed_kmh=2.9,
@@ -82,6 +94,18 @@ def _weather_response() -> WeatherResponse:
         temperature_c=25.7,
         humidity_percent=90,
         latest_update="2026-06-03T00:43:25+07:00",
+        source="Thai Meteorological Department AWS",
+    )
+
+
+def _weather_response_at(updated_at: str) -> WeatherResponse:
+    return WeatherResponse(
+        wind_speed_kmh=5,
+        wind_direction_deg=20,
+        wind_direction_text="north",
+        temperature_c=31,
+        humidity_percent=70,
+        latest_update=updated_at,
         source="Thai Meteorological Department AWS",
     )
 
@@ -317,3 +341,58 @@ def test_data_status_marks_ndvi_derived_when_copernicus_is_configured(tmp_path: 
 
     assert status.data_quality["ndvi"].source_mode == "DERIVED"
     assert status.data_quality["ndvi"].update_cadence_minutes == 1440
+
+
+def test_pm25_quality_tolerates_air_provider_lag_when_values_exist(tmp_path: Path, monkeypatch):
+    settings = Settings(
+        cache_dir=tmp_path,
+        remote_snapshot_base_url=None,
+        hotspot_include_rfd=False,
+    )
+    monkeypatch.setattr(
+        "app.services.get_hotspots",
+        lambda _settings: HotspotResponse(
+            count=0,
+            density_per_100_km2=0,
+            latest_update="2026-06-28T14:12:50+07:00",
+            source="GISTDA Disaster STAC VIIRS 3-day + NASA FIRMS",
+            items=[],
+            source_breakdown={"NASA FIRMS": 0},
+        ),
+    )
+    monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response_at("2026-06-28T10:00:00+07:00"))
+    monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response_at("2026-06-28T14:12:00+07:00"))
+
+    status = get_data_status(settings, now="2026-06-28T14:13:00+07:00")
+
+    assert status.pm25_age_minutes == 253
+    assert status.data_quality["pm25"].source_mode == "LIVE"
+    assert status.data_quality["pm25"].is_stale is False
+
+
+def test_derived_quality_age_uses_latest_input_not_oldest_input(tmp_path: Path, monkeypatch):
+    settings = Settings(
+        cache_dir=tmp_path,
+        remote_snapshot_base_url=None,
+        hotspot_include_rfd=False,
+    )
+    monkeypatch.setattr(
+        "app.services.get_hotspots",
+        lambda _settings: HotspotResponse(
+            count=0,
+            density_per_100_km2=0,
+            latest_update="2026-06-28T14:12:50+07:00",
+            source="GISTDA Disaster STAC VIIRS 3-day + NASA FIRMS",
+            items=[],
+            source_breakdown={"NASA FIRMS": 0},
+        ),
+    )
+    monkeypatch.setattr("app.services.get_pm25", lambda _settings: _pm25_response_at("2026-06-28T10:00:00+07:00"))
+    monkeypatch.setattr("app.services.get_weather", lambda _settings: _weather_response_at("2026-06-28T14:12:00+07:00"))
+
+    status = get_data_status(settings, now="2026-06-28T14:13:00+07:00")
+
+    assert status.data_quality["risk"].latest_update == "2026-06-28T14:12:50+07:00"
+    assert status.data_quality["risk"].age_minutes == 0
+    assert status.data_quality["summary"].age_minutes == 0
+    assert status.data_quality["predictions"].age_minutes == 0

@@ -75,6 +75,39 @@ def _phase_of(resp, district):
     return next(p for p in resp.phases if p.district == district)
 
 
+def test_fire_phases_cover_all_25_chiang_mai_districts():
+    expected = {
+        "เมืองเชียงใหม่",
+        "จอมทอง",
+        "แม่แจ่ม",
+        "เชียงดาว",
+        "ดอยสะเก็ด",
+        "แม่แตง",
+        "แม่ริม",
+        "สะเมิง",
+        "ฝาง",
+        "แม่อาย",
+        "พร้าว",
+        "สันป่าตอง",
+        "สันกำแพง",
+        "สันทราย",
+        "หางดง",
+        "ฮอด",
+        "ดอยเต่า",
+        "อมก๋อย",
+        "สารภี",
+        "เวียงแหง",
+        "ไชยปราการ",
+        "แม่วาง",
+        "แม่ออน",
+        "ดอยหล่อ",
+        "กัลยาณิวัฒนา",
+    }
+    resp = classify_fire_phases(_hotspots("แม่วาง"), _weather(humidity=80))
+    assert {p.district for p in resp.phases} == expected
+    assert _phase_of(resp, "แม่วาง").active_hotspots == 1
+
+
 def test_district_with_active_hotspot_is_during_red():
     resp = classify_fire_phases(_hotspots("แม่แจ่ม"), _weather(humidity=40))
     p = _phase_of(resp, "แม่แจ่ม")
