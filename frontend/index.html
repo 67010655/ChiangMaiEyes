@@ -609,7 +609,6 @@
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
         <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">EVI ความหนาแน่นพืชพรรณ<small>MODIS Terra rolling 8-day · NASA GIBS</small></div><span class="cnt">off</span></div>
         <div class="layer" data-layer="burnScar"><div class="sw"></div><div class="lbl">พื้นที่เผาไหม้สะสม<small>30 วัน · รายอำเภอ จากข้อมูลจริง</small></div><span class="cnt" id="lcBurn">off</span></div>
-        <!-- DEMO mode removed — always LIVE -->
       </div>
 
       <div class="block">
@@ -812,10 +811,22 @@
           <div id="anDist" style="width:100%;padding:4px 0"></div>
         </div>
 
+        <div class="an-panel col-6">
+          <h3>ระดับตำบล</h3>
+          <div class="hint">ใช้เฉพาะเมื่อมีขอบเขตตำบล/ข้อมูลตำบลจริง</div>
+          <div id="anTambon" style="width:100%;padding:4px 0"></div>
+        </div>
+        <div class="an-panel col-6">
+          <h3>ป่าชุมชนใกล้จุดความร้อน</h3>
+          <div class="hint">proximity จากพิกัดจุด ไม่ใช่ขอบเขต polygon</div>
+          <div id="anForestProx" style="width:100%;padding:4px 0"></div>
+        </div>
+
         <div class="an-panel col-4">
           <h3>แหล่งข้อมูลดาวเทียม</h3>
           <div class="hint">สัดส่วนการตรวจจับ</div>
           <svg class="chart" id="anSat" height="160" viewBox="0 0 200 160"></svg>
+          <div id="anSourceProducts" class="insight" style="display:block;margin-top:8px"></div>
         </div>
         <div class="an-panel col-8">
           <h3>สรุปเชิงสถิติ</h3>
@@ -881,15 +892,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 /* ============================================================
-   ChiangMaiEyes — demo data + rendering
-   NOTE: figures below are synthetic for layout/demo purposes.
-   Wire real feeds (FIRMS/GISTDA/PCD/OpenWeather) to replace.
+   ChiangMaiEyes — live data rendering
    ============================================================ */
 
 const CM = [18.79, 98.99];               // Chiang Mai center
 let PREVAILING = null;  // live wind only — null until first LIVE fetch (topbar shows "—")
-const DEMO_WIND = { deg: 215, kmh: 14 };   // SW fallback when LIVE fetch hasn't arrived
-function wind(){ return PREVAILING || DEMO_WIND; }
+const CRITICAL_FRP_MW = 100;
+function wind(){ return PREVAILING || {deg:0,kmh:0}; }
 
 // ── Dark / Light mode toggle ────────────────────────
 (function initTheme(){
@@ -920,6 +929,115 @@ function formatAge(minutes){
   if(h>0)return h+'ชม. '+(m>0?m+'นาที':'');
   return m+' นาที';
 }
+function sourceLabel(domain, fallback='—'){
+  const q=liveDataQ&&liveDataQ[domain];
+  return (q&&q.source)||fallback;
+}
+function bangkokDayLabel(iso){
+  if(!iso)return '—';
+  const d=new Date(iso+'T00:00:00+07:00');
+  if(isNaN(d))return iso.slice(5);
+  return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',timeZone:'Asia/Bangkok'});
+}
+function bangkokHourFromIso(iso){
+  const t=Date.parse(iso); if(isNaN(t))return null;
+  try{return Number(new Intl.DateTimeFormat('en-US',{hour:'numeric',hour12:false,timeZone:'Asia/Bangkok'}).format(new Date(t)));}
+  catch(_){return new Date(t).getHours();}
+}
+function normalizeSatelliteProduct(raw){
+  const s=String(raw||'').trim().toUpperCase();
+  if(!s || s==='—')return {product:'unknown',label:'VIIRS (ไม่ระบุดวง)'};
+  if(s==='N20'||s.includes('NOAA-20'))return {product:'viirs',label:'NOAA-20 VIIRS'};
+  if(s==='N21'||s.includes('NOAA-21'))return {product:'viirs',label:'NOAA-21 VIIRS'};
+  if(s==='N'||s.includes('SNPP')||s.includes('SUOMI'))return {product:'viirs',label:'Suomi NPP VIIRS'};
+  if(s.includes('VIIRS'))return {product:'viirs',label:'VIIRS (ไม่ระบุดวง)'};
+  if(s.includes('MODIS')||s.includes('MOD')||s.includes('MYD')||s.includes('TERRA')||s.includes('AQUA'))return {product:'modis',label:'MODIS Terra/Aqua'};
+  return {product:'unknown',label:'VIIRS (ไม่ระบุดวง)'};
+}
+function satelliteSegmentsFromHotspots(){
+  const buckets={};
+  hotspots.forEach(h=>{
+    const sat=normalizeSatelliteProduct(h.sat);
+    buckets[sat.label]=(buckets[sat.label]||0)+1;
+  });
+  return Object.entries(buckets).map(([label,val],i)=>({
+    label,val,color:['#37d1d6','#43b05f','#a855f7','#facc15'][i%4]
+  }));
+}
+function sourceProductRows(){
+  const breakdown=(currentDashboard&&currentDashboard.hotspots&&currentDashboard.hotspots.source_breakdown)||{};
+  return Object.entries(breakdown)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([name,val])=>({name,val}));
+}
+function hourlyBucketsFromHotspots(){
+  const bins=new Array(24).fill(0);
+  hotspots.forEach(h=>{ if(h.detectedHour!=null) bins[h.detectedHour]++; });
+  return bins;
+}
+function hourlyBucketsForRange(range){
+  if(range==='24h')return hourlyBucketsFromHotspots();
+  const h=range==='7d'?history7:history30;
+  const expected=h&&h.days?Math.min(h.days, (h.hotspots||[]).length || h.days):0;
+  const hasArchiveRows=(h&&Array.isArray(h.by_district)&&h.by_district.length>=expected&&expected>0);
+  return (hasArchiveRows&&Array.isArray(h.hour_histogram)&&h.hour_histogram.length===24)?h.hour_histogram:[];
+}
+function districtRowsFromHotspots(){
+  return districts.map(d=>{
+    const hs=hotspots.filter(h=>normalizeDistrictName(h.district)===normalizeDistrictName(d.name));
+    return {name:d.name,v:hs.length,frp:hs.reduce((s,h)=>s+(h.frp||0),0)};
+  }).sort((a,b)=>b.v-a.v||b.frp-a.frp||a.name.localeCompare(b.name,'th'));
+}
+function districtRowsForRange(range){
+  if(range==='24h')return districtRowsFromHotspots();
+  const h=range==='7d'?history7:(range==='30d'||range==='season'?history30:null);
+  const rows=(h&&Array.isArray(h.by_district))?h.by_district:[];
+  const expected=h&&h.days?Math.min(h.days, (h.hotspots||[]).length || h.days):0;
+  if(!rows.length||rows.length<expected)return [];
+  const totals={};
+  rows.forEach(day=>{
+    Object.entries(day.districts||{}).forEach(([name,count])=>{
+      const norm=normalizeDistrictName(name);
+      totals[norm]=(totals[norm]||0)+Number(count||0);
+    });
+  });
+  return districts.map(d=>({name:d.name,v:totals[normalizeDistrictName(d.name)]||0,frp:0}))
+    .sort((a,b)=>b.v-a.v||a.name.localeCompare(b.name,'th'));
+}
+function kmBetween(aLat,aLon,bLat,bLon){
+  const R=6371, dLat=(bLat-aLat)*Math.PI/180, dLon=(bLon-aLon)*Math.PI/180;
+  const x=Math.sin(dLat/2)**2+Math.cos(aLat*Math.PI/180)*Math.cos(bLat*Math.PI/180)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+}
+function tambonRowsFromHotspots(){
+  const buckets={};
+  hotspots.forEach(h=>{
+    const tambon=h.subdistrict||h.tambon;
+    if(!tambon)return;
+    buckets[tambon]=buckets[tambon]||{name:tambon,v:0,frp:0};
+    buckets[tambon].v++;
+    buckets[tambon].frp+=h.frp||0;
+  });
+  return Object.values(buckets).sort((a,b)=>b.v-a.v||b.frp-a.frp);
+}
+function communityForestProximityRows(radiusKm=2){
+  if(!allForests.length||!hotspots.length)return [];
+  return allForests.map(f=>{
+    if(!f.latitude||!f.longitude)return null;
+    let count=0, critical=0, nearest=Infinity;
+    hotspots.forEach(h=>{
+      const km=kmBetween(Number(f.latitude),Number(f.longitude),h.lat,h.lon);
+      nearest=Math.min(nearest,km);
+      if(km<=radiusKm){
+        count++;
+        if((h.frp||0)>=CRITICAL_FRP_MW)critical++;
+      }
+    });
+    return {forest:f,count,critical,nearest};
+  }).filter(Boolean).filter(r=>r.count>0)
+    .sort((a,b)=>b.count-a.count||b.critical-a.critical||a.nearest-b.nearest)
+    .slice(0,8);
+}
 // Backend base. The API is a SEPARATE Vercel project (no /api rewrite on the
 // frontend origin), so we always call it by absolute URL. Its CORS_ORIGINS must
 // include wherever this file is served from (chiangmaieyes.vercel.app and
@@ -930,11 +1048,16 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
   : '';
 let dataMode = 'live';                    // always LIVE; 'offline' if backend unreachable
 let currentDashboard = null;              // Full API dashboard payload
-// Real backend intelligence captured on each LIVE fetch (null in DEMO mode).
+// Real backend intelligence captured on each LIVE fetch.
 let livePhases = null;                     // /api/fire-phases → per-district phase
+let livePhasesPending = false;             // true only while the background phase request is still in flight
 let liveDataQ = null;                      // dashboard.data_quality → provenance tiers
 let liveIntel = null;                      // dashboard.intelligence → trend, landuse…
 let liveSummary = null;                    // dashboard.summary.text → situation card
+let history7 = null;
+let history30 = null;
+let historyArchiveQuality = null;
+let firePm25Correlation = [];
 
 // ---- Map init ----
 const map = L.map('map',{zoomControl:true,attributionControl:true}).setView([18.85,98.85],10);
@@ -1038,13 +1161,14 @@ function jitter([la,lo],r){return [la+rnd(-r,r), lo+rnd(-r,r)]}
 // Hotspots and PM stations — empty until goLive() fills them from backend
 let hotspots = [];
 let pmStations = [];
-// Station pool loaded at boot from snapshot — used to supplement when the live
-// backend has no AQICN token and only returns the 2 Air4Thai PCD stations.
+// Optional station supplement. Production now relies on /api/dashboard; do not
+// fetch /src/data/dashboardSnapshot.json because Vercel does not serve source
+// files as static assets.
 let _pmSnapshotStations = [];
-fetch('/src/data/dashboardSnapshot.json').then(r=>r.json()).then(d=>{
-  _pmSnapshotStations = d?.pm25?.stations || [];
-}).catch(()=>{});
 let daily30 = new Array(30).fill(0);
+let daily30Dates = [];
+let daily7 = new Array(7).fill(0);
+let daily7Dates = [];
 
 // ---- Color helpers ----
 // f may be null when the reporting source (e.g. GISTDA) carries no FRP. In that
@@ -1081,6 +1205,7 @@ function renderHotspots(){
     const m = L.marker([h.lat,h.lon],{icon, zIndexOffset:isHigh?100:0});
     m.bindPopup(
       `<b>${h.id}</b> · ${h.district}<br>`+
+      `ต.${h.subdistrict||h.tambon||'—'}<br>`+
       `${fmtFrp(h)} · ${isHigh?'🔥 confidence สูง':'🔥 confidence ต่ำ'}<br>`+
       `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
       `${gMapsLink(h.lat,h.lon)}<br>`+
@@ -1281,8 +1406,9 @@ function selectHotspot(h){
   body.innerHTML=`
     <div class="dl"><span class="dk">ID</span><span class="dv">${h.id}</span></div>
     <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${h.district}</span></div>
+    <div class="dl"><span class="dk">ตำบล</span><span class="dv">${h.subdistrict||h.tambon||'—'}</span></div>
     <div class="dl"><span class="dk">พิกัด</span><span class="dv">${h.lat.toFixed(3)}, ${h.lon.toFixed(3)}</span></div>
-    <div class="dl"><span class="dk">FRP</span><span class="dv ${h.frp>90?'crit':'hot'}">${h.frp==null?'ไม่มีข้อมูล':Math.round(h.frp)+' MW'}</span></div>
+    <div class="dl"><span class="dk">FRP</span><span class="dv ${(h.frp||0)>=CRITICAL_FRP_MW?'crit':'hot'}">${h.frp==null?'ไม่มีข้อมูล':Math.round(h.frp)+' MW'}</span></div>
     <div class="dl"><span class="dk">ความเชื่อมั่น</span><span class="dv">${h.conf==='high'?'สูง':'ต่ำ'}</span></div>
     <div class="dl"><span class="dk">ดาวเทียม</span><span class="dv">${h.sat}</span></div>
     <div class="dl"><span class="dk">ตรวจพบเมื่อ</span><span class="dv">${formatAge(h.detected)} ก่อน</span></div>
@@ -1402,7 +1528,7 @@ function rankList(){
 //  ALERTS
 // ============================================================
 function buildAlerts(){
-  const crit=hotspots.filter(h=>h.frp>90).sort((a,b)=>b.frp-a.frp);
+  const crit=hotspots.filter(h=>(h.frp||0)>=CRITICAL_FRP_MW).sort((a,b)=>b.frp-a.frp);
   const list=[];
   crit.slice(0,2).forEach(h=>list.push({lv:'CRITICAL',crit:true,
     t:`ไฟแรงสูง · ${h.district}`,
@@ -1410,8 +1536,7 @@ function buildAlerts(){
   const hipm=pmStations.filter(s=>s.pm>90).sort((a,b)=>b.pm-a.pm)[0];
   if(hipm)list.push({lv:'WARN',crit:false,t:`PM2.5 เกินเกณฑ์ · ${hipm.name.replace('สถานี ','')}`,
     d:`${hipm.pm} µg/m³ · ระดับ${pmAqiLabel(hipm.pm)}`});
-  // Only surface the wind-gust alert when we actually have a wind reading
-  // (live weather, or the demo seed) — never invent one under a LIVE label.
+  // Only surface the wind-gust alert when we actually have a wind reading.
   if(PREVAILING){
     const W=wind();
     list.push({lv:'WARN',crit:false,t:`ลมกระโชกจากทิศ ${_degToCompass(W.deg)} เพิ่มขึ้น`,
@@ -1431,7 +1556,7 @@ function buildAlerts(){
 //  KPIs + wind badge + clock
 // ============================================================
 function setKpis(){
-  const crit=hotspots.filter(h=>h.frp>90).length;
+  const crit=hotspots.filter(h=>(h.frp||0)>=CRITICAL_FRP_MW).length;
   const pmAvg=pmStations.length?Math.round(pmStations.reduce((s,x)=>s+x.pm,0)/pmStations.length):0;
   const pmPeak=pmStations.length?Math.max(...pmStations.map(x=>x.pm)):0;
   const aqi=Math.round(pmAvg*1.6+20);
@@ -1489,6 +1614,7 @@ setWindBadge();
 rankList();
 loadCommunityForests();
 loadBoundaries();
+loadTambonBoundaries();
 
 lineChart('pmChart',pm24,{color:'#a855f7',fill:'rgba(168,85,247,.16)',thr:55});
 barChart('hotChart',hot7,['-6','-5','-4','-3','-2','-1','วันนี้'],{});
@@ -1536,8 +1662,7 @@ const median=a=>{const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return
 const std=a=>{const m=mean(a);return Math.sqrt(mean(a.map(x=>(x-m)**2)));};
 function corr(xs,ys){const mx=mean(xs),my=mean(ys);let n=0,dx=0,dy=0;for(let i=0;i<xs.length;i++){n+=(xs[i]-mx)*(ys[i]-my);dx+=(xs[i]-mx)**2;dy+=(ys[i]-my)**2;}return n/Math.sqrt(dx*dy);}
 
-// ---- synthetic statistical datasets ----
-let hourly=Array.from({length:24},(_,h)=>{const peak=Math.exp(-((h-15)**2)/14),morn=Math.exp(-((h-10)**2)/22)*0.45;return Math.max(0,Math.round((peak+morn)*22+rnd(0,2)));});
+// ---- live statistical datasets ----
 let frpSamples=[];
 let pmPairs=[];
 
@@ -1555,8 +1680,8 @@ function donut(id,segs,{cx=100,cy=58,r=44,thick=20}){
   segs.forEach((s,i)=>{g+=`<rect x="${cx-r-4}" y="${ly+i*16-9}" width="10" height="10" rx="2" fill="${s.color}"/><text x="${cx-r+12}" y="${ly+i*16}" fill="#8b97a7" font-family="JetBrains Mono" font-size="10">${s.label} · ${Math.round(s.val/total*100)}%</text>`;});
   document.getElementById(id).innerHTML=g;
 }
-function histogram(id,bins,labels,{w=480,h=170,color='#ff8a3d',pad=22}){
-  const max=Math.max(...bins)*1.15||1,n=bins.length,gap=w/n,bw=gap*0.66;let g='';
+function histogram(id,bins,labels,{w=480,h=170,color='#ff8a3d',pad=22,minMax=1}){
+  const max=Math.max(minMax,...bins)*1.15||1,n=bins.length,gap=w/n,bw=gap*0.66;let g='';
   for(let t=0;t<=3;t++){const y=(h-pad)-(h-pad-6)*t/3;g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/>`;}
   bins.forEach((v,i)=>{const bh=v/max*(h-pad-6),x=i*gap+(gap-bw)/2,y=(h-pad)-bh;
     g+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="2" fill="${color}" opacity="${(0.5+0.5*v/max).toFixed(2)}"/>`;
@@ -1578,16 +1703,19 @@ function scatterReg(id,pts,{w=480,h=200,pad=30}){
   document.getElementById(id).innerHTML=g;
   return corr(xs,ys);
 }
-function trendChart(id,daily,{w=640,h=180,pad=22}){
+function trendChart(id,daily,{w=640,h=180,pad=22,labels=[]}){
   const ma=daily.map((_,i)=>mean(daily.slice(Math.max(0,i-6),i+1)));
-  const max=Math.max(...daily)*1.15||1,n=daily.length||1,gap=w/n,bw=gap*0.58;
+  const rawMax=Math.max(4,...daily);
+  const max=Math.ceil(rawMax*1.15)||4,n=daily.length||1,gap=w/n,bw=gap*0.58;
   const Y=v=>(h-pad)-v/max*(h-pad-8);let g='';
-  for(let t=0;t<=3;t++){const y=(h-pad)-(h-pad-8)*t/3;g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/><text x="2" y="${y-2}" font-family="JetBrains Mono" font-size="8" fill="#3a4757">${Math.round(max*t/3)}</text>`;}
+  const ticks=[0,Math.ceil(max/3),Math.ceil(max*2/3),max].filter((v,i,a)=>a.indexOf(v)===i);
+  ticks.forEach(t=>{const y=Y(t);g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/><text x="2" y="${y-2}" font-family="JetBrains Mono" font-size="8" fill="#3a4757">${t}</text>`;});
   daily.forEach((v,i)=>{const bh=v/max*(h-pad-8),x=i*gap+(gap-bw)/2;g+=`<rect x="${x}" y="${(h-pad)-bh}" width="${bw}" height="${bh}" rx="1.5" fill="${i===n-1?'#43b05f':'#2c3744'}"/>`;});
   let d=ma.map((v,i)=>(i?'L':'M')+(i*gap+gap/2)+' '+Y(v)).join(' ');
   g+=`<path d="${d}" fill="none" stroke="#ff8a3d" stroke-width="2"/>`;
   ma.forEach((v,i)=>{if(i%5===0||i===n-1)g+=`<circle cx="${i*gap+gap/2}" cy="${Y(v)}" r="2.4" fill="#ff8a3d"/>`;});
-  [0,7,14,21,29].forEach(i=>g+=`<text x="${i*gap+gap/2}" y="${h-5}" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#5c6675">-${29-i}</text>`);
+  const labelIdx=n<=7?[0,Math.floor(n/2),n-1]:[0,Math.floor(n/4),Math.floor(n/2),Math.floor(n*3/4),n-1];
+  [...new Set(labelIdx)].forEach(i=>g+=`<text x="${i*gap+gap/2}" y="${h-5}" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#5c6675">${labels[i]||''}</text>`);
   document.getElementById(id).innerHTML=g;
 }
 function hbar(id,rows,{w=480,h=200,pad=78}){
@@ -1608,15 +1736,12 @@ document.querySelectorAll('#anRange button').forEach(b=>{
 });
 
 function rangeData(r){
-  const trend = (liveIntel && liveIntel.hotspot_trend) ? liveIntel.hotspot_trend : null;
   if(r==='24h'){
-    // Use live trend recent_count when window is short enough, else live hotspot count
     const total = hotspots.length;
-    const prev = trend ? Math.round(trend.previous_count / Math.max(1, trend.window_days)) : null;
-    return {total, prev: prev || total, mult:1, label:'24 ชั่วโมง'};
+    return {total, prev: total, mult:1, label:'24 ชั่วโมงล่าสุด'};
   }
   if(r==='7d'){
-    const s=daily30.slice(-7).reduce((a,b)=>a+b,0);
+    const s=daily7.reduce((a,b)=>a+b,0);
     const p=daily30.slice(-14,-7).reduce((a,b)=>a+b,0);
     return {total:s, prev:p||s, mult:7, label:'7 วัน'};
   }
@@ -1626,28 +1751,19 @@ function rangeData(r){
     const p=daily30.slice(0,15).reduce((a,b)=>a+b,0)*2;
     return {total:s, prev:p||s, mult:30, label:'30 วัน'};
   }
-  // season: use backend trend.recent_count + previous_count if available
-  const s = trend ? trend.recent_count + trend.previous_count
-                  : daily30.reduce((a,b)=>a+b,0);
-  const p = trend ? trend.previous_count : Math.round(s*0.9);
-  return {total:s, prev:p, mult:120, label:'ทั้งฤดู (ธ.ค.–เม.ย.)'};
+  const s=daily30.reduce((a,b)=>a+b,0);
+  return {total:s, prev:s, mult:30, label:'30 วันล่าสุด · ยังไม่มี archive ทั้งฤดู'};
 }
 
 function renderAnalytics(r){
   const rd=rangeData(r);
-  const trend=(liveIntel&&liveIntel.hotspot_trend)?liveIntel.hotspot_trend:null;
-  // For 7d/30d we compute delta from the two halves of daily30 (real data).
-  // For 24h/season we use backend trend.change_percent when available.
   let delta, prevText;
   if(r==='7d'||r==='30d'){
     delta = rd.prev ? ((rd.total-rd.prev)/rd.prev*100) : 0;
     prevText = `${rd.prev} จุด ช่วงก่อนหน้า`;
-  } else if(trend) {
-    delta = trend.change_percent;
-    prevText = `${trend.previous_count} จุด ช่วงก่อนหน้า (${trend.window_days} วัน)`;
   } else {
-    delta = rd.prev ? ((rd.total-rd.prev)/rd.prev*100) : 0;
-    prevText = `${rd.prev} จุด ช่วงก่อน`;
+    delta = 0;
+    prevText = r==='season'?'รอ backend season archive':'snapshot ปัจจุบัน';
   }
   const pmMean=pmStations.length?Math.round(mean(pmStations.map(s=>s.pm))):0;
   const realFrps=hotspots.map(h=>h.frp).filter(f=>f!=null);
@@ -1660,22 +1776,49 @@ function renderAnalytics(r){
     <div class="an-card"><div class="k">FRP สูงสุด</div><div class="v" style="color:var(--warn)">${peakFrp==null?'—':peakFrp}<small> MW</small></div><div class="d">${meanFrp==null?'ไม่มีข้อมูล FRP':'ค่าเฉลี่ย '+meanFrp+' MW'}</div></div>
     <div class="an-card purple"><div class="k">PM2.5 เฉลี่ย</div><div class="v" style="color:var(--pm-purple)">${pmMean}<small> µg/m³</small></div><div class="d">${pmAqiLabel(pmMean)}</div></div>`;
 
-  // trend (last 30, or 7 highlighted)
-  trendChart('anTrend', r==='7d'?daily30.slice(-7):daily30,{});
+  // trend
+  const trendPanel=document.querySelector('#anTrend')?.closest('.an-panel');
+  const trendTitle=trendPanel&&trendPanel.querySelector('h3');
+  const trendHint=trendPanel&&trendPanel.querySelector('.hint');
+  if(r==='24h'){
+    if(trendTitle)trendTitle.textContent='จุดความร้อนรายชั่วโมง 24 ชม.';
+    if(trendHint)trendHint.textContent='จาก detected_at ใน /api/dashboard snapshot ปัจจุบัน';
+    histogram('anTrend',hourlyBucketsFromHotspots(),Array.from({length:24},(_,h)=>h%3===0?h:''),{w:640,h:180,color:'#ff8a3d',minMax:4});
+  } else {
+    const series=r==='7d'?daily7:daily30;
+    const labels=(r==='7d'?daily7Dates:daily30Dates).map(bangkokDayLabel);
+    if(trendTitle)trendTitle.textContent=r==='7d'?'แนวโน้มจุดความร้อน 7 วัน':'แนวโน้มจุดความร้อน 30 วันล่าสุด';
+    if(trendHint)trendHint.textContent=r==='season'?'ยังไม่มี archive ทั้งฤดู จึงแสดง 30 วันล่าสุดอย่างซื่อสัตย์':'รายวัน + เส้นค่าเฉลี่ยเคลื่อนที่ 7 วัน';
+    trendChart('anTrend',series,{labels});
+  }
 
   // confidence donut
   const hi=hotspots.filter(h=>h.conf==='high').length, lo=hotspots.length-hi;
   donut('anConf',[{label:'สูง',val:hi,color:'#43b05f'},{label:'ต่ำ',val:lo,color:'#3a4757'}],{});
 
   // satellite donut
-  const viirs=hotspots.filter(h=>(h.sat||'').includes('VIIRS')).length, modis=hotspots.length-viirs;
-  donut('anSat',[{label:'VIIRS',val:viirs,color:'#37d1d6'},{label:'MODIS',val:modis,color:'#a855f7'}],{cx:100,cy:52,r:40,thick:18});
+  const satSegs=satelliteSegmentsFromHotspots();
+  donut('anSat',satSegs.length?satSegs:[{label:'ไม่มีจุด',val:0,color:'#3a4757'}],{cx:100,cy:52,r:40,thick:18});
+  const sourceRows=sourceProductRows();
+  const sourceTotal=sourceRows.reduce((s,r)=>s+r.val,0);
+  const sourceEl=document.getElementById('anSourceProducts');
+  if(sourceEl){
+    sourceEl.innerHTML=sourceRows.length
+      ? `<div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.12em;margin-bottom:6px">SOURCE PRODUCT</div>`+
+        sourceRows.map(r=>`<div class="dl"><span class="dk">${r.name}</span><span class="dv">${r.val}</span></div>`).join('')+
+        `<div style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:6px">รวมก่อน reconcile ${sourceTotal} จุด · unique ${hotspots.length} จุด</div>`
+      : '<span>ไม่มี source_breakdown จาก API</span>';
+  }
 
-  // hourly histogram — backend has no sub-daily hotspot feed, so this remains a
-  // modelled diurnal pattern even in LIVE mode. Say so rather than imply it is live.
-  histogram('anHour',hourly,Array.from({length:24},(_,h)=>h%3===0?h:''),{color:'#ff8a3d'});
-  const peakH=hourly.indexOf(Math.max(...hourly));
-  document.getElementById('anHourIns').textContent = 'รูปแบบจำลอง — backend ยังไม่มีข้อมูลจุดความร้อนรายชั่วโมง';
+  // hourly histogram from real detected_at or the precomputed history archive.
+  const hourly=hourlyBucketsForRange(r);
+  const hasHourlyWindow=hourly.length===24;
+  const hourlyTotal=hourly.reduce((s,v)=>s+v,0);
+  histogram('anHour',hourly.length?hourly:new Array(24).fill(0),Array.from({length:24},(_,h)=>h%3===0?h:''),{color:'#ff8a3d',minMax:4});
+  const peakH=hourly.length?hourly.indexOf(Math.max(...hourly)):-1;
+  document.getElementById('anHourIns').textContent = hourlyTotal>0
+    ? `${r==='24h'?'จาก detected_at snapshot':'จาก season_history archive'} · ชั่วโมงที่พบมากสุด ${peakH}:00 (${hourly[peakH]} จุด)`
+    : (r==='24h'?'ไม่มี hotspot ใน snapshot ปัจจุบัน':(hasHourlyWindow?'ไม่มี hotspot ในช่วงนี้':'รอ season_history archive สำหรับรายชั่วโมงย้อนหลัง'));
 
   // frp histogram
   const fb=[0,0,0,0,0,0,0];frpSamples.forEach(f=>{fb[Math.min(6,Math.floor(f/20))]++;});
@@ -1691,34 +1834,58 @@ function renderAnalytics(r){
     ? ` = ${isNaN(rr)?'—':rr.toFixed(2)} — ${rr>0.6?'สัมพันธ์เชิงบวกสูง: จุดความร้อนมากขึ้น PM2.5 มักสูงขึ้นตาม':'มีความสัมพันธ์ระดับปานกลาง'}`
     : ' — รอข้อมูล history';
 
-  // district hbar — real per-district active hotspot counts in LIVE mode.
-  let drows;
-  if(livePhases && livePhases.length){
-    drows=livePhases.map(p=>({name:p.district,v:p.active_hotspots})).sort((a,b)=>b.v-a.v);
+  // district hbar — snapshot for 24h, archive by_district for history windows when available.
+  let drows=districtRowsForRange(r);
+  if(drows.length){
+    const _maxV=Math.max(...drows.map(d=>d.v),1);
+    document.getElementById('anDist').innerHTML=drows.map(r=>{
+      const bw=Math.round(r.v/_maxV*100);
+      const col=r.v>_maxV*.75?'#ff4d4d':r.v>_maxV*.5?'#f5640a':r.v>_maxV*.28?'#ff8a3d':'#facc15';
+      return `<div onclick="flyToDistrict(this.dataset.n)" data-n="${r.name}" title="คลิกเพื่อดู ${r.name} บนแผนที่" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:3px 2px;border-radius:4px" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
+        <span style="width:72px;text-align:right;font-size:10px;font-family:var(--mono);color:#8b97a7;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</span>
+        <div style="flex:1;height:11px;background:#1a212b;border-radius:2px;overflow:hidden"><div style="height:100%;width:${bw}%;background:${col};transition:width .3s"></div></div>
+        <span style="width:24px;text-align:left;font-size:10px;font-family:var(--mono);color:#e6edf3">${r.v}</span>
+      </div>`;
+    }).join('');
   } else {
-    drows=districts.map(d=>{const base=hotspots.filter(h=>h.district===d.name).length;return{name:d.name,v:base};}).sort((a,b)=>b.v-a.v);
+    document.getElementById('anDist').innerHTML='<div class="insight" style="display:block">รอ season_history archive ครบ window สำหรับ ranking รายอำเภอย้อนหลัง · โหมด 24h ยังดู snapshot ปัจจุบันได้</div>';
   }
-  const _maxV=Math.max(...drows.map(d=>d.v),1);
-  document.getElementById('anDist').innerHTML=drows.map(r=>{
-    const bw=Math.round(r.v/_maxV*100);
-    const col=r.v>_maxV*.75?'#ff4d4d':r.v>_maxV*.5?'#f5640a':r.v>_maxV*.28?'#ff8a3d':'#facc15';
-    return `<div onclick="flyToDistrict(this.dataset.n)" data-n="${r.name}" title="คลิกเพื่อดู ${r.name} บนแผนที่" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:3px 2px;border-radius:4px" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background=''">
-      <span style="width:72px;text-align:right;font-size:10px;font-family:var(--mono);color:#8b97a7;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</span>
-      <div style="flex:1;height:11px;background:#1a212b;border-radius:2px;overflow:hidden"><div style="height:100%;width:${bw}%;background:${col};transition:width .3s"></div></div>
-      <span style="width:24px;text-align:left;font-size:10px;font-family:var(--mono);color:#e6edf3">${r.v}</span>
-    </div>`;
-  }).join('');
+
+  const tambonRows=tambonRowsFromHotspots();
+  const tambonEl=document.getElementById('anTambon');
+  if(tambonEl){
+    const tambonMax=Math.max(...tambonRows.map(x=>x.v),1);
+    const tambonSource=tambonSourceMeta
+      ? ` · ${tambonSourceMeta.feature_count||_tambonFeatures.length} ตำบล · ${tambonSourceMeta.source_name||'7 Tambon area shapefile'}`
+      : (_tambonFeatures.length ? ` · ${_tambonFeatures.length} ตำบล` : '');
+    tambonEl.innerHTML=tambonRows.length
+      ? tambonRows.slice(0,8).map(row=>`<div class="hrow"><div class="hn">${row.name}</div><div class="hb"><i style="width:${Math.max(8,row.v/tambonMax*100)}%;background:#37d1d6"></i></div><div class="hv">${row.v}</div></div>`).join('') + `<div class="insight" style="display:block;margin-top:8px">จับคู่จากขอบเขตตำบลจริง${tambonSource}</div>`
+      : !_tambonFeatures.length
+        ? '<div class="insight" style="display:block">กำลังโหลดขอบเขตตำบลจริง...</div>'
+        : hotspots.length
+          ? `<div class="insight" style="display:block">ยังจับคู่ตำบลไม่ได้จาก hotspot snapshot ปัจจุบัน${tambonSource}</div>`
+          : `<div class="insight" style="display:block">ไม่มี hotspot ใน snapshot ปัจจุบัน${tambonSource}</div>`;
+  }
+
+  const proxRows=communityForestProximityRows(2);
+  const proxEl=document.getElementById('anForestProx');
+  if(proxEl){
+    proxEl.innerHTML=proxRows.length
+      ? proxRows.map(row=>`<div class="dl"><span class="dk">${row.forest.name||'ป่าชุมชน'} · อ.${row.forest.amphoe||'—'}</span><span class="dv">${row.count} จุด${row.critical?` · critical ${row.critical}`:''} · ${row.nearest.toFixed(1)} กม.</span></div>`).join('')
+      : `<div class="insight" style="display:block">${allForests.length?'ไม่มี hotspot ในรัศมี 2 กม. จากจุดป่าชุมชน':'รอข้อมูลป่าชุมชนจาก backend'} · proximity ไม่ใช่ in-boundary</div>`;
+  }
 
   // summary table
-  const ds=r==='7d'?daily30.slice(-7):daily30;
+  const ds=r==='7d'?daily7:daily30;
+  const rrText=pmPairs.length>=2&&!isNaN(rr)?rr.toFixed(2):'—';
   document.getElementById('anSummary').innerHTML=`
     <div class="dl"><span class="dk">ค่าเฉลี่ยต่อวัน</span><span class="dv">${mean(ds).toFixed(1)} จุด/วัน</span></div>
     <div class="dl"><span class="dk">มัธยฐาน (median)</span><span class="dv">${median(ds).toFixed(0)} จุด/วัน</span></div>
     <div class="dl"><span class="dk">ส่วนเบี่ยงเบนมาตรฐาน (SD)</span><span class="dv">${std(ds).toFixed(1)}</span></div>
     <div class="dl"><span class="dk">วันที่มากที่สุด</span><span class="dv hot">${Math.max(...ds)} จุด</span></div>
-    <div class="dl"><span class="dk">อำเภอที่มีจุดความร้อน</span><span class="dv">${drows.filter(d=>d.v>0).length} / ${districts.length} อำเภอ</span></div>
+    <div class="dl"><span class="dk">อำเภอที่มีจุดความร้อน</span><span class="dv">${drows.length?drows.filter(d=>d.v>0).length+' / '+districts.length+' อำเภอ':'—'}</span></div>
     <div class="dl"><span class="dk">สัดส่วน confidence สูง</span><span class="dv">${hotspots.length?Math.round(hi/hotspots.length*100)+'%':'—'}</span></div>
-    <div class="dl"><span class="dk">ดัชนีความสัมพันธ์ HS×PM2.5</span><span class="dv ${rr>0.6?'crit':'hot'}">r = ${rr.toFixed(2)}</span></div>
+    <div class="dl"><span class="dk">ดัชนีความสัมพันธ์ HS×PM2.5</span><span class="dv ${rr>0.6?'crit':'hot'}">r = ${rrText}</span></div>
     <div class="dl"><span class="dk">ทิศลมหลัก</span><span class="dv">${_degToCompass(wind().deg)} ${wind().kmh} km/h</span></div>`;
 }
 
@@ -1804,6 +1971,8 @@ const _DISTRICT_DEFAULT_STYLE = {color:'#334155',weight:1.2,fillColor:'#1e293b',
 const _DISTRICT_ACTIVE_STYLE  = {color:'#22d3ee',fillColor:'#22d3ee',fillOpacity:0.12,weight:1.8};
 const districtLayerRef = {}; // normalizedName → Leaflet layer, populated by loadBoundaries
 let _districtFeatures = []; // GeoJSON features for PiP, set in loadBoundaries()
+let _tambonFeatures = []; // GeoJSON features for PiP, set in loadTambonBoundaries()
+let tambonSourceMeta = null;
 
 function _ptInPoly(x, y, ring) {
   let inside = false, j = ring.length - 1;
@@ -1814,17 +1983,58 @@ function _ptInPoly(x, y, ring) {
   return inside;
 }
 
+function _geometryRings(geometry){
+  if(!geometry) return [];
+  if(geometry.type==='Polygon') return [geometry.coordinates];
+  if(geometry.type==='MultiPolygon') return geometry.coordinates;
+  return [];
+}
+function _pointInRings(lng, lat, rings){
+  if(!rings || !rings.length || !_ptInPoly(lng, lat, rings[0])) return false;
+  return !rings.slice(1).some(hole=>_ptInPoly(lng, lat, hole));
+}
+
 // Returns the Thai amp_th district name if [lat,lng] falls inside a CM district polygon,
 // or null if outside every CM district.
 function districtForPoint(lat, lng) {
   for (const feat of _districtFeatures) {
-    const g = feat.geometry;
-    if (!g) continue;
-    const polys = g.type === 'Polygon' ? [g.coordinates[0]]
-                : g.type === 'MultiPolygon' ? g.coordinates.map(c => c[0]) : [];
-    for (const poly of polys) if (_ptInPoly(lng, lat, poly)) return feat.properties.amp_th || '';
+    for (const rings of _geometryRings(feat.geometry)) {
+      if (_pointInRings(lng, lat, rings)) return feat.properties.amp_th || feat.properties.nameTh || '';
+    }
   }
   return null;
+}
+
+function tambonForPoint(lat, lng) {
+  for (const feat of _tambonFeatures) {
+    for (const rings of _geometryRings(feat.geometry)) {
+      if (_pointInRings(lng, lat, rings)) {
+        const p=feat.properties||{};
+        return {
+          tambon: p.tambon_th || p.T_NAME_T || '',
+          amphoe: p.amphoe_th || p.A_NAME_T || '',
+          tcode: p.tcode || '',
+          source: p.source || 'Drive: 7 Tambon area shapefile'
+        };
+      }
+    }
+  }
+  return null;
+}
+
+function enrichHotspotsWithBoundaries(items){
+  return items.map(h=>{
+    const district=_districtFeatures.length ? (districtForPoint(h.lat, h.lon) || h.district) : h.district;
+    const tambon=_tambonFeatures.length ? tambonForPoint(h.lat, h.lon) : null;
+    return {
+      ...h,
+      district: tambon?.amphoe || district,
+      subdistrict: tambon?.tambon || h.subdistrict || h.tambon || null,
+      tambon: tambon?.tambon || h.tambon || h.subdistrict || null,
+      tambon_code: tambon?.tcode || h.tambon_code || null,
+      tambon_source: tambon?.source || h.tambon_source || null
+    };
+  });
 }
 
 // Clear all district selection on map background click (including clicking outside CM)
@@ -1926,10 +2136,11 @@ async function loadBoundaries() {
             </div>`;
           }
 
-          // Tambon ranking: group hotspots by subdistrict, sort by FRP desc
+          // Tambon ranking only when backend or a real tambon layer supplies names.
           const tambonMap = {};
           distHs.forEach(h => {
-            const tb = h.subdistrict || h.tambon || '—';
+            const tb = h.subdistrict || h.tambon;
+            if(!tb)return;
             if (!tambonMap[tb]) tambonMap[tb] = {count:0, frp:0};
             tambonMap[tb].count++;
             tambonMap[tb].frp += h.frp || 0;
@@ -1947,7 +2158,9 @@ async function loadBoundaries() {
                   </div>`
                 ).join('')}
               </div>`
-            : '';
+            : `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:6px;color:#8b97a7;font-size:10px;line-height:1.45">
+                ${_tambonFeatures.length?'ไม่มี hotspot ที่จับคู่ตำบลในอำเภอนี้':'กำลังโหลดขอบเขตตำบลจริง...'}
+              </div>`;
 
           L.popup({closeButton:true, maxWidth:270, className:'district-popup'})
             .setLatLng(center)
@@ -1973,6 +2186,23 @@ async function loadBoundaries() {
 
   } catch (err) {
     console.error("Failed to load boundary GeoJSON data:", err);
+  }
+}
+
+async function loadTambonBoundaries(){
+  try{
+    const [geo, meta] = await Promise.all([
+      fetch('/chiangmai-tambons.geojson').then(r=>{ if(!r.ok) throw new Error('Tambon boundary load failed'); return r.json(); }),
+      fetch('/chiangmai-tambons.meta.json').then(r=>r.ok?r.json():null).catch(()=>null)
+    ]);
+    _tambonFeatures = geo.features || [];
+    tambonSourceMeta = meta || geo.metadata || null;
+    if(currentDashboard){
+      hotspots = enrichHotspotsWithBoundaries(hotspots);
+      rerenderAll();
+    }
+  }catch(err){
+    console.warn('Tambon boundary GeoJSON unavailable:', err);
   }
 }
 
@@ -2063,7 +2293,13 @@ function normHotspots(items){
     frp: (it.frp==null?null:it.frp),
     conf: (it.confidence>=60?'high':'low'),
     district: it.district||'—',
+    subdistrict: it.subdistrict||it.tambon||null,
+    tambon: it.tambon||it.subdistrict||null,
+    tambon_code: it.tambon_code||null,
+    tambon_source: it.tambon_source||null,
     sat: it.satellite||'—',
+    detected_at: it.detected_at,
+    detectedHour: bangkokHourFromIso(it.detected_at),
     detected: minutesAgo(it.detected_at),
     landuse_type: it.landuse_type||'OTHER',
     landuse_name: it.landuse_name||'ชุมชนและอื่น ๆ'
@@ -2086,17 +2322,15 @@ function rerenderAll(){
 }
 
 function applyLive(dash, history, phases){
-  // Enter LIVE mode BEFORE rendering: renderSituation/renderFreshness/
-  // renderRiskScore/markLiveProvenance all gate on dataMode==='live', and this
-  // runs while goLive() is still awaiting (mode would otherwise be 'demo' and
-  // they'd hide themselves). Reached only after /api/dashboard succeeded.
+  // Enter LIVE mode before rendering because provenance widgets gate on
+  // dataMode==='live'. Reached only after /api/dashboard succeeded.
   setMode('live');
   currentDashboard = dash;
   hotspots = normHotspots(dash.hotspots && dash.hotspots.items);
-  // Re-assign district via frontend PiP so marker position always matches the label.
-  // _districtFeatures is populated by loadBoundaries(); if not ready yet, keep backend value.
-  if (_districtFeatures.length) {
-    hotspots = hotspots.map(h => ({ ...h, district: districtForPoint(h.lat, h.lon) || h.district }));
+  // Re-assign district/tambon via frontend PiP so marker position always matches the label.
+  // Boundaries load async; if they are not ready yet, keep backend values.
+  if (_districtFeatures.length || _tambonFeatures.length) {
+    hotspots = enrichHotspotsWithBoundaries(hotspots);
   }
   pmStations = normStations(dash.pm25 && dash.pm25.stations);
   // When the backend has no AQICN token it returns only ~2 Air4Thai stations.
@@ -2111,9 +2345,7 @@ function applyLive(dash, history, phases){
     pmStations = [...pmStations, ...extra];
   }
   if(dash.weather){
-    // PREVAILING may still be null on the first live fetch, so fall back to the
-    // previous live value if present, else the demo vector — never deref null.
-    const prev = PREVAILING || DEMO_WIND;
+    const prev = PREVAILING || {deg:0,kmh:0};
     PREVAILING = {
       deg: dash.weather.wind_direction_deg!=null?dash.weather.wind_direction_deg:prev.deg,
       kmh: dash.weather.wind_speed_kmh!=null?Math.round(dash.weather.wind_speed_kmh):prev.kmh,
@@ -2121,8 +2353,27 @@ function applyLive(dash, history, phases){
   }
   // Real daily trends from /api/history (oldest→newest daily counts).
   if(history){
-    const hs=history.hotspots||[], pm=history.pm25||[];
-    if(hs.length){ daily30=hs.slice(-30).map(d=>d.count); hot7=hs.slice(-7).map(d=>d.count); }
+    const h30=history.h30||(history.days===30?history:null);
+    const h7=history.h7||(history.days===7?history:null);
+    history30=h30||null;
+    history7=h7||null;
+    historyArchiveQuality=(h30&&h30.data_quality&&h30.data_quality.history_archive)
+      || (h7&&h7.data_quality&&h7.data_quality.history_archive)
+      || null;
+    const hs=(h30&&h30.hotspots)||[], pm=(h30&&h30.pm25)||[];
+    const hs7=(h7&&h7.hotspots)||[];
+    if(hs.length){
+      daily30=hs.slice(-30).map(d=>d.count);
+      daily30Dates=hs.slice(-30).map(d=>d.date);
+      hot7=hs.slice(-7).map(d=>d.count);
+    }
+    if(hs7.length){
+      daily7=hs7.slice(-7).map(d=>d.count);
+      daily7Dates=hs7.slice(-7).map(d=>d.date);
+    } else if(hs.length) {
+      daily7=daily30.slice(-7);
+      daily7Dates=daily30Dates.slice(-7);
+    }
     if(pm.length){
       pm24=pm.slice(-24).map(d=>Math.round(d.value));
       // backend PM history is daily, not hourly — retitle so the chart stays honest.
@@ -2136,11 +2387,17 @@ function applyLive(dash, history, phases){
       if(pp.length) pmPairs=pp;
     }
   }
-  // FRP histogram strictly from real detections in LIVE mode (empty when the
-  // active source carries no FRP — never fall back to the demo synthetic here).
+  // FRP histogram strictly from real detections in LIVE mode.
   frpSamples=hotspots.map(h=>h.frp).filter(f=>f!=null);
   // Real backend intelligence (kept for the live-aware renderers).
-  livePhases   = (phases && phases.phases) ? phases.phases : null;
+  if(phases && Array.isArray(phases.phases)) livePhases = phases.phases;
+  if(phases && Array.isArray(phases.fire_pm25_correlation)){
+    firePm25Correlation=phases.fire_pm25_correlation;
+    const corrPairs=firePm25Correlation
+      .map(r=>({x:r.hotspot_count||0,y:Math.round((r.pm25_next_day??r.pm25_same_day) || 0)}))
+      .filter(p=>p.y>0);
+    if(corrPairs.length) pmPairs=corrPairs;
+  }
   liveDataQ    = dash.data_quality || null;
   liveIntel    = dash.intelligence || null;
   liveSummary  = (dash.summary && dash.summary.text) || null;
@@ -2149,7 +2406,7 @@ function applyLive(dash, history, phases){
   renderFreshness();
   markLiveProvenance();
   fetchWindRose(); // refresh wind rose with real 24h data
-  fetchCamsHourly(); // Open-Meteo CAMS hourly PM2.5 (replaces mock / daily fallback)
+  fetchAirQualityHourly(); // optional hourly PM2.5 supplement from Open-Meteo Air Quality
   fetchWeatherConditions(); // humidity + FWI
   rerenderAll();
 }
@@ -2284,9 +2541,8 @@ document.querySelector('.layer[data-layer="burnScar"]').onclick=(function(){
   };
 })();
 
-// Open-Meteo CAMS Reanalysis — hourly PM2.5 for Chiang Mai centroid
-// Free, no key, operational/government-usable. Updates ~hourly with ~6h lag.
-async function fetchCamsHourly(){
+// Open-Meteo Air Quality — optional hourly PM2.5 supplement for Chiang Mai centroid.
+async function fetchAirQualityHourly(){
   const lat = 18.787, lon = 98.993;
   const url = `https://air-quality-api.open-meteo.com/v1/air-quality`
     + `?latitude=${lat}&longitude=${lon}&hourly=pm2_5`
@@ -2306,7 +2562,7 @@ async function fetchCamsHourly(){
     pm24 = paired.map(x => Math.round(x.v));
     // Retitle chart to indicate real hourly source
     document.querySelectorAll('.side.right .block h2').forEach(h => {
-      if(h.textContent.indexOf('PM2.5') === 0) h.textContent = 'PM2.5 — 24h (CAMS)';
+      if(h.textContent.indexOf('PM2.5') === 0) h.textContent = `PM2.5 — 24h (${sourceLabel('pm25','Open-Meteo Air Quality')})`;
     });
     lineChart('pmChart', pm24, {color:'#a855f7', fill:'rgba(168,85,247,.16)', thr:55});
   } catch(e) {
@@ -2365,8 +2621,15 @@ function renderPhasePanel(){
   if(currentPhaseTab==='before'){ renderBeforeFire(body); return; }
   if(currentPhaseTab==='after'){ renderAfterFire(body); return; }
   // during (default)
-  if(!livePhases||!livePhases.length){
-    body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">กำลังโหลดข้อมูลเฟสไฟจาก backend…</div>';
+  if(!livePhases){
+    const msg = livePhasesPending
+      ? 'กำลังโหลดข้อมูลเฟสไฟจาก backend…'
+      : 'ยังไม่ได้รับข้อมูลเฟสไฟจาก backend · ลองรีเฟรชข้อมูลสดอีกครั้ง';
+    body.innerHTML=`<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">${msg}</div>`;
+    return;
+  }
+  if(!livePhases.length){
+    body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">ยังไม่มีข้อมูลเฟสไฟ</div>';
     return;
   }
   const sorted=[...livePhases].sort((a,b)=>(PHASE_ORDER[a.phase]??9)-(PHASE_ORDER[b.phase]??9)||(b.danger_score||0)-(a.danger_score||0));
@@ -2659,8 +2922,7 @@ function fetchJson(path, ms){
 }
 async function fetchLiveData(){
   // Dashboard is required. The backend runs a heavy NASA/GISTDA chain and can
-  // cold-start, so give a generous timeout and retry ONCE before giving up — a
-  // cold-start timeout must not drop a real visitor into the synthetic DEMO seed.
+  // cold-start, so give a generous timeout and retry once before giving up.
   // The first (failed) attempt already starts warming the function instance.
   let dash;
   try{
@@ -2676,11 +2938,16 @@ async function fetchLiveData(){
   // alone allows 60s). Those enrich the trend charts and district phase ranking
   // in the background and are patched in when they arrive.
   applyLive(dash, null, null);
+  livePhasesPending = true;
   Promise.all([
-    fetchJson('/api/history', 60000).then(h=>h).catch(()=>null),
+    fetchJson('/api/history?days=30', 60000).then(h=>h).catch(()=>null),
+    fetchJson('/api/history?days=7', 45000).then(h=>h).catch(()=>null),
     fetchJson('/api/fire-phases', 15000).then(p=>p).catch(()=>null),
-  ]).then(([history,phases])=>{
+  ]).then(([h30,h7,phases])=>{
+    livePhasesPending = false;
+    const history=(h30||h7)?{h30,h7}:null;
     if(history||phases) applyLive(dash, history, phases);
+    if(document.getElementById('phaseview')?.classList.contains('open')) renderPhasePanel();
   });
   const n = (dash.hotspots && dash.hotspots.count)||0;
   return n;
@@ -2748,7 +3015,7 @@ document.getElementById('rpPng').onclick=()=>{
 };
 
 function buildReport(){
-  const crit=hotspots.filter(h=>h.frp>90).sort((a,b)=>b.frp-a.frp);
+  const crit=hotspots.filter(h=>(h.frp||0)>=CRITICAL_FRP_MW).sort((a,b)=>b.frp-a.frp);
   const pmMean=Math.round(mean(pmStations.map(s=>s.pm)));
   const pmPeakV=Math.max(...pmStations.map(s=>s.pm));
   const aqi=Math.round(pmMean*1.6+20);
