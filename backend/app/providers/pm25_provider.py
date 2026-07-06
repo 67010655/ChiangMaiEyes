@@ -195,18 +195,48 @@ def get_pm25_category_and_color(pm25: float) -> tuple[str, str]:
     return "อันตราย", "purple"
 
 
+import math as _math
+
+
+def _dist_km(s1: Pm25Station, s2: Pm25Station) -> float:
+    dlat = _math.radians(s2.latitude - s1.latitude)
+    dlon = _math.radians(s2.longitude - s1.longitude)
+    a = _math.sin(dlat / 2) ** 2 + _math.cos(_math.radians(s1.latitude)) * _math.cos(_math.radians(s2.latitude)) * _math.sin(dlon / 2) ** 2
+    return 2 * 6371 * _math.asin(_math.sqrt(a))
+
+
+def _build_pm25_response_from_aqicn(stations: list[Pm25Station]) -> Pm25Response:
+    """Build a complete Pm25Response from AQICN-only stations (Air4Thai fallback)."""
+    if not stations:
+        raise Exception("No AQICN stations available for Chiang Mai")
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
+    avg_pm25 = round(sum(s.pm25 for s in stations) / len(stations), 1)
+    category, color = get_pm25_category_and_color(avg_pm25)
+    return Pm25Response(
+        current_pm25=avg_pm25,
+        category=category,
+        color=color,
+        trend="stable",
+        latest_update=now.isoformat(),
+        source=f"AQICN ({len(stations)} สถานี — Air4Thai ไม่พร้อมใช้งาน)",
+        stations=stations,
+    )
+
+
 def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
     url = "https://air4thai.pcd.go.th/services/getNewAQI_JSON.php"
     logger.info("Fetching live PM2.5 from Air4Thai: %s", url)
 
+    air4thai_stations: list[Pm25Station] = []
+    air4thai_ok = False
+
     try:
-        response = httpx.get(url, timeout=15.0)
+        response = httpx.get(url, timeout=10.0)
         response.raise_for_status()
 
         data = response.json()
         raw_stations = data.get("stations", [])
 
-        stations: list[Pm25Station] = []
         total_pm25 = 0.0
         valid_station_count = 0
         latest_time = None
@@ -253,49 +283,42 @@ def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
                 trend="stable",
                 updated_at=iso_time,
             )
-            stations.append(station)
+            air4thai_stations.append(station)
             total_pm25 += pm25_val
             valid_station_count += 1
 
-        if valid_station_count == 0:
-            raise Exception("No active Chiang Mai PM2.5 stations found in Air4Thai feed")
-
-        # Merge AQICN stations when token is available
-        aqicn_stations = fetch_aqicn_stations(aqicn_token or "") if aqicn_token else []
-        # Dedup: skip AQICN station if Air4Thai already has one within 3 km
-        import math
-        def _dist_km(s1: Pm25Station, s2: Pm25Station) -> float:
-            dlat = math.radians(s2.latitude - s1.latitude)
-            dlon = math.radians(s2.longitude - s1.longitude)
-            a = math.sin(dlat/2)**2 + math.cos(math.radians(s1.latitude)) * math.cos(math.radians(s2.latitude)) * math.sin(dlon/2)**2
-            return 2 * 6371 * math.asin(math.sqrt(a))
-
-        merged_extra: list[Pm25Station] = []
-        for aq in aqicn_stations:
-            if all(_dist_km(aq, st) > 3.0 for st in stations):
-                merged_extra.append(aq)
-
-        all_stations = stations + merged_extra
-
-        avg_pm25 = round(total_pm25 / valid_station_count, 1)
-        category, color = get_pm25_category_and_color(avg_pm25)
-
-        now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
-        latest_update = latest_time if latest_time else now.isoformat()
-
-        source_label = "Air4Thai PCD"
-        if merged_extra:
-            source_label += f" + AQICN ({len(merged_extra)} สถานีเพิ่มเติม)"
-
-        return Pm25Response(
-            current_pm25=avg_pm25,
-            category=category,
-            color=color,
-            trend="stable",
-            latest_update=latest_update,
-            source=source_label,
-            stations=all_stations,
-        )
+        if valid_station_count > 0:
+            air4thai_ok = True
     except Exception as exc:
-        logger.error("Error fetching live PM2.5: %s", exc)
-        raise exc
+        logger.warning("Air4Thai fetch failed, will try AQICN fallback: %s", exc)
+
+    # Fetch AQICN stations (works from any IP globally)
+    aqicn_stations = fetch_aqicn_stations(aqicn_token or "") if aqicn_token else []
+
+    if not air4thai_ok:
+        # Air4Thai unreachable (e.g. blocked from non-Thai IPs) — use AQICN alone
+        return _build_pm25_response_from_aqicn(aqicn_stations)
+
+    # Air4Thai succeeded — merge unique AQICN stations (dedup within 3 km)
+    merged_extra: list[Pm25Station] = [
+        aq for aq in aqicn_stations
+        if all(_dist_km(aq, st) > 3.0 for st in air4thai_stations)
+    ]
+    all_stations = air4thai_stations + merged_extra
+    avg_pm25 = round(sum(s.pm25 for s in air4thai_stations) / len(air4thai_stations), 1)
+    category, color = get_pm25_category_and_color(avg_pm25)
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
+    latest_update = latest_time if latest_time else now.isoformat()
+    source_label = "Air4Thai PCD"
+    if merged_extra:
+        source_label += f" + AQICN ({len(merged_extra)} สถานีเพิ่มเติม)"
+
+    return Pm25Response(
+        current_pm25=avg_pm25,
+        category=category,
+        color=color,
+        trend="stable",
+        latest_update=latest_update,
+        source=source_label,
+        stations=all_stations,
+    )
