@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+<!-- PRODUCTION_ENTRY: inline-dashboard
+     Vercel serves this file through the root Vite build. The React files under
+     frontend/src are retained for component/test work, but this inline
+     dashboard is the active production shell until a deliberate migration. -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ChiangMaiEyes — Wildfire Operations Console</title>
@@ -657,7 +661,7 @@
         <span class="src-pill"><span class="ok">●</span> NASA FIRMS</span>
         <span class="src-pill"><span class="ok">●</span> GISTDA</span>
         <span class="src-pill"><span class="ok">●</span> PCD</span>
-        <span class="src-pill"><span class="ok">●</span> OpenWeather</span>
+        <span class="src-pill"><span class="ok">●</span> TMD/Open-Meteo</span>
         <br>UPDATED <span id="footUpd">—</span> · <span id="footMode" style="color:var(--good)">LIVE</span>
       </div>
     </aside>
@@ -1181,7 +1185,7 @@ function gMapsLink(lat, lng){ return `<a href="https://www.google.com/maps/dir/?
 // Sizing/intensity scalar: real FRP if present, else a confidence-based proxy so
 // markers still have a sensible radius (never shown as MW).
 function intensity(h){ return h.frp!=null ? h.frp : (h.conf==='high'?55:22); }
-function pmColor(p){ return p>90?'#7e22ce': p>55?'#a855f7': p>37?'#d8b4fe':'#5eead4'; }
+function pmColor(p){ return p>90?'#7e22ce': p>55?'#a855f7': p>37?'#c084fc':'#ddd6fe'; }
 function pmAqiLabel(p){ return p>90?'อันตราย': p>55?'มีผลต่อสุขภาพ': p>37?'เริ่มมีผลต่อสุขภาพ':'ปานกลาง'; }
 
 // ---- Render hotspots ----
@@ -1191,13 +1195,15 @@ function renderHotspots(){
   hotspots.forEach(h=>{
     const isHigh = h.conf==='high';
     const big = isHigh && (h.frp||0) > 50;
-    const sz = big ? 28 : isHigh ? 22 : 16;
-    // solid (high conf) vs hollow/faded (low conf)
-    const iconStyle = isHigh
-      ? `font-size:${sz}px;line-height:1;display:block;text-shadow:0 0 6px rgba(0,0,0,.7)`
-      : `font-size:${sz}px;line-height:1;display:block;opacity:.45;filter:grayscale(.7)`;
+    const sz = big ? 30 : isHigh ? 24 : 18;
+    const col = frpColor(h.frp);
+    const emojiSz = Math.round(sz * 0.62);
+    // solid colored circle = high conf, hollow border = low conf (matches legend)
+    const bgStyle = isHigh
+      ? `background:${col};box-shadow:0 0 6px ${col}99`
+      : `background:transparent;border:2px solid ${col};opacity:.6`;
     const icon = L.divIcon({
-      html: `<span style="${iconStyle}">🔥</span>`,
+      html: `<span style="${bgStyle};border-radius:50%;display:inline-flex;align-items:center;justify-content:center;width:${sz}px;height:${sz}px;font-size:${emojiSz}px;line-height:1">🔥</span>`,
       className: '',
       iconSize: [sz, sz],
       iconAnchor: [sz/2, sz/2]
@@ -1908,7 +1914,7 @@ function renderDistrictDetailsOnMap(distName) {
     if (!lat || !lng) return;
     const radius = f.boundary_radius_m || 650;
     const active = f.fire_management_active;
-    const fcolor = active ? '#22c55e' : '#37d1d6';
+    const fcolor = active ? '#22c55e' : '#4ade80';
     L.circle([lat, lng], {
       radius,
       color: fcolor,
@@ -2241,7 +2247,7 @@ async function loadCommunityForests(){
       const lat=f.latitude, lng=f.longitude;
       if(!lat||!lng) return;
       const active=f.fire_management_active;
-      const color=active?'#43b05f':'#37d1d6';
+      const color=active?'#43b05f':'#4ade80';
       const radius=f.boundary_radius_m||650;
       L.circle([lat,lng],{radius,color,weight:1.2,fillColor:color,fillOpacity:0.05,dashArray:'6 4'})
         .addTo(layers.forest);
@@ -3090,7 +3096,7 @@ function buildReport(){
     <ul>${recs.map(r=>`<li>${r}</li>`).join('')}</ul>
 
     <div class="pfoot">
-      แหล่งข้อมูล: NASA FIRMS (VIIRS/MODIS) · GISTDA · กรมควบคุมมลพิษ (PCD) · OpenWeather<br>
+      แหล่งข้อมูล: NASA FIRMS (VIIRS/MODIS) · GISTDA · กรมควบคุมมลพิษ (PCD) · TMD/Open-Meteo<br>
       รายงานนี้สร้างอัตโนมัติโดย ChiangMaiEyes — ข้อมูลสด (LIVE) จาก backend · ออกเมื่อ ${dateStr} ${timeStr}
     </div>`;
 }
@@ -3151,7 +3157,7 @@ function initMapLibre3D(){
     // Forest circles
     mlMap.addLayer({id:'forests-circle',type:'circle',source:'forests-3d',paint:{
       'circle-radius':5,
-      'circle-color':['case',['==',['get','active'],true],'#43b05f','#37d1d6'],
+      'circle-color':['case',['==',['get','active'],true],'#43b05f','#4ade80'],
       'circle-opacity':0.88,
       'circle-stroke-color':'#fff',
       'circle-stroke-width':1
