@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, Box, ClipboardList, Eye, Bell, RefreshCcw, Printer, Navigation, FileText, Flame } from "lucide-react";
+import { BarChart3, Box, ClipboardList, Eye, Bell, RefreshCcw, Printer, Navigation, FileText, Flame, BookOpen } from "lucide-react";
 
 import "./styles/app.css";
 
@@ -11,13 +11,62 @@ import { MapLibreTerrainView } from "./features/threeD/MapLibreTerrainView";
 import { ReportPanel } from "./components/analytics/ReportPanel";
 import { FirePhasePanel } from "./features/firePhase/FirePhasePanel";
 
-type Tab = "analytics" | "report" | "terrain" | "phase";
+type Tab = "analytics" | "report" | "terrain" | "phase" | "guide";
 
 const TABS: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
   { id: "analytics", label: "วิเคราะห์", icon: BarChart3 },
   { id: "phase", label: "เฟสไฟ", icon: Flame },
   { id: "terrain", label: "3D", icon: Box },
   { id: "report", label: "รายงาน", icon: ClipboardList },
+  { id: "guide", label: "คู่มือ", icon: BookOpen },
+];
+
+const GUIDE_CARD_STYLE = {
+  background: "var(--surface)",
+  border: "1px solid var(--line)",
+  borderRadius: 16,
+  padding: 18,
+  boxShadow: "var(--shadow-sm)",
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+  overflowY: "auto",
+};
+
+const GUIDE_SECTIONS: { title: string; body: string[] }[] = [
+  {
+    title: "ระบบนี้ใช้ทำอะไร",
+    body: [
+      "ติดตามจุดความร้อน ฝุ่น PM2.5 ทิศทางลม และความเสี่ยงไฟป่าในจังหวัดเชียงใหม่ ใช้ได้ทั้งหน่วยงานระดับภาพรวมและทีมปฏิบัติงานในพื้นที่ เช่น ป่าชุมชน อบต. ผู้ใหญ่บ้าน",
+    ],
+  },
+  {
+    title: "ก่อนเกิดไฟ — วางแผนป้องกัน",
+    body: [
+      "ดูแท็บ \"เฟสไฟ\": พื้นที่สีเหลืองคือช่วงเสี่ยงก่อนเกิดไฟ ใช้ร่วมกับทิศทางลมและความชื้นบนแผนที่เพื่อวางแนวกันไฟหรือจัดการเชื้อเพลิง",
+      "ค่าความเสี่ยงเชื้อเพลิงตอนนี้คำนวณระดับอำเภอ ยังไม่ละเอียดถึงรายหมู่บ้าน ใช้ประกอบการตัดสินใจ ไม่ใช่ค่าตายตัว",
+    ],
+  },
+  {
+    title: "ระหว่างเกิดไฟ — ติดตามและรับมือ",
+    body: [
+      "จุดความร้อน (hotspot) บนแผนที่มาจากดาวเทียม NASA/GISTDA อาจดีเลย์ 4-5 ชั่วโมง ให้ดูป้าย \"ตรวจล่าสุด/ควรตรวจซ้ำ/ข้อมูลค้าง\" ที่แถบข้อมูลก่อนเชื่อว่าไฟยังลุกอยู่จริง",
+      "เฟสไฟสีแดง = กำลังเกิดไฟ ใช้ร่วมกับทิศทางลมบนแผนที่ช่วยประเมินทิศทางที่ควรเฝ้าระวัง",
+    ],
+  },
+  {
+    title: "หลังเกิดไฟ — ฟื้นฟูและรายงาน",
+    body: [
+      "แท็บ \"รายงาน\" สรุปสถานการณ์ พิมพ์หรือบันทึกเป็น PDF ส่งต่อหน่วยงานหรือรายงานผลการทำงานได้",
+    ],
+  },
+  {
+    title: "สัญลักษณ์ข้อมูลที่ต้องรู้",
+    body: [
+      "LIVE = ดึงสดตอนนี้, SNAPSHOT = ข้อมูลจริงแต่รีเฟรชเป็นรอบ, PROTOTYPE = ข้อมูลตัวอย่าง/จำลอง ยังไม่ใช่ของจริง — ดูป้ายกำกับก่อนอ้างอิงตัวเลขไปใช้งานจริงเสมอ",
+      "ปุ่ม DEMO/LIVE มุมบนขวา: LIVE ดึงข้อมูลจริงจากเซิร์ฟเวอร์ DEMO ใช้ข้อมูลตัวอย่างสำหรับสาธิตหรือตอนอินเทอร์เน็ตมีปัญหา",
+    ],
+  },
 ];
 
 export function App() {
@@ -133,6 +182,28 @@ export function App() {
                 <Printer size={18} />
                 <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>พิมพ์รายงาน / บันทึก PDF</span>
               </button>
+            </div>
+          )}
+          {tab === "guide" && (
+            <div style={GUIDE_CARD_STYLE}>
+              <h3 style={{ fontSize: "0.95rem", fontWeight: 700, display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
+                <BookOpen size={18} style={{ color: "var(--green-deep)" }} />
+                <span>คู่มือการใช้งาน</span>
+              </h3>
+              {GUIDE_SECTIONS.map(({ title, body }) => (
+                <details key={title} open={title === GUIDE_SECTIONS[0].title}>
+                  <summary style={{ fontSize: "0.85rem", fontWeight: 600, cursor: "pointer", color: "var(--text)" }}>
+                    {title}
+                  </summary>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                    {body.map((paragraph) => (
+                      <p key={paragraph} style={{ fontSize: "0.8rem", color: "var(--muted)", lineHeight: 1.5, margin: 0 }}>
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                </details>
+              ))}
             </div>
           )}
         </aside>
