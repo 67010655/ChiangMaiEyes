@@ -260,6 +260,26 @@ class NearbyForest(BaseModel):
     bearing_deg: float
     in_spread_path: bool
     fire_management_active: bool
+    # Per-forest fuel/danger score (0-1): the parent district's danger_score
+    # boosted by proximity to the nearest real active hotspot, so forests
+    # right next to a live fire read higher than ones merely in the same
+    # district. DERIVED, not an official rating.
+    danger_score: float | None = None
+    nearest_hotspot_km: float | None = None
+
+
+class ForestRisk(BaseModel):
+    # Flat per-forest risk, one entry per community forest point (not capped
+    # or distance-limited like nearby_forests) — used to color every forest
+    # marker on the map, not just ones near a district in before/during phase.
+    forest_id: str
+    name: str
+    amphoe: str
+    latitude: float
+    longitude: float
+    danger_score: float = Field(ge=0, le=1)
+    nearest_hotspot_km: float | None = None
+    fire_management_active: bool = False
 
 
 class SpreadProjection(BaseModel):
@@ -304,6 +324,7 @@ class FirePhaseResponse(BaseModel):
     notes: list[str] = Field(default_factory=list)
     community_forests_source: str = "thaicfnet.org"
     fire_pm25_correlation: list[FirePm25Correlation] = Field(default_factory=list)
+    forest_risk: list[ForestRisk] = Field(default_factory=list)
 
 
 class OperationalIntelligenceResponse(BaseModel):

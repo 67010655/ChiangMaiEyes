@@ -954,7 +954,7 @@
           <li><b>Wind field</b> ลูกศรทิศทางลมทั่วพื้นที่ <span class="gd-tag real">จริง</span> จาก Open-Meteo</li>
           <li><b>PM2.5 stations</b> จุดสถานีตรวจฝุ่นจริงทั่วจังหวัด <span class="gd-tag real">จริง</span></li>
           <li><b>Heatmap ความหนาแน่น</b> สีเข้ม-อ่อนแสดงความหนาแน่นของจุดไฟ คำนวณจากตำแหน่งจุดไฟจริง</li>
-          <li><b>ขอบเขตป่าชุมชน</b> พิกัดป่าชุมชนจากกรมป่าไม้ (RFD) <span class="gd-tag point">จุดเท่านั้น</span> — เป็นจุดพิกัด ยังไม่ใช่ขอบเขตรูปหลายเหลี่ยมเต็มแปลง (ต้องขอ shapefile จากหน่วยงานเพิ่มถึงจะวาดขอบเขตจริงได้)</li>
+          <li><b>ขอบเขตป่าชุมชน</b> พิกัดป่าชุมชนจากกรมป่าไม้ (RFD) <span class="gd-tag point">จุดเท่านั้น</span> — เป็นจุดพิกัด ยังไม่ใช่ขอบเขตรูปหลายเหลี่ยมเต็มแปลง (ต้องขอ shapefile จากหน่วยงานเพิ่มถึงจะวาดขอบเขตจริงได้) สีจุด/วงกลมรอบป่าตอนนี้ไล่ตาม<b>ความเสี่ยงเชื้อเพลิงเฉพาะป่านั้น</b> <span class="gd-tag approx">ประมาณ</span> (เขียว→เหลือง→ส้ม→แดง) คำนวณจากความเสี่ยงของอำเภอนั้นบวกระยะห่างจากจุดความร้อนจริงที่ใกล้ที่สุด — ละเอียดกว่าเดิมที่ให้ค่าเดียวทั้งอำเภอ คลิกจุดดูเปอร์เซ็นต์ความเสี่ยงได้</li>
           <li><b>ขอบเขตอำเภอ/จังหวัด</b> เส้นแบ่งเขตทางการ 25 อำเภอ <span class="gd-tag real">จริง</span></li>
           <li><b>EVI ความหนาแน่นพืชพรรณ</b> ภาพดาวเทียมจริงจาก NASA MODIS Terra รอบ 8 วัน <span class="gd-tag real">จริง</span> ใช้ดูว่าพืชคลุมดินแห้ง/เขียวแค่ไหน (ยิ่งแห้งยิ่งติดไฟง่าย)</li>
           <li><b>พื้นที่เผาไหม้สะสม</b> พื้นที่ที่มีจุดไฟสะสมย้อนหลัง 30 วันรายอำเภอ <span class="gd-tag real">จริง</span> คำนวณจากจุดไฟจริงที่ตรวจพบ</li>
@@ -1210,6 +1210,7 @@ let currentDashboard = null;              // Full API dashboard payload
 // Real backend intelligence captured on each LIVE fetch.
 let livePhases = null;                     // /api/fire-phases → per-district phase
 let livePhasesPending = false;             // true only while the background phase request is still in flight
+let forestRiskById = {};                   // /api/fire-phases forest_risk → per-forest fuel risk, keyed by forest_id
 let liveDataQ = null;                      // dashboard.data_quality → provenance tiers
 let liveIntel = null;                      // dashboard.intelligence → trend, landuse…
 let liveSummary = null;                    // dashboard.summary.text → situation card
@@ -2399,33 +2400,50 @@ function flyToDistrict(nameTh) {
 // ---- Community forests — live from /api/community-forests (thaicfnet + RFD) ----
 let allForests = [];
 
+// Risk-colour scale shared with the FRP legend (yellow→orange→red).
+function _forestRiskColor(score){
+  if(score>=0.75) return '#ff4d4d';
+  if(score>=0.5)  return '#f5640a';
+  if(score>=0.3)  return '#ff8a3d';
+  return '#43b05f';
+}
+
+function renderForestMarkers(){
+  layers.forest.clearLayers();
+  allForests.forEach(f=>{
+    const lat=f.latitude, lng=f.longitude;
+    if(!lat||!lng) return;
+    const active=f.fire_management_active;
+    const risk=forestRiskById[f.forest_id];
+    const color=risk?_forestRiskColor(risk.danger_score):(active?'#43b05f':'#4ade80');
+    const radius=f.boundary_radius_m||650;
+    L.circle([lat,lng],{radius,color,weight:1.2,fillColor:color,fillOpacity:0.05,dashArray:'6 4'})
+      .addTo(layers.forest);
+    L.circleMarker([lat,lng],{radius:4,color,weight:1.5,fillColor:'#fff',fillOpacity:0.9})
+      .bindPopup(
+        `<b>${f.name||'ป่าชุมชน'}</b><br>`+
+        `อ.${f.amphoe||'—'} ต.${f.tambon||'—'}<br>`+
+        `พื้นที่: ${f.area_rai?f.area_rai.toLocaleString()+' ไร่':'ไม่ระบุ'}<br>`+
+        (risk
+          ? `ความเสี่ยงเชื้อเพลิง (ประมาณ): <b style="color:${color}">${Math.round(risk.danger_score*100)}%</b>`
+            +(risk.nearest_hotspot_km!=null?` · จุดไฟใกล้สุด ${risk.nearest_hotspot_km} กม.`:'')+'<br>'
+          : '')+
+        `จัดการไฟ: <span style="color:${active?'#43b05f':'var(--dim)'}">${active?'● ใช้งานอยู่':'○ ไม่ระบุ'}</span><br>`+
+        `แหล่ง: ${f.source||'—'}<br>${gMapsLink(lat,lng)}`
+      )
+      .addTo(layers.forest);
+  });
+  document.getElementById('lcForest').textContent=allForests.length;
+  // Refresh 3D if already open
+  if(mlMap) _sync3DForests();
+}
+
 async function loadCommunityForests(){
   try {
     const data = await fetchJson('/api/community-forests', 20000);
     const forests = Array.isArray(data) ? data : (data.forests || []);
     allForests = forests;
-    layers.forest.clearLayers();
-    forests.forEach(f=>{
-      const lat=f.latitude, lng=f.longitude;
-      if(!lat||!lng) return;
-      const active=f.fire_management_active;
-      const color=active?'#43b05f':'#4ade80';
-      const radius=f.boundary_radius_m||650;
-      L.circle([lat,lng],{radius,color,weight:1.2,fillColor:color,fillOpacity:0.05,dashArray:'6 4'})
-        .addTo(layers.forest);
-      L.circleMarker([lat,lng],{radius:4,color,weight:1.5,fillColor:'#fff',fillOpacity:0.9})
-        .bindPopup(
-          `<b>${f.name||'ป่าชุมชน'}</b><br>`+
-          `อ.${f.amphoe||'—'} ต.${f.tambon||'—'}<br>`+
-          `พื้นที่: ${f.area_rai?f.area_rai.toLocaleString()+' ไร่':'ไม่ระบุ'}<br>`+
-          `จัดการไฟ: <span style="color:${color}">${active?'● ใช้งานอยู่':'○ ไม่ระบุ'}</span><br>`+
-          `แหล่ง: ${f.source||'—'}<br>${gMapsLink(lat,lng)}`
-        )
-        .addTo(layers.forest);
-    });
-    document.getElementById('lcForest').textContent=forests.length;
-    // Refresh 3D if already open
-    if(mlMap) _sync3DForests();
+    renderForestMarkers();
   } catch(err){
     console.warn('Community forests API failed, trying local fallback:', err);
     // Silent fallback — leave layer empty rather than crashing
@@ -2559,6 +2577,11 @@ function applyLive(dash, history, phases){
   frpSamples=hotspots.map(h=>h.frp).filter(f=>f!=null);
   // Real backend intelligence (kept for the live-aware renderers).
   if(phases && Array.isArray(phases.phases)) livePhases = phases.phases;
+  if(phases && Array.isArray(phases.forest_risk)){
+    forestRiskById = {};
+    phases.forest_risk.forEach(f=>{ forestRiskById[f.forest_id] = f; });
+    renderForestMarkers();
+  }
   if(phases && Array.isArray(phases.fire_pm25_correlation)){
     firePm25Correlation=phases.fire_pm25_correlation;
     const corrPairs=firePm25Correlation

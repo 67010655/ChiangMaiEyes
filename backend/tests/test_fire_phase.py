@@ -1,5 +1,6 @@
 from app.fire_phase import classify_fire_phases
 from app.models import (
+    CommunityForest,
     Hotspot,
     HotspotResponse,
     SatelliteDrynessZone,
@@ -73,6 +74,18 @@ def _hotspots(*districts: str) -> HotspotResponse:
 
 def _phase_of(resp, district):
     return next(p for p in resp.phases if p.district == district)
+
+
+def _forest(amphoe: str, lat: float, lon: float, name: str = "ป่าทดสอบ") -> CommunityForest:
+    return CommunityForest(
+        forest_id=f"test-{name}-{lat}-{lon}",
+        name=name,
+        village="",
+        tambon="",
+        amphoe=amphoe,
+        latitude=lat,
+        longitude=lon,
+    )
 
 
 def test_fire_phases_cover_all_25_chiang_mai_districts():
@@ -179,3 +192,31 @@ def test_scores_in_range_and_sorted_desc():
     assert scores == sorted(scores, reverse=True)
     assert resp.source_mode == "DERIVED"
     assert any("dNBR" in n for n in resp.notes)  # after/grey honestly deferred
+
+
+def test_forest_risk_present_for_every_community_forest():
+    forests = [_forest("แม่แจ่ม", 18.5, 98.4), _forest("เชียงดาว", 19.38, 98.95)]
+    resp = classify_fire_phases(_hotspots(), _weather(humidity=30), community_forests=forests)
+    assert len(resp.forest_risk) == 2
+    assert all(0.0 <= f.danger_score <= 1.0 for f in resp.forest_risk)
+
+
+def test_forest_near_active_hotspot_scores_higher_than_far_forest_same_district():
+    # Both forests are in แม่แจ่ม; one sits right on the active hotspot's
+    # coordinates, the other is ~35km away — the near one must score higher.
+    near = _forest("แม่แจ่ม", 18.5, 98.4, name="ใกล้ไฟ")
+    far = _forest("แม่แจ่ม", 18.75, 98.6, name="ไกลไฟ")
+    resp = classify_fire_phases(_hotspots("แม่แจ่ม"), _weather(humidity=40), community_forests=[near, far])
+    near_risk = next(f for f in resp.forest_risk if f.name == "ใกล้ไฟ")
+    far_risk = next(f for f in resp.forest_risk if f.name == "ไกลไฟ")
+    assert near_risk.danger_score >= far_risk.danger_score
+    assert near_risk.nearest_hotspot_km is not None
+    assert far_risk.nearest_hotspot_km is not None
+    assert near_risk.nearest_hotspot_km < far_risk.nearest_hotspot_km
+
+
+def test_forest_risk_no_hotspots_matches_district_base_score():
+    forests = [_forest("แม่แจ่ม", 18.6, 98.5)]
+    resp = classify_fire_phases(_hotspots(), _weather(humidity=20), community_forests=forests)
+    assert resp.forest_risk[0].nearest_hotspot_km is None
+    assert resp.forest_risk[0].danger_score == _phase_of(resp, "แม่แจ่ม").danger_score

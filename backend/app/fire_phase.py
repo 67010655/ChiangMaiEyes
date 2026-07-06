@@ -24,6 +24,8 @@ from app.models import (
     CommunityForest,
     DistrictFirePhase,
     FirePhaseResponse,
+    ForestRisk,
+    Hotspot,
     HotspotResponse,
     NearbyForest,
     SatelliteLayerResponse,
@@ -81,6 +83,13 @@ _SPREAD_DIR_LABELS = [
     "ใต้", "ตะวันตกเฉียงใต้", "ตะวันตก", "ตะวันตกเฉียงเหนือ",
 ]
 
+# Per-forest fuel risk: a forest's score = its district's base danger_score,
+# boosted the closer a real active hotspot is (real signal, not fabricated —
+# just gives forests next to a live fire a higher score than a forest on the
+# far side of the same district). Capped so it never exceeds 1.0.
+_FOREST_PROXIMITY_RADIUS_KM = 15.0
+_FOREST_PROXIMITY_BOOST_MAX = 0.3
+
 # Forests within this radius are flagged as "nearby" for any phase.
 _NEARBY_RADIUS_KM = 30.0
 # Forests in spread path if bearing is within this cone of spread direction.
@@ -110,6 +119,20 @@ def _bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     y = (math.cos(lat1_r) * math.sin(lat2_r)
          - math.sin(lat1_r) * math.cos(lat2_r) * math.cos(dlon))
     return (math.degrees(math.atan2(x, y)) + 360) % 360
+
+
+def _nearest_hotspot_km(lat: float, lon: float, hotspots: list[Hotspot]) -> float | None:
+    if not hotspots:
+        return None
+    return min(_haversine_km(lat, lon, h.latitude, h.longitude) for h in hotspots)
+
+
+def _forest_danger_score(base_danger: float, nearest_km: float | None) -> float:
+    if nearest_km is None:
+        boost = 0.0
+    else:
+        boost = max(0.0, 1 - nearest_km / _FOREST_PROXIMITY_RADIUS_KM) * _FOREST_PROXIMITY_BOOST_MAX
+    return round(min(1.0, base_danger + boost), 2)
 
 
 def _spread_dir_text(deg: float) -> str:
@@ -162,6 +185,8 @@ def _nearby_forests(
     district: str,
     spread_dir: float,
     community_forests: list[CommunityForest],
+    district_danger: float = 0.0,
+    hotspot_items: list[Hotspot] | None = None,
 ) -> tuple[list[NearbyForest], str | None]:
     """Return (nearby_list, coordination_note) for a district."""
     centroid = _DISTRICT_CENTROIDS.get(district)
@@ -169,6 +194,7 @@ def _nearby_forests(
         return [], None
 
     clat, clon = centroid
+    hotspot_items = hotspot_items or []
     nearby: list[NearbyForest] = []
     for cf in community_forests:
         dist = _haversine_km(clat, clon, cf.latitude, cf.longitude)
@@ -176,6 +202,7 @@ def _nearby_forests(
             continue
         bearing = _bearing(clat, clon, cf.latitude, cf.longitude)
         in_path = _in_spread_cone(bearing, spread_dir)
+        nearest_km = _nearest_hotspot_km(cf.latitude, cf.longitude, hotspot_items)
         nearby.append(NearbyForest(
             name=cf.name,
             amphoe=cf.amphoe,
@@ -183,6 +210,8 @@ def _nearby_forests(
             bearing_deg=round(bearing, 1),
             in_spread_path=in_path,
             fire_management_active=cf.fire_management_active,
+            danger_score=_forest_danger_score(district_danger, nearest_km),
+            nearest_hotspot_km=round(nearest_km, 1) if nearest_km is not None else None,
         ))
 
     nearby.sort(key=lambda f: f.distance_km)
@@ -311,12 +340,18 @@ def classify_fire_phases(
             danger = max(danger, _DURING_FLOOR)
             reasons = [f"พบจุดความร้อน {active} จุดในพื้นที่ตอนนี้"]
             spread = _build_spread_projection(district, dist_wind_speed, dist_wind_dir)
-            nearby, coord_note = _nearby_forests(district, spread.direction_deg, cf_list)
+            nearby, coord_note = _nearby_forests(
+                district, spread.direction_deg, cf_list,
+                district_danger=danger, hotspot_items=hotspots.items,
+            )
         elif district in burned:
             phase = "after"
             dnbr_value, severity = burned[district]
             reasons = [f"พบรอยไหม้จากดาวเทียม (dNBR {dnbr_value}, ความรุนแรง {severity}) — ระยะฟื้นฟู"]
-            nearby, _ = _nearby_forests(district, spread_dir_dist, cf_list)
+            nearby, _ = _nearby_forests(
+                district, spread_dir_dist, cf_list,
+                district_danger=danger, hotspot_items=hotspots.items,
+            )
         elif dryness < _DRY_AIR_GATE:
             phase = "normal"
             reasons = [f"อากาศชื้น ความชื้น {humidity:.0f}% เชื้อเพลิงไม่แห้งพอจะติดไฟ"]
@@ -326,7 +361,10 @@ def classify_fire_phases(
                 f"เชื้อเพลิงติดไฟง่าย ({phys['history_level']})",
                 f"อากาศแห้ง ความชื้น {humidity:.0f}%",
             ]
-            nearby, coord_note = _nearby_forests(district, spread_dir_dist, cf_list)
+            nearby, coord_note = _nearby_forests(
+                district, spread_dir_dist, cf_list,
+                district_danger=danger, hotspot_items=hotspots.items,
+            )
         else:
             phase = "normal"
             reasons = ["ยังไม่มีจุดความร้อน และดัชนีความเสี่ยงอยู่ระดับต่ำ"]
@@ -354,6 +392,26 @@ def classify_fire_phases(
 
     source_label = f"thaicfnet.org ({len(cf_list)} ป่าชุมชน)" if cf_list else "ไม่มีข้อมูลป่าชุมชน"
 
+    # Flat per-forest risk (every forest, not just ones near a before/during
+    # district) — lets the map colour every community-forest marker by its
+    # own fuel risk instead of one flat colour per district.
+    danger_by_district = {p.district: p.danger_score for p in phases}
+    fallback_danger = (sum(danger_by_district.values()) / len(danger_by_district)) if danger_by_district else 0.3
+    forest_risk: list[ForestRisk] = []
+    for cf in cf_list:
+        base_danger = danger_by_district.get(_normalize_district(cf.amphoe), fallback_danger)
+        nearest_km = _nearest_hotspot_km(cf.latitude, cf.longitude, hotspots.items)
+        forest_risk.append(ForestRisk(
+            forest_id=cf.forest_id,
+            name=cf.name,
+            amphoe=cf.amphoe,
+            latitude=cf.latitude,
+            longitude=cf.longitude,
+            danger_score=_forest_danger_score(base_danger, nearest_km),
+            nearest_hotspot_km=round(nearest_km, 1) if nearest_km is not None else None,
+            fire_management_active=cf.fire_management_active,
+        ))
+
     return FirePhaseResponse(
         generated_at=datetime.now(timezone(timedelta(hours=7))).isoformat(),
         source_mode="DERIVED",
@@ -364,9 +422,12 @@ def classify_fire_phases(
             "การลามไฟประมาณจากสูตร Rothermel + ทิศลม + ความชัน เป็นค่าประมาณเท่านั้น",
             "ระยะใกล้ป่าชุมชนใช้ proximity จากพิกัด POINT ของ thaicfnet.org ยังไม่มี polygon เขตอำนาจจริง",
             "ระยะ 'หลังไฟ' (เทา) มาจาก dNBR Sentinel-2 — แสดงเมื่อเชื่อม Copernicus แล้ว",
+            "คะแนนความเสี่ยงรายป่าชุมชน (forest_risk) = คะแนนอำเภอฐาน + ระยะใกล้จุดความร้อนจริง "
+            "ยังไม่ใช่แบบจำลองเชื้อเพลิงระดับแปลง เป็นตัวช่วยจัดลำดับความสนใจเท่านั้น",
         ],
         community_forests_source=source_label,
         fire_pm25_correlation=correlation,
+        forest_risk=forest_risk,
     )
 
 
