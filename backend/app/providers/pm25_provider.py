@@ -196,7 +196,7 @@ def get_pm25_category_and_color(pm25: float) -> tuple[str, str]:
 
 
 def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
-    url = "http://air4thai.pcd.go.th/services/getNewAQI_JSON.php"
+    url = "https://air4thai.pcd.go.th/services/getNewAQI_JSON.php"
     logger.info("Fetching live PM2.5 from Air4Thai: %s", url)
 
     try:
