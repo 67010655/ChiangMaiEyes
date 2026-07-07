@@ -1057,6 +1057,11 @@
 const CM = [18.79, 98.99];               // Chiang Mai center
 let PREVAILING = null;  // live wind only — null until first LIVE fetch (topbar shows "—")
 const CRITICAL_FRP_MW = 100;
+// Hotspots now persist on the map for up to 5 days (so a fire doesn't vanish
+// overnight just because a satellite pass missed it), but "active now" counts
+// must NOT include stale 3-5 day old detections — gate those on recency.
+const ACTIVE_HOTSPOT_MINUTES = 24 * 60;
+function isActiveHotspot(h){ return h.detected!=null && h.detected<=ACTIVE_HOTSPOT_MINUTES; }
 function wind(){ return PREVAILING || {deg:0,kmh:0}; }
 
 // ── Dark / Light mode toggle ────────────────────────
@@ -1674,7 +1679,7 @@ function rankList(){
   // Prefer backend's real per-district fire phase when available
   if(livePhases && livePhases.length) return rankListLive();
   const scored=districts.map(d=>{
-    const hs=hotspots.filter(h=>h.district===d.name);
+    const hs=hotspots.filter(h=>h.district===d.name&&isActiveHotspot(h));
     const score=Math.min(100, hs.reduce((s,h)=>s+h.frp,0)/3 + hs.length*8);
     return {name:d.name,score:Math.round(score),n:hs.length};
   }).sort((a,b)=>b.score-a.score).slice(0,6);
@@ -1690,7 +1695,7 @@ function rankList(){
 //  ALERTS
 // ============================================================
 function buildAlerts(){
-  const crit=hotspots.filter(h=>(h.frp||0)>=CRITICAL_FRP_MW).sort((a,b)=>b.frp-a.frp);
+  const crit=hotspots.filter(h=>isActiveHotspot(h)&&(h.frp||0)>=CRITICAL_FRP_MW).sort((a,b)=>b.frp-a.frp);
   const list=[];
   crit.slice(0,2).forEach(h=>list.push({lv:'CRITICAL',crit:true,
     t:`ไฟแรงสูง · ${h.district}`,
@@ -1718,11 +1723,14 @@ function buildAlerts(){
 //  KPIs + wind badge + clock
 // ============================================================
 function setKpis(){
-  const crit=hotspots.filter(h=>(h.frp||0)>=CRITICAL_FRP_MW).length;
+  // "Active now" headline numbers must only count recent detections — the
+  // map itself still plots the full 5-day set (see ACTIVE_HOTSPOT_MINUTES).
+  const activeNow=hotspots.filter(isActiveHotspot);
+  const crit=activeNow.filter(h=>(h.frp||0)>=CRITICAL_FRP_MW).length;
   const pmAvg=pmStations.length?Math.round(pmStations.reduce((s,x)=>s+x.pm,0)/pmStations.length):0;
   const pmPeak=pmStations.length?Math.max(...pmStations.map(x=>x.pm)):0;
   const aqi=Math.round(pmAvg*1.6+20);
-  document.getElementById('kpiHot').textContent=hotspots.length;
+  document.getElementById('kpiHot').textContent=activeNow.length;
   document.getElementById('kpiCrit').textContent=crit;
   document.getElementById('kpiPm').innerHTML=pmAvg+'<small> µg/m³</small>';
   document.getElementById('kpiAqi').textContent=aqi;

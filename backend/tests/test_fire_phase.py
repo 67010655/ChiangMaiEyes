@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from app.fire_phase import classify_fire_phases
 from app.models import (
     CommunityForest,
@@ -7,6 +9,13 @@ from app.models import (
     SatelliteLayerResponse,
     WeatherResponse,
 )
+
+_BANGKOK_TZ = timezone(timedelta(hours=7))
+# classify_fire_phases only counts a hotspot as "active now" within a recent
+# window (see fire_phase._ACTIVE_HOTSPOT_HOURS) — tests must use a timestamp
+# relative to "now", not a hardcoded calendar date, or they'll start failing
+# once that date is more than a day in the past.
+_RECENT_DETECTION = (datetime.now(_BANGKOK_TZ) - timedelta(hours=1)).isoformat()
 
 
 def _burn_layer(zone_id: str, dnbr: float, severity: str) -> SatelliteLayerResponse:
@@ -50,7 +59,7 @@ def _weather(humidity: float, rain_today: float = 0.0) -> WeatherResponse:
     )
 
 
-def _hotspots(*districts: str) -> HotspotResponse:
+def _hotspots(*districts: str, detected_at: str = _RECENT_DETECTION) -> HotspotResponse:
     items = [
         Hotspot(
             id=f"HS-{i}",
@@ -59,14 +68,14 @@ def _hotspots(*districts: str) -> HotspotResponse:
             district=d,
             confidence=80,
             source="test",
-            detected_at="2026-06-23T07:00:00+07:00",
+            detected_at=detected_at,
         )
         for i, d in enumerate(districts)
     ]
     return HotspotResponse(
         count=len(items),
         density_per_100_km2=0.1,
-        latest_update="2026-06-23T07:00:00+07:00",
+        latest_update=detected_at,
         source="test",
         items=items,
     )
@@ -213,6 +222,17 @@ def test_forest_near_active_hotspot_scores_higher_than_far_forest_same_district(
     assert near_risk.nearest_hotspot_km is not None
     assert far_risk.nearest_hotspot_km is not None
     assert near_risk.nearest_hotspot_km < far_risk.nearest_hotspot_km
+
+
+def test_stale_hotspot_does_not_trigger_during_phase():
+    # A hotspot from 4 days ago is still in the 5-day live feed (so it stays
+    # on the map — see hotspot_provider's NASA fetch), but it must NOT count
+    # as "active now" — it should not float the district to during/red.
+    stale = (datetime.now(_BANGKOK_TZ) - timedelta(days=4)).isoformat()
+    resp = classify_fire_phases(_hotspots("แม่แจ่ม", detected_at=stale), _weather(humidity=40))
+    p = _phase_of(resp, "แม่แจ่ม")
+    assert p.phase != "during"
+    assert p.active_hotspots == 0
 
 
 def test_forest_risk_no_hotspots_matches_district_base_score():

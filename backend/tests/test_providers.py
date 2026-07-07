@@ -10,9 +10,11 @@ from app.providers.hotspot_provider import (
     fetch_hotspot_history,
     fetch_gistda_disaster_hotspots,
     fetch_live_hotspots,
+    fetch_nasa_firms_hotspots,
     estimate_district,
     fetch_forest_firemap_hotspots,
     reconcile_hotspots,
+    _dedup_same_source_by_location,
 )
 import datetime
 from app.models import Hotspot
@@ -86,11 +88,51 @@ def test_pm25_category_mapping():
     assert get_pm25_category_and_color(150.0) == ("อันตราย", "purple")
 
 def test_district_estimation():
+    # (19.8, 99.0) and (18.2, 99.0) fall outside every real district polygon
+    # (near province edge) so they exercise the coarse bbox/fallback chain.
     assert estimate_district(19.8, 99.0) == "ฝาง"
     assert estimate_district(19.3, 99.0) == "เชียงดาว"
     assert estimate_district(18.9, 99.0) == "สันทราย"
-    assert estimate_district(18.7, 99.0) == "สันกำแพง"
+    # Real polygon boundary (ground truth) says this point is สารภี, not
+    # สันกำแพง — the old bounding-box estimate got this one wrong; this is
+    # the exact class of mislabeling that under-reported active districts
+    # during fire-phase classification.
+    assert estimate_district(18.7, 99.0) == "สารภี"
     assert estimate_district(18.2, 99.0) == "เมืองเชียงใหม่"
+
+
+def test_district_estimation_prefers_real_polygon_over_bbox():
+    # (18.75, 99.01) sits inside the real สารภี polygon per chiangmai-districts.json,
+    # even though it also falls inside the old สันกำแพง bounding box — the real
+    # polygon must win.
+    assert estimate_district(18.73, 99.01) == "สารภี"
+
+
+@patch("httpx.get")
+def test_nasa_live_fetch_requests_5_day_window(mock_get):
+    mock_resp = MagicMock()
+    mock_resp.content = b"latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_t31,frp,daynight\n"
+    mock_get.return_value = mock_resp
+
+    fetch_nasa_firms_hotspots("test_key")
+
+    assert mock_get.called
+    requested_urls = [call.args[0] for call in mock_get.call_args_list]
+    assert all(url.endswith("/5") for url in requested_urls)
+
+
+def test_dedup_same_source_keeps_latest_detection_per_location():
+    # Same fire re-detected on two different days at (nearly) the same spot —
+    # a naive 5-day window would otherwise count it twice.
+    older = _hs(18.916, 98.939, NASA, day="2026-05-28")
+    newer = _hs(18.9161, 98.9391, NASA, day="2026-05-30")  # ~15m away, same fire
+    distinct = _hs(19.5, 99.1, NASA, day="2026-05-29")
+
+    result = _dedup_same_source_by_location([older, newer, distinct])
+
+    assert len(result) == 2
+    kept = next(h for h in result if abs(h.latitude - 18.916) < 0.01)
+    assert kept.detected_at == newer.detected_at
 
 @patch("httpx.get")
 def test_fetch_live_weather_success(mock_get):

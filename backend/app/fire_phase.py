@@ -38,6 +38,23 @@ _YELLOW_THRESHOLD = 0.55
 _DRY_AIR_GATE = 0.35
 _DURING_FLOOR = 0.85
 
+# Hotspots now stay in the live feed for up to 5 days (see hotspot_provider's
+# NASA fetch) so a fire doesn't vanish from the map overnight. But "during"
+# phase / active-hotspot-count / forest proximity must mean "burning right
+# now" — a 4-day-old detection that was never re-seen should NOT floor a
+# district's danger at 0.85 or mark a forest as next to an active fire.
+_ACTIVE_HOTSPOT_HOURS = 24.0
+
+
+def _is_recent_detection(detected_at: str, now: datetime, hours: float) -> bool:
+    try:
+        dt = datetime.fromisoformat(detected_at)
+    except (TypeError, ValueError):
+        return False
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone(timedelta(hours=7)))
+    return (now - dt) <= timedelta(hours=hours)
+
 # Which dNBR zone maps to which district (Phase 6.2 — Sentinel-2 burn scars).
 _ZONE_DISTRICT = {
     "doi-suthep-pui": "เมืองเชียงใหม่",
@@ -278,8 +295,11 @@ def classify_fire_phases(
 ) -> FirePhaseResponse:
     cf_list = community_forests or []
 
+    now = datetime.now(timezone(timedelta(hours=7)))
+    recent_hotspots = [h for h in hotspots.items if _is_recent_detection(h.detected_at, now, _ACTIVE_HOTSPOT_HOURS)]
+
     active_by_district: dict[str, int] = {}
-    for item in hotspots.items:
+    for item in recent_hotspots:
         name = _normalize_district(item.district)
         if name:
             active_by_district[name] = active_by_district.get(name, 0) + 1
@@ -342,7 +362,7 @@ def classify_fire_phases(
             spread = _build_spread_projection(district, dist_wind_speed, dist_wind_dir)
             nearby, coord_note = _nearby_forests(
                 district, spread.direction_deg, cf_list,
-                district_danger=danger, hotspot_items=hotspots.items,
+                district_danger=danger, hotspot_items=recent_hotspots,
             )
         elif district in burned:
             phase = "after"
@@ -350,7 +370,7 @@ def classify_fire_phases(
             reasons = [f"พบรอยไหม้จากดาวเทียม (dNBR {dnbr_value}, ความรุนแรง {severity}) — ระยะฟื้นฟู"]
             nearby, _ = _nearby_forests(
                 district, spread_dir_dist, cf_list,
-                district_danger=danger, hotspot_items=hotspots.items,
+                district_danger=danger, hotspot_items=recent_hotspots,
             )
         elif dryness < _DRY_AIR_GATE:
             phase = "normal"
@@ -363,7 +383,7 @@ def classify_fire_phases(
             ]
             nearby, coord_note = _nearby_forests(
                 district, spread_dir_dist, cf_list,
-                district_danger=danger, hotspot_items=hotspots.items,
+                district_danger=danger, hotspot_items=recent_hotspots,
             )
         else:
             phase = "normal"
@@ -400,7 +420,7 @@ def classify_fire_phases(
     forest_risk: list[ForestRisk] = []
     for cf in cf_list:
         base_danger = danger_by_district.get(_normalize_district(cf.amphoe), fallback_danger)
-        nearest_km = _nearest_hotspot_km(cf.latitude, cf.longitude, hotspots.items)
+        nearest_km = _nearest_hotspot_km(cf.latitude, cf.longitude, recent_hotspots)
         forest_risk.append(ForestRisk(
             forest_id=cf.forest_id,
             name=cf.name,

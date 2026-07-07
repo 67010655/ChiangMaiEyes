@@ -68,6 +68,46 @@ FOREST_FIREMAP_SOURCE = "Royal Forest Department Firemap"
 FOREST_FIREMAP_URL = "https://wildfire.forest.go.th/firemap/getdb.php"
 BANGKOK_TZ = datetime.timezone(datetime.timedelta(hours=7))
 
+# Real district boundaries (same GeoJSON the frontend uses for its accurate
+# point-in-polygon labels). Loaded once and checked first in estimate_district();
+# the crude bounding boxes below are only a fallback for points that miss every
+# real polygon (e.g. right on a shared border, or if the file fails to load).
+_DISTRICTS_GEOJSON = Path(__file__).resolve().parent.parent / "data" / "chiangmai-districts.json"
+
+
+@lru_cache(maxsize=1)
+def _district_polygons() -> tuple[tuple[str, tuple[tuple[tuple[float, float], ...], ...]], ...]:
+    """(district_name, (outer_ring, ...)) for every district's polygon part."""
+    try:
+        data = json.loads(_DISTRICTS_GEOJSON.read_text(encoding="utf-8"))
+        out: list[tuple[str, tuple[tuple[tuple[float, float], ...], ...]]] = []
+        for feat in data.get("features", []):
+            name = feat.get("properties", {}).get("amp_th")
+            geom = feat.get("geometry", {})
+            coords = geom.get("coordinates", [])
+            gtype = geom.get("type")
+            rings: list[tuple[tuple[float, float], ...]] = []
+            if gtype == "MultiPolygon":
+                for polygon in coords:
+                    if polygon:
+                        rings.append(tuple((float(p[0]), float(p[1])) for p in polygon[0]))
+            elif gtype == "Polygon" and coords:
+                rings.append(tuple((float(p[0]), float(p[1])) for p in coords[0]))
+            if name and rings:
+                out.append((name, tuple(rings)))
+        return tuple(out)
+    except Exception as ex:  # noqa: BLE001 — missing/invalid file must not crash a fetch
+        logger.error("Could not load district boundaries %s: %s", _DISTRICTS_GEOJSON, ex)
+        return ()
+
+
+def _district_from_polygons(lat: float, lon: float) -> str | None:
+    for name, rings in _district_polygons():
+        if any(_point_in_ring(lon, lat, ring) for ring in rings):
+            return name
+    return None
+
+
 # Approximate district boundaries using (lat, lon) ranges for Chiang Mai.
 # Ordered so more specific checks come first; the fallback covers central areas.
 _DISTRICT_BOUNDS: list[tuple[str, float, float, float, float]] = [
@@ -94,7 +134,12 @@ _DISTRICT_BOUNDS: list[tuple[str, float, float, float, float]] = [
 
 
 def estimate_district(lat: float, lon: float) -> str:
-    """Approximate Chiang Mai district from coordinates using bounding boxes."""
+    """Chiang Mai district from coordinates: real polygon boundaries first
+    (same data the frontend's map labels use), falling back to coarse
+    bounding boxes only if the point misses every real polygon."""
+    real = _district_from_polygons(lat, lon)
+    if real:
+        return real
     for name, lat_min, lat_max, lon_min, lon_max in _DISTRICT_BOUNDS:
         if lat_min <= lat <= lat_max and lon_min <= lon <= lon_max:
             return name
@@ -373,13 +418,38 @@ def _float_or_none(raw: object) -> float | None:
         return None
 
 
+# NASA's max per-call day-range. A fire not re-detected on the very next
+# satellite pass used to vanish from the map entirely (1-day window) even
+# though it was probably still burning — 5 days keeps it visible (correctly
+# aged) until it genuinely drops out of the rolling window, and matches the
+# window fetch_hotspot_history already chains for the trend charts.
+_NASA_LIVE_DAY_RANGE = 5
+# Grid cell (~100m) used to collapse the SAME location re-detected across
+# multiple days/satellites in that window into one point, so a persistent
+# fire doesn't get counted 3-5x as separate "active hotspots".
+_DEDUP_GRID_DECIMALS = 3
+
+
+def _dedup_same_source_by_location(hotspots: list[Hotspot]) -> list[Hotspot]:
+    """Keep only the most recent detection per grid cell (see
+    _DEDUP_GRID_DECIMALS) — used within a single source's own multi-day
+    window so it never collapses points from a different source."""
+    latest_by_cell: dict[tuple[float, float], Hotspot] = {}
+    for hs in hotspots:
+        cell = (round(hs.latitude, _DEDUP_GRID_DECIMALS), round(hs.longitude, _DEDUP_GRID_DECIMALS))
+        current = latest_by_cell.get(cell)
+        if current is None or hs.detected_at > current.detected_at:
+            latest_by_cell[cell] = hs
+    return list(latest_by_cell.values())
+
+
 def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
     # NASA FIRMS Area API bounding box for Chiang Mai (west, south, east, north).
     bbox = "97.25,17.35,99.68,20.28"
     hotspots: list[Hotspot] = []
     idx = 0
     for src in NASA_VIIRS_SOURCES:
-        url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/1"
+        url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{_NASA_LIVE_DAY_RANGE}"
         logger.info("Fetching hotspots from NASA FIRMS %s", src)
         try:
             response = httpx.get(url, timeout=15.0)
@@ -412,7 +482,7 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
                 logger.warning("Error parsing NASA FIRMS hotspot row: %s", ex)
                 continue
 
-    return hotspots
+    return _dedup_same_source_by_location(hotspots)
 
 def fetch_hotspot_history(map_key: str, days: int = 5) -> list[tuple[str, int]]:
     """Daily in-province hotspot counts for the last ``days`` days from NASA
