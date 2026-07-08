@@ -16,8 +16,10 @@ Enhanced with 3-phase workflow:
 
 from __future__ import annotations
 
+import json
 import math
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from app.fire_spread_physics import DISTRICT_PHYSICS
 from app.models import (
@@ -30,6 +32,7 @@ from app.models import (
     NearbyForest,
     SatelliteLayerResponse,
     SpreadProjection,
+    TambonWarning,
     WeatherResponse,
 )
 
@@ -99,6 +102,47 @@ _SPREAD_DIR_LABELS = [
     "เหนือ", "ตะวันออกเฉียงเหนือ", "ตะวันออก", "ตะวันออกเฉียงใต้",
     "ใต้", "ตะวันตกเฉียงใต้", "ตะวันตก", "ตะวันตกเฉียงเหนือ",
 ]
+
+_TAMBONS_GEOJSON = Path(__file__).resolve().parent / "data" / "chiangmai-tambons.geojson"
+
+
+def _load_tambon_centroids() -> list[dict]:
+    """Approximate centroid (average of all ring vertices — the same
+    simplification used elsewhere in this codebase for boundary lookups) for
+    every tambon, loaded once at import time. Returns [] on any error so a
+    missing/bad file can't crash a request."""
+    try:
+        data = json.loads(_TAMBONS_GEOJSON.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    out: list[dict] = []
+    for feat in data.get("features", []):
+        props = feat.get("properties", {})
+        tambon = props.get("tambon_th")
+        amphoe = props.get("amphoe_th")
+        geom = feat.get("geometry", {})
+        coords = geom.get("coordinates", [])
+        gtype = geom.get("type")
+        pts: list[tuple[float, float]] = []
+        if gtype == "MultiPolygon":
+            for polygon in coords:
+                if polygon:
+                    pts.extend((float(p[0]), float(p[1])) for p in polygon[0])
+        elif gtype == "Polygon" and coords:
+            pts.extend((float(p[0]), float(p[1])) for p in coords[0])
+        if not (tambon and amphoe and pts):
+            continue
+        out.append({
+            "tcode": props.get("tcode"),
+            "tambon": tambon,
+            "amphoe": amphoe,
+            "longitude": sum(p[0] for p in pts) / len(pts),
+            "latitude": sum(p[1] for p in pts) / len(pts),
+        })
+    return out
+
+
+_TAMBON_CENTROIDS = _load_tambon_centroids()
 
 # Per-forest fuel risk: a forest's score = its district's base danger_score,
 # boosted the closer a real active hotspot is (real signal, not fabricated —
@@ -432,6 +476,26 @@ def classify_fire_phases(
             fire_management_active=cf.fire_management_active,
         ))
 
+    # Tambon-level fire watch — same district-base-danger + hotspot-proximity
+    # boost as forest_risk, but keyed to tambon centroids so the map can show
+    # a warning symbol at the ตำบล drill-down level, not just per district.
+    tambon_warnings: list[TambonWarning] = []
+    for t in _TAMBON_CENTROIDS:
+        base_danger = danger_by_district.get(_normalize_district(t["amphoe"]), fallback_danger)
+        nearest_km = _nearest_hotspot_km(t["latitude"], t["longitude"], recent_hotspots)
+        score = _forest_danger_score(base_danger, nearest_km)
+        tambon_phase = "during" if score >= _DURING_FLOOR else "before" if score >= _YELLOW_THRESHOLD else "normal"
+        tambon_warnings.append(TambonWarning(
+            tcode=t["tcode"],
+            tambon=t["tambon"],
+            amphoe=t["amphoe"],
+            latitude=t["latitude"],
+            longitude=t["longitude"],
+            danger_score=score,
+            phase=tambon_phase,
+            nearest_hotspot_km=round(nearest_km, 1) if nearest_km is not None else None,
+        ))
+
     return FirePhaseResponse(
         generated_at=datetime.now(timezone(timedelta(hours=7))).isoformat(),
         source_mode="DERIVED",
@@ -444,10 +508,13 @@ def classify_fire_phases(
             "ระยะ 'หลังไฟ' (เทา) มาจาก dNBR Sentinel-2 — แสดงเมื่อเชื่อม Copernicus แล้ว",
             "คะแนนความเสี่ยงรายป่าชุมชน (forest_risk) = คะแนนอำเภอฐาน + ระยะใกล้จุดความร้อนจริง "
             "ยังไม่ใช่แบบจำลองเชื้อเพลิงระดับแปลง เป็นตัวช่วยจัดลำดับความสนใจเท่านั้น",
+            "เฝ้าระวังระดับตำบล (tambon_warnings) ใช้คะแนนฐานเดียวกับอำเภอแม่ + ระยะใกล้จุดความร้อนจริง "
+            "ตำบลในอำเภอเดียวกันจึงมีคะแนนต่างกันได้ตามความใกล้ไฟ ไม่ใช่ประกาศเตือนภัยทางการ",
         ],
         community_forests_source=source_label,
         fire_pm25_correlation=correlation,
         forest_risk=forest_risk,
+        tambon_warnings=tambon_warnings,
     )
 
 

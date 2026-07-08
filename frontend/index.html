@@ -811,6 +811,7 @@
         <div class="layer heat on" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
+        <div class="layer on" data-layer="tambonWarnings"><div class="sw"></div><div class="lbl">⚠️ เฝ้าระวังระดับตำบล<small>district danger + hotspot proximity</small></div><span class="cnt" id="lcTambonWarn">0</span></div>
         <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">EVI ความหนาแน่นพืชพรรณ<small>MODIS Terra rolling 8-day · NASA GIBS</small></div><span class="cnt">off</span></div>
         <div class="layer" data-layer="burnScar"><div class="sw"></div><div class="lbl">พื้นที่เผาไหม้สะสม<small>30 วัน · รายอำเภอ จากข้อมูลจริง</small></div><span class="cnt" id="lcBurn">off</span></div>
       </div>
@@ -1159,6 +1160,7 @@
           <li><b>Heatmap ความหนาแน่น</b> สีเข้ม-อ่อนแสดงความหนาแน่นของจุดไฟ คำนวณจากตำแหน่งจุดไฟจริง</li>
           <li><b>ขอบเขตป่าชุมชน</b> พิกัดป่าชุมชนจากกรมป่าไม้ (RFD) <span class="gd-tag point">จุดเท่านั้น</span> — เป็นจุดพิกัด ยังไม่ใช่ขอบเขตรูปหลายเหลี่ยมเต็มแปลง (ต้องขอ shapefile จากหน่วยงานเพิ่มถึงจะวาดขอบเขตจริงได้) สีจุด/วงกลมรอบป่าตอนนี้ไล่ตาม<b>ความเสี่ยงเชื้อเพลิงเฉพาะป่านั้น</b> <span class="gd-tag approx">ประมาณ</span> (เขียว→เหลือง→ส้ม→แดง) คำนวณจากความเสี่ยงของอำเภอนั้นบวกระยะห่างจากจุดความร้อนจริงที่ใกล้ที่สุด — ละเอียดกว่าเดิมที่ให้ค่าเดียวทั้งอำเภอ คลิกจุดดูเปอร์เซ็นต์ความเสี่ยงได้</li>
           <li><b>ขอบเขตอำเภอ/จังหวัด</b> เส้นแบ่งเขตทางการ 25 อำเภอ <span class="gd-tag real">จริง</span></li>
+          <li><b>⚠️ เฝ้าระวังระดับตำบล</b> ขึ้นเฉพาะตำบลที่มีความเสี่ยง (204 ตำบลทั้งหมด แต่โชว์แค่ที่ต้องเฝ้าระวัง) <span class="gd-tag approx">ประมาณ</span> คำนวณจากความเสี่ยงอำเภอแม่ + ระยะใกล้จุดความร้อนจริง คลิกไอคอนดูรายละเอียดได้</li>
           <li><b>EVI ความหนาแน่นพืชพรรณ</b> ภาพดาวเทียมจริงจาก NASA MODIS Terra รอบ 8 วัน <span class="gd-tag real">จริง</span> ใช้ดูว่าพืชคลุมดินแห้ง/เขียวแค่ไหน (ยิ่งแห้งยิ่งติดไฟง่าย)</li>
           <li><b>พื้นที่เผาไหม้สะสม</b> พื้นที่ที่มีจุดไฟสะสมย้อนหลัง 30 วันรายอำเภอ <span class="gd-tag real">จริง</span> คำนวณจากจุดไฟจริงที่ตรวจพบ</li>
         </ul>
@@ -1486,6 +1488,7 @@ const layers = {
   forest:   L.layerGroup(),
   boundaries: L.layerGroup().addTo(map),
   districtDetails: L.layerGroup().addTo(map),
+  tambonWarnings: L.layerGroup().addTo(map),
   ndvi: null  // created on first toggle
 };
 
@@ -2706,6 +2709,32 @@ function flyToDistrict(nameTh) {
   layer.fire('click', {originalEvent: null});
 }
 
+// ---- Tambon-level fire watch — from /api/fire-phases tambon_warnings ----
+// Only before/during tambons get a marker (⚠️), so the map stays clean and
+// the symbol only shows up where there's actually something to watch.
+function renderTambonWarnings(warnings){
+  layers.tambonWarnings.clearLayers();
+  const flagged=(warnings||[]).filter(t=>t.phase!=='normal');
+  const cntEl=document.getElementById('lcTambonWarn');
+  if(cntEl) cntEl.textContent=flagged.length;
+  flagged.forEach(t=>{
+    const isDuring=t.phase==='during';
+    const icon=L.divIcon({
+      className:'',
+      html:`<div style="font-size:${isDuring?22:18}px;line-height:1;filter:drop-shadow(0 0 3px rgba(0,0,0,.7))${isDuring?';animation:fire-flicker .9s ease-in-out infinite alternate':''}">⚠️</div>`,
+      iconSize:[24,24],iconAnchor:[12,12],
+    });
+    L.marker([t.latitude,t.longitude],{icon})
+      .bindPopup(
+        `<b>ต.${t.tambon}</b> อ.${t.amphoe}<br>`+
+        `สถานะ: <b>${isDuring?'ระหว่างไฟ (ใกล้จุดความร้อน)':'เฝ้าระวังก่อนไฟ'}</b><br>`+
+        `คะแนนความเสี่ยง (ประมาณ): ${Math.round(t.danger_score*100)}%`+
+        (t.nearest_hotspot_km!=null?` · จุดไฟใกล้สุด ${t.nearest_hotspot_km} กม.`:'')
+      )
+      .addTo(layers.tambonWarnings);
+  });
+}
+
 // ---- Community forests — live from /api/community-forests (thaicfnet + RFD) ----
 let allForests = [];
 
@@ -2890,6 +2919,9 @@ function applyLive(dash, history, phases){
     forestRiskById = {};
     phases.forest_risk.forEach(f=>{ forestRiskById[f.forest_id] = f; });
     renderForestMarkers();
+  }
+  if(phases && Array.isArray(phases.tambon_warnings)){
+    renderTambonWarnings(phases.tambon_warnings);
   }
   if(phases && Array.isArray(phases.fire_pm25_correlation)){
     firePm25Correlation=phases.fire_pm25_correlation;

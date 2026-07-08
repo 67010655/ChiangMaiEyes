@@ -240,3 +240,25 @@ def test_forest_risk_no_hotspots_matches_district_base_score():
     resp = classify_fire_phases(_hotspots(), _weather(humidity=20), community_forests=forests)
     assert resp.forest_risk[0].nearest_hotspot_km is None
     assert resp.forest_risk[0].danger_score == _phase_of(resp, "แม่แจ่ม").danger_score
+
+
+def test_tambon_warnings_present_for_every_tambon():
+    from app.fire_phase import _TAMBON_CENTROIDS
+    resp = classify_fire_phases(_hotspots(), _weather(humidity=30))
+    assert len(resp.tambon_warnings) == len(_TAMBON_CENTROIDS)
+    assert len(resp.tambon_warnings) > 0
+    assert all(0.0 <= t.danger_score <= 1.0 for t in resp.tambon_warnings)
+    assert all(t.phase in ("normal", "before", "during") for t in resp.tambon_warnings)
+
+
+def test_tambon_near_active_hotspot_scores_higher_within_same_district():
+    # ท่าผา and บ้านจันทร์ are both real tambons in แม่แจ่ม (same base danger).
+    # ท่าผา's centroid sits right next to the test hotspot fixture's fixed
+    # coordinates (18.5, 98.4); บ้านจันทร์ is the farthest tambon in the same
+    # district — the near one must score at least as high.
+    resp = classify_fire_phases(_hotspots("แม่แจ่ม"), _weather(humidity=40))
+    near = next(t for t in resp.tambon_warnings if t.tambon == "ท่าผา")
+    far = next(t for t in resp.tambon_warnings if t.tambon == "บ้านจันทร์")
+    assert near.danger_score >= far.danger_score
+    assert near.nearest_hotspot_km is not None and far.nearest_hotspot_km is not None
+    assert near.nearest_hotspot_km < far.nearest_hotspot_km

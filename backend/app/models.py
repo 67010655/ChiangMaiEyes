@@ -282,6 +282,21 @@ class ForestRisk(BaseModel):
     fire_management_active: bool = False
 
 
+class TambonWarning(BaseModel):
+    # Per-tambon (subdistrict) fire watch — the อำเภอ→ตำบล drill-down asked
+    # for in feedback. Same idea as ForestRisk (district base danger boosted
+    # by proximity to the nearest real active hotspot) but keyed to tambon
+    # centroids instead of community-forest points.
+    tcode: str | None = None
+    tambon: str
+    amphoe: str
+    latitude: float
+    longitude: float
+    danger_score: float = Field(ge=0, le=1)
+    phase: Literal["normal", "before", "during"]
+    nearest_hotspot_km: float | None = None
+
+
 class SpreadProjection(BaseModel):
     direction_deg: float
     direction_text: str
@@ -325,6 +340,7 @@ class FirePhaseResponse(BaseModel):
     community_forests_source: str = "thaicfnet.org"
     fire_pm25_correlation: list[FirePm25Correlation] = Field(default_factory=list)
     forest_risk: list[ForestRisk] = Field(default_factory=list)
+    tambon_warnings: list[TambonWarning] = Field(default_factory=list)
 
 
 class OperationalIntelligenceResponse(BaseModel):
