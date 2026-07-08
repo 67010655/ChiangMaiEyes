@@ -1089,8 +1089,10 @@
       <div class="lr"><span class="d" style="background:#ff4d4d"></span>วิกฤต &gt;100</div>
       <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#43b05f;border-radius:2px"></span>ป่าชุมชน (จัดการไฟ)</div>
       <div class="lr"><span class="d" style="background:#37d1d6;border-radius:2px"></span>ป่าชุมชน (อื่นๆ)</div>
+      <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#8b97a7"></span>อาคาร/สิ่งปลูกสร้าง (ซูมใกล้)</div>
+      <div class="lr"><span class="d" style="background:#f5640a;border-radius:50%"></span>⛽ ปั๊มน้ำมัน</div>
     </div>
-    <div class="td-hud td-hint" id="tdHint">ลาก = หมุน · สกอลล์ = ซูม<br>คลิก hotspot/ป่า = ดูความสูง</div>
+    <div class="td-hud td-hint" id="tdHint">ลาก = หมุน · สกอลล์ = ซูม<br>คลิก hotspot/ป่า = ดูความสูง<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)</div>
   </div>
 
   <!-- FIRE PHASE OVERLAY -->
@@ -1220,6 +1222,7 @@
         <ul>
           <li>ภูมิประเทศจริงจากแบบจำลองความสูงดิจิทัล (DEM Terrarium 30ม.) <span class="gd-tag real">จริง</span> พร้อมจุดไฟจริงลอยตามความสูง</li>
           <li>Legend ซ้ายล่าง: สีความแรงไฟ + สีป่าชุมชน (เขียว=จัดการไฟ, ฟ้า=อื่นๆ) — อิงพิกัดป่าชุมชนจริงเช่นกัน (จุดเท่านั้น เหมือนข้อ 3)</li>
+          <li><b>อาคาร/สิ่งปลูกสร้าง + ⛽ ปั๊มน้ำมัน</b> <span class="gd-tag real">จริง</span> จาก OpenStreetMap — โหลดเฉพาะตอนซูมใกล้ (ระดับอาคาร) เพราะข้อมูลทั้งจังหวัดมีมากเกินจะโหลดพร้อมกันได้ ความสูงอาคารประมาณจากจำนวนชั้นถ้ามีระบุ ไม่งั้นใช้ค่ากลาง 8 เมตร <span class="gd-tag approx">ประมาณ</span></li>
           <li>ควบคุม: ลากค้าง=หมุนมุมมอง, สกอลล์=ซูม, คลิกจุด=ดูรายละเอียด</li>
         </ul>
       </details>
@@ -3875,6 +3878,33 @@ function initMapLibre3D(){
         'line-color':'#22d3ee','line-width':2.5,'line-opacity':0.7,'line-dasharray':[4,3]
       }});
     }).catch(()=>{});
+
+    // Man-made structures (houses/buildings/gas stations) — real OpenStreetMap
+    // data via Overpass, queried on-demand for the CURRENT viewport only once
+    // zoomed in close enough to be meaningful (whole-province building data
+    // would be hundreds of thousands of footprints — not fetchable or useful
+    // at province zoom). See _refreshStructures3D().
+    mlMap.addSource('buildings-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    mlMap.addLayer({id:'buildings-3d-fill',type:'fill-extrusion',source:'buildings-3d',paint:{
+      'fill-extrusion-color':'#8b97a7',
+      'fill-extrusion-height':['coalesce',['get','height_m'],8],
+      'fill-extrusion-opacity':0.75
+    }});
+    mlMap.addSource('fuel-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    mlMap.addLayer({id:'fuel-3d-circle',type:'circle',source:'fuel-3d',paint:{
+      'circle-radius':6,'circle-color':'#f5640a','circle-stroke-color':'#fff','circle-stroke-width':1.5
+    }});
+    mlMap.on('click','fuel-3d-circle',e=>{
+      const f=e.features[0]; if(!f) return;
+      new maplibregl.Popup({closeButton:true,maxWidth:'200px'})
+        .setLngLat(f.geometry.coordinates)
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3">⛽ <b style="color:#f5640a">${f.properties.name||'ปั๊มน้ำมัน'}</b><br>สิ่งปลูกสร้างเสี่ยงใกล้ไฟป่า</div>`)
+        .addTo(mlMap);
+    });
+    mlMap.on('mouseenter','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
+    mlMap.on('mouseleave','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='';});
+
+    mlMap.on('moveend',_refreshStructures3D);
   });
 
   // Navigation controls
@@ -3882,7 +3912,7 @@ function initMapLibre3D(){
 
   // Exaggeration toggle in HUD hint
   document.getElementById('tdHint').innerHTML=
-    'ลาก = หมุน · สกอลล์ = ซูม<br>คลิก hotspot/ป่า = ดูความสูง<br>'+
+    'ลาก = หมุน · สกอลล์ = ซูม<br>คลิก hotspot/ป่า = ดูความสูง<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)<br>'+
     '<span style="cursor:pointer;color:var(--wind);text-decoration:underline" onclick="cycleTerrain()">ปรับระดับ terrain</span>';
 }
 
@@ -3911,6 +3941,58 @@ function _sync3DHotspots(){
     el.addEventListener('click',()=>selectHotspot(h));
     _3dMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([h.lon,h.lat]).addTo(mlMap));
   });
+}
+
+// ---- Man-made structures (3D) — real OSM buildings + gas stations via
+// Overpass, only queried once zoomed in close (whole-province building data
+// isn't fetchable/meaningful at province zoom). Debounced + de-duped so
+// panning/zooming doesn't spam the public Overpass instance. ----
+const STRUCTURES_3D_MIN_ZOOM=14;
+let _structuresRequestToken=0;
+let _structuresLastBboxKey=null;
+
+function _refreshStructures3D(){
+  if(!mlMap||!mlMap.getSource('buildings-3d')) return;
+  if(mlMap.getZoom()<STRUCTURES_3D_MIN_ZOOM){
+    mlMap.getSource('buildings-3d').setData({type:'FeatureCollection',features:[]});
+    mlMap.getSource('fuel-3d').setData({type:'FeatureCollection',features:[]});
+    _structuresLastBboxKey=null;
+    return;
+  }
+  const b=mlMap.getBounds();
+  const bboxKey=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(v=>v.toFixed(3)).join(',');
+  if(bboxKey===_structuresLastBboxKey) return; // same viewport, already fetched
+  _structuresLastBboxKey=bboxKey;
+  const myToken=++_structuresRequestToken;
+
+  const bbox=`${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
+  const query=`[out:json][timeout:20];(way["building"](${bbox});node["amenity"="fuel"](${bbox}););out geom;`;
+
+  fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query)})
+    .then(r=>r.ok?r.json():null)
+    .then(data=>{
+      if(!data||myToken!==_structuresRequestToken) return; // stale response from an old viewport
+      const buildings=[],fuel=[];
+      (data.elements||[]).forEach(el=>{
+        if(el.type==='way'&&el.tags&&el.tags.building&&Array.isArray(el.geometry)&&el.geometry.length>=3){
+          const levels=parseFloat(el.tags['building:levels']);
+          buildings.push({
+            type:'Feature',
+            geometry:{type:'Polygon',coordinates:[el.geometry.map(p=>[p.lon,p.lat])]},
+            properties:{height_m:levels>0?levels*3:8}
+          });
+        } else if(el.type==='node'&&el.tags&&el.tags.amenity==='fuel'){
+          fuel.push({
+            type:'Feature',
+            geometry:{type:'Point',coordinates:[el.lon,el.lat]},
+            properties:{name:el.tags.name||'ปั๊มน้ำมัน'}
+          });
+        }
+      });
+      mlMap.getSource('buildings-3d').setData({type:'FeatureCollection',features:buildings});
+      mlMap.getSource('fuel-3d').setData({type:'FeatureCollection',features:fuel});
+    })
+    .catch(()=>{ /* Overpass down/slow — silently keep whatever was last shown */ });
 }
 
 function _sync3DForests(){
