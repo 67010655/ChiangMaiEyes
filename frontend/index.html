@@ -1421,6 +1421,7 @@ let currentDashboard = null;              // Full API dashboard payload
 let livePhases = null;                     // /api/fire-phases → per-district phase
 let livePhasesPending = false;             // true only while the background phase request is still in flight
 let forestRiskById = {};                   // /api/fire-phases forest_risk → per-forest fuel risk, keyed by forest_id
+let tambonWarningsData = [];               // /api/fire-phases tambon_warnings → kept for the report appendix
 let liveDataQ = null;                      // dashboard.data_quality → provenance tiers
 let liveIntel = null;                      // dashboard.intelligence → trend, landuse…
 let liveSummary = null;                    // dashboard.summary.text → situation card
@@ -2921,6 +2922,7 @@ function applyLive(dash, history, phases){
     renderForestMarkers();
   }
   if(phases && Array.isArray(phases.tambon_warnings)){
+    tambonWarningsData = phases.tambon_warnings;
     renderTambonWarnings(phases.tambon_warnings);
   }
   if(phases && Array.isArray(phases.fire_pm25_correlation)){
@@ -3679,6 +3681,33 @@ function buildReport(){
 
     <h2><span class="no">4</span>ข้อเสนอแนะเชิงปฏิบัติ</h2>
     <ul>${recs.map(r=>`<li>${r}</li>`).join('')}</ul>
+
+    <h2><span class="no">5</span>ภาคผนวก: รายละเอียดทุกอำเภอ (25 อำเภอ)</h2>
+    <table>
+      <thead><tr><th>#</th><th>อำเภอ</th><th>จุดความร้อน</th><th>ดัชนีเสี่ยง</th><th>ระดับ</th></tr></thead>
+      <tbody>${ranked.map((r,i)=>{
+        const lv=r.score>70?'sev':r.score>45?'hi':'mod',lvT={sev:'เฝ้าระวังสูงสุด',hi:'เฝ้าระวัง',mod:'ติดตาม'}[lv];
+        return `<tr><td>${i+1}</td><td>${r.name}</td><td>${r.n}</td><td>${r.score}</td><td><span class="tag ${lv}">${lvT}</span></td></tr>`;
+      }).join('')}</tbody>
+    </table>
+
+    <h2><span class="no">6</span>ภาคผนวก: ตำบลเฝ้าระวัง (คำนวณจากความเสี่ยงอำเภอแม่ + ระยะใกล้จุดความร้อน)</h2>
+    ${tambonWarningsData.length?`<table>
+      <thead><tr><th>ตำบล</th><th>อำเภอ</th><th>ดัชนีเสี่ยง</th><th>สถานะ</th><th>จุดไฟใกล้สุด</th></tr></thead>
+      <tbody>${[...tambonWarningsData].sort((a,b)=>b.danger_score-a.danger_score).slice(0,20).map(t=>{
+        const lv=t.phase==='during'?'sev':t.phase==='before'?'hi':'mod';
+        const lvT={during:'ระหว่างไฟ',before:'เฝ้าระวัง',normal:'ปกติ'}[t.phase];
+        return `<tr><td>${t.tambon}</td><td>${t.amphoe}</td><td>${Math.round(t.danger_score*100)}</td><td><span class="tag ${lv}">${lvT}</span></td><td>${t.nearest_hotspot_km!=null?t.nearest_hotspot_km+' กม.':'—'}</td></tr>`;
+      }).join('')}</tbody>
+    </table>`:`<p style="color:#7a8694;font-size:12px">ยังไม่มีข้อมูลตำบลจาก backend ในขณะสร้างรายงานนี้</p>`}
+
+    <h2><span class="no">7</span>ภาคผนวก: ป่าชุมชนเฝ้าระวัง (คำนวณจากความเสี่ยงอำเภอแม่ + ระยะใกล้จุดความร้อน)</h2>
+    ${Object.keys(forestRiskById).length?`<table>
+      <thead><tr><th>ป่าชุมชน</th><th>อำเภอ</th><th>ดัชนีเสี่ยง</th><th>จัดการไฟ</th><th>จุดไฟใกล้สุด</th></tr></thead>
+      <tbody>${Object.values(forestRiskById).sort((a,b)=>b.danger_score-a.danger_score).slice(0,20).map(f=>
+        `<tr><td>${f.name}</td><td>${f.amphoe}</td><td>${Math.round(f.danger_score*100)}</td><td>${f.fire_management_active?'มี':'ไม่ระบุ'}</td><td>${f.nearest_hotspot_km!=null?f.nearest_hotspot_km+' กม.':'—'}</td></tr>`
+      ).join('')}</tbody>
+    </table>`:`<p style="color:#7a8694;font-size:12px">ยังไม่มีข้อมูลป่าชุมชนจาก backend ในขณะสร้างรายงานนี้</p>`}
 
     <div class="pfoot">
       แหล่งข้อมูล: NASA FIRMS (VIIRS/MODIS) · GISTDA · กรมควบคุมมลพิษ (PCD) · TMD/Open-Meteo<br>
