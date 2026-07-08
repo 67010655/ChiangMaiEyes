@@ -534,14 +534,28 @@
     /* side panels become off-canvas bottom-sheet drawers (see the
        .drawer-open rules further down) instead of always-visible stacks */
     .side.left,.side.right{
-      position:fixed;left:0;right:0;bottom:0;z-index:1750;
-      max-height:74svh;overflow-y:auto;border:none;
+      /* .side.right{display:none} from the older @media(max-width:1180px)
+         tablet rule above still applies here and was never overridden —
+         the drawer-open class only ever animated transform, so the right
+         drawer stayed permanently display:none no matter what. Fixed with
+         display:flex here. */
+      display:flex;flex-direction:column;
+      /* Parked off-screen via `bottom` rather than `transform:translateY()`
+         — traced the ORIGINAL bug to the `transition` on this rule: with a
+         transition present, toggling .drawer-open (add/remove) on this
+         auto-height, position:fixed, flex-content element reliably failed
+         to animate to its new value — confirmed by testing that removing
+         the transition entirely (instant show/hide) fixes it every time,
+         while every animated variant tried (transform, bottom, with/without
+         svh) got stuck at the closed position. Trading the slide animation
+         for reliability: instant toggle, no transition. */
+      position:fixed;left:0;right:0;bottom:-100vh;z-index:1750;
+      max-height:74vh;overflow-y:auto;border:none;
       border-top:1px solid var(--line);border-radius:16px 16px 0 0;
-      transform:translateY(100%);transition:transform .25s ease;
       padding-bottom:calc(52px + env(safe-area-inset-bottom,0) + 14px);
       box-shadow:0 -8px 30px rgba(0,0,0,.35);
     }
-    .side.left.drawer-open,.side.right.drawer-open{transform:translateY(0)}
+    .side.left.drawer-open,.side.right.drawer-open{bottom:0}
     /* mobile summary strip: brand, active hotspots, PM2.5, AQI — critical
        zones dropped (redundant with active hotspots) to cut crowding */
     .topbar{gap:4px;padding:0 8px;overflow-x:hidden}
