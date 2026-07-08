@@ -14,6 +14,7 @@ from app.models import (
     HotspotTrendStats,
     DailyMetric,
     FirePhaseResponse,
+    FirePredictionResponse,
     DataQualityMetadata,
     DataStatusResponse,
     DashboardResponse,
@@ -1064,6 +1065,13 @@ def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
         pm25_history=pm25_hist,
         district_winds=district_winds,
     )
+
+
+def get_fire_predictions(settings: Settings) -> "FirePredictionResponse":
+    from app.predict import build_fire_predictions
+
+    current_phases = get_fire_phases(settings)
+    return build_fire_predictions(current_phases)
 
 
 def _localized_predictions(

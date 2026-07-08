@@ -213,6 +213,26 @@ def _air_dryness(weather: WeatherResponse) -> float:
     return dryness
 
 
+def dryness_from_humidity_rain(humidity_pct: float | None, rain_mm: float | None) -> float:
+    """Same dryness formula as _air_dryness, but from raw numbers instead of a
+    WeatherResponse — lets the predict module reuse it with forecast values."""
+    humidity = humidity_pct if humidity_pct is not None else 50.0
+    dryness = max(0.0, min(1.0, (100.0 - humidity) / 100.0))
+    if (rain_mm or 0) > 1.0:
+        dryness *= 0.5
+    return dryness
+
+
+def district_base_danger(district: str, dryness: float) -> float:
+    """The exact district-danger formula used by classify_fire_phases (fuel +
+    history + dryness), exposed so the predict module can project it forward
+    with forecasted dryness instead of live — one formula, no drift risk."""
+    phys = DISTRICT_PHYSICS.get(district, {"fuel_flammability": 1.2, "history_multiplier": 1.0})
+    fuel_norm = min(1.0, phys["fuel_flammability"] / 1.8)
+    history_norm = min(1.0, max(0.0, (phys["history_multiplier"] - 1.0) / 0.5))
+    return round(0.4 * fuel_norm + 0.2 * history_norm + 0.4 * dryness, 2)
+
+
 def _build_spread_projection(
     district: str,
     wind_speed_kmh: float,
@@ -375,7 +395,7 @@ def classify_fire_phases(
         active = active_by_district.get(district, 0)
         fuel_norm = min(1.0, phys["fuel_flammability"] / 1.8)
         history_norm = min(1.0, max(0.0, (phys["history_multiplier"] - 1.0) / 0.5))
-        danger = round(0.4 * fuel_norm + 0.2 * history_norm + 0.4 * dryness, 2)
+        danger = district_base_danger(district, dryness)  # same formula as fuel_norm/history_norm above
 
         calc_breakdown = {
             "formula": "danger = 0.4×fuel + 0.2×history + 0.4×dryness",

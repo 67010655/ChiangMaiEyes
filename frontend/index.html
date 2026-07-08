@@ -1104,6 +1104,7 @@
         <button class="ph-tab" data-tab="before" onclick="switchPhaseTab('before')" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:.15s">ก่อนไฟ</button>
         <button class="ph-tab" data-tab="during" onclick="switchPhaseTab('during')" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--green);background:var(--green);color:#fff;cursor:pointer;transition:.15s">ระหว่างไฟ</button>
         <button class="ph-tab" data-tab="after" onclick="switchPhaseTab('after')" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:.15s">หลังไฟ</button>
+        <button class="ph-tab" data-tab="predict" onclick="switchPhaseTab('predict')" style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;transition:.15s">✨ พยากรณ์</button>
       </div>
       <button class="an-close" id="phaseClose">✕</button>
     </div>
@@ -1229,6 +1230,7 @@
           <li>3 แถบด้านบน: <b>ก่อนไฟ / ระหว่างไฟ / หลังไฟ</b> ต่ออำเภอ คำนวณจากจุดไฟจริง + สภาพอากาศจริง + ค่าฟิสิกส์เชื้อเพลิงเฉพาะแต่ละอำเภอ (ฝั่งเซิร์ฟเวอร์) <span class="gd-tag approx">ประมาณ</span></li>
           <li>การ์ดต่ออำเภอ: ป้ายสถานะ + คะแนนอันตราย + ป่าชุมชนที่อยู่ในแนวเสี่ยง (ขึ้นเตือนพิเศษถ้าเข้าข่าย "inpath") + คำแนะนำเชิงปฏิบัติ</li>
           <li>กรวยคาดการณ์การลาม + ความสัมพันธ์กับ PM2.5 ต่ออำเภอ</li>
+          <li>แถบที่ 4 <b>✨ พยากรณ์</b>: ความเสี่ยงจุดติดไฟ 3 วันข้างหน้ารายอำเภอ + การลามไฟล่วงหน้า 48/72 ชม. สำหรับอำเภอที่ไฟกำลังไหม้ตอนนี้ <span class="gd-tag approx">ประมาณ</span> — คำนวณจากพยากรณ์อากาศจริง (Open-Meteo) ผ่านสูตรเดียวกับคะแนนความเสี่ยงปัจจุบัน ไม่ใช่ AI/ML ยังไม่มีพยากรณ์ PM2.5 หรือจำนวนจุดความร้อนล่วงหน้า เพราะไม่มีแหล่งข้อมูลจริงที่น่าเชื่อถือ</li>
         </ul>
       </details>
 
@@ -3154,6 +3156,7 @@ function renderPhasePanel(){
   const body=document.getElementById('phaseBody');
   if(currentPhaseTab==='before'){ renderBeforeFire(body); return; }
   if(currentPhaseTab==='after'){ renderAfterFire(body); return; }
+  if(currentPhaseTab==='predict'){ renderPredictTab(body); return; }
   // during (default)
   if(!livePhases){
     const msg = livePhasesPending
@@ -3345,6 +3348,68 @@ function renderAfterFire(body){
       </div>`;
     }).join(''):`<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">ไม่มีเหตุการณ์ไฟใน 30 วันล่าสุด (หรือยังไม่มีข้อมูลย้อนหลัง)</div>`}
   </div>`;
+}
+
+// ---- ✨ Predict tab — /api/fire-predictions (real weather-forecast-driven,
+// not AI/ML; see backend/app/predict.py docstring for the honesty rationale) ----
+let firePredictions = null;
+let firePredictionsPending = false;
+
+async function renderPredictTab(body){
+  if(!firePredictions && !firePredictionsPending){
+    firePredictionsPending = true;
+    body.innerHTML=`<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">กำลังโหลดพยากรณ์…</div>`;
+    try{ firePredictions = await fetchJson('/api/fire-predictions', 20000); }
+    catch(e){ firePredictions = null; }
+    firePredictionsPending = false;
+    if(currentPhaseTab==='predict') renderPredictTab(body);
+    return;
+  }
+  if(firePredictionsPending){
+    body.innerHTML=`<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">กำลังโหลดพยากรณ์…</div>`;
+    return;
+  }
+  if(!firePredictions){
+    body.innerHTML=`<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">ไม่สามารถโหลดพยากรณ์ได้ตอนนี้ ลองใหม่อีกครั้ง</div>`;
+    return;
+  }
+  const forecasts=firePredictions.district_forecasts||[];
+  const spreadRows=firePredictions.spread_forecast_72h||[];
+  const trendIcon=t=>t==='rising'?'📈':t==='falling'?'📉':'➖';
+  const trendColor=t=>t==='rising'?'var(--danger)':t==='falling'?'var(--good)':'var(--muted)';
+
+  function forecastCard(f){
+    const days=(f.daily||[]).map(d=>`<div style="text-align:center;flex:1">
+      <div style="font-size:8px;color:var(--dim)">${(d.date||'').slice(5)}</div>
+      <div style="font-size:13px;font-weight:700;color:${trendColor(f.trend)}">${Math.round((d.danger_score||0)*100)}</div>
+    </div>`).join('');
+    return `<div class="ph-card">
+      <h3 style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <span>${f.district}</span><span style="font-size:11px">${trendIcon(f.trend)}</span>
+      </h3>
+      <div style="font-size:9px;color:var(--dim);margin-bottom:6px">ตอนนี้ ${Math.round((f.current_danger_score||0)*100)}%</div>
+      <div style="display:flex;gap:4px">${days||'<div style="color:var(--dim);font-size:11px">ไม่มีข้อมูลพยากรณ์</div>'}</div>
+    </div>`;
+  }
+
+  const spreadHtml=spreadRows.length?`<div class="ph-card" style="grid-column:1/-1">
+    <h3 style="margin-bottom:10px">การลามไฟล่วงหน้า 48/72 ชม. (อำเภอที่กำลังไหม้ตอนนี้)</h3>
+    ${spreadRows.map(s=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px dashed var(--line-soft);font-size:12px">
+      <span>${s.district}</span>
+      <span style="font-family:var(--mono);color:var(--muted)">48ชม. ${s.km_48h} กม. · 72ชม. ${s.km_72h} กม. (ลม ${s.forecast_wind_kmh} กม./ชม.)</span>
+    </div>`).join('')}
+  </div>`:'';
+
+  body.innerHTML=`
+    <div class="ph-card" style="grid-column:1/-1">
+      <h3 style="margin-bottom:4px">พยากรณ์ความเสี่ยงจุดติดไฟ 3 วันข้างหน้า</h3>
+      <div style="font-size:10px;color:var(--dim)">คำนวณจากพยากรณ์อากาศจริง (Open-Meteo) ผ่านสูตรเดียวกับคะแนนความเสี่ยงปัจจุบัน — ไม่ใช่ AI/ML</div>
+    </div>
+    ${spreadHtml}
+    ${forecasts.slice(0,12).map(forecastCard).join('')}
+    <div class="ph-card" style="grid-column:1/-1">
+      ${(firePredictions.notes||[]).map(n=>`<div style="font-size:9.5px;color:var(--dim);padding:3px 0">⚠️ ${n}</div>`).join('')}
+    </div>`;
 }
 
 function phaseCard(p){

@@ -306,6 +306,40 @@ class SpreadProjection(BaseModel):
     km_24h: float
 
 
+class DailyIgnitionForecast(BaseModel):
+    # One forecast day's projected ignition-risk score, built from real
+    # Open-Meteo forecast humidity/rain — not a trained model.
+    date: str
+    danger_score: float = Field(ge=0, le=1)
+    humidity_pct: float | None = None
+    rain_mm: float | None = None
+
+
+class DistrictIgnitionForecast(BaseModel):
+    district: str
+    current_danger_score: float = Field(ge=0, le=1)
+    daily: list[DailyIgnitionForecast] = Field(default_factory=list)
+    trend: Literal["rising", "falling", "stable"] = "stable"
+
+
+class SpreadForecastExtended(BaseModel):
+    # 48h/72h spread distance for districts CURRENTLY during-phase, using
+    # forecasted (not just current) province-level wind.
+    district: str
+    km_48h: float
+    km_72h: float
+    forecast_wind_kmh: float
+    forecast_wind_dir_deg: float
+
+
+class FirePredictionResponse(BaseModel):
+    generated_at: str
+    source_mode: SourceMode = "DERIVED"
+    district_forecasts: list[DistrictIgnitionForecast] = Field(default_factory=list)
+    spread_forecast_72h: list[SpreadForecastExtended] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
 class FirePm25Correlation(BaseModel):
     date: str
     hotspot_count: int

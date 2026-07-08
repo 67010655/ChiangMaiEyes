@@ -19,6 +19,7 @@ from app.models import (
     DataStatusResponse,
     DashboardResponse,
     FirePhaseResponse,
+    FirePredictionResponse,
     HistoryResponse,
     HotspotHistoryResponse,
     HotspotResponse,
@@ -36,6 +37,7 @@ from app.services import (
     get_hotspots,
     get_pm25,
     get_fire_phases,
+    get_fire_predictions,
     get_summary,
     get_weather,
 )
@@ -118,6 +120,11 @@ def dashboard(settings: Settings = Depends(get_settings)) -> DashboardResponse:
 @app.get("/api/fire-phases", response_model=FirePhaseResponse)
 def fire_phases(settings: Settings = Depends(get_settings)) -> FirePhaseResponse:
     return get_fire_phases(settings)
+
+
+@app.get("/api/fire-predictions", response_model=FirePredictionResponse)
+def fire_predictions(settings: Settings = Depends(get_settings)) -> FirePredictionResponse:
+    return get_fire_predictions(settings)
 
 
 @app.get("/api/community-forests", response_model=CommunityForestsResponse)
