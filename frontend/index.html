@@ -1245,6 +1245,26 @@
         </ul>
       </details>
 
+      <details class="gd-card" id="guideNotesCard">
+        <summary>11. หมายเหตุรวม — ที่มาและข้อจำกัดของทุกตัวเลข</summary>
+        <p style="font-size:11px;color:var(--dim);margin:0 0 8px">รวมคำเตือนวิธีคำนวณจากทุกระบบไว้ที่เดียว (เดิมกระจายอยู่คนละที่ บางอันไม่เคยแสดงที่ไหนเลย) อัปเดตอัตโนมัติทุกครั้งที่ดึงข้อมูลสด</p>
+        <div id="guideNotesList" style="display:flex;flex-direction:column;gap:6px">
+          <p style="font-size:12px;color:var(--muted)">ยังไม่มีข้อมูล — เปิดแท็บ "เฟสไฟ" อย่างน้อยครั้งหนึ่งเพื่อดึงหมายเหตุจาก backend</p>
+        </div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-soft)">
+          <b style="font-size:11px">แหล่งข้อมูลทั้งหมดที่ใช้ในระบบนี้:</b>
+          <ul style="margin-top:6px">
+            <li>NASA FIRMS (VIIRS) — จุดความร้อนหลัก, FRP, ความเชื่อมั่น</li>
+            <li>GISTDA — จุดความร้อนเสริม/cross-reference</li>
+            <li>กรมควบคุมมลพิษ (PCD/Air4Thai), AQICN — สถานี PM2.5</li>
+            <li>Open-Meteo — ลม ความชื้น อุณหภูมิ ฝน (ทั้งข้อมูลปัจจุบันและพยากรณ์ล่วงหน้า)</li>
+            <li>NASA MODIS Terra (GIBS) — ภาพดัชนีพืชพรรณ EVI</li>
+            <li>กรมป่าไม้ (RFD) + thaicfnet.org — ตำแหน่งป่าชุมชน</li>
+            <li>OpenStreetMap (Overpass) — ขอบเขตอำเภอ/ตำบล, อาคาร, ปั๊มน้ำมันในโหมด 3D</li>
+          </ul>
+        </div>
+      </details>
+
       <p class="gd-note">
         หลักการอ่านป้ายกำกับ: ถ้าจะอ้างอิงตัวเลขไปตัดสินใจจริง (สั่งอพยพ ระดมคนดับไฟ ฯลฯ) ให้เชื่อค่า <span class="gd-tag real">จริง</span> เป็นหลัก
         ส่วนค่า <span class="gd-tag approx">ประมาณ</span> ใช้เป็นตัวช่วยเสริมการตัดสินใจเท่านั้น ไม่ใช่คำสั่งหรือคำเตือนทางการ
@@ -1427,6 +1447,7 @@ let livePhases = null;                     // /api/fire-phases → per-district 
 let livePhasesPending = false;             // true only while the background phase request is still in flight
 let forestRiskById = {};                   // /api/fire-phases forest_risk → per-forest fuel risk, keyed by forest_id
 let tambonWarningsData = [];               // /api/fire-phases tambon_warnings → kept for the report appendix
+let firePhaseNotes = [];                   // /api/fire-phases notes → methodology caveats, consolidated in the guide's "หมายเหตุ" section
 let liveDataQ = null;                      // dashboard.data_quality → provenance tiers
 let liveIntel = null;                      // dashboard.intelligence → trend, landuse…
 let liveSummary = null;                    // dashboard.summary.text → situation card
@@ -2718,6 +2739,19 @@ function flyToDistrict(nameTh) {
 // ---- Tambon-level fire watch — from /api/fire-phases tambon_warnings ----
 // Only before/during tambons get a marker (⚠️), so the map stays clean and
 // the symbol only shows up where there's actually something to watch.
+// ---- Guide "หมายเหตุรวม" — consolidates methodology caveats that used to
+// be scattered (or, for fire_phase.py's own `notes`, never shown anywhere
+// at all) into one place inside the guide. Called whenever new notes
+// arrive from /api/fire-phases or /api/fire-predictions. ----
+function renderGuideNotes(){
+  const el=document.getElementById('guideNotesList');
+  if(!el) return;
+  const all=[...(firePhaseNotes||[]), ...((firePredictions&&firePredictions.notes)||[])];
+  el.innerHTML = all.length
+    ? all.map(n=>`<div style="font-size:11.5px;color:var(--muted);line-height:1.5;padding:4px 0;border-bottom:1px dashed var(--line-soft)">▸ ${n}</div>`).join('')
+    : `<p style="font-size:12px;color:var(--muted)">ยังไม่มีข้อมูล — เปิดแท็บ "เฟสไฟ" อย่างน้อยครั้งหนึ่งเพื่อดึงหมายเหตุจาก backend</p>`;
+}
+
 function renderTambonWarnings(warnings){
   layers.tambonWarnings.clearLayers();
   const flagged=(warnings||[]).filter(t=>t.phase!=='normal');
@@ -2921,6 +2955,7 @@ function applyLive(dash, history, phases){
   frpSamples=hotspots.map(h=>h.frp).filter(f=>f!=null);
   // Real backend intelligence (kept for the live-aware renderers).
   if(phases && Array.isArray(phases.phases)) livePhases = phases.phases;
+  if(phases && Array.isArray(phases.notes)){ firePhaseNotes = phases.notes; renderGuideNotes(); }
   if(phases && Array.isArray(phases.forest_risk)){
     forestRiskById = {};
     phases.forest_risk.forEach(f=>{ forestRiskById[f.forest_id] = f; });
@@ -3365,6 +3400,7 @@ async function renderPredictTab(body){
     try{ firePredictions = await fetchJson('/api/fire-predictions', 20000); }
     catch(e){ firePredictions = null; }
     firePredictionsPending = false;
+    renderGuideNotes();
     if(currentPhaseTab==='predict') renderPredictTab(body);
     return;
   }
@@ -3968,7 +4004,10 @@ function _refreshStructures3D(){
   const bbox=`${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
   const query=`[out:json][timeout:20];(way["building"](${bbox});node["amenity"="fuel"](${bbox}););out geom;`;
 
-  fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query)})
+  // overpass.kumi.systems (a maintained community mirror) — verified reachable
+  // and correct during testing; overpass-api.de's main instance is also fine
+  // for most users but can rate-limit/block some networks.
+  fetch('https://overpass.kumi.systems/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(query)})
     .then(r=>r.ok?r.json():null)
     .then(data=>{
       if(!data||myToken!==_structuresRequestToken) return; // stale response from an old viewport
