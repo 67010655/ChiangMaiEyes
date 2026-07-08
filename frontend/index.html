@@ -3237,6 +3237,47 @@ function renderBeforeFire(body){
   </div>`;
 }
 
+// Derive discrete fire incidents (specific "this district burned from date A
+// to date B" records) from the real per-district daily counts already fetched
+// via /api/history — no new backend endpoint or persistence needed. Groups
+// each district's active days (count>0) into runs, tolerating a 1-day gap
+// (a satellite pass can miss an ongoing fire for a day) before starting a
+// new incident. This is what answers "once the fire disappears there's no
+// record at all" — a specific past event log, not just a 30-day aggregate.
+function deriveFireIncidents(historyData){
+  const rows=(historyData&&Array.isArray(historyData.by_district))?historyData.by_district:[];
+  if(!rows.length) return [];
+  const byDistrict={};
+  rows.forEach(day=>{
+    Object.entries(day.districts||{}).forEach(([name,count])=>{
+      const c=Number(count||0);
+      if(c<=0) return;
+      const norm=normalizeDistrictName(name);
+      (byDistrict[norm]=byDistrict[norm]||[]).push({date:day.date,count:c});
+    });
+  });
+  const incidents=[];
+  Object.entries(byDistrict).forEach(([district,days])=>{
+    days.sort((a,b)=>a.date.localeCompare(b.date));
+    let run=[];
+    const flush=()=>{
+      if(!run.length) return;
+      const total=run.reduce((s,d)=>s+d.count,0);
+      const peak=run.reduce((a,b)=>b.count>a.count?b:a,run[0]);
+      incidents.push({district,start:run[0].date,end:run[run.length-1].date,
+        days:run.length,totalHotspots:total,peakDate:peak.date,peakCount:peak.count});
+      run=[];
+    };
+    days.forEach(d=>{
+      if(!run.length){ run.push(d); return; }
+      const gapDays=Math.round((new Date(d.date)-new Date(run[run.length-1].date))/86400000);
+      if(gapDays<=2) run.push(d); else { flush(); run=[d]; }
+    });
+    flush();
+  });
+  return incidents.sort((a,b)=>b.end.localeCompare(a.end));
+}
+
 function renderAfterFire(body){
   if(!livePhases||!livePhases.length){
     body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono)">ยังไม่มีข้อมูลเฟสไฟ</div>';
@@ -3247,6 +3288,7 @@ function renderAfterFire(body){
   const total30=daily30.reduce((s,v)=>s+v,0);
   const peak30=Math.max(...daily30,0);
   const affectedCount=(livePhases||[]).filter(p=>p.phase!=='normal').length;
+  const incidents=deriveFireIncidents(history30);
 
   body.innerHTML=`
   <div class="ph-card" style="grid-column:span 3">
@@ -3283,6 +3325,23 @@ function renderAfterFire(body){
         <div style="font-size:11px;font-family:var(--mono);color:var(--wind)">${s}/100</div>
       </div>`;
     }).join('')}`:`<div style="color:var(--good);font-size:13px;text-align:center;padding:16px">✓ ไม่มีอำเภอที่อยู่ในระยะหลังไฟในขณะนี้</div>`}
+  </div>
+  <div class="ph-card" style="grid-column:span 3">
+    <h3 style="margin-bottom:4px">บันทึกเหตุการณ์ไฟรายครั้ง (30 วันล่าสุด)</h3>
+    <div style="font-size:10px;color:var(--dim);margin-bottom:12px">แยกเป็นช่วงเหตุการณ์ต่อเนื่องรายอำเภอจากจุดความร้อนจริง — ไม่ใช่แค่สรุปรวม ${incidents.length?`(${incidents.length} เหตุการณ์)`:''}</div>
+    ${incidents.length?incidents.slice(0,15).map(inc=>{
+      const sameDay=inc.start===inc.end;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:11px">
+        <div style="flex:1;min-width:0">
+          <div style="color:var(--txt);font-weight:600">${inc.district}</div>
+          <div style="color:var(--dim);font-family:var(--mono);font-size:9.5px">${sameDay?inc.start:inc.start+' → '+inc.end}${sameDay?'':` · ${inc.days} วัน`}</div>
+        </div>
+        <div style="text-align:right;font-family:var(--mono)">
+          <div style="color:var(--ember)">${inc.totalHotspots} จุดรวม</div>
+          <div style="color:var(--dim);font-size:9.5px">พีค ${inc.peakCount} จุด (${inc.peakDate})</div>
+        </div>
+      </div>`;
+    }).join(''):`<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px">ไม่มีเหตุการณ์ไฟใน 30 วันล่าสุด (หรือยังไม่มีข้อมูลย้อนหลัง)</div>`}
   </div>`;
 }
 
