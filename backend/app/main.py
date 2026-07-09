@@ -58,7 +58,14 @@ app.add_middleware(
 @app.middleware("http")
 async def no_store_api_responses(request: Request, call_next) -> Response:
     response: Response = await call_next(request)
-    if request.url.path.startswith("/api/"):
+    # Every /api/ endpoint here is live/near-live data (hotspots, PM2.5, wind,
+    # ...) that must never be served stale — except osm-structures, which is
+    # OSM building footprints for a map bbox: effectively static, and by far
+    # the most expensive endpoint per call (an Overpass round-trip). Letting
+    # the browser cache it is a real speed + resource win with no honesty
+    # cost, since it sets its own Cache-Control below instead of this
+    # blanket no-store.
+    if request.url.path.startswith("/api/") and request.url.path != "/api/osm-structures":
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
@@ -144,6 +151,7 @@ def community_forests() -> CommunityForestsResponse:
 
 @app.get("/api/osm-structures", response_model=OsmStructuresResponse)
 def osm_structures(
+    response: Response,
     south: float = Query(...),
     west: float = Query(...),
     north: float = Query(...),
@@ -151,6 +159,11 @@ def osm_structures(
 ) -> OsmStructuresResponse:
     from app.providers.osm_structures_provider import fetch_osm_structures
 
+    # Building footprints for a fixed bbox don't meaningfully change hour to
+    # hour — cache for an hour (browser + Vercel edge) so panning back over
+    # already-seen ground, or a second visit within the hour, costs nothing:
+    # no Overpass round-trip, no backend CPU, no wait for the user.
+    response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=86400"
     return fetch_osm_structures(south, west, north, east)
 
 

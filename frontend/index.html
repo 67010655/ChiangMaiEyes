@@ -4111,6 +4111,31 @@ const STRUCTURES_3D_MIN_ZOOM=14;
 let _structuresRequestToken=0;
 let _structuresLastBboxKey=null;
 
+// Building footprints for a given patch of ground don't change — panning
+// back over already-seen area (very common: zoom in, look around, zoom back
+// out, zoom back in) shouldn't cost a fresh Overpass round-trip. Two layers
+// of caching, cheapest first:
+//   1. In-memory Map, keyed by a GRID-SNAPPED bbox — instant, zero network,
+//      cleared on page reload. Snapping (not the raw viewport bbox) means
+//      small pans within the same grid cell hit the SAME cache entry
+//      instead of every pixel of movement missing.
+//   2. Browser HTTP cache — survives across 3D-mode open/close and page
+//      reloads. Requires NOT using fetchJson() here, since it forces
+//      cache:'no-store' (correct for the live-data endpoints it's built
+//      for, wrong for this one) — see _fetchOsmStructuresCacheable below.
+// The backend sets Cache-Control itself (1h) since building data belongs to
+// this endpoint's semantics, not this file's.
+const OSM_STRUCTURES_GRID_DEG=0.02;
+const OSM_STRUCTURES_CACHE_MAX=40;
+const _osmStructuresCache=new Map();
+
+function _fetchOsmStructuresCacheable(url,ms){
+  const ctl=new AbortController(); const id=setTimeout(()=>ctl.abort(),ms||20000);
+  return fetch(url,{signal:ctl.signal}) // deliberately no cache:'no-store' — see comment above
+    .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+    .finally(()=>clearTimeout(id));
+}
+
 function _refreshStructures3D(){
   if(!mlMap||!mlMap.getSource('buildings-3d')) return;
   if(mlMap.getZoom()<STRUCTURES_3D_MIN_ZOOM){
@@ -4120,27 +4145,41 @@ function _refreshStructures3D(){
     return;
   }
   const b=mlMap.getBounds();
-  const bboxKey=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(v=>v.toFixed(3)).join(',');
-  if(bboxKey===_structuresLastBboxKey) return; // same viewport, already fetched
+  const g=OSM_STRUCTURES_GRID_DEG;
+  const south=Math.floor(b.getSouth()/g)*g, west=Math.floor(b.getWest()/g)*g;
+  const north=Math.ceil(b.getNorth()/g)*g, east=Math.ceil(b.getEast()/g)*g;
+  const bboxKey=[south,west,north,east].map(v=>v.toFixed(4)).join(',');
+  if(bboxKey===_structuresLastBboxKey) return; // same grid cell, already showing it
   _structuresLastBboxKey=bboxKey;
   const myToken=++_structuresRequestToken;
 
-  const params=`south=${b.getSouth()}&west=${b.getWest()}&north=${b.getNorth()}&east=${b.getEast()}`;
-  fetchJson(`/api/osm-structures?${params}`,20000)
+  const applyData=data=>{
+    if(myToken!==_structuresRequestToken) return; // stale response from an old viewport
+    const buildings=(data.buildings||[]).map(bd=>({
+      type:'Feature',
+      geometry:{type:'Polygon',coordinates:[bd.coordinates]},
+      properties:{height_m:bd.height_m}
+    }));
+    const fuel=(data.fuel_stations||[]).map(f=>({
+      type:'Feature',
+      geometry:{type:'Point',coordinates:[f.lon,f.lat]},
+      properties:{name:f.name}
+    }));
+    mlMap.getSource('buildings-3d').setData({type:'FeatureCollection',features:buildings});
+    mlMap.getSource('fuel-3d').setData({type:'FeatureCollection',features:fuel});
+  };
+
+  const cached=_osmStructuresCache.get(bboxKey);
+  if(cached){ applyData(cached); return; }
+
+  const params=`south=${south}&west=${west}&north=${north}&east=${east}`;
+  _fetchOsmStructuresCacheable(`${API_BASE}/api/osm-structures?${params}`,20000)
     .then(data=>{
-      if(myToken!==_structuresRequestToken) return; // stale response from an old viewport
-      const buildings=(data.buildings||[]).map(bd=>({
-        type:'Feature',
-        geometry:{type:'Polygon',coordinates:[bd.coordinates]},
-        properties:{height_m:bd.height_m}
-      }));
-      const fuel=(data.fuel_stations||[]).map(f=>({
-        type:'Feature',
-        geometry:{type:'Point',coordinates:[f.lon,f.lat]},
-        properties:{name:f.name}
-      }));
-      mlMap.getSource('buildings-3d').setData({type:'FeatureCollection',features:buildings});
-      mlMap.getSource('fuel-3d').setData({type:'FeatureCollection',features:fuel});
+      _osmStructuresCache.set(bboxKey,data);
+      if(_osmStructuresCache.size>OSM_STRUCTURES_CACHE_MAX){
+        _osmStructuresCache.delete(_osmStructuresCache.keys().next().value); // drop oldest
+      }
+      applyData(data);
     })
     .catch(()=>{ /* backend/Overpass down or slow — silently keep whatever was last shown */ });
 }
