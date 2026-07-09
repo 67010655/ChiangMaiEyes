@@ -25,7 +25,14 @@ _OVERPASS_MIRRORS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
-_TIMEOUT_SECONDS = 15.0
+# Kept short and (client timeout > query's own [timeout:N]) deliberately:
+# with the 15s/20s pair originally used here, two sequential mirror attempts
+# could take up to ~30s worst case — long enough to trip a 503 from the
+# Vercel rewrite/proxy layer in front of this endpoint before our own
+# graceful-degradation code ever got to return its empty-but-200 fallback.
+# Confirmed via production network logs: the frontend saw 503s for this
+# endpoint even though nothing in this module ever returns a non-200.
+_TIMEOUT_SECONDS = 10.0
 # httpx's default User-Agent ("python-httpx/x.y.z") gets a flat 406 from
 # overpass-api.de's WAF; a descriptive, honestly-identifying one does not.
 _USER_AGENT = "ChiangMaiEyes/1.0 (wildfire dashboard; https://chiangmaieyes.vercel.app)"
@@ -59,8 +66,11 @@ def fetch_osm_structures(south: float, west: float, north: float, east: float) -
         return OsmStructuresResponse(buildings=[], fuel_stations=[])
 
     bbox = f"{south},{west},{north},{east}"
+    # The query's own [timeout:N] must stay below _TIMEOUT_SECONDS — otherwise
+    # Overpass could still be legitimately working when our httpx client gives
+    # up on it, wasting a request that would have succeeded a moment later.
     query = (
-        f'[out:json][timeout:20];(way["building"]({bbox});node["amenity"="fuel"]({bbox}););out geom;'
+        f'[out:json][timeout:8];(way["building"]({bbox});node["amenity"="fuel"]({bbox}););out geom;'
     )
     data = _fetch_overpass(query)
     if not data:
