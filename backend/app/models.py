@@ -322,6 +322,32 @@ class DistrictIgnitionForecast(BaseModel):
     trend: Literal["rising", "falling", "stable"] = "stable"
 
 
+class OsmBuilding(BaseModel):
+    # Real OSM building footprint (via Overpass), fetched server-side rather
+    # than directly from the browser — see OsmStructuresResponse.
+    coordinates: list[list[float]] = Field(default_factory=list)
+    height_m: float = 8.0
+
+
+class OsmFuelStation(BaseModel):
+    lon: float
+    lat: float
+    name: str = "ปั๊มน้ำมัน"
+
+
+class OsmStructuresResponse(BaseModel):
+    # Buildings + gas stations for the 3D view's current viewport, from real
+    # OpenStreetMap data via Overpass. Proxied through this backend instead
+    # of fetched directly from the browser: root-caused (via direct testing)
+    # why the exact same query 503/406'd from the production frontend but
+    # worked fine via curl — overpass-api.de's WAF blocks the browser's and
+    # httpx's default User-Agent strings, not the request's origin/CORS
+    # status. See osm_structures_provider.py for the working User-Agent.
+    buildings: list[OsmBuilding] = Field(default_factory=list)
+    fuel_stations: list[OsmFuelStation] = Field(default_factory=list)
+    source_mode: SourceMode = "LIVE"
+
+
 class SpreadForecastExtended(BaseModel):
     # 48h/72h spread distance for districts CURRENTLY during-phase, using
     # forecasted (not just current) province-level wind.

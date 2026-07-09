@@ -23,6 +23,7 @@ from app.models import (
     HistoryResponse,
     HotspotHistoryResponse,
     HotspotResponse,
+    OsmStructuresResponse,
     Pm25Response,
     RiskResponse,
     SummaryResponse,
@@ -139,6 +140,18 @@ def community_forests() -> CommunityForestsResponse:
         source="Royal Forest Department + thaicfnet.org",
         cached_at=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).isoformat(),
     )
+
+
+@app.get("/api/osm-structures", response_model=OsmStructuresResponse)
+def osm_structures(
+    south: float = Query(...),
+    west: float = Query(...),
+    north: float = Query(...),
+    east: float = Query(...),
+) -> OsmStructuresResponse:
+    from app.providers.osm_structures_provider import fetch_osm_structures
+
+    return fetch_osm_structures(south, west, north, east)
 
 
 @app.get("/api/data-status", response_model=DataStatusResponse)

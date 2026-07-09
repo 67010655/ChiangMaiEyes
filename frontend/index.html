@@ -4098,58 +4098,18 @@ function _sync3DHotspots(){
   });
 }
 
-// ---- Man-made structures (3D) — real OSM buildings + gas stations via
-// Overpass, only queried once zoomed in close (whole-province building data
-// isn't fetchable/meaningful at province zoom). Debounced + de-duped so
-// panning/zooming doesn't spam the public Overpass instance. ----
+// ---- Man-made structures (3D) — real OSM buildings + gas stations, only
+// queried once zoomed in close (whole-province building data isn't
+// fetchable/meaningful at province zoom). Debounced/de-duped so panning
+// doesn't spam the backend. Fetched via OUR backend's /api/osm-structures
+// rather than calling Overpass directly from the browser — root-caused (not
+// guessed) why direct-from-browser calls were unreliable: overpass-api.de's
+// WAF returns 406 for the browser's own User-Agent (and for httpx's default
+// one), but accepts a descriptive, honestly-identifying one. The backend
+// sets that header server-side; see osm_structures_provider.py. ----
 const STRUCTURES_3D_MIN_ZOOM=14;
 let _structuresRequestToken=0;
 let _structuresLastBboxKey=null;
-
-// Public Overpass mirrors are individually flaky (rate-limit/overload under
-// real-world load — confirmed by direct testing: kumi.systems sometimes
-// drops the connection outright, overpass-api.de sometimes 504s as "too
-// busy", both recover on retry/a different mirror). Two things were tried
-// and rejected before this:
-//   1. Sequential, 12s timeout each — worst case (primary down) was up to
-//      ~24s of nothing before buildings appeared, which read as "still
-//      broken" even though the fallback did eventually work.
-//   2. Always firing both mirrors in parallel (Promise.any) — faster, but
-//      DOUBLES request volume against free shared servers on every single
-//      viewport change. Confirmed this backfires directly: repeated testing
-//      in this session got overpass-api.de rate-limiting us with 429s that
-//      hadn't shown up under sequential use.
-// Settled on a "hedged request": fire the primary immediately; only fire
-// the fallback if the primary hasn't answered within HEDGE_DELAY_MS. This
-// keeps the common case (primary healthy) at a single request — same load
-// as before — while bounding the worst case to roughly HEDGE_DELAY_MS plus
-// one mirror's timeout, instead of the sum of both.
-const OVERPASS_MIRRORS=['https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter'];
-const OVERPASS_HEDGE_DELAY_MS=4000;
-function _fetchOverpassOne(url,query){
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),15000);
-  return fetch(url,{method:'POST',body:'data='+encodeURIComponent(query),signal:controller.signal})
-    .then(r=>{ clearTimeout(timer); if(!r.ok) throw new Error('http '+r.status); return r.json(); })
-    .catch(e=>{ clearTimeout(timer); throw e; });
-}
-function _fetchOverpass(query){
-  return new Promise(resolve=>{
-    let settled=false, secondaryTried=false, hedgeTimer=null;
-    const finishOk=data=>{ if(!settled){ settled=true; clearTimeout(hedgeTimer); resolve(data); } };
-    // If the primary fails BEFORE the hedge delay elapses, fire the fallback
-    // immediately rather than waiting out the rest of a now-pointless timer.
-    const trySecondary=()=>{
-      if(secondaryTried) return;
-      secondaryTried=true;
-      _fetchOverpassOne(OVERPASS_MIRRORS[1],query).then(finishOk).catch(()=>{ if(!settled) resolve(null); });
-    };
-    _fetchOverpassOne(OVERPASS_MIRRORS[0],query).then(finishOk).catch(()=>{
-      if(!settled){ clearTimeout(hedgeTimer); trySecondary(); }
-    });
-    hedgeTimer=setTimeout(trySecondary,OVERPASS_HEDGE_DELAY_MS);
-  });
-}
 
 function _refreshStructures3D(){
   if(!mlMap||!mlMap.getSource('buildings-3d')) return;
@@ -4165,33 +4125,24 @@ function _refreshStructures3D(){
   _structuresLastBboxKey=bboxKey;
   const myToken=++_structuresRequestToken;
 
-  const bbox=`${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
-  const query=`[out:json][timeout:20];(way["building"](${bbox});node["amenity"="fuel"](${bbox}););out geom;`;
-
-  _fetchOverpass(query)
+  const params=`south=${b.getSouth()}&west=${b.getWest()}&north=${b.getNorth()}&east=${b.getEast()}`;
+  fetchJson(`/api/osm-structures?${params}`,20000)
     .then(data=>{
-      if(!data||myToken!==_structuresRequestToken) return; // stale response from an old viewport
-      const buildings=[],fuel=[];
-      (data.elements||[]).forEach(el=>{
-        if(el.type==='way'&&el.tags&&el.tags.building&&Array.isArray(el.geometry)&&el.geometry.length>=3){
-          const levels=parseFloat(el.tags['building:levels']);
-          buildings.push({
-            type:'Feature',
-            geometry:{type:'Polygon',coordinates:[el.geometry.map(p=>[p.lon,p.lat])]},
-            properties:{height_m:levels>0?levels*3:8}
-          });
-        } else if(el.type==='node'&&el.tags&&el.tags.amenity==='fuel'){
-          fuel.push({
-            type:'Feature',
-            geometry:{type:'Point',coordinates:[el.lon,el.lat]},
-            properties:{name:el.tags.name||'ปั๊มน้ำมัน'}
-          });
-        }
-      });
+      if(myToken!==_structuresRequestToken) return; // stale response from an old viewport
+      const buildings=(data.buildings||[]).map(bd=>({
+        type:'Feature',
+        geometry:{type:'Polygon',coordinates:[bd.coordinates]},
+        properties:{height_m:bd.height_m}
+      }));
+      const fuel=(data.fuel_stations||[]).map(f=>({
+        type:'Feature',
+        geometry:{type:'Point',coordinates:[f.lon,f.lat]},
+        properties:{name:f.name}
+      }));
       mlMap.getSource('buildings-3d').setData({type:'FeatureCollection',features:buildings});
       mlMap.getSource('fuel-3d').setData({type:'FeatureCollection',features:fuel});
     })
-    .catch(()=>{ /* Overpass down/slow — silently keep whatever was last shown */ });
+    .catch(()=>{ /* backend/Overpass down or slow — silently keep whatever was last shown */ });
 }
 
 function _sync3DForests(){
