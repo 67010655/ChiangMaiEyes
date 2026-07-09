@@ -500,9 +500,44 @@
   .src-pill .ok{color:var(--good)}
 
   /* Mobile-only floating controls: hidden by default, switched on inside
-     the @media(max-width:820px) block below. */
-  .mobile-search,.mobile-fab-group,.mobile-drawer-backdrop,.mobile-drawer-handle,.mobile-sheet-close,
+     the @media(max-width:820px) block below. .map-search and .map-locate-group
+     are NOT in this list — they're map-search/locate, available on every
+     viewport (desktop previously had no search or GPS-locate at all, only
+     the phone layout did; see baseline rules for them below). */
+  .mobile-fab-group,.mobile-drawer-backdrop,.mobile-drawer-handle,.mobile-sheet-close,
   .drawer-basemap,.mobile-drawer-tabs{display:none}
+
+  /* Map search bar + GPS-locate button: desktop baseline placement. Search
+     sits BELOW the centered .basemap-toggle rather than beside it — the
+     toggle's horizontal centering shifts with map width so dodging it
+     sideways only works at some widths, but its height is fixed, so
+     stacking underneath (with margin past its ~40px bottom edge) stays
+     collision-free at every desktop width. Also offset past Leaflet's own
+     top-left zoom control. Locate sits top-right below the wind badge,
+     since bottom-right is Leaflet's attribution strip.
+     The @media(max-width:820px) block below repositions both for phones. */
+  .map-search{
+    display:flex;align-items:center;gap:6px;position:absolute;z-index:900;
+    top:50px;left:70px;width:240px;
+    background:rgba(13,18,24,.92);border:1px solid var(--line);border-radius:12px;
+    padding:9px 11px;pointer-events:auto;backdrop-filter:blur(6px)
+  }
+  .map-search svg{width:15px;height:15px;color:var(--dim);flex:none}
+  .map-search input{flex:1;min-width:0;background:none;border:none;outline:none;
+    color:var(--txt);font-size:12px;font-family:var(--disp)}
+  .map-search input::placeholder{color:var(--dim)}
+
+  .map-locate-group{
+    display:flex;flex-direction:column;gap:10px;position:absolute;z-index:850;
+    top:90px;right:12px;pointer-events:auto;
+  }
+  .map-fab{
+    width:42px;height:42px;border-radius:50%;flex:none;
+    background:rgba(13,18,24,.92);border:1px solid var(--line);color:var(--txt);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.4);
+  }
+  .map-fab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
 
   @media(max-width:1180px){
     .main{grid-template-columns:66px 240px 1fr}
@@ -580,34 +615,33 @@
     .cond-badge{flex-wrap:wrap}
 
     /* floating search bar + FAB cluster + drawer backdrop, all scoped to
-       the map so they only ever sit over it */
+       the map so they only ever sit over it. .map-search/.map-locate-group
+       exist at every viewport (see baseline rules above); this block just
+       repositions them for the phone layout and restacks the locate button
+       into the same corner as the mobile-only layers button below it. */
     /* Narrower and left-aligned so it never reaches into the wind badge's
        corner on the right — no vertical stacking needed. */
-    .mobile-search{
-      display:flex;align-items:center;gap:6px;position:absolute;z-index:900;
+    .map-search{
       top:10px;left:10px;width:56%;max-width:220px;
-      background:rgba(13,18,24,.92);border:1px solid var(--line);border-radius:12px;
-      padding:9px 11px;pointer-events:auto;backdrop-filter:blur(6px)
     }
-    .mobile-search svg{width:15px;height:15px;color:var(--dim);flex:none}
-    .mobile-search input{flex:1;min-width:0;background:none;border:none;outline:none;
-      color:var(--txt);font-size:12px;font-family:var(--disp)}
-    .mobile-search input::placeholder{color:var(--dim)}
 
+    .map-locate-group{
+      top:auto;right:12px;bottom:calc(28px + env(safe-area-inset-bottom,0));
+    }
     .mobile-fab-group{
       display:flex;flex-direction:column;gap:10px;position:absolute;z-index:850;
-      right:12px;bottom:calc(28px + env(safe-area-inset-bottom,0));pointer-events:auto;
+      right:12px;bottom:calc(28px + env(safe-area-inset-bottom,0) + 56px);pointer-events:auto;
     }
     /* Leaflet's own zoom control shares the bottom-right corner — without
        this it renders on top of (not above) the layers/locate buttons. */
     .leaflet-bottom.leaflet-right{margin-bottom:150px}
-    .mobile-fab{
+    .mobile-fab,.map-fab{
       width:46px;height:46px;border-radius:50%;flex:none;
       background:rgba(13,18,24,.92);border:1px solid var(--line);color:var(--txt);
       display:flex;align-items:center;justify-content:center;
       box-shadow:0 4px 14px rgba(0,0,0,.4);
     }
-    .mobile-fab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
+    .mobile-fab svg,.map-fab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
     .mobile-fab.layers-btn{background:var(--green);color:#06140b;border-color:transparent}
 
     .mobile-drawer-backdrop{
@@ -897,19 +931,23 @@
         <div class="nums"><span>watch</span><span>elevated</span><span>high</span><span>severe</span></div>
       </div>
 
-      <!-- mobile-only: search bar over the map -->
-      <div class="mobile-search">
+      <!-- search bar over the map: every viewport (desktop + mobile) -->
+      <div class="map-search">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <input id="mobileSearchInput" type="text" placeholder="ค้นอำเภอ ตำบล หรือพิกัด (lat,lon)" autocomplete="off">
       </div>
 
-      <!-- mobile-only: one-handed floating buttons (layers drawer + locate) -->
+      <!-- GPS-locate button: every viewport -->
+      <div class="map-locate-group">
+        <button class="map-fab" id="mobileLocateBtn" aria-label="ตำแหน่งปัจจุบัน">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+      </div>
+
+      <!-- mobile-only: layers drawer button (desktop already shows layer toggles in the left panel) -->
       <div class="mobile-fab-group">
         <button class="mobile-fab layers-btn" id="mobileLayersBtn" aria-label="ชั้นข้อมูลแผนที่">
           <svg viewBox="0 0 24 24"><path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg>
-        </button>
-        <button class="mobile-fab" id="mobileLocateBtn" aria-label="ตำแหน่งปัจจุบัน">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
         </button>
       </div>
     </main>
@@ -1233,7 +1271,7 @@
           <li>3 แถบด้านบน: <b>ก่อนไฟ / ระหว่างไฟ / หลังไฟ</b> ต่ออำเภอ คำนวณจากจุดไฟจริง + สภาพอากาศจริง + ค่าฟิสิกส์เชื้อเพลิงเฉพาะแต่ละอำเภอ (ฝั่งเซิร์ฟเวอร์) <span class="gd-tag approx">ประมาณ</span></li>
           <li>การ์ดต่ออำเภอ: ป้ายสถานะ + คะแนนอันตราย + ป่าชุมชนที่อยู่ในแนวเสี่ยง (ขึ้นเตือนพิเศษถ้าเข้าข่าย "inpath") + คำแนะนำเชิงปฏิบัติ</li>
           <li>กรวยคาดการณ์การลาม + ความสัมพันธ์กับ PM2.5 ต่ออำเภอ</li>
-          <li>แถบที่ 4 <b>✨ พยากรณ์</b>: ความเสี่ยงจุดติดไฟ 3 วันข้างหน้ารายอำเภอ + การลามไฟล่วงหน้า 48/72 ชม. สำหรับอำเภอที่ไฟกำลังไหม้ตอนนี้ <span class="gd-tag approx">ประมาณ</span> — คำนวณจากพยากรณ์อากาศจริง (Open-Meteo) ผ่านสูตรเดียวกับคะแนนความเสี่ยงปัจจุบัน ไม่ใช่ AI/ML ยังไม่มีพยากรณ์ PM2.5 หรือจำนวนจุดความร้อนล่วงหน้า เพราะไม่มีแหล่งข้อมูลจริงที่น่าเชื่อถือ</li>
+          <li>แถบที่ 4 <b>✨ พยากรณ์</b>: <b>พยากรณ์อากาศรายวัน</b> (อุณหภูมิ/ความชื้น/ฝน/ลม) <span class="gd-tag real">จริง</span> และ <b>พยากรณ์ PM2.5 รายอำเภอ+ทั้งจังหวัด</b> <span class="gd-tag real">จริง</span> จาก Open-Meteo (แบบจำลองบรรยากาศ CAMS) ล่วงหน้า 3 วัน — เป็นค่าประมาณระดับภูมิภาค ไม่ใช่ค่าจากสถานีตรวจวัดจริงในพื้นที่ อาจคลาดเคลื่อนได้ ตามด้วย <b>ความเสี่ยงจุดติดไฟ 3 วันข้างหน้ารายอำเภอ</b> + <b>การลามไฟล่วงหน้า 48/72 ชม.</b> สำหรับอำเภอที่ไฟกำลังไหม้ตอนนี้ <span class="gd-tag approx">ประมาณ</span> — คำนวณจากพยากรณ์อากาศจริงผ่านสูตรเดียวกับคะแนนความเสี่ยงปัจจุบัน ไม่ใช่ AI/ML ยังไม่มีพยากรณ์<b>จำนวน</b>จุดความร้อนล่วงหน้า เพราะไม่มีแหล่งข้อมูลจริงที่น่าเชื่อถือสำหรับทำนายจำนวนจุดที่ดาวเทียมจะตรวจพบ (ใช้คะแนนความเสี่ยงจุดติดไฟด้านบนเป็นตัวช่วยประเมินแทน)</li>
         </ul>
       </details>
 
@@ -3439,11 +3477,51 @@ async function renderPredictTab(body){
     </div>`).join('')}
   </div>`:'';
 
+  const weatherDays=firePredictions.weather_forecast||[];
+  const weatherHtml=weatherDays.length?`<div class="ph-card" style="grid-column:1/-1">
+    <h3 style="margin-bottom:10px">พยากรณ์อากาศรายวันล่วงหน้า</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${weatherDays.map(d=>`<div style="flex:1;min-width:110px;text-align:center;background:var(--bg-2,rgba(255,255,255,.03));border-radius:8px;padding:8px 6px">
+        <div style="font-size:9px;color:var(--dim);margin-bottom:4px">${(d.date||'').slice(5)}</div>
+        <div style="font-size:14px;font-weight:700">${d.temp_max_c??'—'}°<span style="color:var(--dim);font-weight:400;font-size:11px">/${d.temp_min_c??'—'}°</span></div>
+        <div style="font-size:9.5px;color:var(--muted);margin-top:4px">💧 ${d.humidity_pct??'—'}% · 🌧️ ${d.rain_mm??'—'}มม.</div>
+        <div style="font-size:9.5px;color:var(--wind,var(--muted))">💨 ${d.wind_kmh??'—'}กม./ชม. ${d.wind_dir_deg!=null?_degToCompass(d.wind_dir_deg):''}</div>
+      </div>`).join('')}
+    </div>
+  </div>`:'';
+
+  const pmProvince=firePredictions.pm25_forecast_province;
+  const pmDistricts=firePredictions.pm25_forecast_districts||[];
+  const pmDayRow=(loc)=>`<div style="display:flex;gap:4px">${(loc.daily||[]).map(d=>`<div style="flex:1;text-align:center">
+      <div style="font-size:8px;color:var(--dim)">${(d.date||'').slice(5)}</div>
+      <div style="font-size:12px;font-weight:700;color:${d.pm25!=null?pmColor(d.pm25):'var(--dim)'}">${d.pm25??'—'}</div>
+    </div>`).join('')}</div>`;
+  const pmHtml=(pmProvince||pmDistricts.length)?`<div class="ph-card" style="grid-column:1/-1">
+    <h3 style="margin-bottom:10px">พยากรณ์ PM2.5 (µg/m³) 3 วันข้างหน้า</h3>
+    ${pmProvince?`<div style="padding:8px 0;border-bottom:1px dashed var(--line-soft);margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <span style="font-size:12px;font-weight:700">${pmProvince.name} (ทั้งจังหวัด)</span>
+        <div style="flex:0 0 140px">${pmDayRow(pmProvince)}</div>
+      </div>
+    </div>`:''}
+    ${pmDistricts.length?`<details>
+      <summary style="cursor:pointer;font-size:11px;color:var(--muted)">รายอำเภอ (${pmDistricts.length})</summary>
+      <div style="margin-top:6px">
+        ${pmDistricts.map(d=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-top:1px dashed var(--line-soft);font-size:11px">
+          <span>${d.name}</span>
+          <div style="flex:0 0 140px">${pmDayRow(d)}</div>
+        </div>`).join('')}
+      </div>
+    </details>`:''}
+  </div>`:'';
+
   body.innerHTML=`
     <div class="ph-card" style="grid-column:1/-1">
-      <h3 style="margin-bottom:4px">พยากรณ์ความเสี่ยงจุดติดไฟ 3 วันข้างหน้า</h3>
-      <div style="font-size:10px;color:var(--dim)">คำนวณจากพยากรณ์อากาศจริง (Open-Meteo) ผ่านสูตรเดียวกับคะแนนความเสี่ยงปัจจุบัน — ไม่ใช่ AI/ML</div>
+      <h3 style="margin-bottom:4px">พยากรณ์ล่วงหน้า 3 วัน</h3>
+      <div style="font-size:10px;color:var(--dim)">อากาศและ PM2.5 จากพยากรณ์จริง (Open-Meteo) — ความเสี่ยงจุดติดไฟและการลามไฟคำนวณจากสูตรเดียวกับคะแนนปัจจุบัน ไม่ใช่ AI/ML</div>
     </div>
+    ${weatherHtml}
+    ${pmHtml}
     ${spreadHtml}
     ${forecasts.slice(0,12).map(forecastCard).join('')}
     <div class="ph-card" style="grid-column:1/-1">

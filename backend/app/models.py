@@ -332,11 +332,44 @@ class SpreadForecastExtended(BaseModel):
     forecast_wind_dir_deg: float
 
 
+class WeatherForecastDay(BaseModel):
+    # Full daily forecast (Open-Meteo), province-level — same simplification
+    # level as the spread projection's province-wide wind. Previously fetched
+    # but only humidity/rain were used internally for the danger score; now
+    # exposed directly since users want to see the forecast itself, not just
+    # its effect on a risk number.
+    date: str
+    temp_max_c: float | None = None
+    temp_min_c: float | None = None
+    humidity_pct: float | None = None
+    rain_mm: float | None = None
+    wind_kmh: float | None = None
+    wind_dir_deg: float | None = None
+
+
+class DailyPm25Forecast(BaseModel):
+    date: str
+    pm25: float | None = None
+
+
+class LocationPm25Forecast(BaseModel):
+    # PM2.5 forecast (Open-Meteo Air Quality API — a real CAMS-based
+    # atmospheric model, not fabricated) for one location: the province
+    # centroid, or one district centroid.
+    name: str
+    latitude: float
+    longitude: float
+    daily: list[DailyPm25Forecast] = Field(default_factory=list)
+
+
 class FirePredictionResponse(BaseModel):
     generated_at: str
     source_mode: SourceMode = "DERIVED"
     district_forecasts: list[DistrictIgnitionForecast] = Field(default_factory=list)
     spread_forecast_72h: list[SpreadForecastExtended] = Field(default_factory=list)
+    weather_forecast: list[WeatherForecastDay] = Field(default_factory=list)
+    pm25_forecast_province: LocationPm25Forecast | None = None
+    pm25_forecast_districts: list[LocationPm25Forecast] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
 
