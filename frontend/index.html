@@ -4109,18 +4109,46 @@ let _structuresLastBboxKey=null;
 // Public Overpass mirrors are individually flaky (rate-limit/overload under
 // real-world load — confirmed by direct testing: kumi.systems sometimes
 // drops the connection outright, overpass-api.de sometimes 504s as "too
-// busy", both recover on retry/a different mirror). Try each in turn with a
-// short per-attempt timeout so one slow/dead mirror doesn't stall the whole
-// chain; a real building fetch response is usually well under this.
+// busy", both recover on retry/a different mirror). Two things were tried
+// and rejected before this:
+//   1. Sequential, 12s timeout each — worst case (primary down) was up to
+//      ~24s of nothing before buildings appeared, which read as "still
+//      broken" even though the fallback did eventually work.
+//   2. Always firing both mirrors in parallel (Promise.any) — faster, but
+//      DOUBLES request volume against free shared servers on every single
+//      viewport change. Confirmed this backfires directly: repeated testing
+//      in this session got overpass-api.de rate-limiting us with 429s that
+//      hadn't shown up under sequential use.
+// Settled on a "hedged request": fire the primary immediately; only fire
+// the fallback if the primary hasn't answered within HEDGE_DELAY_MS. This
+// keeps the common case (primary healthy) at a single request — same load
+// as before — while bounding the worst case to roughly HEDGE_DELAY_MS plus
+// one mirror's timeout, instead of the sum of both.
 const OVERPASS_MIRRORS=['https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter'];
-function _fetchOverpass(query,mirrorIndex){
-  mirrorIndex=mirrorIndex||0;
-  if(mirrorIndex>=OVERPASS_MIRRORS.length) return Promise.resolve(null);
+const OVERPASS_HEDGE_DELAY_MS=4000;
+function _fetchOverpassOne(url,query){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),12000);
-  return fetch(OVERPASS_MIRRORS[mirrorIndex],{method:'POST',body:'data='+encodeURIComponent(query),signal:controller.signal})
-    .then(r=>{ clearTimeout(timer); return r.ok?r.json():Promise.reject(new Error('http '+r.status)); })
-    .catch(()=>{ clearTimeout(timer); return _fetchOverpass(query,mirrorIndex+1); });
+  const timer=setTimeout(()=>controller.abort(),15000);
+  return fetch(url,{method:'POST',body:'data='+encodeURIComponent(query),signal:controller.signal})
+    .then(r=>{ clearTimeout(timer); if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+    .catch(e=>{ clearTimeout(timer); throw e; });
+}
+function _fetchOverpass(query){
+  return new Promise(resolve=>{
+    let settled=false, secondaryTried=false, hedgeTimer=null;
+    const finishOk=data=>{ if(!settled){ settled=true; clearTimeout(hedgeTimer); resolve(data); } };
+    // If the primary fails BEFORE the hedge delay elapses, fire the fallback
+    // immediately rather than waiting out the rest of a now-pointless timer.
+    const trySecondary=()=>{
+      if(secondaryTried) return;
+      secondaryTried=true;
+      _fetchOverpassOne(OVERPASS_MIRRORS[1],query).then(finishOk).catch(()=>{ if(!settled) resolve(null); });
+    };
+    _fetchOverpassOne(OVERPASS_MIRRORS[0],query).then(finishOk).catch(()=>{
+      if(!settled){ clearTimeout(hedgeTimer); trySecondary(); }
+    });
+    hedgeTimer=setTimeout(trySecondary,OVERPASS_HEDGE_DELAY_MS);
+  });
 }
 
 function _refreshStructures3D(){
