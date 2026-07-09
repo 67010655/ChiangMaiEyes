@@ -159,12 +159,23 @@ def osm_structures(
 ) -> OsmStructuresResponse:
     from app.providers.osm_structures_provider import fetch_osm_structures
 
+    result = fetch_osm_structures(south, west, north, east)
     # Building footprints for a fixed bbox don't meaningfully change hour to
-    # hour — cache for an hour (browser + Vercel edge) so panning back over
-    # already-seen ground, or a second visit within the hour, costs nothing:
-    # no Overpass round-trip, no backend CPU, no wait for the user.
-    response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=86400"
-    return fetch_osm_structures(south, west, north, east)
+    # hour, so a real result is cached for an hour (browser + Vercel edge) —
+    # panning back over already-seen ground costs nothing: no Overpass
+    # round-trip, no backend CPU, no wait for the user. Caught a real bug
+    # here during verification: caching this unconditionally meant a
+    # transient Overpass failure (returns empty-but-200 as graceful
+    # degradation) got cached for the full hour too — Vercel's edge served
+    # that empty result (X-Vercel-Cache: HIT) to every subsequent visitor to
+    # that map area for the next hour, even once Overpass had recovered.
+    # Only cache when there's something worth caching; an empty/degraded
+    # result must stay no-store so the next request gets a fresh attempt.
+    if result.buildings or result.fuel_stations:
+        response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=86400"
+    else:
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return result
 
 
 @app.get("/api/data-status", response_model=DataStatusResponse)

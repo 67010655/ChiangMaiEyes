@@ -1,5 +1,8 @@
 from unittest.mock import MagicMock, patch
 
+from fastapi.testclient import TestClient
+
+from app.main import app
 from app.providers.osm_structures_provider import fetch_osm_structures
 
 
@@ -90,3 +93,33 @@ def test_oversized_bbox_rejected_without_calling_overpass():
         assert resp.buildings == []
         assert resp.fuel_stations == []
         mock_post.assert_not_called()
+
+
+# Route-level Cache-Control tests. Caught a real bug here during production
+# verification: caching the /api/osm-structures response unconditionally
+# meant a transient Overpass failure (which degrades to an empty-but-200
+# response, by design) got cached for a full hour by Vercel's edge — every
+# visitor to that map area saw "no buildings" for an hour even after
+# Overpass recovered, confirmed via X-Vercel-Cache: HIT on an empty result.
+# The route must only advertise the long cache when there's real data to
+# cache; an empty/degraded result must stay no-store so the next request
+# gets a genuine retry instead of parroting back the same failure.
+@patch("httpx.post")
+def test_route_caches_when_buildings_present(mock_post):
+    mock_post.return_value = _overpass_response([_BUILDING_WAY])
+    resp = TestClient(app).get(
+        "/api/osm-structures", params={"south": 18.77, "west": 98.96, "north": 18.81, "east": 99.01}
+    )
+    assert resp.json()["buildings"]
+    assert "no-store" not in resp.headers["cache-control"]
+    assert "max-age=3600" in resp.headers["cache-control"]
+
+
+@patch("httpx.post")
+def test_route_does_not_cache_empty_degraded_result(mock_post):
+    mock_post.side_effect = Exception("both mirrors down")
+    resp = TestClient(app).get(
+        "/api/osm-structures", params={"south": 18.77, "west": 98.96, "north": 18.81, "east": 99.01}
+    )
+    assert resp.json()["buildings"] == []
+    assert resp.headers["cache-control"] == "no-store, no-cache, must-revalidate, max-age=0"
