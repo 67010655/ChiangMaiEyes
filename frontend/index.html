@@ -3920,12 +3920,23 @@ async function open3D(){
   }
 }
 
+// Real province bbox (from chiangmai-province.json, 1920-point boundary) is
+// lon 98.008–99.573, lat 17.242–20.148. CM_SOURCE_BOUNDS pads that slightly
+// so tiles aren't clipped mid-render at the exact province edge — this is
+// passed as `bounds` on the raster/raster-dem SOURCES (not just a camera
+// maxBounds), which is what actually stops MapLibre from requesting tiles
+// outside the region at all, including over the pitched-camera horizon.
+// A camera-only maxBounds would NOT achieve this: at pitch>0 the horizon
+// still pulls in far-away tiles regardless of where the camera center is
+// constrained to.
+const CM_SOURCE_BOUNDS=[97.9,17.1,99.7,20.3];
+
 function initMapLibre3D(){
   const style={
     version:8,
     sources:{
-      'carto-dark':{type:'raster',tiles:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png','https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],tileSize:256,attribution:'© CARTO © OpenStreetMap',maxzoom:19},
-      'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14}
+      'carto-dark':{type:'raster',tiles:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png','https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],tileSize:256,attribution:'© CARTO © OpenStreetMap',maxzoom:19,bounds:CM_SOURCE_BOUNDS},
+      'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,bounds:CM_SOURCE_BOUNDS}
     },
     terrain:{source:'terrain-dem',exaggeration:2.2},
     layers:[
@@ -3942,7 +3953,14 @@ function initMapLibre3D(){
     zoom:9,
     pitch:52,
     bearing:-20,
-    antialias:true
+    antialias:true,
+    // Camera-only polish (NOT the resource fix above — see CM_SOURCE_BOUNDS):
+    // keeps panning/zooming from wandering into the now-untextured area
+    // outside the source bounds. Padded a bit beyond CM_SOURCE_BOUNDS so the
+    // user can still see a sliver of the masked edge rather than hitting a
+    // hard wall exactly at the data boundary.
+    maxBounds:[[97.6,16.8],[100.0,20.6]],
+    minZoom:7.3
   });
 
   mlMap.on('load',()=>{
@@ -3984,9 +4002,32 @@ function initMapLibre3D(){
     mlMap.on('mouseenter','forests-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','forests-circle',()=>{mlMap.getCanvas().style.cursor='';});
 
-    // Chiang Mai province boundary
+    // Chiang Mai province boundary + mask. The mask is a donut polygon: a
+    // rectangle a bit larger than CM_SOURCE_BOUNDS with the REAL province
+    // ring (1920 points, same file used for the boundary line) punched out
+    // as a hole, painted the app's background color — this turns the
+    // rectangular source `bounds` above into an exact "cut along the
+    // outline" shape. Hole-ness in MapLibre/GeoJSON fill rendering is
+    // determined by ring position (ring[0]=outer, ring[1]=hole), not
+    // winding direction. Inserted with an explicit beforeId so it always
+    // lands right above bg/basemap/hillshade and below every data layer
+    // (forests-circle already exists by now — this fetch resolves on a
+    // later tick no matter where in this synchronous handler it's called
+    // from) — without this, an async layer landing wherever it happens to
+    // finish loading would risk masking a hotspot/building that turns out
+    // to sit just outside the exact province polygon.
     fetch('/chiangmai-province.json').then(r=>r.ok?r.json():null).then(geo=>{
       if(!geo) return;
+      const provinceRing=geo.coordinates[0];
+      const outerRing=[[96,15],[101,15],[101,22],[96,22],[96,15]];
+      mlMap.addSource('cm-mask',{type:'geojson',data:{
+        type:'Feature',properties:{},
+        geometry:{type:'Polygon',coordinates:[outerRing,provinceRing]}
+      }});
+      mlMap.addLayer({id:'cm-mask-fill',type:'fill',source:'cm-mask',paint:{
+        'fill-color':'#070a0e','fill-opacity':1
+      }},'forests-circle');
+
       mlMap.addSource('cm-boundary',{type:'geojson',data:geo});
       mlMap.addLayer({id:'cm-boundary-line',type:'line',source:'cm-boundary',paint:{
         'line-color':'#22d3ee','line-width':2.5,'line-opacity':0.7,'line-dasharray':[4,3]
