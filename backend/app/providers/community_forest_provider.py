@@ -17,6 +17,7 @@ from typing import Any
 import httpx
 
 from app.models import CommunityForest
+from app.providers.hotspot_provider import estimate_district
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +148,26 @@ def _fetch_thaicfnet() -> list[CommunityForest]:
 # Merged result
 # ---------------------------------------------------------------------------
 
+def _correct_amphoe(forests: list[CommunityForest]) -> list[CommunityForest]:
+    """The RFD/thaicfnet source's own amphoe label doesn't always match the
+    real district polygon actually containing the point — confirmed by
+    direct check, not assumed: 14 of 675 official records (~2%) sit inside a
+    different district's real boundary than their claimed amphoe (e.g. a
+    forest labelled กัลยาณิวัฒนา whose coordinates are really in จอมทอง).
+    The coordinates themselves are fine (every record falls inside SOME real
+    CM district polygon); it's the label that's occasionally wrong upstream.
+    Same class of bug already fixed for hotspots — reuse that exact
+    real-polygon-first helper instead of trusting the source label, so a
+    forest's district (and anything grouped by it — per-district counts,
+    the "ป่าชุมชนใกล้เคียง" list) matches where the dot actually sits on the
+    map rather than what the source data happened to write down."""
+    corrected = []
+    for f in forests:
+        real = estimate_district(f.latitude, f.longitude)
+        corrected.append(f.model_copy(update={"amphoe": real}) if real and real != f.amphoe else f)
+    return corrected
+
+
 def fetch_community_forests() -> list[CommunityForest]:
     """Merge RFD official (primary) + thaicfnet (supplemental, live data)."""
     official = _official_forests  # already loaded
@@ -155,11 +176,14 @@ def fetch_community_forests() -> list[CommunityForest]:
     live = _fetch_thaicfnet()
 
     # Dedup: keep all official records; skip thaicfnet records whose
-    # (name, amphoe) already exist in official set.
+    # (name, amphoe) already exist in official set. Uses the RAW source
+    # amphoe (not yet polygon-corrected) so this key matches what it always
+    # has — amphoe correction happens after, as a final pass, so it can't
+    # change which records get deduplicated against each other.
     official_keys = {(f.name.strip(), f.amphoe.strip()) for f in official}
     extra = [f for f in live if (f.name.strip(), f.amphoe.strip()) not in official_keys]
 
-    merged = official + extra
+    merged = _correct_amphoe(official + extra)
     logger.info(
         "Community forests merged: %d official + %d thaicfnet-only = %d total",
         len(official), len(extra), len(merged),
