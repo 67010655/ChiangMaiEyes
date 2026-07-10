@@ -476,9 +476,6 @@
   .leaflet-popup-tip{background:#0d1117}
   .leaflet-popup-content{font-family:var(--mono);font-size:11px;margin:11px 13px;line-height:1.6}
   .leaflet-popup-content b{color:#f5a623}
-  /* District popup: cyan accent, dark bg, readable at all zoom levels */
-  .district-popup .leaflet-popup-content-wrapper{background:#0d1117cc;backdrop-filter:blur(8px);border-color:#22d3ee55}
-  .district-popup .leaflet-popup-tip{background:#0d1117}
   /* 3D popup (Leaflet3D / pane overlays): force dark bg + high contrast text */
   .leaflet-3d-popup .leaflet-popup-content-wrapper,
   .popup-3d .leaflet-popup-content-wrapper{background:#0d1117 !important;color:#f0f6fc !important;border:1px solid #30363d !important}
@@ -1017,7 +1014,7 @@
       <div class="block detail" id="detailBlock">
         <button class="mobile-sheet-close" id="mobileDetailClose" aria-label="ปิด">✕</button>
         <h2>Hotspot detail</h2>
-        <div class="empty" id="detailEmpty"><div class="ic">◎</div>คลิกจุด hotspot บนแผนที่<br>เพื่อดูรายละเอียดและกรวยคาดการณ์</div>
+        <div class="empty" id="detailEmpty"><div class="ic">◎</div>คลิกจุด hotspot, อำเภอบนแผนที่ หรือค้นหา<br>เพื่อดูรายละเอียดพื้นที่ตรงนี้</div>
         <div id="detailBody" style="display:none"></div>
       </div>
     </aside>
@@ -1237,7 +1234,7 @@
           <li><b>Wind rose — 24h</b> กลีบกุหลาบลม บอกทิศลมเด่นใน 24 ชม.ที่ผ่านมา <span class="gd-tag real">จริง</span> จาก Open-Meteo</li>
           <li><b>ความเสี่ยงหมอกควัน</b> (เกจวงกลม 0-10) <span class="gd-tag approx">ประมาณ</span> คำนวณรวมจาก PM2.5 + จุดไฟ + ลม — ไม่ใช่ค่าประกาศเตือนภัยทางการ ใช้ประกอบการตัดสินใจเท่านั้น</li>
           <li><b>District risk ranking</b> จัดอันดับอำเภอเสี่ยงสุด ใช้คะแนนจริงจากระบบเฟสไฟฝั่งเซิร์ฟเวอร์ (ถ้าต่อไม่ได้จะคำนวณสำรองจากจุดไฟ+FRP ในเครื่องแทน)</li>
-          <li><b>Hotspot detail</b> รายละเอียดจุดไฟที่เลือกจากแผนที่</li>
+          <li><b>Hotspot detail</b> รายละเอียดของสิ่งที่กำลังโฟกัสอยู่ — คลิกจุดไฟ, คลิกอำเภอบนแผนที่, หรือค้นหาอำเภอ/ตำบล/พิกัด แล้วผลลัพธ์ (เฟสไฟ, เหตุผล, คำแนะนำ, การลามไฟ, ป่าใกล้เคียง, แนวโน้ม 3 วัน ฯลฯ) จะขึ้นที่นี่ทุกครั้ง — หัวข้อด้านบนบล็อกนี้จะเปลี่ยนชื่อตามสิ่งที่กำลังดูอยู่เสมอ</li>
         </ul>
       </details>
 
@@ -2110,18 +2107,25 @@ function runMobileSearch(query){
   if(!q) return;
   const coordMatch=q.match(/^\s*(-?\d+(?:\.\d+)?)[,\s]+(-?\d+(?:\.\d+)?)\s*$/);
   if(coordMatch){
-    map.flyTo([parseFloat(coordMatch[1]),parseFloat(coordMatch[2])],13,{duration:.8});
+    selectCoordinateSearch(parseFloat(coordMatch[1]),parseFloat(coordMatch[2]));
     return;
   }
   const d=districts.find(x=>x.name.includes(q));
-  if(d){ map.flyTo(d.c,11,{duration:.8}); toast(`ไปที่อำเภอ${d.name}`); return; }
+  if(d){
+    const layer=districtLayerRef[d.name];
+    if(layer) selectDistrict(d.name, layer);
+    else { map.flyTo(d.c,11,{duration:.8}); toast(`ไปที่อำเภอ${d.name} (ยังไม่มีรายละเอียด — ขอบเขตกำลังโหลด)`); }
+    return;
+  }
   const t=_tambonFeatures.find(f=>{
     const p=f.properties||{};
     return (p.tambon_th||p.T_NAME_T||'').includes(q);
   });
   if(t){
     const c=_tambonCentroid(t);
-    if(c){ map.flyTo(c,13,{duration:.8}); toast(`ไปที่ตำบล${(t.properties.tambon_th||t.properties.T_NAME_T)}`); return; }
+    const p=t.properties||{};
+    const name=p.tambon_th||p.T_NAME_T;
+    if(c){ selectTambonSearch(name, c, p.amphoe_th||p.A_NAME_T); return; }
   }
   toast('ไม่พบอำเภอ ตำบล หรือพิกัดที่ค้นหา');
 }
@@ -2567,6 +2571,191 @@ function tambonForPoint(lat, lng) {
   return null;
 }
 
+// ---- Shared "focus" detail panel — the same #detailBlock hotspot clicks
+// already use (right-side panel, auto-opens as a mobile bottom-sheet drawer,
+// scrolls into view). Districts, tambons, and raw-coordinate search results
+// all render into it too now, so there's one consistent place the user
+// looks to see "what am I looking at right now" — the panel's own <h2>
+// title IS that indicator, always naming the current focus. ----
+function _focusPanelOpen(titleText){
+  const title = document.querySelector('#detailBlock h2');
+  if (title) title.textContent = titleText;
+  document.getElementById('detailEmpty').style.display='none';
+  const body=document.getElementById('detailBody');
+  body.style.display='block';
+  if(isMobileViewport()){
+    openMobileDrawer('right');
+    setTimeout(()=>document.getElementById('detailBlock').scrollIntoView({block:'start',behavior:'smooth'}),260);
+  }
+  return body;
+}
+
+// Builds the district detail body as a standalone function (not inlined into
+// selectDistrict) so the lazy predict-forecast fetch below can re-render
+// just the body once data arrives, without re-touching map/layer state.
+function _districtDetailBody(distNorm){
+  const distHs = hotspots.filter(h=>normalizeDistrictName(h.district)===distNorm);
+  const distFs = allForests.filter(f=>normalizeDistrictName(f.amphoe)===distNorm);
+  const frpSum = distHs.reduce((s,h)=>s+(h.frp||0),0);
+
+  const distPmStations = pmStations.filter(s => normalizeDistrictName(s.district) === distNorm);
+  const hasPm = distPmStations.length > 0;
+  const distPmAvg = hasPm ? Math.round(distPmStations.reduce((s, x) => s + x.pm, 0) / distPmStations.length) : null;
+  const pmHtml = hasPm
+    ? `<span style="color:${pmColor(distPmAvg)}">${distPmAvg} µg/m³</span> (${distPmStations.length} สถานี)`
+    : `<span style="color:var(--dim)">— (ไม่มีสถานีวัดในพื้นที่)</span>`;
+
+  let correlationNote = '';
+  if (distHs.length > 0 && hasPm && distPmAvg > 37) {
+    correlationNote = `<div style="margin-top:8px;padding:6px;background:rgba(239,68,68,0.15);border:1.5px solid #ef444455;border-radius:4px;color:#fca5a5;font-size:10px;text-align:center;line-height:1.4">
+      ⚠️ ตรวจพบไฟป่าและฝุ่นพุ่งสูงผิดปกติในอำเภอ!
+    </div>`;
+  }
+
+  const tambonMap = {};
+  distHs.forEach(h => {
+    const tb = h.subdistrict || h.tambon;
+    if(!tb)return;
+    if (!tambonMap[tb]) tambonMap[tb] = {count:0, frp:0};
+    tambonMap[tb].count++;
+    tambonMap[tb].frp += h.frp || 0;
+  });
+  const tambonRanked = Object.entries(tambonMap)
+    .sort((a,b) => b[1].frp - a[1].frp || b[1].count - a[1].count)
+    .slice(0, 5);
+  const tambonHtml = tambonRanked.length
+    ? `<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.12em;margin-bottom:4px">ตำบลเสี่ยงสูงสุด</div>
+        ${tambonRanked.map(([tb, d], i) =>
+          `<div style="display:flex;justify-content:space-between;padding:2px 0;color:${i===0?'var(--ember)':'var(--txt)'};font-family:var(--mono);font-size:11px">
+            <span>${i+1}. ต.${tb}</span>
+            <span style="color:var(--muted)">${d.count}จุด ${d.frp>0?d.frp.toFixed(0)+'MW':''}</span>
+          </div>`
+        ).join('')}
+      </div>`
+    : '';
+
+  const layer = districtLayerRef[distNorm];
+  const c = layer ? layer.getBounds().getCenter() : null;
+  const link3d = c ? `<div style="margin-top:10px"><span onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${c.lng},${c.lat}],zoom:14,pitch:55,bearing:0,duration:1200}),600)" style="cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--wind);text-decoration:underline">📍 ดูใน 3D</span></div>` : '';
+
+  const phase = (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm);
+  const phaseHtml = phase
+    ? phaseCard(phase)
+    : `<div class="ph-card"><h3><span>${distNorm}</span></h3><div style="font-family:var(--mono);font-size:10px;color:var(--dim)">ยังไม่มีข้อมูลเฟสไฟ — กำลังโหลด...</div></div>`;
+
+  let forecastHtml = '';
+  if(firePredictions){
+    const fc = (firePredictions.district_forecasts||[]).find(f=>normalizeDistrictName(f.district)===distNorm);
+    if(fc && fc.daily && fc.daily.length){
+      const trendIcon = fc.trend==='rising'?'📈 เพิ่มขึ้น':fc.trend==='falling'?'📉 ลดลง':'➖ คงที่';
+      forecastHtml = `<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.12em;margin-bottom:4px">แนวโน้ม 3 วันข้างหน้า (พยากรณ์อากาศจริง)</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--txt)">${trendIcon} — พรุ่งนี้ ${Math.round((fc.daily[0].danger_score||0)*100)}%</div>
+      </div>`;
+    }
+  } else if(firePredictionsPending){
+    forecastHtml = `<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px;font-family:var(--mono);font-size:10px;color:var(--dim)">กำลังโหลดแนวโน้ม 3 วันข้างหน้า...</div>`;
+  }
+
+  return `
+    ${phaseHtml}
+    <div class="dl"><span class="dk">PM2.5 เฉลี่ย</span><span class="dv">${pmHtml}</span></div>
+    <div class="dl"><span class="dk">จุดความร้อน</span><span class="dv" style="color:${distHs.length?'var(--ember)':'var(--good)'}">${distHs.length} จุด</span></div>
+    <div class="dl"><span class="dk">FRP รวม</span><span class="dv">${frpSum>0?frpSum.toFixed(1)+' MW':'—'}</span></div>
+    <div class="dl"><span class="dk">ป่าชุมชน</span><span class="dv" style="color:var(--good)">${distFs.length} แห่ง</span></div>
+    ${correlationNote}
+    ${tambonHtml}
+    ${forecastHtml}
+    ${link3d}
+  `;
+}
+
+function selectDistrict(nameTh, layer){
+  const distNorm = normalizeDistrictName(nameTh);
+  layer = layer || districtLayerRef[distNorm];
+  if(!layer){ toast(`ไม่พบอำเภอ${distNorm}บนแผนที่ — ขอบเขตอาจยังโหลดไม่เสร็จ`); return; }
+
+  if (_selectedDistrictLayer && _selectedDistrictLayer !== layer) {
+    _selectedDistrictLayer.setStyle(_DISTRICT_DEFAULT_STYLE);
+  }
+  _selectedDistrictLayer = layer;
+  layer.setStyle(_DISTRICT_ACTIVE_STYLE);
+  map.fitBounds(layer.getBounds(), { padding: [20, 20], maxZoom: 12 });
+  renderDistrictDetailsOnMap(nameTh);
+
+  const body = _focusPanelOpen(`อำเภอ${distNorm}`);
+  body.innerHTML = _districtDetailBody(distNorm);
+  toast(`เลือกอำเภอ${distNorm}`);
+
+  // Predictions are lazy-loaded (same guard pattern as renderPredictTab, so
+  // they cooperate safely on the shared globals) — patch the forecast
+  // section in once they arrive, but only if the user hasn't since focused
+  // something else.
+  if(!firePredictions && !firePredictionsPending){
+    firePredictionsPending = true;
+    fetchJson('/api/fire-predictions', 20000).then(d=>{ firePredictions=d; }).catch(()=>{ firePredictions=null; }).finally(()=>{
+      firePredictionsPending=false;
+      renderGuideNotes();
+      if(document.querySelector('#detailBlock h2')?.textContent === `อำเภอ${distNorm}`){
+        document.getElementById('detailBody').innerHTML = _districtDetailBody(distNorm);
+      }
+    });
+  }
+}
+
+// Search matched a tambon: shows its real warning data if it's currently
+// flagged (before/during), otherwise an honest "no special watch" note plus
+// the parent district's phase for context — never fabricates a per-tambon
+// score for tambons the backend hasn't flagged.
+function selectTambonSearch(tambonName, centroid, amphoeHint){
+  map.flyTo(centroid,13,{duration:.8});
+  const w = tambonWarningsData.find(t=>t.tambon===tambonName);
+  const amphoe = w ? w.amphoe : amphoeHint;
+  const distNorm = amphoe ? normalizeDistrictName(amphoe) : null;
+  const phase = distNorm ? (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm) : null;
+
+  const body = _focusPanelOpen(`ตำบล${tambonName}`);
+  const phaseLabel = w ? (w.phase==='during'?'ระหว่างไฟ (ใกล้จุดความร้อน)':w.phase==='before'?'เฝ้าระวังก่อนไฟ':'ปกติ') : null;
+  const phaseCol = w ? (w.phase==='during'?'var(--danger)':w.phase==='before'?'#facc15':'var(--good)') : null;
+  body.innerHTML = `
+    <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${amphoe||'—'}</span></div>
+    ${w ? `
+      <div class="dl"><span class="dk">สถานะ</span><span class="dv" style="color:${phaseCol}">${phaseLabel}</span></div>
+      <div class="dl"><span class="dk">คะแนนความเสี่ยง</span><span class="dv">${Math.round(w.danger_score*100)}% (ประมาณ)</span></div>
+      ${w.nearest_hotspot_km!=null?`<div class="dl"><span class="dk">จุดไฟใกล้สุด</span><span class="dv">${w.nearest_hotspot_km} กม.</span></div>`:''}
+    ` : `<div style="font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.5">ไม่มีการเฝ้าระวังเป็นพิเศษสำหรับตำบลนี้ตอนนี้ (ไม่เข้าเกณฑ์ก่อนไฟ/ระหว่างไฟ)</div>`}
+    ${phase?`<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.12em;margin-bottom:4px">บริบทระดับอำเภอ (${distNorm})</div>
+      <div class="dl"><span class="dk">เฟส</span><span class="dv" style="color:${PHASE_COLOR[phase.color]}">${PHASE_LABEL_TH[phase.phase]}</span></div>
+      <div class="dl"><span class="dk">คะแนน</span><span class="dv">${Math.round((phase.danger_score||0)*100)}%</span></div>
+    </div>`:''}
+  `;
+  toast(`ไปที่ตำบล${tambonName}`);
+}
+
+// Search matched a raw "lat,lon" pair: uses REAL polygon containment
+// (districtForPoint/tambonForPoint, the same ones the backend-enrichment
+// path uses) rather than a nearest-centroid guess, so "which district is
+// this point in" is exact, not approximate.
+function selectCoordinateSearch(lat,lon){
+  map.flyTo([lat,lon],13,{duration:.8});
+  const distName = _districtFeatures.length ? districtForPoint(lat,lon) : null;
+  const distNorm = distName ? normalizeDistrictName(distName) : null;
+  const tb = _tambonFeatures.length ? tambonForPoint(lat,lon) : null;
+  const phase = distNorm ? (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm) : null;
+
+  const body = _focusPanelOpen('พิกัดที่ค้นหา');
+  body.innerHTML = `
+    <div class="dl"><span class="dk">พิกัด</span><span class="dv">${lat.toFixed(5)}, ${lon.toFixed(5)}</span></div>
+    <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${distNorm||(_districtFeatures.length?'อยู่นอกจังหวัดเชียงใหม่':'กำลังโหลดขอบเขต...')}</span></div>
+    ${tb?`<div class="dl"><span class="dk">ตำบล</span><span class="dv">${tb.tambon}</span></div>`:''}
+    ${phase?`<div class="dl"><span class="dk">เฟสไฟ (อำเภอนี้)</span><span class="dv" style="color:${PHASE_COLOR[phase.color]}">${PHASE_LABEL_TH[phase.phase]} · ${Math.round((phase.danger_score||0)*100)}%</span></div>`:''}
+    <div style="margin-top:8px">${gMapsLink(lat,lon)}</div>
+  `;
+  toast('ไปที่พิกัดที่ค้นหา');
+}
+
 function enrichHotspotsWithBoundaries(items){
   return items.map(h=>{
     const district=_districtFeatures.length ? (districtForPoint(h.lat, h.lon) || h.district) : h.district;
@@ -2642,85 +2831,12 @@ async function loadBoundaries() {
           if (_selectedDistrictLayer !== layer) layer.setStyle(_DISTRICT_DEFAULT_STYLE);
         });
 
-        // Click: hover-style stays, popup with tambon ranking, clears on map click
+        // Click: opens the shared right-panel detail block (same one hotspot
+        // clicks use) instead of a cramped on-map popup — see selectDistrict().
         layer.on('click', function(e) {
           if (e.originalEvent) L.DomEvent.stopPropagation(e);
-          // Reset previous selection
-          if (_selectedDistrictLayer && _selectedDistrictLayer !== layer) {
-            _selectedDistrictLayer.setStyle(_DISTRICT_DEFAULT_STYLE);
-          }
-          _selectedDistrictLayer = layer;
-          layer.setStyle(_DISTRICT_ACTIVE_STYLE);
-
-          map.fitBounds(layer.getBounds(), { padding: [20, 20], maxZoom: 12 });
           const nameTh = feature.properties.nameTh || feature.properties.name;
-          renderDistrictDetailsOnMap(nameTh);
-
-          const bounds = layer.getBounds();
-          const center = bounds.getCenter();
-          const distNorm = normalizeDistrictName(nameTh);
-          const distHs = hotspots.filter(h=>normalizeDistrictName(h.district)===distNorm);
-          const distFs = allForests.filter(f=>normalizeDistrictName(f.amphoe)===distNorm);
-          const frpSum = distHs.reduce((s,h)=>s+(h.frp||0),0);
-          const riskScore = Math.min(100, frpSum/3 + distHs.length*8);
-          const riskCol = riskScore>70?'#ff4d4d':riskScore>40?'#f5640a':'#facc15';
-
-          // Local PM2.5 calculation
-          const distPmStations = pmStations.filter(s => normalizeDistrictName(s.district) === distNorm);
-          const hasPm = distPmStations.length > 0;
-          const distPmAvg = hasPm ? Math.round(distPmStations.reduce((s, x) => s + x.pm, 0) / distPmStations.length) : null;
-          const pmHtml = hasPm 
-            ? `<span style="color:${pmColor(distPmAvg)}">${distPmAvg} µg/m³</span> (${distPmStations.length} สถานี)` 
-            : `<span style="color:#8b97a7">— (ไม่มีสถานีวัดในพื้นที่)</span>`;
-
-          // Fire and PM correlation warning
-          let correlationNote = '';
-          if (distHs.length > 0 && hasPm && distPmAvg > 37) {
-            correlationNote = `<div style="margin-top:6px;padding:6px;background:rgba(239,68,68,0.15);border:1.5px solid #ef444455;border-radius:4px;color:#fca5a5;font-size:10px;text-align:center;line-height:1.4">
-              ⚠️ ตรวจพบไฟป่าและฝุ่นพุ่งสูงผิดปกติในอำเภอ!
-            </div>`;
-          }
-
-          // Tambon ranking only when backend or a real tambon layer supplies names.
-          const tambonMap = {};
-          distHs.forEach(h => {
-            const tb = h.subdistrict || h.tambon;
-            if(!tb)return;
-            if (!tambonMap[tb]) tambonMap[tb] = {count:0, frp:0};
-            tambonMap[tb].count++;
-            tambonMap[tb].frp += h.frp || 0;
-          });
-          const tambonRanked = Object.entries(tambonMap)
-            .sort((a,b) => b[1].frp - a[1].frp || b[1].count - a[1].count)
-            .slice(0, 5);
-          const tambonHtml = tambonRanked.length
-            ? `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:6px">
-                <div style="color:#8b97a7;font-size:9px;letter-spacing:.12em;margin-bottom:4px">ตำบลเสี่ยงสูงสุด</div>
-                ${tambonRanked.map(([tb, d], i) =>
-                  `<div style="display:flex;justify-content:space-between;padding:2px 0;color:${i===0?'#ff8a3d':'#e6edf3'}">
-                    <span>${i+1}. ต.${tb}</span>
-                    <span style="color:#8b97a7">${d.count}จุด ${d.frp>0?d.frp.toFixed(0)+'MW':''}</span>
-                  </div>`
-                ).join('')}
-              </div>`
-            : `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:6px;color:#8b97a7;font-size:10px;line-height:1.45">
-                ${_tambonFeatures.length?'ไม่มี hotspot ที่จับคู่ตำบลในอำเภอนี้':'กำลังโหลดขอบเขตตำบลจริง...'}
-              </div>`;
-
-          L.popup({closeButton:true, maxWidth:270, className:'district-popup'})
-            .setLatLng(center)
-            .setContent(
-              `<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6">
-              <b style="font-size:13px;color:#22d3ee">อ.${distNorm}</b><br>
-              PM2.5 เฉลี่ย: <b>${pmHtml}</b><br>
-              จุดความร้อน: <b style="color:${distHs.length?'#f5640a':'#43b05f'}">${distHs.length} จุด</b><br>
-              FRP รวม: <b>${frpSum>0?frpSum.toFixed(1)+' MW':'—'}</b><br>
-              ป่าชุมชน: <b style="color:#43b05f">${distFs.length} แห่ง</b><br>
-              ความเสี่ยง: <b style="color:${riskCol}">${riskScore>0?Math.round(riskScore):'ต่ำ'}</b>
-              ${correlationNote}
-              ${tambonHtml}
-              </div>`
-            ).openOn(map);
+          selectDistrict(nameTh, layer);
         });
       }
     }).addTo(layers.boundaries);
