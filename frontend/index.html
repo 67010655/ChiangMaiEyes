@@ -476,6 +476,11 @@
   .leaflet-popup-tip{background:#0d1117}
   .leaflet-popup-content{font-family:var(--mono);font-size:11px;margin:11px 13px;line-height:1.6}
   .leaflet-popup-content b{color:#f5a623}
+  /* District/tambon/coordinate popup: cyan accent, dark bg, scrolls internally
+     since the content now includes phaseCard()'s full rich detail */
+  .district-popup .leaflet-popup-content-wrapper{background:#0d1117cc;backdrop-filter:blur(8px);border-color:#22d3ee55}
+  .district-popup .leaflet-popup-tip{background:#0d1117}
+  .district-popup .leaflet-popup-content{overflow-y:auto}
   /* 3D popup (Leaflet3D / pane overlays): force dark bg + high contrast text */
   .leaflet-3d-popup .leaflet-popup-content-wrapper,
   .popup-3d .leaflet-popup-content-wrapper{background:#0d1117 !important;color:#f0f6fc !important;border:1px solid #30363d !important}
@@ -1014,7 +1019,7 @@
       <div class="block detail" id="detailBlock">
         <button class="mobile-sheet-close" id="mobileDetailClose" aria-label="ปิด">✕</button>
         <h2>Hotspot detail</h2>
-        <div class="empty" id="detailEmpty"><div class="ic">◎</div>คลิกจุด hotspot, อำเภอบนแผนที่ หรือค้นหา<br>เพื่อดูรายละเอียดพื้นที่ตรงนี้</div>
+        <div class="empty" id="detailEmpty"><div class="ic">◎</div>คลิกจุด hotspot บนแผนที่<br>เพื่อดูรายละเอียดและกรวยคาดการณ์</div>
         <div id="detailBody" style="display:none"></div>
       </div>
     </aside>
@@ -1234,7 +1239,7 @@
           <li><b>Wind rose — 24h</b> กลีบกุหลาบลม บอกทิศลมเด่นใน 24 ชม.ที่ผ่านมา <span class="gd-tag real">จริง</span> จาก Open-Meteo</li>
           <li><b>ความเสี่ยงหมอกควัน</b> (เกจวงกลม 0-10) <span class="gd-tag approx">ประมาณ</span> คำนวณรวมจาก PM2.5 + จุดไฟ + ลม — ไม่ใช่ค่าประกาศเตือนภัยทางการ ใช้ประกอบการตัดสินใจเท่านั้น</li>
           <li><b>District risk ranking</b> จัดอันดับอำเภอเสี่ยงสุด ใช้คะแนนจริงจากระบบเฟสไฟฝั่งเซิร์ฟเวอร์ (ถ้าต่อไม่ได้จะคำนวณสำรองจากจุดไฟ+FRP ในเครื่องแทน)</li>
-          <li><b>Hotspot detail</b> รายละเอียดของสิ่งที่กำลังโฟกัสอยู่ — คลิกจุดไฟ, คลิกอำเภอบนแผนที่, หรือค้นหาอำเภอ/ตำบล/พิกัด แล้วผลลัพธ์ (เฟสไฟ, เหตุผล, คำแนะนำ, การลามไฟ, ป่าใกล้เคียง, แนวโน้ม 3 วัน ฯลฯ) จะขึ้นที่นี่ทุกครั้ง — หัวข้อด้านบนบล็อกนี้จะเปลี่ยนชื่อตามสิ่งที่กำลังดูอยู่เสมอ</li>
+          <li><b>Hotspot detail</b> รายละเอียดจุดไฟที่เลือกจากแผนที่ — คลิกอำเภอบนแผนที่หรือค้นหาอำเภอ/ตำบล/พิกัดจะขึ้นเป็น popup บนแผนที่แทน (เฟสไฟจริง, เหตุผล, คำแนะนำ, การลามไฟ, ป่าใกล้เคียง, แนวโน้ม 3 วัน ฯลฯ)</li>
         </ul>
       </details>
 
@@ -2582,23 +2587,18 @@ function tambonForPoint(lat, lng) {
   return null;
 }
 
-// ---- Shared "focus" detail panel — the same #detailBlock hotspot clicks
-// already use (right-side panel, auto-opens as a mobile bottom-sheet drawer,
-// scrolls into view). Districts, tambons, and raw-coordinate search results
-// all render into it too now, so there's one consistent place the user
-// looks to see "what am I looking at right now" — the panel's own <h2>
-// title IS that indicator, always naming the current focus. ----
-function _focusPanelOpen(titleText){
-  const title = document.querySelector('#detailBlock h2');
-  if (title) title.textContent = titleText;
-  document.getElementById('detailEmpty').style.display='none';
-  const body=document.getElementById('detailBody');
-  body.style.display='block';
-  if(isMobileViewport()){
-    openMobileDrawer('right');
-    setTimeout(()=>document.getElementById('detailBlock').scrollIntoView({block:'start',behavior:'smooth'}),260);
-  }
-  return body;
+// District/tambon/coordinate detail renders as an on-map popup anchored at
+// the clicked/searched location — NOT the right-side #detailBlock panel
+// hotspot clicks use. Tried the panel/drawer approach first; user explicitly
+// preferred the original popup interaction with the richer content inside
+// it, so this reverts the presentation while keeping everything the panel
+// version added (phaseCard's real phase/reasons/actions/spread/forests,
+// PM2.5/hotspot/FRP/forest counts, tambon ranking, 3-day forecast, 3D link).
+function _locationPopup(latlng, html){
+  return L.popup({closeButton:true, maxWidth:320, maxHeight:420, className:'district-popup'})
+    .setLatLng(latlng)
+    .setContent(html)
+    .openOn(map);
 }
 
 // Builds the district detail body as a standalone function (not inlined into
@@ -2695,21 +2695,20 @@ function selectDistrict(nameTh, layer){
   map.fitBounds(layer.getBounds(), { padding: [20, 20], maxZoom: 12 });
   renderDistrictDetailsOnMap(nameTh);
 
-  const body = _focusPanelOpen(`อำเภอ${distNorm}`);
-  body.innerHTML = _districtDetailBody(distNorm);
-  toast(`เลือกอำเภอ${distNorm}`);
+  const center = layer.getBounds().getCenter();
+  const popup = _locationPopup(center,
+    _districtDetailBody(distNorm)); // phaseCard() (or its no-data fallback) already headlines the district name
 
   // Predictions are lazy-loaded (same guard pattern as renderPredictTab, so
   // they cooperate safely on the shared globals) — patch the forecast
-  // section in once they arrive, but only if the user hasn't since focused
-  // something else.
+  // section in once they arrive, but only if this popup is still open.
   if(!firePredictions && !firePredictionsPending){
     firePredictionsPending = true;
     fetchJson('/api/fire-predictions', 20000).then(d=>{ firePredictions=d; }).catch(()=>{ firePredictions=null; }).finally(()=>{
       firePredictionsPending=false;
       renderGuideNotes();
-      if(document.querySelector('#detailBlock h2')?.textContent === `อำเภอ${distNorm}`){
-        document.getElementById('detailBody').innerHTML = _districtDetailBody(distNorm);
+      if(map.hasLayer(popup)){
+        popup.setContent(_districtDetailBody(distNorm));
       }
     });
   }
@@ -2726,10 +2725,10 @@ function selectTambonSearch(tambonName, centroid, amphoeHint){
   const distNorm = amphoe ? normalizeDistrictName(amphoe) : null;
   const phase = distNorm ? (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm) : null;
 
-  const body = _focusPanelOpen(`ตำบล${tambonName}`);
   const phaseLabel = w ? (w.phase==='during'?'ระหว่างไฟ (ใกล้จุดความร้อน)':w.phase==='before'?'เฝ้าระวังก่อนไฟ':'ปกติ') : null;
   const phaseCol = w ? (w.phase==='during'?'var(--danger)':w.phase==='before'?'#facc15':'var(--good)') : null;
-  body.innerHTML = `
+  _locationPopup(centroid, `<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6">
+    <b style="font-size:13px;color:#22d3ee">ตำบล${tambonName}</b><br>
     <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${amphoe||'—'}</span></div>
     ${w ? `
       <div class="dl"><span class="dk">สถานะ</span><span class="dv" style="color:${phaseCol}">${phaseLabel}</span></div>
@@ -2741,8 +2740,7 @@ function selectTambonSearch(tambonName, centroid, amphoeHint){
       <div class="dl"><span class="dk">เฟส</span><span class="dv" style="color:${PHASE_COLOR[phase.color]}">${PHASE_LABEL_TH[phase.phase]}</span></div>
       <div class="dl"><span class="dk">คะแนน</span><span class="dv">${Math.round((phase.danger_score||0)*100)}%</span></div>
     </div>`:''}
-  `;
-  toast(`ไปที่ตำบล${tambonName}`);
+  </div>`);
 }
 
 // Search matched a raw "lat,lon" pair: uses REAL polygon containment
@@ -2756,15 +2754,14 @@ function selectCoordinateSearch(lat,lon){
   const tb = _tambonFeatures.length ? tambonForPoint(lat,lon) : null;
   const phase = distNorm ? (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm) : null;
 
-  const body = _focusPanelOpen('พิกัดที่ค้นหา');
-  body.innerHTML = `
+  _locationPopup([lat,lon], `<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6">
+    <b style="font-size:13px;color:#22d3ee">พิกัดที่ค้นหา</b><br>
     <div class="dl"><span class="dk">พิกัด</span><span class="dv">${lat.toFixed(5)}, ${lon.toFixed(5)}</span></div>
     <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${distNorm||(_districtFeatures.length?'อยู่นอกจังหวัดเชียงใหม่':'กำลังโหลดขอบเขต...')}</span></div>
     ${tb?`<div class="dl"><span class="dk">ตำบล</span><span class="dv">${tb.tambon}</span></div>`:''}
     ${phase?`<div class="dl"><span class="dk">เฟสไฟ (อำเภอนี้)</span><span class="dv" style="color:${PHASE_COLOR[phase.color]}">${PHASE_LABEL_TH[phase.phase]} · ${Math.round((phase.danger_score||0)*100)}%</span></div>`:''}
     <div style="margin-top:8px">${gMapsLink(lat,lon)}</div>
-  `;
-  toast('ไปที่พิกัดที่ค้นหา');
+  </div>`);
 }
 
 function enrichHotspotsWithBoundaries(items){
