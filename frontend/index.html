@@ -2096,9 +2096,20 @@ document.getElementById('mobileLocateBtn').onclick=()=>{
 // whichever matches. District/tambon data loads async, so this degrades
 // gracefully (district list is always available; tambon only once loaded).
 function _tambonCentroid(feat){
+  // _geometryRings() yields one ring-LIST per constituent polygon (so
+  // districtForPoint/tambonForPoint can point-in-polygon test multi-part
+  // MultiPolygons correctly) — each entry is [outerRing, ...holes], not a
+  // flat list of points. A tambon split into disconnected parts (a real,
+  // non-rare shape in this GeoJSON — confirmed via production testing, not
+  // a hypothetical) is a MultiPolygon, and iterating each entry as if it
+  // were already a point-ring destructured a whole ring as a single
+  // [lng,lat] pair, producing NaN and crashing map.flyTo(). Take each
+  // part's outer ring (ignore holes — fine for an approximate centroid).
   let sx=0, sy=0, n=0;
-  for(const ring of _geometryRings(feat.geometry)){
-    for(const [lng,lat] of ring){ sx+=lat; sy+=lng; n++; }
+  for(const rings of _geometryRings(feat.geometry)){
+    const outer = rings[0];
+    if(!outer) continue;
+    for(const [lng,lat] of outer){ sx+=lat; sy+=lng; n++; }
   }
   return n? [sx/n, sy/n] : null;
 }
