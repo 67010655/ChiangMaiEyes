@@ -853,10 +853,17 @@
     <h3>รายงานจุดความร้อน</h3>
     <p class="hint">สำหรับผู้ที่พบเห็นจุดไฟจริงในพื้นที่ (เช่น เจ้าหน้าที่ภาคสนาม) — จะแสดงบนแผนที่แยกจากจุดดาวเทียมเสมอ และระบุว่าเป็นรายงานจากผู้ใช้ ไม่ใช่ข้อมูลยืนยันจากหน่วยงาน</p>
     <form id="reportForm" onsubmit="return handleSubmitReport(event)">
-      <label>ตำแหน่ง</label>
-      <div class="coord-readout" id="reportCoordReadout">—</div>
+      <label>ตำแหน่ง — กรอกพิกัดเอง, ใช้ตำแหน่งปัจจุบัน, หรือเลือกบนแผนที่</label>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="reportLat" placeholder="lat เช่น 18.79000" inputmode="decimal" style="flex:1">
+        <input type="text" id="reportLng" placeholder="lon เช่น 98.99000" inputmode="decimal" style="flex:1">
+      </div>
+      <div class="actions" style="margin-top:8px">
+        <button type="button" class="ghost" id="reportUseGpsBtn" style="flex:1">📍 ใช้ตำแหน่งปัจจุบัน</button>
+        <button type="button" class="ghost" id="reportPickMapBtn" style="flex:1">🗺 เลือกบนแผนที่</button>
+      </div>
       <label>อำเภอ / ตำบล</label>
-      <div class="coord-readout" id="reportDistrictReadout">—</div>
+      <div class="coord-readout" id="reportDistrictReadout">— กรอกหรือเลือกตำแหน่งก่อน</div>
       <label>รายละเอียด</label>
       <textarea id="reportDesc" required placeholder="เช่น เห็นควันไฟลุกไหม้บริเวณ..." maxlength="500"></textarea>
       <div class="actions">
@@ -1623,6 +1630,8 @@ const SUPABASE_URL = 'https://zskizogquupkneubcayc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_cMPLftq6xPcj3BdGOyNfDA__gnhUwmq';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 let currentUser = null; // Supabase auth user, null when signed out
+let mlMap = null;  // MapLibre GL instance — null until first open3D()
+let _3dInited = false;
 
 let dataMode = 'live';                    // always LIVE; 'offline' if backend unreachable
 let currentDashboard = null;              // Full API dashboard payload
@@ -2070,6 +2079,7 @@ if(sb){
   sb.auth.onAuthStateChange((_event, session)=>{
     currentUser = session?.user || null;
     updateAuthUI();
+    renderManualReports(); // refresh owner-only delete links for the new session
   });
   sb.auth.getSession().then(({data})=>{
     currentUser = data?.session?.user || null;
@@ -2090,7 +2100,7 @@ let _pickedLatLng = null;
 
 document.getElementById('reportHotspotBtn').onclick = ()=>{
   if(!currentUser){ openAuthModal(); return; }
-  startPickLocation();
+  openReportModal();
 };
 function startPickLocation(){
   _pickingLocation = true;
@@ -2102,28 +2112,74 @@ function cancelPickLocation(){
   document.body.classList.remove('picking-hotspot');
   document.getElementById('pickHint').classList.remove('open');
 }
-function openReportModal(lat, lng){
-  _pickedLatLng = [lat, lng];
-  document.getElementById('reportCoordReadout').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+// Keeps the "อำเภอ / ตำบล" readout in sync with whatever is currently in the
+// lat/lng inputs, regardless of how they got there (typed, GPS, or map pick).
+function _updateReportDistrictReadout(){
+  const lat = parseFloat(document.getElementById('reportLat').value);
+  const lng = parseFloat(document.getElementById('reportLng').value);
+  const el = document.getElementById('reportDistrictReadout');
+  if(!isFinite(lat) || !isFinite(lng)){ el.textContent = '— กรอกหรือเลือกตำแหน่งก่อน'; return null; }
   const amphoe = _districtFeatures.length ? (districtForPoint(lat, lng) || 'นอกเขตจังหวัดเชียงใหม่') : 'กำลังโหลดขอบเขต...';
   const tb = _tambonFeatures.length ? tambonForPoint(lat, lng) : null;
-  document.getElementById('reportDistrictReadout').textContent = tb ? `${amphoe} · ${tb.tambon}` : amphoe;
+  el.textContent = tb ? `${amphoe} · ${tb.tambon}` : amphoe;
+  return {lat, lng, amphoe, tambon: tb?.tambon || null};
+}
+document.getElementById('reportLat').addEventListener('input', _updateReportDistrictReadout);
+document.getElementById('reportLng').addEventListener('input', _updateReportDistrictReadout);
+document.getElementById('reportUseGpsBtn').onclick = ()=>{
+  if(!navigator.geolocation){ toast('เบราว์เซอร์นี้ไม่รองรับตำแหน่งปัจจุบัน'); return; }
+  const btn = document.getElementById('reportUseGpsBtn');
+  btn.disabled = true; btn.textContent = 'กำลังค้นหาตำแหน่ง...';
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      document.getElementById('reportLat').value = pos.coords.latitude.toFixed(5);
+      document.getElementById('reportLng').value = pos.coords.longitude.toFixed(5);
+      _updateReportDistrictReadout();
+      btn.disabled = false; btn.textContent = '📍 ใช้ตำแหน่งปัจจุบัน';
+    },
+    ()=>{
+      toast('ไม่สามารถเข้าถึงตำแหน่งปัจจุบันได้ — ตรวจสอบสิทธิ์ตำแหน่งของเบราว์เซอร์');
+      btn.disabled = false; btn.textContent = '📍 ใช้ตำแหน่งปัจจุบัน';
+    },
+    {timeout:8000}
+  );
+};
+document.getElementById('reportPickMapBtn').onclick = ()=>{
+  document.getElementById('reportModalBackdrop').classList.remove('open');
+  startPickLocation();
+};
+// lat/lng args are optional — omitted when opened directly from the report
+// button (user fills them in via typing/GPS/map-pick instead).
+function openReportModal(lat, lng){
+  const latEl = document.getElementById('reportLat'), lngEl = document.getElementById('reportLng');
+  if(lat!=null && lng!=null){
+    latEl.value = lat.toFixed(5);
+    lngEl.value = lng.toFixed(5);
+  } else {
+    latEl.value = ''; lngEl.value = '';
+  }
+  _updateReportDistrictReadout();
   document.getElementById('reportDesc').value = '';
   document.getElementById('reportErr').style.display='none';
   document.getElementById('reportModalBackdrop').classList.add('open');
 }
 function closeReportModal(){
   document.getElementById('reportModalBackdrop').classList.remove('open');
-  _pickedLatLng = null;
 }
 async function handleSubmitReport(e){
   e.preventDefault();
   const errEl = document.getElementById('reportErr');
   errEl.style.display='none';
-  if(!currentUser || !_pickedLatLng) return false;
+  if(!currentUser) return false;
+  const lat = parseFloat(document.getElementById('reportLat').value);
+  const lng = parseFloat(document.getElementById('reportLng').value);
+  if(!isFinite(lat) || !isFinite(lng) || lat<-90 || lat>90 || lng<-180 || lng>180){
+    errEl.textContent = 'กรอกพิกัด lat/lon ให้ถูกต้อง หรือกดใช้ตำแหน่งปัจจุบัน/เลือกบนแผนที่';
+    errEl.style.display='block';
+    return false;
+  }
   const btn = document.getElementById('reportSubmitBtn');
   btn.disabled = true;
-  const [lat, lng] = _pickedLatLng;
   const amphoe = _districtFeatures.length ? districtForPoint(lat, lng) : null;
   const tb = _tambonFeatures.length ? tambonForPoint(lat, lng) : null;
   try{
@@ -2146,6 +2202,17 @@ async function handleSubmitReport(e){
     btn.disabled = false;
   }
   return false;
+}
+async function deleteManualReport(id){
+  if(!confirm('ยกเลิก/ลบรายงานนี้?')) return;
+  try{
+    const { error } = await sb.from('manual_hotspot_reports').delete().eq('id', id);
+    if(error) throw error;
+    map.closePopup();
+    await fetchManualReports();
+  } catch(err){
+    toast(err.message || 'ลบรายงานไม่สำเร็จ กรุณาลองใหม่');
+  }
 }
 async function fetchManualReports(){
   if(!sb) return;
@@ -2170,12 +2237,14 @@ function renderManualReports(){
     });
     const m = L.marker([r.latitude, r.longitude], {icon, zIndexOffset:200});
     const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
+    const isOwner = currentUser && currentUser.id === r.reporter_id;
     m.bindPopup(
       `<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
       `อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>`+
       `${(r.description||'').replace(/</g,'&lt;')}<br>`+
       `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br>`+
-      `${gMapsLink(r.latitude,r.longitude)}`
+      `${gMapsLink(r.latitude,r.longitude)}`+
+      (isOwner ? `<br><span style="cursor:pointer;color:var(--danger);text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>` : '')
     );
     layers.manualReports.addLayer(m);
   });
@@ -4415,8 +4484,11 @@ function buildReport(){
 // ============================================================
 //  3D TERRAIN (MapLibre GL + AWS Terrarium DEM)
 // ============================================================
-let mlMap = null;  // MapLibre GL instance — null until first open3D()
-let _3dInited = false;
+// mlMap/_3dInited declared near the top of the script (with the other early
+// state vars) — NOT here — so any code that runs before 3D mode is ever
+// opened (e.g. renderManualReports(), which can fire from an async Supabase
+// callback whose timing relative to this line isn't guaranteed) can safely
+// reference `mlMap` without a temporal-dead-zone ReferenceError.
 
 document.getElementById('tdClose').onclick=()=>{
   closeAllOverlays();
@@ -4640,9 +4712,10 @@ function _sync3DManualReports(){
     el.innerHTML='<span style="transform:rotate(45deg);font-size:12px">👁</span>';
     el.addEventListener('click',()=>{
       const when=new Date(r.reported_at).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
+      const isOwner = currentUser && currentUser.id === r.reporter_id;
       new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
         .setLngLat([r.longitude,r.latitude])
-        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>${(r.description||'').replace(/</g,'&lt;')}<br><span style="color:#8b97a7">โดย ${r.reporter_name} · ${when}</span></div>`)
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>${(r.description||'').replace(/</g,'&lt;')}<br><span style="color:#8b97a7">โดย ${r.reporter_name} · ${when}</span>${isOwner?`<br><span style="cursor:pointer;color:#ff4d4d;text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>`:''}</div>`)
         .addTo(mlMap);
     });
     _3dManualMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([r.longitude,r.latitude]).addTo(mlMap));
