@@ -540,6 +540,63 @@
     box-shadow:0 4px 14px rgba(0,0,0,.4);
   }
   .map-fab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .map-fab.report-fab{background:var(--ember);color:#1a0e04;border-color:transparent}
+
+  /* Auth button (topbar) + dropdown */
+  .auth-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);
+    color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;
+    font-size:12px;font-weight:700;transition:.15s}
+  .auth-btn.logged-in{background:var(--ember);color:#1a0e04;border-color:transparent}
+  .auth-wrap{position:relative}
+  .auth-dropdown{position:absolute;top:42px;right:0;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:10px;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:50;display:none}
+  .auth-dropdown.open{display:block}
+  .auth-dropdown .who{font-size:11.5px;color:var(--txt);padding:4px 6px 10px;border-bottom:1px solid var(--line-soft);
+    margin-bottom:8px;word-break:break-all;line-height:1.5}
+  .auth-dropdown .who small{display:block;color:var(--muted);font-size:9.5px;margin-top:2px}
+  .auth-dropdown button{width:100%;background:none;border:none;color:var(--danger);text-align:left;padding:7px 6px;
+    cursor:pointer;font-size:12px;border-radius:6px;font-family:var(--disp)}
+  .auth-dropdown button:hover{background:var(--panel-2)}
+
+  /* Generic modal (login/signup, hotspot report form) */
+  .cme-modal-backdrop{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);
+    display:none;align-items:center;justify-content:center;padding:16px}
+  .cme-modal-backdrop.open{display:flex}
+  .cme-modal{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:22px 24px;width:100%;max-width:360px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .cme-modal h3{margin:0 0 14px;font-size:15px;color:var(--txt)}
+  .cme-modal p.hint{font-size:11.5px;color:var(--muted);margin:-8px 0 14px;line-height:1.6}
+  .cme-modal .tabs{display:flex;gap:2px;background:#0c1117;border:1px solid var(--line);border-radius:8px;
+    padding:3px;margin-bottom:16px}
+  .cme-modal .tabs button{flex:1;background:none;border:none;color:var(--muted);font-size:11px;padding:7px 0;
+    border-radius:6px;cursor:pointer;font-family:var(--mono)}
+  .cme-modal .tabs button.active{background:var(--ember);color:#1a0e04}
+  .cme-modal label{display:block;font-size:11px;color:var(--muted);margin:10px 0 4px;font-family:var(--mono)}
+  .cme-modal input,.cme-modal textarea{width:100%;background:#0c1117;border:1px solid var(--line);
+    border-radius:7px;padding:9px 10px;color:var(--txt);font-size:13px;box-sizing:border-box;font-family:var(--disp)}
+  .cme-modal input:focus,.cme-modal textarea:focus{outline:1px solid var(--ember)}
+  .cme-modal textarea{resize:vertical;min-height:60px;font-family:inherit}
+  .cme-modal .actions{display:flex;gap:8px;margin-top:16px}
+  .cme-modal button.primary{flex:1;background:var(--ember);border:none;color:#1a0e04;font-weight:600;
+    padding:10px;border-radius:8px;cursor:pointer;font-size:13px;font-family:var(--disp)}
+  .cme-modal button.primary:disabled{opacity:.5;cursor:default}
+  .cme-modal button.ghost{background:none;border:1px solid var(--line);color:var(--muted);padding:10px 14px;
+    border-radius:8px;cursor:pointer;font-size:13px;font-family:var(--disp)}
+  .cme-modal .err{color:var(--danger);font-size:11.5px;margin-top:8px;display:none;line-height:1.5}
+  .cme-modal .msg{color:#4ade80;font-size:11.5px;margin-top:8px;display:none;line-height:1.5}
+  .cme-modal .close-x{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);
+    font-size:20px;cursor:pointer;line-height:1}
+  .cme-modal .coord-readout{font-family:var(--mono);font-size:12px;color:var(--wind);background:#0c1117;
+    border:1px solid var(--line);border-radius:7px;padding:9px 10px}
+
+  /* Pick-location hint banner shown while placing a manual hotspot */
+  .pick-hint{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:2000;
+    background:rgba(13,18,24,.95);border:1px solid var(--ember);color:var(--txt);padding:9px 16px;
+    border-radius:10px;font-size:12px;display:none;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+  .pick-hint.open{display:flex}
+  .pick-hint button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;
+    padding:4px 10px;cursor:pointer;font-size:11px;font-family:var(--disp)}
+  body.picking-hotspot .leaflet-container{cursor:crosshair !important}
 
   @media(max-width:1180px){
     .main{grid-template-columns:66px 240px 1fr}
@@ -752,6 +809,71 @@
   <div class="splash-title">ChiangMai<b>Eyes</b></div>
   <div class="splash-loading"><span class="splash-spinner"></span><span id="splashMsg">กำลังโหลดแผนที่และข้อมูลสด…</span></div>
 </div>
+
+<!-- Auth modal: sign in / sign up (Supabase Auth) -->
+<div class="cme-modal-backdrop" id="authModalBackdrop">
+  <div class="cme-modal">
+    <button class="close-x" onclick="closeAuthModal()">&times;</button>
+    <h3>เข้าสู่ระบบ</h3>
+    <p class="hint">ใช้สำหรับรายงานจุดความร้อนด้วยตนเอง — ระบบจะบันทึกชื่อผู้รายงานไว้กับทุกจุดที่แจ้ง (สมัครได้ทุกคน ไม่จำกัดเฉพาะเจ้าหน้าที่ — ผู้รายงานคือผู้ใช้ที่ลงชื่อในระบบ ยังไม่ผ่านการยืนยันตัวตนหน่วยงาน)</p>
+    <div class="tabs">
+      <button id="authTabSignin" class="active" onclick="switchAuthTab('signin')">เข้าสู่ระบบ</button>
+      <button id="authTabSignup" onclick="switchAuthTab('signup')">สมัครสมาชิก</button>
+    </div>
+    <form id="authFormSignin" onsubmit="return handleSignIn(event)">
+      <label>อีเมล</label>
+      <input type="email" id="siEmail" required autocomplete="username">
+      <label>รหัสผ่าน</label>
+      <input type="password" id="siPassword" required autocomplete="current-password">
+      <div class="actions">
+        <button type="submit" class="primary" id="siSubmitBtn">เข้าสู่ระบบ</button>
+      </div>
+      <div class="err" id="siErr"></div>
+    </form>
+    <form id="authFormSignup" style="display:none" onsubmit="return handleSignUp(event)">
+      <label>ชื่อ-สกุล / หน่วยงาน</label>
+      <input type="text" id="suName" required placeholder="เช่น สมชาย ใจดี — อบต.แม่แตง">
+      <label>อีเมล</label>
+      <input type="email" id="suEmail" required autocomplete="username">
+      <label>รหัสผ่าน</label>
+      <input type="password" id="suPassword" required minlength="6" autocomplete="new-password">
+      <div class="actions">
+        <button type="submit" class="primary" id="suSubmitBtn">สมัครสมาชิก</button>
+      </div>
+      <div class="err" id="suErr"></div>
+      <div class="msg" id="suMsg"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Manual hotspot report modal -->
+<div class="cme-modal-backdrop" id="reportModalBackdrop">
+  <div class="cme-modal">
+    <button class="close-x" onclick="closeReportModal()">&times;</button>
+    <h3>รายงานจุดความร้อน</h3>
+    <p class="hint">สำหรับผู้ที่พบเห็นจุดไฟจริงในพื้นที่ (เช่น เจ้าหน้าที่ภาคสนาม) — จะแสดงบนแผนที่แยกจากจุดดาวเทียมเสมอ และระบุว่าเป็นรายงานจากผู้ใช้ ไม่ใช่ข้อมูลยืนยันจากหน่วยงาน</p>
+    <form id="reportForm" onsubmit="return handleSubmitReport(event)">
+      <label>ตำแหน่ง</label>
+      <div class="coord-readout" id="reportCoordReadout">—</div>
+      <label>อำเภอ / ตำบล</label>
+      <div class="coord-readout" id="reportDistrictReadout">—</div>
+      <label>รายละเอียด</label>
+      <textarea id="reportDesc" required placeholder="เช่น เห็นควันไฟลุกไหม้บริเวณ..." maxlength="500"></textarea>
+      <div class="actions">
+        <button type="button" class="ghost" onclick="closeReportModal()">ยกเลิก</button>
+        <button type="submit" class="primary" id="reportSubmitBtn">ส่งรายงาน</button>
+      </div>
+      <div class="err" id="reportErr"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Pick-location hint banner (shown while placing a manual hotspot) -->
+<div class="pick-hint" id="pickHint">
+  <span>แตะบนแผนที่เพื่อเลือกตำแหน่งจุดไฟ</span>
+  <button onclick="cancelPickLocation()">ยกเลิก</button>
+</div>
+
 <div class="app">
 
   <!-- TOP STATUS BAR -->
@@ -778,8 +900,17 @@
       <div class="stat"><span class="k">PM2.5 avg</span><span class="v" id="kpiPm">—<small> µg/m³</small></span></div>
       <div class="stat"><span class="k">AQI</span><span class="v" id="kpiAqi">—</span></div>
     </div>
+    <div class="auth-wrap" style="margin-left:auto">
+      <button id="authBtn" class="auth-btn" title="เข้าสู่ระบบ" onclick="onAuthBtnClick()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+      <div class="auth-dropdown" id="authDropdown">
+        <div class="who" id="authWhoText"></div>
+        <button onclick="doSignOut()">ออกจากระบบ</button>
+      </div>
+    </div>
     <button id="themeToggle" onclick="toggleTheme()" title="สลับ Dark / Light mode"
-      style="margin-left:auto;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;transition:.15s">
+      style="width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;transition:.15s">
       <svg id="themeIcon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
       </svg>
@@ -841,6 +972,7 @@
       <div class="block">
         <h2>Map layers</h2>
         <div class="layer on" data-layer="hotspots"><div class="sw"></div><div class="lbl">Hotspots<small>VIIRS / MODIS · FIRMS</small></div><span class="cnt" id="lcHot">0</span></div>
+        <div class="layer on" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>manual · user-submitted, unverified</small></div><span class="cnt" id="lcManual">0</span></div>
         <div class="layer on" data-layer="spread"><div class="sw"></div><div class="lbl">Fire spread forecast<small>downwind risk cones</small></div><span class="cnt" id="lcSpread">0</span></div>
         <div class="layer on wind" data-layer="wind"><div class="sw"></div><div class="lbl">Wind field<small>vector arrows</small></div><span class="cnt">grid</span></div>
         <div class="layer on pm" data-layer="pm"><div class="sw"></div><div class="lbl">PM2.5 stations<small>PCD / sensor mesh</small></div><span class="cnt" id="lcPm">0</span></div>
@@ -943,6 +1075,9 @@
       <div class="map-locate-group">
         <button class="map-fab" id="mobileLocateBtn" aria-label="ตำแหน่งปัจจุบัน">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+        <button class="map-fab report-fab" id="reportHotspotBtn" aria-label="รายงานจุดความร้อน" title="รายงานจุดความร้อนด้วยตนเอง (ต้องเข้าสู่ระบบ)">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
         </button>
       </div>
 
@@ -1197,6 +1332,7 @@
         <summary>3. ชั้นข้อมูลบนแผนที่ (แผงซ้าย — Map layers)</summary>
         <ul>
           <li><b>Hotspots</b> จุดความร้อนจากดาวเทียม VIIRS/MODIS ผ่าน NASA FIRMS ผสาน GISTDA <span class="gd-tag real">จริง</span> — อาจดีเลย์ 4-5 ชั่วโมงเทียบสถานการณ์จริงบนพื้นดิน อย่าเพิ่งสรุปว่าไฟดับแล้วถ้าจุดหาย</li>
+          <li><b>จุดไฟที่ผู้ใช้รายงาน</b> จุดที่ผู้ใช้ที่ล็อกอินแล้วป้อนเข้ามาเอง (เช่น เจ้าหน้าที่ภาคสนามที่เห็นไฟในช่วงที่ดาวเทียมยังไม่โคจรผ่าน) <b>ไม่มีแท็กความน่าเชื่อถือ</b> เพราะเป็นคำกล่าวอ้างของผู้ใช้ ยังไม่ผ่านการยืนยันจากหน่วยงาน — สมัครสมาชิกเปิดให้ทุกคน ไม่ได้จำกัดเฉพาะเจ้าหน้าที่จริง แสดงเป็นไอคอนรูปหยดน้ำสีส้ม 👁 แยกจากจุดดาวเทียม (🔥) เสมอ ไม่ปะปนกัน กดปุ่ม + สีส้มบนแผนที่แล้วเลือกตำแหน่งเพื่อรายงาน</li>
           <li><b>Fire spread forecast</b> (กรวยประ ๆ รอบจุดไฟ) ทิศทาง+ระยะลุกลามที่คาดไว้ <span class="gd-tag approx">ประมาณ</span> — คำนวณง่ายๆจากทิศลมจริง+ความแรงไฟจริง ไม่ใช่แบบจำลองฟิสิกส์ไฟป่าเต็มรูปแบบ ใช้ดูทิศทางคร่าวๆเท่านั้น</li>
           <li><b>Wind field</b> ลูกศรทิศทางลมทั่วพื้นที่ <span class="gd-tag real">จริง</span> จาก Open-Meteo</li>
           <li><b>PM2.5 stations</b> จุดสถานีตรวจฝุ่นจริงทั่วจังหวัด <span class="gd-tag real">จริง</span></li>
@@ -1319,6 +1455,7 @@
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============================================================
    ChiangMaiEyes — live data rendering
@@ -1480,6 +1617,13 @@ function communityForestProximityRows(radiusKm=2){
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8000'
   : '';
+// ---- Supabase (Auth + manual hotspot reports) ----
+// Publishable key only — safe to expose client-side, RLS gates all writes.
+const SUPABASE_URL = 'https://zskizogquupkneubcayc.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_cMPLftq6xPcj3BdGOyNfDA__gnhUwmq';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let currentUser = null; // Supabase auth user, null when signed out
+
 let dataMode = 'live';                    // always LIVE; 'offline' if backend unreachable
 let currentDashboard = null;              // Full API dashboard payload
 // Real backend intelligence captured on each LIVE fetch.
@@ -1553,6 +1697,7 @@ const layers = {
   wind:     L.layerGroup().addTo(map),
   pm:       L.layerGroup().addTo(map),
   forest:   L.layerGroup(),
+  manualReports: L.layerGroup().addTo(map),
   boundaries: L.layerGroup().addTo(map),
   districtDetails: L.layerGroup().addTo(map),
   tambonWarnings: L.layerGroup().addTo(map),
@@ -1821,6 +1966,224 @@ document.querySelectorAll('.layer').forEach(el=>{
     else map.removeLayer(layers[key]);
   };
 });
+
+// ============================================================
+// Auth (Supabase) — sign in / sign up / sign out, session restore
+// ============================================================
+function updateAuthUI(){
+  const btn = document.getElementById('authBtn');
+  const who = document.getElementById('authWhoText');
+  if(currentUser){
+    const name = currentUser.user_metadata?.full_name || currentUser.email;
+    btn.classList.add('logged-in');
+    btn.title = name;
+    btn.innerHTML = (name||'?').trim().charAt(0).toUpperCase();
+    who.innerHTML = `${name}<small>${currentUser.email}</small>`;
+  } else {
+    btn.classList.remove('logged-in');
+    btn.title = 'เข้าสู่ระบบ';
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    document.getElementById('authDropdown').classList.remove('open');
+  }
+}
+function onAuthBtnClick(){
+  if(currentUser){
+    document.getElementById('authDropdown').classList.toggle('open');
+  } else {
+    openAuthModal();
+  }
+}
+document.addEventListener('click', (e)=>{
+  const wrap = document.querySelector('.auth-wrap');
+  if(wrap && !wrap.contains(e.target)) document.getElementById('authDropdown').classList.remove('open');
+});
+function openAuthModal(){
+  document.getElementById('authModalBackdrop').classList.add('open');
+  document.getElementById('siErr').style.display='none';
+  document.getElementById('suErr').style.display='none';
+  document.getElementById('suMsg').style.display='none';
+}
+function closeAuthModal(){
+  document.getElementById('authModalBackdrop').classList.remove('open');
+}
+function switchAuthTab(tab){
+  document.getElementById('authTabSignin').classList.toggle('active', tab==='signin');
+  document.getElementById('authTabSignup').classList.toggle('active', tab==='signup');
+  document.getElementById('authFormSignin').style.display = tab==='signin' ? 'block':'none';
+  document.getElementById('authFormSignup').style.display = tab==='signup' ? 'block':'none';
+}
+async function handleSignIn(e){
+  e.preventDefault();
+  const errEl = document.getElementById('siErr');
+  errEl.style.display='none';
+  const btn = document.getElementById('siSubmitBtn');
+  btn.disabled = true;
+  try{
+    const { error } = await sb.auth.signInWithPassword({
+      email: document.getElementById('siEmail').value.trim(),
+      password: document.getElementById('siPassword').value
+    });
+    if(error) throw error;
+    closeAuthModal();
+  } catch(err){
+    errEl.textContent = err.message === 'Invalid login credentials'
+      ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : (err.message || 'เข้าสู่ระบบไม่สำเร็จ');
+    errEl.style.display='block';
+  } finally {
+    btn.disabled = false;
+  }
+  return false;
+}
+async function handleSignUp(e){
+  e.preventDefault();
+  const errEl = document.getElementById('suErr');
+  const msgEl = document.getElementById('suMsg');
+  errEl.style.display='none'; msgEl.style.display='none';
+  const btn = document.getElementById('suSubmitBtn');
+  btn.disabled = true;
+  try{
+    const { data, error } = await sb.auth.signUp({
+      email: document.getElementById('suEmail').value.trim(),
+      password: document.getElementById('suPassword').value,
+      options: { data: { full_name: document.getElementById('suName').value.trim() } }
+    });
+    if(error) throw error;
+    if(data.session){
+      closeAuthModal();
+    } else {
+      msgEl.textContent = 'สมัครสำเร็จ — กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชีก่อนเข้าสู่ระบบ';
+      msgEl.style.display='block';
+    }
+  } catch(err){
+    errEl.textContent = err.message || 'สมัครสมาชิกไม่สำเร็จ';
+    errEl.style.display='block';
+  } finally {
+    btn.disabled = false;
+  }
+  return false;
+}
+async function doSignOut(){
+  await sb.auth.signOut();
+  document.getElementById('authDropdown').classList.remove('open');
+}
+if(sb){
+  sb.auth.onAuthStateChange((_event, session)=>{
+    currentUser = session?.user || null;
+    updateAuthUI();
+  });
+  sb.auth.getSession().then(({data})=>{
+    currentUser = data?.session?.user || null;
+    updateAuthUI();
+  });
+}
+
+// ============================================================
+// Manual hotspot reports — field staff can add a point the satellite
+// may not have caught yet (orbital revisit gap). Stored in Supabase,
+// rendered as a layer that is ALWAYS visually distinct from real
+// satellite hotspots — this is the whole point of the feature, so the
+// two sources must never blend into one marker style.
+// ============================================================
+let manualReports = [];
+let _pickingLocation = false;
+let _pickedLatLng = null;
+
+document.getElementById('reportHotspotBtn').onclick = ()=>{
+  if(!currentUser){ openAuthModal(); return; }
+  startPickLocation();
+};
+function startPickLocation(){
+  _pickingLocation = true;
+  document.body.classList.add('picking-hotspot');
+  document.getElementById('pickHint').classList.add('open');
+}
+function cancelPickLocation(){
+  _pickingLocation = false;
+  document.body.classList.remove('picking-hotspot');
+  document.getElementById('pickHint').classList.remove('open');
+}
+function openReportModal(lat, lng){
+  _pickedLatLng = [lat, lng];
+  document.getElementById('reportCoordReadout').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  const amphoe = _districtFeatures.length ? (districtForPoint(lat, lng) || 'นอกเขตจังหวัดเชียงใหม่') : 'กำลังโหลดขอบเขต...';
+  const tb = _tambonFeatures.length ? tambonForPoint(lat, lng) : null;
+  document.getElementById('reportDistrictReadout').textContent = tb ? `${amphoe} · ${tb.tambon}` : amphoe;
+  document.getElementById('reportDesc').value = '';
+  document.getElementById('reportErr').style.display='none';
+  document.getElementById('reportModalBackdrop').classList.add('open');
+}
+function closeReportModal(){
+  document.getElementById('reportModalBackdrop').classList.remove('open');
+  _pickedLatLng = null;
+}
+async function handleSubmitReport(e){
+  e.preventDefault();
+  const errEl = document.getElementById('reportErr');
+  errEl.style.display='none';
+  if(!currentUser || !_pickedLatLng) return false;
+  const btn = document.getElementById('reportSubmitBtn');
+  btn.disabled = true;
+  const [lat, lng] = _pickedLatLng;
+  const amphoe = _districtFeatures.length ? districtForPoint(lat, lng) : null;
+  const tb = _tambonFeatures.length ? tambonForPoint(lat, lng) : null;
+  try{
+    const { error } = await sb.from('manual_hotspot_reports').insert({
+      reporter_id: currentUser.id,
+      reporter_name: currentUser.user_metadata?.full_name || currentUser.email,
+      latitude: lat,
+      longitude: lng,
+      amphoe: tb?.amphoe || amphoe || null,
+      tambon: tb?.tambon || null,
+      description: document.getElementById('reportDesc').value.trim()
+    });
+    if(error) throw error;
+    closeReportModal();
+    await fetchManualReports();
+  } catch(err){
+    errEl.textContent = err.message || 'ส่งรายงานไม่สำเร็จ กรุณาลองใหม่';
+    errEl.style.display='block';
+  } finally {
+    btn.disabled = false;
+  }
+  return false;
+}
+async function fetchManualReports(){
+  if(!sb) return;
+  try{
+    const { data, error } = await sb.from('manual_hotspot_reports')
+      .select('*').order('reported_at', { ascending:false }).limit(500);
+    if(error) throw error;
+    manualReports = data || [];
+    renderManualReports();
+  } catch(err){
+    console.warn('fetchManualReports failed', err);
+  }
+}
+function renderManualReports(){
+  layers.manualReports.clearLayers();
+  manualReports.forEach(r=>{
+    const icon = L.divIcon({
+      html: `<span style="background:var(--ember);border:2px solid #fff;box-shadow:0 0 8px rgba(255,138,61,.8);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px">
+               <span style="transform:rotate(45deg);font-size:12px">👁</span>
+             </span>`,
+      className:'', iconSize:[22,22], iconAnchor:[11,22]
+    });
+    const m = L.marker([r.latitude, r.longitude], {icon, zIndexOffset:200});
+    const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
+    m.bindPopup(
+      `<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
+      `อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>`+
+      `${(r.description||'').replace(/</g,'&lt;')}<br>`+
+      `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br>`+
+      `${gMapsLink(r.latitude,r.longitude)}`
+    );
+    layers.manualReports.addLayer(m);
+  });
+  document.getElementById('lcManual').textContent = manualReports.length;
+  if(mlMap) _sync3DManualReports();
+}
+if(sb) fetchManualReports();
+
 // Wind toggle: manage velocity layer separately (not in layers.wind group).
 document.querySelector('.layer[data-layer="wind"]').onclick=(function(){
   const windEl=document.querySelector('.layer[data-layer="wind"]');
@@ -2785,7 +3148,12 @@ function enrichHotspotsWithBoundaries(items){
 }
 
 // Clear all district selection on map background click (including clicking outside CM)
-map.on('click', function() {
+map.on('click', function(e) {
+  if(_pickingLocation){
+    cancelPickLocation();
+    openReportModal(e.latlng.lat, e.latlng.lng);
+    return;
+  }
   if (_selectedDistrictLayer) {
     _selectedDistrictLayer.setStyle(_DISTRICT_DEFAULT_STYLE);
     _selectedDistrictLayer = null;
@@ -2848,6 +3216,15 @@ async function loadBoundaries() {
         // clicks use) instead of a cramped on-map popup — see selectDistrict().
         layer.on('click', function(e) {
           if (e.originalEvent) L.DomEvent.stopPropagation(e);
+          // District polygons cover almost the entire visible map, so this
+          // handler intercepts nearly every click — including ones meant to
+          // place a manual hotspot report. Without this check, pick-location
+          // mode could never actually capture a click inside Chiang Mai.
+          if (_pickingLocation) {
+            cancelPickLocation();
+            openReportModal(e.latlng.lat, e.latlng.lng);
+            return;
+          }
           const nameTh = feature.properties.nameTh || feature.properties.name;
           selectDistrict(nameTh, layer);
         });
@@ -4054,7 +4431,7 @@ async function open3D(){
     try{ initMapLibre3D(); _3dInited=true; }
     catch(e){ toast('ไม่สามารถเปิด 3D ได้ในเบราว์เซอร์นี้'); console.error(e); }
   } else if(mlMap){
-    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); },80);
+    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); },80);
   }
 }
 
@@ -4133,6 +4510,7 @@ function initMapLibre3D(){
     // Populate with current data
     _sync3DHotspots();
     _sync3DForests();
+    _sync3DManualReports();
 
     // 3D hotspot clicks are handled inline in _sync3DHotspots() Marker elements
 
@@ -4245,6 +4623,29 @@ function _sync3DHotspots(){
     el.style.cssText=`font-size:${sz}px;line-height:1;cursor:pointer;display:block;user-select:none;${isHigh?'':'opacity:.45;filter:grayscale(.7)'}`;
     el.addEventListener('click',()=>selectHotspot(h));
     _3dMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([h.lon,h.lat]).addTo(mlMap));
+  });
+}
+
+// Manual (staff-reported) hotspots — deliberately a different marker shape
+// (teardrop, not a flame emoji) so it's never visually confused with a real
+// satellite detection in 3D either, matching the 2D layer's provenance split.
+let _3dManualMarkers=[];
+function _sync3DManualReports(){
+  _3dManualMarkers.forEach(m=>m.remove());
+  _3dManualMarkers=[];
+  if(!mlMap) return;
+  manualReports.forEach(r=>{
+    const el=document.createElement('div');
+    el.style.cssText='width:22px;height:22px;background:var(--ember);border:2px solid #fff;box-shadow:0 0 8px rgba(255,138,61,.8);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;cursor:pointer';
+    el.innerHTML='<span style="transform:rotate(45deg);font-size:12px">👁</span>';
+    el.addEventListener('click',()=>{
+      const when=new Date(r.reported_at).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
+      new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
+        .setLngLat([r.longitude,r.latitude])
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>${(r.description||'').replace(/</g,'&lt;')}<br><span style="color:#8b97a7">โดย ${r.reporter_name} · ${when}</span></div>`)
+        .addTo(mlMap);
+    });
+    _3dManualMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([r.longitude,r.latitude]).addTo(mlMap));
   });
 }
 
