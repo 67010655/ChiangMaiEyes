@@ -263,11 +263,16 @@ def _history_archive_quality(
     )
 
 
-def _official_community_forest_summary() -> dict[str, Any] | None:
+def _official_community_forest_count() -> int:
+    # Reads the SAME GeoJSON file community_forest_provider.py loads, so this
+    # count can never drift from what /api/community-forests actually
+    # returns — the user explicitly asked that every part of the app
+    # reference the one real number (677 Chiang Mai polygons from the
+    # agency's shapefile), not a separately-maintained summary blob.
     try:
-        return read_json(_BUNDLED_DATA_DIR, "community-forests-official.json").get("summary")
+        return len(read_json(_BUNDLED_DATA_DIR, "community-forests-chiangmai.geojson").get("features", []))
     except Exception:
-        return None
+        return 0
 
 
 def _parse_datetime(value: str) -> datetime:
@@ -353,12 +358,7 @@ def _build_data_quality(
             or settings.earth_engine_enabled
         )
     )
-    official_community_summary = _official_community_forest_summary()
-    official_community_count = (
-        int(official_community_summary.get("recordCount", 0))
-        if isinstance(official_community_summary, dict)
-        else 0
-    )
+    official_community_count = _official_community_forest_count()
     satellite_source_mode: SourceMode = "DERIVED" if satellite_layers_configured else "UNAVAILABLE"
     satellite_confidence = 0.62 if satellite_layers_configured else 0.3
     community_source_mode: SourceMode = "SNAPSHOT" if official_community_count > 0 else "UNAVAILABLE"
@@ -480,16 +480,16 @@ def _build_data_quality(
             decision_use="Connect GISTDA burned-area, MODIS MCD64A1, or VIIRS VNP64 before using burn-area numbers.",
         ),
         "community_forests": _data_quality(
-            label="Community forest points",
-            source="Royal Forest Department community forest coordinates KML" if official_community_count > 0 else "Not configured",
+            label="Community forest boundaries",
+            source="Royal Forest Department community-forest boundary shapefile" if official_community_count > 0 else "Not configured",
             source_mode=community_source_mode,
             latest_update=None,
             checked_at=checked_at,
             age_minutes=None,
-            confidence=0.72 if official_community_count > 0 else 0.0,
+            confidence=0.85 if official_community_count > 0 else 0.0,
             stale_after_minutes=0,
-            note=f"Official RFD point coordinates loaded for {official_community_count} Chiang Mai community forests; official polygon boundaries are not included." if official_community_count > 0 else "No verified community forest records configured.",
-            decision_use="Use for locating official RFD community forest point records; request polygon boundaries before area analysis.",
+            note=f"Official RFD real polygon boundaries loaded for {official_community_count} Chiang Mai community forests (agency shapefile, not point-only)." if official_community_count > 0 else "No verified community forest records configured.",
+            decision_use="Use directly for area/boundary analysis — these are real surveyed polygons, not estimated circles.",
         ),
         "predictions": _data_quality(
             label="Localized predictions",

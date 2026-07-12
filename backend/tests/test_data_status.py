@@ -138,7 +138,8 @@ def test_data_status_reports_snapshot_freshness(tmp_path: Path, monkeypatch):
     assert status.data_quality["hotspots"].age_minutes == 60
     assert status.data_quality["ndvi"].source_mode == "UNAVAILABLE"
     assert status.data_quality["community_forests"].source_mode == "SNAPSHOT"
-    assert "RFD point coordinates" in status.data_quality["community_forests"].note
+    assert "real polygon boundaries" in status.data_quality["community_forests"].note
+    assert "677" in status.data_quality["community_forests"].note
 
 
 def test_data_status_endpoint_returns_snapshot_mode(tmp_path: Path, monkeypatch):

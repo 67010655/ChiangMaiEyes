@@ -243,6 +243,11 @@ class CommunityForest(BaseModel):
     fire_activities: list[str] = Field(default_factory=list)
     area_rai: float | None = None
     boundary_radius_m: int | None = None
+    # Real polygon/multipolygon boundary (GeoJSON geometry: {"type","coordinates"})
+    # from the agency shapefile, in [lon, lat] WGS84 — None for any forest that
+    # only ever had a point (kept for backward compatibility, though every
+    # official-source record has one as of this shapefile import).
+    boundary: dict | None = None
     source: str | None = None
 
 

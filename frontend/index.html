@@ -1201,7 +1201,7 @@
           <li><b>Wind field</b> ลูกศรทิศทางลมทั่วพื้นที่ <span class="gd-tag real">จริง</span> จาก Open-Meteo</li>
           <li><b>PM2.5 stations</b> จุดสถานีตรวจฝุ่นจริงทั่วจังหวัด <span class="gd-tag real">จริง</span></li>
           <li><b>Heatmap ความหนาแน่น</b> สีเข้ม-อ่อนแสดงความหนาแน่นของจุดไฟ คำนวณจากตำแหน่งจุดไฟจริง</li>
-          <li><b>ขอบเขตป่าชุมชน</b> พิกัดป่าชุมชนจากกรมป่าไม้ (RFD) <span class="gd-tag point">จุดเท่านั้น</span> — เป็นจุดพิกัด ยังไม่ใช่ขอบเขตรูปหลายเหลี่ยมเต็มแปลง (ต้องขอ shapefile จากหน่วยงานเพิ่มถึงจะวาดขอบเขตจริงได้) สีจุด/วงกลมรอบป่าตอนนี้ไล่ตาม<b>ความเสี่ยงเชื้อเพลิงเฉพาะป่านั้น</b> <span class="gd-tag approx">ประมาณ</span> (เขียว→เหลือง→ส้ม→แดง) คำนวณจากความเสี่ยงของอำเภอนั้นบวกระยะห่างจากจุดความร้อนจริงที่ใกล้ที่สุด — ละเอียดกว่าเดิมที่ให้ค่าเดียวทั้งอำเภอ คลิกจุดดูเปอร์เซ็นต์ความเสี่ยงได้</li>
+          <li><b>ขอบเขตป่าชุมชน</b> รูปหลายเหลี่ยมขอบเขตจริงจากกรมป่าไม้ (RFD, shapefile ที่ได้รับจากหน่วยงานโดยตรง) <span class="gd-tag real">จริง</span> — 677 แปลงในเชียงใหม่ ครบทุกอำเภอที่มีป่าชุมชนขึ้นทะเบียน (23 จาก 25 อำเภอ อีก 2 อำเภอไม่มีป่าชุมชนขึ้นทะเบียน) แต่ละแปลงมีชื่อป่า/หมู่บ้าน/หมู่ที่/ตำบล/อำเภอ/พื้นที่จริง (ไร่) สีของรูปหลายเหลี่ยม/จุดกึ่งกลางไล่ตาม<b>ความเสี่ยงเชื้อเพลิงเฉพาะป่านั้น</b> <span class="gd-tag approx">ประมาณ</span> (เขียว→เหลือง→ส้ม→แดง) คำนวณจากความเสี่ยงของอำเภอนั้นบวกระยะห่างจากจุดความร้อนจริงที่ใกล้ที่สุด คลิกดูเปอร์เซ็นต์ความเสี่ยงได้</li>
           <li><b>ขอบเขตอำเภอ/จังหวัด</b> เส้นแบ่งเขตทางการ 25 อำเภอ <span class="gd-tag real">จริง</span></li>
           <li><b>⚠️ เฝ้าระวังระดับตำบล</b> ขึ้นเฉพาะตำบลที่มีความเสี่ยง (204 ตำบลทั้งหมด แต่โชว์แค่ที่ต้องเฝ้าระวัง) <span class="gd-tag approx">ประมาณ</span> คำนวณจากความเสี่ยงอำเภอแม่ + ระยะใกล้จุดความร้อนจริง คลิกไอคอนดูรายละเอียดได้</li>
           <li><b>EVI ความหนาแน่นพืชพรรณ</b> ภาพดาวเทียมจริงจาก NASA MODIS Terra รอบ 8 วัน <span class="gd-tag real">จริง</span> ใช้ดูว่าพืชคลุมดินแห้ง/เขียวแค่ไหน (ยิ่งแห้งยิ่งติดไฟง่าย)</li>
@@ -2471,17 +2471,22 @@ function renderDistrictDetailsOnMap(distName) {
     const lat = f.latitude;
     const lng = f.longitude;
     if (!lat || !lng) return;
-    const radius = f.boundary_radius_m || 650;
     const active = f.fire_management_active;
     const fcolor = active ? '#22c55e' : '#4ade80';
-    L.circle([lat, lng], {
-      radius,
-      color: fcolor,
-      weight: 1.5,
-      fillColor: fcolor,
-      fillOpacity: 0.08,
-      dashArray: '4 4'
-    }).addTo(layers.districtDetails);
+    if (f.boundary) {
+      L.geoJSON(f.boundary, {style:{color:fcolor,weight:1.5,fillColor:fcolor,fillOpacity:0.08}})
+        .addTo(layers.districtDetails);
+    } else {
+      const radius = f.boundary_radius_m || 650;
+      L.circle([lat, lng], {
+        radius,
+        color: fcolor,
+        weight: 1.5,
+        fillColor: fcolor,
+        fillOpacity: 0.08,
+        dashArray: '4 4'
+      }).addTo(layers.districtDetails);
+    }
     L.circleMarker([lat, lng], {
       radius: 5,
       color: '#ffffff',
@@ -2956,9 +2961,18 @@ function renderForestMarkers(){
     const active=f.fire_management_active;
     const risk=forestRiskById[f.forest_id];
     const color=risk?_forestRiskColor(risk.danger_score):(active?'#43b05f':'#4ade80');
-    const radius=f.boundary_radius_m||650;
-    L.circle([lat,lng],{radius,color,weight:1.2,fillColor:color,fillOpacity:0.05,dashArray:'6 4'})
-      .addTo(layers.forest);
+    // Real surveyed polygon (agency shapefile, 677 CM plots) when present —
+    // only falls back to the old estimated circle for a forest that
+    // somehow has none, which shouldn't happen for any official-source
+    // record post-shapefile-import but is kept as a defensive fallback.
+    if(f.boundary){
+      L.geoJSON(f.boundary,{style:{color,weight:1.4,fillColor:color,fillOpacity:0.12}})
+        .addTo(layers.forest);
+    } else {
+      const radius=f.boundary_radius_m||650;
+      L.circle([lat,lng],{radius,color,weight:1.2,fillColor:color,fillOpacity:0.05,dashArray:'6 4'})
+        .addTo(layers.forest);
+    }
     L.circleMarker([lat,lng],{radius:4,color,weight:1.5,fillColor:'#fff',fillOpacity:0.9})
       .bindPopup(
         `<b>${f.name||'ป่าชุมชน'}</b><br>`+
@@ -4091,6 +4105,18 @@ function initMapLibre3D(){
     // GeoJSON sources for hotspots and forests
     mlMap.addSource('hotspots-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
     mlMap.addSource('forests-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    // Real surveyed polygon boundaries (agency shapefile, 677 CM plots) —
+    // added below the point circles so the click-target marker stays on top.
+    mlMap.addSource('forests-boundary-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    mlMap.addLayer({id:'forests-boundary-fill',type:'fill',source:'forests-boundary-3d',paint:{
+      'fill-color':['case',['==',['get','active'],true],'#43b05f','#4ade80'],
+      'fill-opacity':0.12
+    }});
+    mlMap.addLayer({id:'forests-boundary-line',type:'line',source:'forests-boundary-3d',paint:{
+      'line-color':['case',['==',['get','active'],true],'#43b05f','#4ade80'],
+      'line-width':1.2,
+      'line-opacity':0.7
+    }});
 
     // Forest circles
     mlMap.addLayer({id:'forests-circle',type:'circle',source:'forests-3d',paint:{
@@ -4318,6 +4344,18 @@ function _sync3DForests(){
       properties:{name:f.name,amphoe:f.amphoe,active:!!f.fire_management_active,area_rai:f.area_rai}
     }))
   });
+  // Real surveyed polygon boundaries (agency shapefile) — geometry is
+  // already [lon,lat] GeoJSON, same convention MapLibre expects.
+  if(mlMap.getSource('forests-boundary-3d')){
+    mlMap.getSource('forests-boundary-3d').setData({
+      type:'FeatureCollection',
+      features:allForests.filter(f=>f.boundary).map(f=>({
+        type:'Feature',
+        geometry:f.boundary,
+        properties:{name:f.name,amphoe:f.amphoe,active:!!f.fire_management_active,area_rai:f.area_rai}
+      }))
+    });
+  }
 }
 </script>
 </body>
