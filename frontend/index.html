@@ -993,11 +993,12 @@
       <div class="block">
         <h2>Map layers</h2>
         <div class="layer on" data-layer="hotspots"><div class="sw"></div><div class="lbl">Hotspots<small>VIIRS / MODIS · FIRMS</small></div><span class="cnt" id="lcHot">0</span></div>
-        <div class="layer on" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>manual · user-submitted, unverified</small></div><span class="cnt" id="lcManual">0</span></div>
-        <div class="layer on" data-layer="spread"><div class="sw"></div><div class="lbl">Fire spread forecast<small>downwind risk cones</small></div><span class="cnt" id="lcSpread">0</span></div>
-        <div class="layer on wind" data-layer="wind"><div class="sw"></div><div class="lbl">Wind field<small>vector arrows</small></div><span class="cnt">grid</span></div>
-        <div class="layer on pm" data-layer="pm"><div class="sw"></div><div class="lbl">PM2.5 stations<small>PCD / sensor mesh</small></div><span class="cnt" id="lcPm">0</span></div>
-        <div class="layer heat on" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
+        <div class="layer" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>manual · user-submitted, unverified</small></div><span class="cnt" id="lcManual">0</span></div>
+        <div class="layer" data-layer="spread"><div class="sw"></div><div class="lbl">Fire spread forecast<small>downwind risk cones</small></div><span class="cnt" id="lcSpread">0</span></div>
+        <div class="layer wind" data-layer="wind"><div class="sw"></div><div class="lbl">Wind field<small>vector arrows</small></div><span class="cnt">off</span></div>
+        <div class="layer" data-layer="windDistrict"><div class="sw" style="background:rgba(55,209,214,.2);border-color:var(--wind)"></div><div class="lbl">ทิศทางลมรายอำเภอ<small>ลมเฉพาะที่ + ทิศทางลามคาดการณ์</small></div><span class="cnt" id="lcWindDist">0</span></div>
+        <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">PM2.5 stations<small>PCD / sensor mesh</small></div><span class="cnt" id="lcPm">0</span></div>
+        <div class="layer heat" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">off</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
         <div class="layer on" data-layer="tambonBoundaries"><div class="sw" style="background:rgba(34,211,238,.15);border-color:#22d3ee"></div><div class="lbl">ขอบเขตตำบล<small>ซูมเข้า/กดอำเภอเพื่อดู · 204 ตำบล</small></div><span class="cnt" id="lcTambonBoundaries">0</span></div>
@@ -1719,11 +1720,17 @@ document.querySelectorAll('[data-base]').forEach(b=>{
 // Layer groups
 const layers = {
   hotspots: L.layerGroup().addTo(map),
-  spread:   L.layerGroup().addTo(map),
-  wind:     L.layerGroup().addTo(map),
-  pm:       L.layerGroup().addTo(map),
+  // spread/wind/pm/manualReports default OFF (2026-07) — detached at boot so
+  // the entry view only shows hotspots + tambon risk warnings; their render
+  // functions (renderSpread/renderWind/renderPm/renderManualReports) don't
+  // check the toggle state themselves, so NOT attaching here is what keeps
+  // them actually invisible until the user clicks the layer on.
+  spread:   L.layerGroup(),
+  wind:     L.layerGroup(),
+  windDistrict: L.layerGroup(),
+  pm:       L.layerGroup(),
   forest:   L.layerGroup(),
-  manualReports: L.layerGroup().addTo(map),
+  manualReports: L.layerGroup(),
   boundaries: L.layerGroup().addTo(map),
   tambonBoundaries: L.layerGroup().addTo(map),
   districtDetails: L.layerGroup().addTo(map),
@@ -1929,6 +1936,15 @@ function _applyVelocityLayer(field){
 }
 
 function renderWind(){
+  // Self-gated on the toggle's "on" class (default OFF, 2026-07) — renderWind()
+  // is called unconditionally from boot/rerenderAll(), and _applyVelocityLayer()
+  // adds velLayer straight to `map` independent of layers.wind, so without this
+  // check the particle field would render regardless of the toggle state.
+  if(!document.querySelector('.layer[data-layer="wind"]')?.classList.contains('on')){
+    if(velLayer){try{velLayer.remove();}catch(_){} velLayer=null;}
+    layers.wind.clearLayers();
+    return;
+  }
   // Velocity particles already showing and cache still fresh — skip restart to avoid flicker.
   if(velLayer && _windCacheField && Date.now()-_windCacheMs<600000) return;
   layers.wind.clearLayers();
@@ -1954,6 +1970,45 @@ function windArrowSvg(deg){
   return `<svg width="22" height="22" viewBox="0 0 22 22" style="transform:rotate(${deg}deg);opacity:.55">
     <line x1="11" y1="4" x2="11" y2="18" stroke="#37d1d6" stroke-width="1.4"/>
     <path d="M11 3 L14 9 L11 7.5 L8 9 Z" fill="#37d1d6"/></svg>`;
+}
+
+// ---- Per-district wind pins — the top wind badge and the "Wind field" grid
+// are both province-wide/aggregate; this instead uses each district's own
+// wind_speed_kmh/wind_dir_deg (already computed server-side per district for
+// the danger-score formula, see fire_phase.py calc_breakdown — no new
+// backend endpoint needed) so a user can read "this district's wind is X,
+// fire would spread this way" per อำเภอ instead of one province-wide arrow. ----
+function renderWindDistrictPins(){
+  layers.windDistrict.clearLayers();
+  const cntEl = document.getElementById('lcWindDist');
+  if(!livePhases || !livePhases.length){ if(cntEl) cntEl.textContent='0'; return; }
+  let shown = 0;
+  livePhases.forEach(p=>{
+    const b = p.calc_breakdown;
+    if(!b || b.wind_dir_deg==null) return;
+    const distNorm = normalizeDistrictName(p.district);
+    const layer = districtLayerRef[distNorm];
+    if(!layer) return; // boundaries not loaded yet — self-heals on the next livePhases refresh
+    const center = layer.getBounds().getCenter();
+    const windDirTh = DIR_COMPASS[Math.round(((b.wind_dir_deg||0)%360+360)%360/45)%8];
+    const spreadDirDeg = (b.wind_dir_deg + 180) % 360; // downwind = where a fire here would spread
+    const spreadDirTh = DIR_COMPASS[Math.round(((spreadDirDeg%360+360)%360)/45)%8];
+    const sp = p.spread_projection;
+    const spreadNote = sp
+      ? `กำลังลุกลามไปทาง${spreadDirTh} ~${(sp.km_6h||0).toFixed(1)} กม./6ชม.`
+      : `ยังไม่มีไฟในอำเภอนี้ — ถ้าเกิดไฟ ทิศทางลามอ้างอิงคือทาง${spreadDirTh}`;
+    const icon = L.divIcon({className:'', html:windArrowSvg(spreadDirDeg), iconSize:[22,22]});
+    L.marker(center, {icon, zIndexOffset:-100})
+      .bindTooltip(`${p.district}: ลม ${b.wind_speed_kmh} กม./ชม. ทิศ${windDirTh}`, {direction:'top', className:'district-tooltip'})
+      .bindPopup(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6">
+        <b style="font-size:13px;color:var(--wind)">อำเภอ${p.district}</b><br>
+        <div class="dl"><span class="dk">ลม</span><span class="dv">${b.wind_speed_kmh} กม./ชม. ทิศ${windDirTh}</span></div>
+        <div style="margin-top:6px;color:var(--muted)">${spreadNote}</div>
+      </div>`)
+      .addTo(layers.windDistrict);
+    shown++;
+  });
+  if(cntEl) cntEl.textContent = shown;
 }
 
 // ---- PM stations ----
@@ -2278,9 +2333,11 @@ document.querySelector('.layer[data-layer="wind"]').onclick=(function(){
   return function(){
     windEl.classList.toggle('on');
     if(windEl.classList.contains('on')){
+      map.addLayer(layers.wind);
       renderWind();
     } else {
       layers.wind.clearLayers();
+      map.removeLayer(layers.wind);
       if(velLayer){try{velLayer.remove();}catch(_){} velLayer=null;}
     }
   };
@@ -2603,11 +2660,16 @@ document.getElementById('mobileSearchInput').addEventListener('keydown',e=>{
 // Splash screen: hide once the initial LIVE/offline attempt resolves, with
 // a short minimum so it never just flickers on a fast connection.
 const _splashStart=Date.now();
+let _provinceBoundsForFit=null; // set once by loadBoundaries(); re-applied below once the map is actually visible
 function hideSplash(){
   const el=document.getElementById('splashScreen');
   if(!el) return;
   const elapsed=Date.now()-_splashStart;
-  setTimeout(()=>el.classList.add('hide'), Math.max(0,500-elapsed));
+  setTimeout(()=>{
+    el.classList.add('hide');
+    map.invalidateSize();
+    if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, {padding:[24,24], animate:false});
+  }, Math.max(0,500-elapsed));
 }
 
 // ============================================================
@@ -3349,7 +3411,7 @@ async function loadBoundaries() {
     _districtFeatures = resDistricts.features || [];
 
     // 1. Draw Chiang Mai Province boundary (Dashed, bright, no fill)
-    L.geoJSON(resProvince, {
+    const provinceLayer = L.geoJSON(resProvince, {
       style: {
         color: '#e2e8f0',
         weight: 3.0,
@@ -3357,6 +3419,19 @@ async function loadBoundaries() {
         dashArray: '8 5'
       }
     }).addTo(layers.boundaries);
+
+    // Fit the whole province in view on first load — fitBounds recomputes
+    // the right zoom for whatever the container size actually is, so this
+    // is "responsive" for free on both desktop and phone without a
+    // hardcoded zoom guess. loadBoundaries() only runs once at boot, so
+    // this never fights with the user's own later pan/zoom. Also cache the
+    // bounds and re-fit once the splash screen hides (see hideSplash()) —
+    // this runs early, often while #map is still behind the splash overlay
+    // with a stale/zero measured size, so the zoom Leaflet picks here can
+    // be wrong; invalidateSize()+fitBounds() again once the map is actually
+    // visible is what makes it reliably match the container.
+    _provinceBoundsForFit = provinceLayer.getBounds();
+    map.fitBounds(_provinceBoundsForFit, { padding: [24, 24], animate: false });
 
     // 2. Draw Chiang Mai District boundaries (Interactive hovers, Tooltips, thin borders)
     L.geoJSON(resDistricts, {
@@ -3404,6 +3479,10 @@ async function loadBoundaries() {
     if (resDistricts.features) {
       document.getElementById('lcBoundaries').textContent = resDistricts.features.length;
     }
+    // districtLayerRef just became available — in case livePhases already
+    // arrived first (fetchLiveData and loadBoundaries race at boot), redo
+    // the wind pins now instead of waiting for the next fire-phases refresh.
+    if(livePhases && livePhases.length) renderWindDistrictPins();
 
   } catch (err) {
     console.error("Failed to load boundary GeoJSON data:", err);
@@ -3560,8 +3639,7 @@ function buildHeat(){
          gradient:{0.2:'#facc15',0.45:'#ff8a3d',0.7:'#f5640a',1.0:'#ff4d4d'}})
     : L.layerGroup();
 }
-layers.heat = buildHeat();
-map.addLayer(layers.heat); // heatmap on by default
+layers.heat = buildHeat(); // default OFF (2026-07) — not added to map here; rerenderAll() already gates it on the toggle's "on" class
 
 // ============================================================
 //  LIVE DATA LAYER — fetch real backend, normalize, re-render
@@ -3678,7 +3756,7 @@ function applyLive(dash, history, phases){
   // FRP histogram strictly from real detections in LIVE mode.
   frpSamples=hotspots.map(h=>h.frp).filter(f=>f!=null);
   // Real backend intelligence (kept for the live-aware renderers).
-  if(phases && Array.isArray(phases.phases)) livePhases = phases.phases;
+  if(phases && Array.isArray(phases.phases)){ livePhases = phases.phases; renderWindDistrictPins(); }
   if(phases && Array.isArray(phases.notes)){ firePhaseNotes = phases.notes; renderGuideNotes(); }
   if(phases && Array.isArray(phases.forest_risk)){
     forestRiskById = {};
