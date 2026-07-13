@@ -17,6 +17,33 @@ from pathlib import Path
 from typing import Any
 
 
+# The source shapefile predates the 2009 Galyani Vadhana district split and
+# the ~2007 Doi Lo/Mae On กิ่งอำเภอ->อำเภอ promotions, so its amphoe_th/en/acode
+# fields are stale for these 16 tambons (confirmed 2026-07-13 by computing each
+# tambon polygon's TRUE intersection area against every real district polygon
+# in chiangmai-districts.json — every one of these resolves at 68%+ land area,
+# most 90%+ — not just a naive centroid guess). Applied here so a future
+# re-import from the same stale source doesn't silently regress the fix.
+_TCODE_AMPHOE_CORRECTIONS: dict[str, tuple[str, str, str]] = {
+    # (amphoe_th, amphoe_en, acode)
+    "502306": ("แม่ออน", "MAE ON", "5023"),
+    "502304": ("แม่ออน", "MAE ON", "5023"),
+    "502305": ("แม่ออน", "MAE ON", "5023"),
+    "502301": ("แม่ออน", "MAE ON", "5023"),
+    "502303": ("แม่ออน", "MAE ON", "5023"),
+    "502302": ("แม่ออน", "MAE ON", "5023"),
+    "502403": ("ดอยหล่อ", "DOI LO", "5024"),
+    "502401": ("ดอยหล่อ", "DOI LO", "5024"),
+    "502404": ("ดอยหล่อ", "DOI LO", "5024"),
+    "502402": ("ดอยหล่อ", "DOI LO", "5024"),
+    "500306": ("กัลยาณิวัฒนา", "GALYANI VADHANA", "5025"),
+    "500310": ("กัลยาณิวัฒนา", "GALYANI VADHANA", "5025"),
+    "500309": ("กัลยาณิวัฒนา", "GALYANI VADHANA", "5025"),
+    "500511": ("สันกำแพง", "SAN KAMPHAENG", "5013"),
+    "500510": ("สันกำแพง", "SAN KAMPHAENG", "5013"),
+    "500509": ("สันกำแพง", "SAN KAMPHAENG", "5013"),
+}
+
 DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1z6ZWmM80NY9ZgwP6KuTv7wYGVUa6JnQA"
 SOURCE_FILE_IDS = {
     "7 Tambon area.shp": "1ujW7BAIVFG-Ib8lTLO6LoG_-WnEyQvF2",
@@ -116,19 +143,32 @@ def _feature(record: dict[str, str], rings: list[list[list[float]]]) -> dict[str
     t_code = record.get("T_CODE", "").zfill(2)
     full_tcode = f"{p_code}{a_code}{t_code}" if p_code and a_code and t_code else ""
 
+    amphoe_th = record.get("A_NAME_T", "")
+    amphoe_en = record.get("A_NAME_E", "")
+    acode = f"{p_code}{a_code}" if p_code and a_code else ""
+    source = "Drive: 7 Tambon area shapefile"
+    fix = _TCODE_AMPHOE_CORRECTIONS.get(full_tcode)
+    if fix:
+        amphoe_th, amphoe_en, acode = fix
+        source += (
+            " | amphoe corrected: original shapefile predates the 2009 Galyani Vadhana "
+            "district split and the Doi Lo/Mae On กิ่งอำเภอ promotions; verified against "
+            "chiangmai-districts.json via true polygon intersection area"
+        )
+
     return {
         "type": "Feature",
         "properties": {
             "pcode": p_code,
-            "acode": f"{p_code}{a_code}" if p_code and a_code else "",
+            "acode": acode,
             "tcode": full_tcode,
             "province_th": record.get("P_NAME_T", ""),
             "province_en": record.get("P_NAME_E", ""),
-            "amphoe_th": record.get("A_NAME_T", ""),
-            "amphoe_en": record.get("A_NAME_E", ""),
+            "amphoe_th": amphoe_th,
+            "amphoe_en": amphoe_en,
             "tambon_th": record.get("T_NAME_T", ""),
             "tambon_en": record.get("T_NAME_E", ""),
-            "source": "Drive: 7 Tambon area shapefile",
+            "source": source,
         },
         "geometry": {
             "type": "MultiPolygon",

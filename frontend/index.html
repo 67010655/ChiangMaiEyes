@@ -986,6 +986,7 @@
         <div class="layer heat on" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
+        <div class="layer on" data-layer="tambonBoundaries"><div class="sw" style="background:rgba(34,211,238,.15);border-color:#22d3ee"></div><div class="lbl">ขอบเขตตำบล<small>ซูมเข้า/กดอำเภอเพื่อดู · 204 ตำบล</small></div><span class="cnt" id="lcTambonBoundaries">0</span></div>
         <div class="layer on" data-layer="tambonWarnings"><div class="sw"></div><div class="lbl">⚠️ เฝ้าระวังระดับตำบล<small>district danger + hotspot proximity</small></div><span class="cnt" id="lcTambonWarn">0</span></div>
         <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">EVI ความหนาแน่นพืชพรรณ<small>MODIS Terra rolling 8-day · NASA GIBS</small></div><span class="cnt">off</span></div>
         <div class="layer" data-layer="burnScar"><div class="sw"></div><div class="lbl">พื้นที่เผาไหม้สะสม<small>30 วัน · รายอำเภอ จากข้อมูลจริง</small></div><span class="cnt" id="lcBurn">off</span></div>
@@ -1318,6 +1319,7 @@
           <li><b>CRITICAL ZONES</b> จำนวนจุดที่ไฟแรงเกินเกณฑ์วิกฤต (FRP สูง) <span class="gd-tag real">จริง</span></li>
           <li><b>PM2.5 AVG</b> ค่าเฉลี่ยฝุ่นละอองขนาดเล็กจากสถานีตรวจวัดในจังหวัด (µg/m³) <span class="gd-tag real">จริง</span></li>
           <li><b>AQI</b> ดัชนีคุณภาพอากาศ คำนวณจากค่า PM2.5 เฉลี่ย <span class="gd-tag approx">ประมาณ</span></li>
+          <li>ปุ่มรูปคน (มุมขวา) <b>เข้าสู่ระบบ/สมัครสมาชิก</b> — สมัครได้ทุกคน ไม่ต้องรออนุมัติ ใช้สำหรับรายงานจุดความร้อนด้วยตนเอง (ดูหัวข้อ "จุดไฟที่ผู้ใช้รายงาน" ด้านล่าง) ล็อกอินแล้วปุ่มจะเปลี่ยนเป็นตัวอักษรแรกของชื่อ กดอีกทีเพื่อออกจากระบบ</li>
           <li>ปุ่มมุมขวา (วงกลม) สลับโหมด Dark/Light แค่เปลี่ยนสีหน้าจอ ไม่กระทบข้อมูล</li>
           <li>นาฬิกา + <b>LIVE</b>/<b>OFFLINE</b> มุมขวาสุด: บอกว่าตอนนี้เว็บต่อกับเซิร์ฟเวอร์ข้อมูลได้จริงไหม — ถ้าขึ้น OFFLINE ตัวเลขทั้งหน้าอาจเป็นค่าเก่า ให้สังเกตตรงนี้ก่อนเชื่อ</li>
         </ul>
@@ -1339,13 +1341,14 @@
         <summary>3. ชั้นข้อมูลบนแผนที่ (แผงซ้าย — Map layers)</summary>
         <ul>
           <li><b>Hotspots</b> จุดความร้อนจากดาวเทียม VIIRS/MODIS ผ่าน NASA FIRMS ผสาน GISTDA <span class="gd-tag real">จริง</span> — อาจดีเลย์ 4-5 ชั่วโมงเทียบสถานการณ์จริงบนพื้นดิน อย่าเพิ่งสรุปว่าไฟดับแล้วถ้าจุดหาย</li>
-          <li><b>จุดไฟที่ผู้ใช้รายงาน</b> จุดที่ผู้ใช้ที่ล็อกอินแล้วป้อนเข้ามาเอง (เช่น เจ้าหน้าที่ภาคสนามที่เห็นไฟในช่วงที่ดาวเทียมยังไม่โคจรผ่าน) <b>ไม่มีแท็กความน่าเชื่อถือ</b> เพราะเป็นคำกล่าวอ้างของผู้ใช้ ยังไม่ผ่านการยืนยันจากหน่วยงาน — สมัครสมาชิกเปิดให้ทุกคน ไม่ได้จำกัดเฉพาะเจ้าหน้าที่จริง แสดงเป็นไอคอนรูปหยดน้ำสีส้ม 👁 แยกจากจุดดาวเทียม (🔥) เสมอ ไม่ปะปนกัน กดปุ่ม + สีส้มบนแผนที่แล้วเลือกตำแหน่งเพื่อรายงาน</li>
+          <li><b>จุดไฟที่ผู้ใช้รายงาน</b> จุดที่ผู้ใช้ที่ล็อกอินแล้วป้อนเข้ามาเอง (เช่น เจ้าหน้าที่ภาคสนามที่เห็นไฟในช่วงที่ดาวเทียมยังไม่โคจรผ่าน) <b>ไม่มีแท็กความน่าเชื่อถือ</b> เพราะเป็นคำกล่าวอ้างของผู้ใช้ ยังไม่ผ่านการยืนยันจากหน่วยงาน — สมัครสมาชิกเปิดให้ทุกคน ไม่ได้จำกัดเฉพาะเจ้าหน้าที่จริง แสดงเป็นไอคอนรูปหยดน้ำสีส้ม 👁 แยกจากจุดดาวเทียม (🔥) เสมอ ไม่ปะปนกัน กดปุ่ม + สีส้มบนแผนที่ แล้วเลือกตำแหน่งได้ 3 แบบ: พิมพ์พิกัด lat/lon เอง, กด "ใช้ตำแหน่งปัจจุบัน" (GPS), หรือเลือกจุดบนแผนที่ — เจ้าของรายงานยกเลิก/ลบรายงานของตัวเองได้ทุกเมื่อจากป๊อปอัปของจุดนั้น</li>
           <li><b>Fire spread forecast</b> (กรวยประ ๆ รอบจุดไฟ) ทิศทาง+ระยะลุกลามที่คาดไว้ <span class="gd-tag approx">ประมาณ</span> — คำนวณง่ายๆจากทิศลมจริง+ความแรงไฟจริง ไม่ใช่แบบจำลองฟิสิกส์ไฟป่าเต็มรูปแบบ ใช้ดูทิศทางคร่าวๆเท่านั้น</li>
           <li><b>Wind field</b> ลูกศรทิศทางลมทั่วพื้นที่ <span class="gd-tag real">จริง</span> จาก Open-Meteo</li>
           <li><b>PM2.5 stations</b> จุดสถานีตรวจฝุ่นจริงทั่วจังหวัด <span class="gd-tag real">จริง</span></li>
           <li><b>Heatmap ความหนาแน่น</b> สีเข้ม-อ่อนแสดงความหนาแน่นของจุดไฟ คำนวณจากตำแหน่งจุดไฟจริง</li>
           <li><b>ขอบเขตป่าชุมชน</b> รูปหลายเหลี่ยมขอบเขตจริงจากกรมป่าไม้ (RFD, shapefile ที่ได้รับจากหน่วยงานโดยตรง) <span class="gd-tag real">จริง</span> — 677 แปลงในเชียงใหม่ ครบทุกอำเภอที่มีป่าชุมชนขึ้นทะเบียน (23 จาก 25 อำเภอ อีก 2 อำเภอไม่มีป่าชุมชนขึ้นทะเบียน) แต่ละแปลงมีชื่อป่า/หมู่บ้าน/หมู่ที่/ตำบล/อำเภอ/พื้นที่จริง (ไร่) สีของรูปหลายเหลี่ยม/จุดกึ่งกลางไล่ตาม<b>ความเสี่ยงเชื้อเพลิงเฉพาะป่านั้น</b> <span class="gd-tag approx">ประมาณ</span> (เขียว→เหลือง→ส้ม→แดง) คำนวณจากความเสี่ยงของอำเภอนั้นบวกระยะห่างจากจุดความร้อนจริงที่ใกล้ที่สุด คลิกดูเปอร์เซ็นต์ความเสี่ยงได้</li>
           <li><b>ขอบเขตอำเภอ/จังหวัด</b> เส้นแบ่งเขตทางการ 25 อำเภอ <span class="gd-tag real">จริง</span></li>
+          <li><b>ขอบเขตตำบล</b> เส้นแบ่งเขตตำบลทางการ 204 ตำบล <span class="gd-tag real">จริง</span> — ไม่โชว์ทั้งจังหวัดตลอดเวลาเพราะจะรกเกินไป จะขึ้นให้เห็นเฉพาะตอนซูมเข้าใกล้ หรือกดเลือกอำเภอใดอำเภอหนึ่ง (จะโชว์เฉพาะตำบลในอำเภอนั้น) คลิกแต่ละตำบลดูรายละเอียดได้เหมือนค้นหา — ตรวจสอบทุกตำบลแล้วว่าติดอำเภอถูกต้องจริงตามขอบเขตอำเภอทางการ (13 ก.ค. 2569 พบและแก้ 16 ตำบลที่ไฟล์ต้นฉบับยังอ้างอำเภอเดิมก่อนปี 2552 เช่น ตำบลแม่แดด/แจ่มหลวง/บ้านจันทร์ เคยขึ้นว่าอยู่แม่แจ่ม ที่จริงย้ายไปกัลยาณิวัฒนาตั้งแต่แยกอำเภอใหม่)</li>
           <li><b>⚠️ เฝ้าระวังระดับตำบล</b> ขึ้นเฉพาะตำบลที่มีความเสี่ยง (204 ตำบลทั้งหมด แต่โชว์แค่ที่ต้องเฝ้าระวัง) <span class="gd-tag approx">ประมาณ</span> คำนวณจากความเสี่ยงอำเภอแม่ + ระยะใกล้จุดความร้อนจริง คลิกไอคอนดูรายละเอียดได้</li>
           <li><b>EVI ความหนาแน่นพืชพรรณ</b> ภาพดาวเทียมจริงจาก NASA MODIS Terra รอบ 8 วัน <span class="gd-tag real">จริง</span> ใช้ดูว่าพืชคลุมดินแห้ง/เขียวแค่ไหน (ยิ่งแห้งยิ่งติดไฟง่าย)</li>
           <li><b>พื้นที่เผาไหม้สะสม</b> พื้นที่ที่มีจุดไฟสะสมย้อนหลัง 30 วันรายอำเภอ <span class="gd-tag real">จริง</span> คำนวณจากจุดไฟจริงที่ตรวจพบ</li>
@@ -1708,6 +1711,7 @@ const layers = {
   forest:   L.layerGroup(),
   manualReports: L.layerGroup().addTo(map),
   boundaries: L.layerGroup().addTo(map),
+  tambonBoundaries: L.layerGroup().addTo(map),
   districtDetails: L.layerGroup().addTo(map),
   tambonWarnings: L.layerGroup().addTo(map),
   ndvi: null  // created on first toggle
@@ -1973,6 +1977,7 @@ document.querySelectorAll('.layer').forEach(el=>{
     el.classList.toggle('on');
     if(el.classList.contains('on')) map.addLayer(layers[key]);
     else map.removeLayer(layers[key]);
+    if(key==='tambonBoundaries' && typeof renderTambonBoundaries==='function') renderTambonBoundaries();
   };
 });
 
@@ -2971,6 +2976,47 @@ function renderDistrictDetailsOnMap(distName) {
 let _selectedDistrictLayer = null;
 const _DISTRICT_DEFAULT_STYLE = {color:'#334155',weight:1.2,fillColor:'#1e293b',fillOpacity:0.03};
 const _DISTRICT_ACTIVE_STYLE  = {color:'#22d3ee',fillColor:'#22d3ee',fillOpacity:0.12,weight:1.8};
+
+// ---- Tambon boundary polygons — deliberately NOT shown province-wide by
+// default (204 polygons at once is clutter, not signal). Shows only when
+// (a) a specific district is selected (renderTambonBoundaries(distNorm) from
+// selectDistrict()), or (b) the user zooms in close enough on their own
+// (TAMBON_BOUNDARY_MIN_ZOOM), viewport-culled so we don't build all 204 at
+// province zoom just because someone panned near the threshold. ----
+const TAMBON_BOUNDARY_MIN_ZOOM = 11;
+let _tambonBoundaryDistrict = null; // normalized district name, or null (zoom-driven mode)
+function renderTambonBoundaries(){
+  layers.tambonBoundaries.clearLayers();
+  const cntEl = document.getElementById('lcTambonBoundaries');
+  const enabled = document.querySelector('.layer[data-layer="tambonBoundaries"]')?.classList.contains('on');
+  if(!enabled || !_tambonFeatures.length){ if(cntEl) cntEl.textContent='0'; return; }
+  const zoomedIn = map.getZoom() >= TAMBON_BOUNDARY_MIN_ZOOM;
+  if(!_tambonBoundaryDistrict && !zoomedIn){ if(cntEl) cntEl.textContent='off'; return; }
+  const bounds = _tambonBoundaryDistrict ? null : map.getBounds();
+  let shown = 0;
+  _tambonFeatures.forEach(feat=>{
+    const amphoe = normalizeDistrictName(feat.properties.amphoe_th || '');
+    if(_tambonBoundaryDistrict && amphoe !== _tambonBoundaryDistrict) return;
+    const gj = L.geoJSON(feat.geometry, {
+      style:{color:'#22d3ee', weight:1, fillColor:'#22d3ee', fillOpacity:0.04, dashArray:'3 3'}
+    });
+    if(bounds && !bounds.intersects(gj.getBounds())) return; // viewport cull in zoom-driven mode only
+    gj.bindTooltip(feat.properties.tambon_th, {sticky:true, className:'district-tooltip'});
+    gj.on('click', e=>{
+      L.DomEvent.stopPropagation(e);
+      if(_pickingLocation){
+        cancelPickLocation();
+        openReportModal(e.latlng.lat, e.latlng.lng);
+        return;
+      }
+      selectTambonSearch(feat.properties.tambon_th, gj.getBounds().getCenter(), feat.properties.amphoe_th);
+    });
+    gj.addTo(layers.tambonBoundaries);
+    shown++;
+  });
+  if(cntEl) cntEl.textContent = shown;
+}
+map.on('zoomend moveend', renderTambonBoundaries);
 const districtLayerRef = {}; // normalizedName → Leaflet layer, populated by loadBoundaries
 let _districtFeatures = []; // GeoJSON features for PiP, set in loadBoundaries()
 let _tambonFeatures = []; // GeoJSON features for PiP, set in loadTambonBoundaries()
@@ -3131,6 +3177,8 @@ function selectDistrict(nameTh, layer){
   layer.setStyle(_DISTRICT_ACTIVE_STYLE);
   map.fitBounds(layer.getBounds(), { padding: [20, 20], maxZoom: 12 });
   renderDistrictDetailsOnMap(nameTh);
+  _tambonBoundaryDistrict = distNorm;
+  renderTambonBoundaries();
 
   const center = layer.getBounds().getCenter();
   const popup = _locationPopup(center,
@@ -3229,6 +3277,8 @@ map.on('click', function(e) {
   }
   map.closePopup();
   layers.districtDetails.clearLayers();
+  _tambonBoundaryDistrict = null; // falls back to zoom-driven tambon boundaries, if zoomed in enough
+  renderTambonBoundaries();
 });
 
 async function loadBoundaries() {
@@ -3321,6 +3371,7 @@ async function loadTambonBoundaries(){
       hotspots = enrichHotspotsWithBoundaries(hotspots);
       rerenderAll();
     }
+    renderTambonBoundaries();
   }catch(err){
     console.warn('Tambon boundary GeoJSON unavailable:', err);
   }

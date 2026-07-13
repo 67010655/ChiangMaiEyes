@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from app.fire_phase import classify_fire_phases
+from app.fire_phase import _TAMBON_CENTROIDS, classify_fire_phases
 from app.models import (
     CommunityForest,
     Hotspot,
@@ -252,13 +252,39 @@ def test_tambon_warnings_present_for_every_tambon():
 
 
 def test_tambon_near_active_hotspot_scores_higher_within_same_district():
-    # ท่าผา and บ้านจันทร์ are both real tambons in แม่แจ่ม (same base danger).
+    # ท่าผา and แม่ศึก are both real tambons in แม่แจ่ม (same base danger).
     # ท่าผา's centroid sits right next to the test hotspot fixture's fixed
-    # coordinates (18.5, 98.4); บ้านจันทร์ is the farthest tambon in the same
+    # coordinates (18.5, 98.4); แม่ศึก is the farthest tambon in the same
     # district — the near one must score at least as high.
+    # (Not บ้านจันทร์: it real-polygon-corrected to กัลยาณิวัฒนา, a different
+    # district with its own base danger — see chiangmai-tambons.geojson's
+    # 2026-07-13 amphoe correction. Picking it here would silently test a
+    # cross-district comparison instead of the same-district one this test
+    # is meant to verify.)
     resp = classify_fire_phases(_hotspots("แม่แจ่ม"), _weather(humidity=40))
     near = next(t for t in resp.tambon_warnings if t.tambon == "ท่าผา")
-    far = next(t for t in resp.tambon_warnings if t.tambon == "บ้านจันทร์")
+    far = next(t for t in resp.tambon_warnings if t.tambon == "แม่ศึก")
     assert near.danger_score >= far.danger_score
     assert near.nearest_hotspot_km is not None and far.nearest_hotspot_km is not None
     assert near.nearest_hotspot_km < far.nearest_hotspot_km
+
+
+def test_tambon_amphoe_labels_are_current_not_stale():
+    # Real bug report (2026-07-13): a tambon_warnings marker for ตำบลแม่แดด
+    # showed อำเภอแม่แจ่ม, but แม่แดด's real district (verified via true
+    # polygon intersection area against chiangmai-districts.json, not just a
+    # centroid guess — see backend/scripts/import_tambon_boundaries.py) is
+    # กัลยาณิวัฒนา, created in 2009 from three แม่แจ่ม tambons. The source
+    # shapefile also predates the ~2007 Doi Lo/Mae On กิ่งอำเภอ promotions.
+    # Pin the specific corrected values so this can't silently regress if the
+    # data file is ever re-generated from the original (stale) source.
+    by_tambon = {t["tambon"]: t["amphoe"] for t in _TAMBON_CENTROIDS}
+    assert by_tambon["แม่แดด"] == "กัลยาณิวัฒนา"
+    assert by_tambon["แจ่มหลวง"] == "กัลยาณิวัฒนา"
+    assert by_tambon["บ้านจันทร์"] == "กัลยาณิวัฒนา"
+    assert by_tambon["ดอยหล่อ"] == "ดอยหล่อ"
+    assert by_tambon["ออนกลาง"] == "แม่ออน"
+    # No tambon should still carry an obsolete "กิ่งอำเภอ" (minor-district)
+    # designation — every one of Chiang Mai's 25 districts is a full อำเภอ now.
+    stale = [t["tambon"] for t in _TAMBON_CENTROIDS if "กิ่งอำเภอ" in t["amphoe"]]
+    assert stale == [], f"stale กิ่งอำเภอ label(s) still present: {stale}"
