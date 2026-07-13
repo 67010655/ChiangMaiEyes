@@ -27,6 +27,7 @@ REPO_DIR = BACKEND_DIR.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
 from app.config import get_settings
+from app.fire_phase import _ACTIVE_HOTSPOT_HOURS, _AFTER_FIRE_RETENTION_DAYS, _is_recent_detection, _normalize_district
 from app.models import DashboardResponse, HotspotResponse
 from app.providers.hotspot_provider import fetch_live_hotspots
 from app.services import (
@@ -71,6 +72,43 @@ def _hotspot_fingerprint(items: list[dict]) -> list[tuple]:
         )
         for i in items
     )
+
+
+def _update_district_last_active(settings, hotspots: HotspotResponse, checked_at: str) -> None:
+    """Stamp today's date for every district with an active fire right now,
+    and prune anything past the retention window — powers the time-based
+    "after fire" phase in fire_phase.py (classify_fire_phases) for all 25
+    districts, not just the 5 with a Sentinel-2 dNBR zone configured."""
+    path = settings.cache_dir / "district_last_active.json"
+    last_active: dict[str, str] = {}
+    if path.exists():
+        try:
+            last_active = json.loads(path.read_text(encoding="utf-8")).get("last_active", {})
+        except Exception as exc:  # noqa: BLE001 — best-effort, start fresh on a corrupt file
+            logger.warning("Could not read existing district_last_active.json: %s", exc)
+
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
+    today = now.date().isoformat()
+    active_today = {
+        _normalize_district(item.district)
+        for item in hotspots.items
+        if _is_recent_detection(item.detected_at, now, _ACTIVE_HOTSPOT_HOURS) and item.district
+    }
+    for district in active_today:
+        last_active[district] = today
+
+    cutoff_days = _AFTER_FIRE_RETENTION_DAYS
+    pruned = {}
+    for district, date_str in last_active.items():
+        try:
+            days_old = (now.date() - datetime.date.fromisoformat(date_str)).days
+        except (TypeError, ValueError):
+            continue
+        if days_old <= cutoff_days:
+            pruned[district] = date_str
+
+    write_json(settings.cache_dir, "district_last_active.json", {"last_active": pruned, "updated_at": checked_at})
+    logger.info("district_last_active.json: %d districts active today, %d tracked total", len(active_today), len(pruned))
 
 
 def main() -> int:
@@ -124,6 +162,7 @@ def main() -> int:
             logger.warning("Could not compare with existing snapshot: %s", exc)
 
     write_json(settings.cache_dir, "hotspots.json", new_dump)
+    _update_district_last_active(settings, hotspots, checked_at)
 
     # --- Always refresh PM2.5, weather, and the full dashboardSnapshot ---
     # These have their own update cadence and should refresh on every run

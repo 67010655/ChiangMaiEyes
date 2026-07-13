@@ -3,8 +3,10 @@
 Assigns each Chiang Mai district a phase in the disaster-management cycle:
   - during (red)   — active hotspots in the district right now
   - before (yellow) — no active fire but elevated danger (dry fuel + dry air)
-  - after  (grey)   — recently burned; from Sentinel-2 dNBR burn-severity when
-                      configured, or inferred from hotspot history age
+  - after  (grey)   — recently burned: either Sentinel-2 dNBR burn-severity
+                      (5 hardcoded zones, see _ZONE_DISTRICT) or, for any of
+                      the 25 districts, "had an active fire within the last
+                      _AFTER_FIRE_RETENTION_DAYS days per district_last_active"
   - normal (green)  — low danger, no fire
 
 Enhanced with 3-phase workflow:
@@ -18,7 +20,7 @@ from __future__ import annotations
 
 import json
 import math
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from app.fire_spread_physics import DISTRICT_PHYSICS
@@ -48,6 +50,16 @@ _DURING_FLOOR = 0.85
 # district's danger at 0.85 or mark a forest as next to an active fire.
 _ACTIVE_HOTSPOT_HOURS = 24.0
 
+# "After" phase retention window (2026-07): a district that had an active
+# fire recently but doesn't right now stays flagged "after" (recovery) for
+# this many days, then falls back to normal/before on its own — the source
+# file (district_last_active.json, written hourly by refresh_snapshot.py)
+# prunes entries past this window too, so the retention is enforced twice
+# (belt-and-suspenders, cheap to keep both). This is additive alongside the
+# existing dNBR satellite check below, not a replacement — dNBR only covers
+# 5 hardcoded zones (_ZONE_DISTRICT), this covers all 25 districts.
+_AFTER_FIRE_RETENTION_DAYS = 30
+
 
 def _is_recent_detection(detected_at: str, now: datetime, hours: float) -> bool:
     try:
@@ -57,6 +69,23 @@ def _is_recent_detection(detected_at: str, now: datetime, hours: float) -> bool:
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone(timedelta(hours=7)))
     return (now - dt) <= timedelta(hours=hours)
+
+
+def _days_since_active(
+    district: str, district_last_active: dict[str, str] | None, now: datetime
+) -> int | None:
+    """Days since `district`'s last active-fire date, or None if unknown/expired.
+
+    Returns None (not "after") for day 0 — that's handled by the active>0
+    "during" branch instead, since a district can't be both at once."""
+    if not district_last_active or district not in district_last_active:
+        return None
+    try:
+        last_date = date.fromisoformat(district_last_active[district])
+    except (TypeError, ValueError):
+        return None
+    days = (now.date() - last_date).days
+    return days if 0 < days <= _AFTER_FIRE_RETENTION_DAYS else None
 
 # Which dNBR zone maps to which district (Phase 6.2 — Sentinel-2 burn scars).
 _ZONE_DISTRICT = {
@@ -356,6 +385,7 @@ def classify_fire_phases(
     hotspot_history: list[tuple[str, int]] | None = None,
     pm25_history: list[tuple[str, float]] | None = None,
     district_winds: dict[str, tuple[float, float]] | None = None,
+    district_last_active: dict[str, str] | None = None,
 ) -> FirePhaseResponse:
     cf_list = community_forests or []
 
@@ -418,6 +448,7 @@ def classify_fire_phases(
         spread: SpreadProjection | None = None
         nearby: list[NearbyForest] = []
         coord_note: str | None = None
+        days_since_active = _days_since_active(district, district_last_active, now)
 
         if active > 0:
             phase = "during"
@@ -432,6 +463,13 @@ def classify_fire_phases(
             phase = "after"
             dnbr_value, severity = burned[district]
             reasons = [f"พบรอยไหม้จากดาวเทียม (dNBR {dnbr_value}, ความรุนแรง {severity}) — ระยะฟื้นฟู"]
+            nearby, _ = _nearby_forests(
+                district, spread_dir_dist, cf_list,
+                district_danger=danger, hotspot_items=recent_hotspots,
+            )
+        elif days_since_active is not None:
+            phase = "after"
+            reasons = [f"ไฟดับไปแล้ว {days_since_active} วันก่อน — อยู่ระยะฟื้นฟู"]
             nearby, _ = _nearby_forests(
                 district, spread_dir_dist, cf_list,
                 district_danger=danger, hotspot_items=recent_hotspots,

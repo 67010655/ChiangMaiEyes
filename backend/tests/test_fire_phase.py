@@ -194,6 +194,54 @@ def test_active_fire_beats_burn_scar():
     assert _phase_of(resp, "แม่แจ่ม").phase == "during"
 
 
+def _days_ago(n: int) -> str:
+    return (datetime.now(_BANGKOK_TZ).date() - timedelta(days=n)).isoformat()
+
+
+def test_time_based_after_covers_a_district_with_no_dnbr_zone():
+    # แม่วาง has no _ZONE_DISTRICT entry — the dNBR path can never mark it
+    # "after". The time-based mechanism (district_last_active.json, written
+    # hourly by refresh_snapshot.py) must be able to on its own.
+    resp = classify_fire_phases(
+        _hotspots(), _weather(humidity=30),
+        district_last_active={"แม่วาง": _days_ago(5)},
+    )
+    p = _phase_of(resp, "แม่วาง")
+    assert p.phase == "after"
+    assert p.color == "grey"
+    assert "5 วันก่อน" in p.reasons[0]
+
+
+def test_time_based_after_expires_past_retention_window():
+    # 31 days ago is past _AFTER_FIRE_RETENTION_DAYS (30) — must NOT be "after".
+    resp = classify_fire_phases(
+        _hotspots(), _weather(humidity=30),
+        district_last_active={"แม่วาง": _days_ago(31)},
+    )
+    assert _phase_of(resp, "แม่วาง").phase != "after"
+
+
+def test_time_based_after_boundary_today_is_not_after():
+    # A district active TODAY should read as "during" (if it still has a
+    # hotspot) or fall through normally — day-0 in district_last_active alone
+    # must not retroactively claim "after" for a fire that's still active.
+    resp = classify_fire_phases(
+        _hotspots(), _weather(humidity=30),
+        district_last_active={"แม่วาง": _days_ago(0)},
+    )
+    assert _phase_of(resp, "แม่วาง").phase != "after"
+
+
+def test_active_fire_beats_time_based_after():
+    # Same district shows both an active hotspot right now AND a stale
+    # district_last_active entry — during (active now) must win.
+    resp = classify_fire_phases(
+        _hotspots("แม่วาง"), _weather(humidity=30),
+        district_last_active={"แม่วาง": _days_ago(3)},
+    )
+    assert _phase_of(resp, "แม่วาง").phase == "during"
+
+
 def test_scores_in_range_and_sorted_desc():
     resp = classify_fire_phases(_hotspots("เชียงดาว"), _weather(humidity=35))
     scores = [p.danger_score for p in resp.phases]

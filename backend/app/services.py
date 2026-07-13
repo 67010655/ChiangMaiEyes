@@ -1056,6 +1056,13 @@ def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
     except Exception as e:  # noqa: BLE001
         logger.warning("Per-district wind fetch failed, using synoptic fallback: %s", e)
 
+    # Written hourly by refresh_snapshot.py (district → ISO date last seen
+    # active); powers the time-based "after fire" phase for all 25 districts,
+    # see fire_phase.py's _days_since_active(). Best-effort — an empty/missing
+    # file just means no district gets the time-based after phase this call.
+    district_last_active_doc = _read_optional_json(settings.cache_dir, "district_last_active.json") or {}
+    district_last_active = district_last_active_doc.get("last_active") or {}
+
     return classify_fire_phases(
         hotspots,
         weather,
@@ -1064,6 +1071,7 @@ def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
         hotspot_history=hotspot_hist,
         pm25_history=pm25_hist,
         district_winds=district_winds,
+        district_last_active=district_last_active,
     )
 
 
