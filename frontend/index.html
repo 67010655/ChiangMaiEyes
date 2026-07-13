@@ -471,6 +471,13 @@
   .dl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;padding:5px 0;border-bottom:1px dashed var(--line-soft)}
   .dl .dk{color:var(--dim)} .dl .dv{color:var(--txt);font-weight:500}
   .dv.hot{color:var(--ember)} .dv.crit{color:var(--danger)}
+  /* 2-col compact stat grid (map popups) — packs PM2.5/hotspot/FRP/forest/tambon
+     into 3 rows instead of 5 full-width .dl rows, since a quiet "ปกติ" district
+     has nothing else to collapse and this is what actually shrinks that case */
+  .dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;margin:4px 0}
+  .dl-cell{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:11px;padding:3px 0;border-bottom:1px dashed var(--line-soft)}
+  .dl-cell .dk{color:var(--dim);font-size:9px}
+  .dl-cell .dv{color:var(--txt);font-weight:500}
 
   .leaflet-popup-content-wrapper{background:#0d1117;color:#e6edf3;border:1px solid var(--ember);border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.6)}
   .leaflet-popup-tip{background:#0d1117}
@@ -482,10 +489,12 @@
   .district-popup .leaflet-popup-tip{background:#0d1117}
   .district-popup .leaflet-popup-content{overflow-y:auto}
   /* compact variant (narrow viewports): tighter spacing so the popup opens short by default */
-  .district-popup.compact .leaflet-popup-content{font-size:10px;margin:8px 10px;line-height:1.45}
-  .district-popup.compact .ph-card{padding:11px 12px}
-  .district-popup.compact .ph-card h3{font-size:12px;margin-bottom:6px}
+  .district-popup.compact .leaflet-popup-content{font-size:10px;margin:8px 10px;line-height:1.4}
+  .district-popup.compact .ph-card{padding:10px 11px}
+  .district-popup.compact .ph-badge{margin-bottom:4px;padding:1px 8px}
+  .district-popup.compact .ph-card h3{font-size:12px;margin-bottom:4px}
   .district-popup.compact .dl{font-size:10px;padding:3px 0}
+  .district-popup.compact .dl-cell{font-size:10px;padding:2px 0}
   /* 3D popup (Leaflet3D / pane overlays): force dark bg + high contrast text */
   .leaflet-3d-popup .leaflet-popup-content-wrapper,
   .popup-3d .leaflet-popup-content-wrapper{background:#0d1117 !important;color:#f0f6fc !important;border:1px solid #30363d !important}
@@ -3107,7 +3116,7 @@ function _districtDetailBody(distNorm){
   const distPmAvg = hasPm ? Math.round(distPmStations.reduce((s, x) => s + x.pm, 0) / distPmStations.length) : null;
   const pmHtml = hasPm
     ? `<span style="color:${pmColor(distPmAvg)}">${distPmAvg} µg/m³</span> (${distPmStations.length} สถานี)`
-    : `<span style="color:var(--dim)">— (ไม่มีสถานีวัดในพื้นที่)</span>`;
+    : `<span style="color:var(--dim)" title="ไม่มีสถานีวัดในพื้นที่">—</span>`;
 
   let correlationNote = '';
   if (distHs.length > 0 && hasPm && distPmAvg > 37) {
@@ -3169,13 +3178,19 @@ function _districtDetailBody(distNorm){
     ? `<details style="margin-top:6px"><summary style="font-family:var(--mono);font-size:9px;color:var(--wind);letter-spacing:.08em;cursor:pointer;user-select:none;list-style:none;padding-top:6px;border-top:1px solid var(--line-soft)">▸ ตำบลเสี่ยงสูงสุด · แนวโน้ม · 3D</summary>${moreHtml}</details>`
     : '';
 
+  // 2-column stat grid (not 5 stacked full-width rows) — this, not the
+  // collapsible sections above, is what actually shrinks the common case: a
+  // quiet "ปกติ" district has nothing heavy to fold away, so the win has to
+  // come from packing the always-visible essentials tighter.
   return `
     ${phaseHtml}
-    <div class="dl"><span class="dk">PM2.5 เฉลี่ย</span><span class="dv">${pmHtml}</span></div>
-    <div class="dl"><span class="dk">จุดความร้อน</span><span class="dv" style="color:${distHs.length?'var(--ember)':'var(--good)'}">${distHs.length} จุด</span></div>
-    <div class="dl"><span class="dk">FRP รวม</span><span class="dv">${frpSum>0?frpSum.toFixed(1)+' MW':'—'}</span></div>
-    <div class="dl"><span class="dk">ป่าชุมชน</span><span class="dv" style="color:var(--good)">${distFs.length} แห่ง</span></div>
-    <div class="dl"><span class="dk">จำนวนตำบล</span><span class="dv">${distTambonCount} ตำบล</span></div>
+    <div class="dl-grid">
+      <div class="dl-cell" title="PM2.5 เฉลี่ย"><span class="dk">PM2.5</span><span class="dv">${pmHtml}</span></div>
+      <div class="dl-cell" title="จุดความร้อน"><span class="dk">จุดไฟ</span><span class="dv" style="color:${distHs.length?'var(--ember)':'var(--good)'}">${distHs.length}</span></div>
+      <div class="dl-cell" title="FRP รวม"><span class="dk">FRP</span><span class="dv">${frpSum>0?frpSum.toFixed(1)+'MW':'—'}</span></div>
+      <div class="dl-cell" title="ป่าชุมชน"><span class="dk">ป่าชุมชน</span><span class="dv" style="color:var(--good)">${distFs.length}</span></div>
+      <div class="dl-cell" title="จำนวนตำบล"><span class="dk">ตำบล</span><span class="dv">${distTambonCount}</span></div>
+    </div>
     ${correlationNote}
     ${moreBlock}
   `;
