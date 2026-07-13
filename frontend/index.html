@@ -2999,6 +2999,12 @@ const _DISTRICT_ACTIVE_STYLE  = {color:'#22d3ee',fillColor:'#22d3ee',fillOpacity
 // province zoom just because someone panned near the threshold. ----
 const TAMBON_BOUNDARY_MIN_ZOOM = 11;
 let _tambonBoundaryDistrict = null; // normalized district name, or null (zoom-driven mode)
+// tcode (not a live layer ref) — renderTambonBoundaries() tears down and
+// rebuilds every polygon on each zoom/pan (viewport culling), so a live
+// Leaflet layer reference would go stale on the very next re-render.
+let _selectedTambonCode = null;
+const _TAMBON_DEFAULT_STYLE = {color:'#22d3ee', weight:1.4, fillColor:'#22d3ee', fillOpacity:0.07, dashArray:'3 3'};
+const _TAMBON_ACTIVE_STYLE  = {color:'#22d3ee', weight:2.6, fillColor:'#22d3ee', fillOpacity:0.28, dashArray:null};
 function renderTambonBoundaries(){
   layers.tambonBoundaries.clearLayers();
   const cntEl = document.getElementById('lcTambonBoundaries');
@@ -3011,13 +3017,20 @@ function renderTambonBoundaries(){
   _tambonFeatures.forEach(feat=>{
     const amphoe = normalizeDistrictName(feat.properties.amphoe_th || '');
     if(_tambonBoundaryDistrict && amphoe !== _tambonBoundaryDistrict) return;
+    const tcode = feat.properties.tcode;
+    const isSelected = tcode && tcode === _selectedTambonCode;
     const gj = L.geoJSON(feat.geometry, {
       // fillOpacity kept >0 (not just the dashed stroke) so the whole tambon
       // area is a tap target on mobile, not just a thin 1px line
-      style:{color:'#22d3ee', weight:1.4, fillColor:'#22d3ee', fillOpacity:0.07, dashArray:'3 3'}
+      style: isSelected ? _TAMBON_ACTIVE_STYLE : _TAMBON_DEFAULT_STYLE
     });
     if(bounds && !bounds.intersects(gj.getBounds())) return; // viewport cull in zoom-driven mode only
     gj.bindTooltip(feat.properties.tambon_th, {sticky:true, className:'district-tooltip'});
+    // Focus highlight — same idea as the district hover style, so the user
+    // can tell which tambon they're looking at, plus a persistent "selected"
+    // state (by tcode) that survives the clear/rebuild on the next pan/zoom.
+    gj.on('mouseover', () => { if(!isSelected) gj.setStyle(_TAMBON_ACTIVE_STYLE); });
+    gj.on('mouseout', () => { if(tcode !== _selectedTambonCode) gj.setStyle(_TAMBON_DEFAULT_STYLE); });
     gj.on('click', e=>{
       L.DomEvent.stopPropagation(e);
       if(_pickingLocation){
@@ -3025,6 +3038,8 @@ function renderTambonBoundaries(){
         openReportModal(e.latlng.lat, e.latlng.lng);
         return;
       }
+      _selectedTambonCode = tcode || null;
+      gj.setStyle(_TAMBON_ACTIVE_STYLE);
       selectTambonSearch(feat.properties.tambon_th, gj.getBounds().getCenter(), feat.properties.amphoe_th);
     });
     gj.addTo(layers.tambonBoundaries);
@@ -3236,6 +3251,10 @@ function selectDistrict(nameTh, layer){
 // score for tambons the backend hasn't flagged.
 function selectTambonSearch(tambonName, centroid, amphoeHint){
   map.flyTo(centroid,13,{duration:.8});
+  // Keep the focus highlight in sync when a tambon is reached via search too,
+  // not just a direct tap on its polygon.
+  const matchedFeat = _tambonFeatures.find(f=>f.properties.tambon_th===tambonName);
+  if(matchedFeat){ _selectedTambonCode = matchedFeat.properties.tcode || null; renderTambonBoundaries(); }
   const w = tambonWarningsData.find(t=>t.tambon===tambonName);
   const amphoe = w ? w.amphoe : amphoeHint;
   const distNorm = amphoe ? normalizeDistrictName(amphoe) : null;
@@ -3309,6 +3328,7 @@ map.on('click', function(e) {
   map.closePopup();
   layers.districtDetails.clearLayers();
   _tambonBoundaryDistrict = null; // falls back to zoom-driven tambon boundaries, if zoomed in enough
+  _selectedTambonCode = null;
   renderTambonBoundaries();
 });
 
