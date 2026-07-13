@@ -1017,10 +1017,10 @@
         <div class="layer on" data-layer="hotspots"><div class="sw"></div><div class="lbl">Hotspots<small>VIIRS / MODIS · FIRMS</small></div><span class="cnt" id="lcHot">0</span></div>
         <div class="layer on" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>manual · user-submitted, unverified</small></div><span class="cnt" id="lcManual">0</span></div>
         <div class="layer on" data-layer="spread"><div class="sw"></div><div class="lbl">Fire spread forecast<small>downwind risk cones</small></div><span class="cnt" id="lcSpread">0</span></div>
-        <div class="layer wind" data-layer="wind"><div class="sw"></div><div class="lbl">Wind field<small>vector arrows</small></div><span class="cnt">off</span></div>
+        <div class="layer on wind" data-layer="wind"><div class="sw"></div><div class="lbl">Wind field<small>vector arrows</small></div><span class="cnt">on</span></div>
         <div class="layer on" data-layer="windDistrict"><div class="sw" style="background:rgba(55,209,214,.2);border-color:var(--wind)"></div><div class="lbl">ทิศทางลมรายอำเภอ<small>ลมเฉพาะที่ + ทิศทางลามคาดการณ์</small></div><span class="cnt" id="lcWindDist">0</span></div>
         <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">PM2.5 stations<small>PCD / sensor mesh</small></div><span class="cnt" id="lcPm">0</span></div>
-        <div class="layer heat" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">off</span></div>
+        <div class="layer on heat" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
         <div class="layer on" data-layer="tambonBoundaries"><div class="sw" style="background:rgba(34,211,238,.15);border-color:#22d3ee"></div><div class="lbl">ขอบเขตตำบล<small>ซูมเข้า/กดอำเภอเพื่อดู · 204 ตำบล</small></div><span class="cnt" id="lcTambonBoundaries">0</span></div>
@@ -1742,12 +1742,13 @@ document.querySelectorAll('[data-base]').forEach(b=>{
 // Layer groups
 const layers = {
   hotspots: L.layerGroup().addTo(map),
-  // wind/pm/heat default OFF (2026-07) — detached at boot; their render
-  // functions (renderWind/renderPm/etc.) don't check the toggle state
-  // themselves, so NOT attaching here is what keeps them actually invisible
-  // until the user clicks the layer on.
+  // pm defaults OFF (2026-07) — detached at boot; renderPm() doesn't check
+  // the toggle state itself, so NOT attaching here is what keeps it actually
+  // invisible until the user clicks the layer on. wind defaults ON (2026-07)
+  // — renderWind() self-gates on the toggle's "on" class, but the group
+  // still needs to be attached here for its markers to render at all.
   spread:   L.layerGroup().addTo(map),
-  wind:     L.layerGroup(),
+  wind:     L.layerGroup().addTo(map),
   windDistrict: L.layerGroup().addTo(map),
   pm:       L.layerGroup(),
   forest:   L.layerGroup(),
@@ -1957,7 +1958,7 @@ function _applyVelocityLayer(field){
 }
 
 function renderWind(){
-  // Self-gated on the toggle's "on" class (default OFF, 2026-07) — renderWind()
+  // Self-gated on the toggle's "on" class (default ON, 2026-07) — renderWind()
   // is called unconditionally from boot/rerenderAll(), and _applyVelocityLayer()
   // adds velLayer straight to `map` independent of layers.wind, so without this
   // check the particle field would render regardless of the toggle state.
@@ -3667,7 +3668,7 @@ function buildHeat(){
          gradient:{0.2:'#facc15',0.45:'#ff8a3d',0.7:'#f5640a',1.0:'#ff4d4d'}})
     : L.layerGroup();
 }
-layers.heat = buildHeat(); // default OFF (2026-07) — not added to map here; rerenderAll() already gates it on the toggle's "on" class
+layers.heat = buildHeat(); // default ON (2026-07) — not added to map here; rerenderAll() adds it once live data arrives, gated on the toggle's "on" class
 
 // ============================================================
 //  LIVE DATA LAYER — fetch real backend, normalize, re-render
