@@ -481,6 +481,11 @@
   .district-popup .leaflet-popup-content-wrapper{background:#0d1117cc;backdrop-filter:blur(8px);border-color:#22d3ee55}
   .district-popup .leaflet-popup-tip{background:#0d1117}
   .district-popup .leaflet-popup-content{overflow-y:auto}
+  /* compact variant (narrow viewports): tighter spacing so the popup opens short by default */
+  .district-popup.compact .leaflet-popup-content{font-size:10px;margin:8px 10px;line-height:1.45}
+  .district-popup.compact .ph-card{padding:11px 12px}
+  .district-popup.compact .ph-card h3{font-size:12px;margin-bottom:6px}
+  .district-popup.compact .dl{font-size:10px;padding:3px 0}
   /* 3D popup (Leaflet3D / pane overlays): force dark bg + high contrast text */
   .leaflet-3d-popup .leaflet-popup-content-wrapper,
   .popup-3d .leaflet-popup-content-wrapper{background:#0d1117 !important;color:#f0f6fc !important;border:1px solid #30363d !important}
@@ -2998,7 +3003,9 @@ function renderTambonBoundaries(){
     const amphoe = normalizeDistrictName(feat.properties.amphoe_th || '');
     if(_tambonBoundaryDistrict && amphoe !== _tambonBoundaryDistrict) return;
     const gj = L.geoJSON(feat.geometry, {
-      style:{color:'#22d3ee', weight:1, fillColor:'#22d3ee', fillOpacity:0.04, dashArray:'3 3'}
+      // fillOpacity kept >0 (not just the dashed stroke) so the whole tambon
+      // area is a tap target on mobile, not just a thin 1px line
+      style:{color:'#22d3ee', weight:1.4, fillColor:'#22d3ee', fillOpacity:0.07, dashArray:'3 3'}
     });
     if(bounds && !bounds.intersects(gj.getBounds())) return; // viewport cull in zoom-driven mode only
     gj.bindTooltip(feat.properties.tambon_th, {sticky:true, className:'district-tooltip'});
@@ -3078,7 +3085,10 @@ function tambonForPoint(lat, lng) {
 // version added (phaseCard's real phase/reasons/actions/spread/forests,
 // PM2.5/hotspot/FRP/forest counts, tambon ranking, 3-day forecast, 3D link).
 function _locationPopup(latlng, html){
-  return L.popup({closeButton:true, maxWidth:320, maxHeight:420, className:'district-popup'})
+  const narrow = window.innerWidth < 480;
+  const maxWidth = narrow ? Math.min(240, window.innerWidth - 48) : 320;
+  const maxHeight = narrow ? Math.round(window.innerHeight * 0.5) : 420;
+  return L.popup({closeButton:true, maxWidth, maxHeight, className:narrow?'district-popup compact':'district-popup'})
     .setLatLng(latlng)
     .setContent(html)
     .openOn(map);
@@ -3133,9 +3143,11 @@ function _districtDetailBody(distNorm){
   const c = layer ? layer.getBounds().getCenter() : null;
   const link3d = c ? `<div style="margin-top:10px"><span onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${c.lng},${c.lat}],zoom:14,pitch:55,bearing:0,duration:1200}),600)" style="cursor:pointer;font-family:var(--mono);font-size:10px;color:var(--wind);text-decoration:underline">📍 ดูใน 3D</span></div>` : '';
 
+  const distTambonCount = _tambonFeatures.filter(f=>normalizeDistrictName(f.properties.amphoe_th)===distNorm).length;
+
   const phase = (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm);
   const phaseHtml = phase
-    ? phaseCard(phase)
+    ? phaseCard(phase, true)
     : `<div class="ph-card"><h3><span>${distNorm}</span></h3><div style="font-family:var(--mono);font-size:10px;color:var(--dim)">ยังไม่มีข้อมูลเฟสไฟ — กำลังโหลด...</div></div>`;
 
   let forecastHtml = '';
@@ -3152,16 +3164,20 @@ function _districtDetailBody(distNorm){
     forecastHtml = `<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px;font-family:var(--mono);font-size:10px;color:var(--dim)">กำลังโหลดแนวโน้ม 3 วันข้างหน้า...</div>`;
   }
 
+  const moreHtml = [tambonHtml, forecastHtml, link3d].join('');
+  const moreBlock = moreHtml.trim()
+    ? `<details style="margin-top:6px"><summary style="font-family:var(--mono);font-size:9px;color:var(--wind);letter-spacing:.08em;cursor:pointer;user-select:none;list-style:none;padding-top:6px;border-top:1px solid var(--line-soft)">▸ ตำบลเสี่ยงสูงสุด · แนวโน้ม · 3D</summary>${moreHtml}</details>`
+    : '';
+
   return `
     ${phaseHtml}
     <div class="dl"><span class="dk">PM2.5 เฉลี่ย</span><span class="dv">${pmHtml}</span></div>
     <div class="dl"><span class="dk">จุดความร้อน</span><span class="dv" style="color:${distHs.length?'var(--ember)':'var(--good)'}">${distHs.length} จุด</span></div>
     <div class="dl"><span class="dk">FRP รวม</span><span class="dv">${frpSum>0?frpSum.toFixed(1)+' MW':'—'}</span></div>
     <div class="dl"><span class="dk">ป่าชุมชน</span><span class="dv" style="color:var(--good)">${distFs.length} แห่ง</span></div>
+    <div class="dl"><span class="dk">จำนวนตำบล</span><span class="dv">${distTambonCount} ตำบล</span></div>
     ${correlationNote}
-    ${tambonHtml}
-    ${forecastHtml}
-    ${link3d}
+    ${moreBlock}
   `;
 }
 
@@ -4164,7 +4180,7 @@ async function renderPredictTab(body){
     </div>`;
 }
 
-function phaseCard(p){
+function phaseCard(p, compact){
   const phase=p.phase||'normal';
   const label=PHASE_LABEL_TH[phase]||phase;
   const score=Math.round((p.danger_score||0)*100);
@@ -4248,6 +4264,17 @@ function phaseCard(p){
     </details>`;
   }
 
+  const forestBlock = forestRows?`<div style="margin-top:10px;font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.1em;margin-bottom:4px">ป่าชุมชนใกล้เคียง</div>${forestRows}`:'';
+  const actionsBlock = actions?`<div style="margin-top:8px;border-top:1px solid var(--line-soft);padding-top:8px">${actions}</div>`:'';
+  const coordBlock = p.coordination_note?`<div style="font-family:var(--mono);font-size:10px;color:var(--wind);margin-top:8px;padding:6px 8px;border:1px solid rgba(55,209,214,.2);border-radius:6px">${p.coordination_note}</div>`:'';
+  const extras = `${spreadHtml}${forestBlock}${actionsBlock}${coordBlock}${corrHtml}`;
+  // compact=true (map popup on mobile-first UI): fold the heavier analytical
+  // sections behind a tap so the popup opens short; full dashboard grid
+  // (phaseCard called from the phase-view page) always shows everything.
+  const extrasHtml = !extras ? '' : compact
+    ? `<details style="margin-top:8px"><summary style="font-family:var(--mono);font-size:9px;color:var(--wind);letter-spacing:.08em;cursor:pointer;user-select:none;list-style:none;padding-top:6px;border-top:1px solid var(--line-soft)">▸ รายละเอียดเพิ่มเติม</summary>${extras}</details>`
+    : extras;
+
   return `<div class="ph-card">
     <span class="ph-badge ${phase}">${label.toUpperCase()}</span>
     <h3>
@@ -4256,11 +4283,7 @@ function phaseCard(p){
     </h3>
     ${(p.reasons||[]).map(r=>`<div style="font-family:var(--mono);font-size:10px;color:var(--muted);padding:2px 0">· ${r}</div>`).join('')}
     ${calcHtml}
-    ${spreadHtml}
-    ${forestRows?`<div style="margin-top:10px;font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.1em;margin-bottom:4px">ป่าชุมชนใกล้เคียง</div>${forestRows}`:''}
-    ${actions?`<div style="margin-top:8px;border-top:1px solid var(--line-soft);padding-top:8px">${actions}</div>`:''}
-    ${p.coordination_note?`<div style="font-family:var(--mono);font-size:10px;color:var(--wind);margin-top:8px;padding:6px 8px;border:1px solid rgba(55,209,214,.2);border-radius:6px">${p.coordination_note}</div>`:''}
-    ${corrHtml}
+    ${extrasHtml}
   </div>`;
 }
 
