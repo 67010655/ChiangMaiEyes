@@ -479,6 +479,17 @@
   .dl-cell .dk{color:var(--dim);font-size:9px}
   .dl-cell .dv{color:var(--txt);font-weight:500}
 
+  /* Per-district wind pins — a soft radar-ping ring + gentle arrow breathing,
+     staggered per-marker (inline animation-delay) so 25 pins don't pulse in
+     lockstep. "during" phase swaps the ring to ember so an active fire's
+     wind pin reads as urgent at a glance. */
+  .wind-pin{position:relative;width:22px;height:22px}
+  .wind-pin .ring{position:absolute;inset:-6px;border-radius:50%;border:1.5px solid var(--wind);animation:windRing 2.4s ease-out infinite;opacity:0}
+  .wind-pin.active .ring{border-color:var(--ember)}
+  .wind-pin .arrow-wrap{animation:windBreathe 2.6s ease-in-out infinite;transform-origin:center}
+  @keyframes windRing{0%{transform:scale(.4);opacity:.85}100%{transform:scale(1.7);opacity:0}}
+  @keyframes windBreathe{0%,100%{opacity:.65;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+
   .leaflet-popup-content-wrapper{background:#0d1117;color:#e6edf3;border:1px solid var(--ember);border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.6)}
   .leaflet-popup-tip{background:#0d1117}
   .leaflet-popup-content{font-family:var(--mono);font-size:11px;margin:11px 13px;line-height:1.6}
@@ -993,10 +1004,10 @@
       <div class="block">
         <h2>Map layers</h2>
         <div class="layer on" data-layer="hotspots"><div class="sw"></div><div class="lbl">Hotspots<small>VIIRS / MODIS · FIRMS</small></div><span class="cnt" id="lcHot">0</span></div>
-        <div class="layer" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>manual · user-submitted, unverified</small></div><span class="cnt" id="lcManual">0</span></div>
-        <div class="layer" data-layer="spread"><div class="sw"></div><div class="lbl">Fire spread forecast<small>downwind risk cones</small></div><span class="cnt" id="lcSpread">0</span></div>
+        <div class="layer on" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>manual · user-submitted, unverified</small></div><span class="cnt" id="lcManual">0</span></div>
+        <div class="layer on" data-layer="spread"><div class="sw"></div><div class="lbl">Fire spread forecast<small>downwind risk cones</small></div><span class="cnt" id="lcSpread">0</span></div>
         <div class="layer wind" data-layer="wind"><div class="sw"></div><div class="lbl">Wind field<small>vector arrows</small></div><span class="cnt">off</span></div>
-        <div class="layer" data-layer="windDistrict"><div class="sw" style="background:rgba(55,209,214,.2);border-color:var(--wind)"></div><div class="lbl">ทิศทางลมรายอำเภอ<small>ลมเฉพาะที่ + ทิศทางลามคาดการณ์</small></div><span class="cnt" id="lcWindDist">0</span></div>
+        <div class="layer on" data-layer="windDistrict"><div class="sw" style="background:rgba(55,209,214,.2);border-color:var(--wind)"></div><div class="lbl">ทิศทางลมรายอำเภอ<small>ลมเฉพาะที่ + ทิศทางลามคาดการณ์</small></div><span class="cnt" id="lcWindDist">0</span></div>
         <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">PM2.5 stations<small>PCD / sensor mesh</small></div><span class="cnt" id="lcPm">0</span></div>
         <div class="layer heat" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">off</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
@@ -1720,17 +1731,16 @@ document.querySelectorAll('[data-base]').forEach(b=>{
 // Layer groups
 const layers = {
   hotspots: L.layerGroup().addTo(map),
-  // spread/wind/pm/manualReports default OFF (2026-07) — detached at boot so
-  // the entry view only shows hotspots + tambon risk warnings; their render
-  // functions (renderSpread/renderWind/renderPm/renderManualReports) don't
-  // check the toggle state themselves, so NOT attaching here is what keeps
-  // them actually invisible until the user clicks the layer on.
-  spread:   L.layerGroup(),
+  // wind/pm/heat default OFF (2026-07) — detached at boot; their render
+  // functions (renderWind/renderPm/etc.) don't check the toggle state
+  // themselves, so NOT attaching here is what keeps them actually invisible
+  // until the user clicks the layer on.
+  spread:   L.layerGroup().addTo(map),
   wind:     L.layerGroup(),
-  windDistrict: L.layerGroup(),
+  windDistrict: L.layerGroup().addTo(map),
   pm:       L.layerGroup(),
   forest:   L.layerGroup(),
-  manualReports: L.layerGroup(),
+  manualReports: L.layerGroup().addTo(map),
   boundaries: L.layerGroup().addTo(map),
   tambonBoundaries: L.layerGroup().addTo(map),
   districtDetails: L.layerGroup().addTo(map),
@@ -1997,7 +2007,14 @@ function renderWindDistrictPins(){
     const spreadNote = sp
       ? `กำลังลุกลามไปทาง${spreadDirTh} ~${(sp.km_6h||0).toFixed(1)} กม./6ชม.`
       : `ยังไม่มีไฟในอำเภอนี้ — ถ้าเกิดไฟ ทิศทางลามอ้างอิงคือทาง${spreadDirTh}`;
-    const icon = L.divIcon({className:'', html:windArrowSvg(spreadDirDeg), iconSize:[22,22]});
+    // Staggered delay so 25 pins don't all pulse in lockstep; "during" phase
+    // (active fire) gets the ember-colored ring so it reads as urgent at a glance.
+    const delay = (Math.random()*2.4).toFixed(2)+'s';
+    const iconHtml = `<div class="wind-pin${p.phase==='during'?' active':''}">
+        <div class="ring" style="animation-delay:${delay}"></div>
+        <div class="arrow-wrap" style="animation-delay:${delay}">${windArrowSvg(spreadDirDeg)}</div>
+      </div>`;
+    const icon = L.divIcon({className:'', html:iconHtml, iconSize:[22,22]});
     L.marker(center, {icon, zIndexOffset:-100})
       .bindTooltip(`${p.district}: ลม ${b.wind_speed_kmh} กม./ชม. ทิศ${windDirTh}`, {direction:'top', className:'district-tooltip'})
       .bindPopup(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6">
@@ -3966,7 +3983,6 @@ function rankListLive(){
 //  FIRE PHASE PANEL
 // ============================================================
 const PHASE_LABEL_TH={during:'ระหว่างไฟ',before:'ก่อนไฟ',after:'หลังไฟ',normal:'ปกติ'};
-const PHASE_ORDER={during:0,before:1,after:2,normal:3};
 const DIR_COMPASS=['เหนือ','ตอน.','ตะวันออก','ตอ.ใต้','ใต้','ตต.ใต้','ตะวันตก','ตต.เหนือ'];
 let currentPhaseTab='during';
 
@@ -4009,8 +4025,16 @@ function renderPhasePanel(){
     body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px">ยังไม่มีข้อมูลเฟสไฟ</div>';
     return;
   }
-  const sorted=[...livePhases].sort((a,b)=>(PHASE_ORDER[a.phase]??9)-(PHASE_ORDER[b.phase]??9)||(b.danger_score||0)-(a.danger_score||0));
-  body.innerHTML=sorted.map(p=>phaseCard(p)).join('');
+  // "ระหว่างไฟ" tab must only ever show districts actually on fire right now
+  // (phase==='during', i.e. active_hotspots>0) — it used to render every
+  // district regardless of phase, which is what made a quiet "ก่อนไฟ"/"ปกติ"
+  // district show up under this tab.
+  const duringOnly=livePhases.filter(p=>p.phase==='during').sort((a,b)=>(b.danger_score||0)-(a.danger_score||0));
+  if(!duringOnly.length){
+    body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--good);font-family:var(--mono);font-size:13px">✓ ไม่มีอำเภอที่มีไฟกำลังลุกลามขณะนี้</div>';
+    return;
+  }
+  body.innerHTML=duringOnly.map(p=>phaseCard(p)).join('');
 }
 
 function _condCard(label,value,unit,note,col){
