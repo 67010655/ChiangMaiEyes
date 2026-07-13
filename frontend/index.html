@@ -511,6 +511,17 @@
   .popup-3d .leaflet-popup-content-wrapper{background:#0d1117 !important;color:#f0f6fc !important;border:1px solid #30363d !important}
   .leaflet-3d-popup .leaflet-popup-tip,
   .popup-3d .leaflet-popup-tip{background:#0d1117 !important}
+  /* MapLibre 3D-view popups (forest/gas-station click) — same dark theme as the
+     Leaflet 3D popups above. Without this the popup falls back to MapLibre's
+     stock white background, which makes the light/white inline text (written
+     assuming a dark bg) nearly unreadable. */
+  .maplibregl-popup-content{background:#0d1117 !important;color:#e6edf3 !important;border:1px solid #30363d;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.6);padding:10px 12px}
+  .maplibregl-popup-anchor-bottom .maplibregl-popup-tip{border-top-color:#0d1117 !important}
+  .maplibregl-popup-anchor-top .maplibregl-popup-tip{border-bottom-color:#0d1117 !important}
+  .maplibregl-popup-anchor-left .maplibregl-popup-tip{border-right-color:#0d1117 !important}
+  .maplibregl-popup-anchor-right .maplibregl-popup-tip{border-left-color:#0d1117 !important}
+  .maplibregl-popup-close-button{color:#8b97a7;font-size:16px}
+  .maplibregl-popup-close-button:hover{color:#e6edf3;background:transparent}
 
   .hotspot-pulse{animation:hp 2s infinite}
   @keyframes hp{0%{transform:scale(1);opacity:.9}50%{transform:scale(1.5);opacity:.2}100%{transform:scale(1);opacity:.9}}
@@ -4058,10 +4069,15 @@ function renderBeforeFire(body){
   const fwiLvl=FWI_LEVELS.find(l=>fwi<=l.max)||FWI_LEVELS[FWI_LEVELS.length-1];
   const humRisk=c.humidity!=null&&c.humidity<40?'⚠️ ความชื้นต่ำ — ไฟลามเร็ว':'ความชื้นอยู่ในเกณฑ์ปลอดภัย';
   const windDir=DIR_COMPASS[Math.round(((w.deg+360)%360)/45)%8]||'—';
-  const highRiskDistricts=(livePhases||[]).filter(p=>p.danger_score>0.4).sort((a,b)=>b.danger_score-a.danger_score).slice(0,5);
+  // "ก่อนไฟ" tab must show the actual per-district cards for every district
+  // classified phase==='before' by the backend (classify_fire_phases) — it
+  // used to show only a condensed top-5 mini-list, mixed-criteria
+  // (danger_score>0.4, not phase-filtered), which is why it could look
+  // "empty" even when the backend legitimately had before-phase districts.
+  const beforeDistricts=(livePhases||[]).filter(p=>p.phase==='before').sort((a,b)=>(b.danger_score||0)-(a.danger_score||0));
 
   body.innerHTML=`
-  <div class="ph-card" style="grid-column:span 2">
+  <div class="ph-card" style="grid-column:span 3">
     <h3 style="margin-bottom:12px">📊 สรุปความเสี่ยงก่อนเกิดไฟ</h3>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
       <div style="background:var(--panel-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;text-align:center">
@@ -4091,19 +4107,7 @@ function renderBeforeFire(body){
       </div>
     </div>
   </div>
-  <div class="ph-card" style="grid-column:span 1">
-    <h3 style="margin-bottom:10px">อำเภอเสี่ยงสูงสุด</h3>
-    ${highRiskDistricts.length?highRiskDistricts.map(p=>{
-      const s=Math.round((p.danger_score||0)*100);
-      const col=s>60?'var(--danger)':s>35?'var(--ember)':'var(--warn)';
-      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line-soft)">
-        <div style="flex:1;font-size:12px;color:var(--txt)">${p.district}</div>
-        <div style="width:60px;height:5px;background:var(--line);border-radius:3px;overflow:hidden"><div style="height:100%;width:${s}%;background:${col}"></div></div>
-        <div style="font-size:11px;font-family:var(--mono);color:${col};min-width:30px;text-align:right">${s}</div>
-      </div>`;
-    }).join(''):`<div style="color:var(--muted);font-size:12px">ไม่มีอำเภอที่มีความเสี่ยงสูง</div>`}
-    <div style="margin-top:10px;font-size:9px;color:var(--dim)">⚠️ ข้อมูล hotspot มีความล่าช้า 2–4 ชั่วโมง</div>
-  </div>`;
+  ${beforeDistricts.length?beforeDistricts.map(p=>phaseCard(p)).join(''):`<div class="ph-card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--good);font-family:var(--mono);font-size:13px">✓ ไม่มีอำเภอที่เข้าเกณฑ์เฝ้าระวังก่อนไฟขณะนี้</div>`}`;
 }
 
 // Derive discrete fire incidents (specific "this district burned from date A
@@ -4797,9 +4801,8 @@ function initMapLibre3D(){
 
     // 3D hotspot clicks are handled inline in _sync3DHotspots() Marker elements
 
-    // Click: forest elevation inspector
-    mlMap.on('click','forests-circle',e=>{
-      const f=e.features[0]; if(!f) return;
+    // Forest elevation inspector popup
+    function _showForestPopup(f){
       const [lng,lat]=f.geometry.coordinates;
       let elev=null;
       try{ elev=mlMap.queryTerrainElevation([lng,lat]); }catch(_){}
@@ -4807,7 +4810,7 @@ function initMapLibre3D(){
         .setLngLat([lng,lat])
         .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>ความสูง: ${elev!=null?Math.round(elev)+' เมตร (MSL)':'—'}<br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
         .addTo(mlMap);
-    });
+    }
 
     // cursor for forests only; hotspot cursor handled by marker element style;
     mlMap.on('mouseenter','forests-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
@@ -4860,15 +4863,28 @@ function initMapLibre3D(){
     mlMap.addLayer({id:'fuel-3d-circle',type:'circle',source:'fuel-3d',paint:{
       'circle-radius':6,'circle-color':'#f5640a','circle-stroke-color':'#fff','circle-stroke-width':1.5
     }});
-    mlMap.on('click','fuel-3d-circle',e=>{
-      const f=e.features[0]; if(!f) return;
+    function _showFuelPopup(f){
       new maplibregl.Popup({closeButton:true,maxWidth:'200px'})
         .setLngLat(f.geometry.coordinates)
         .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3">⛽ <b style="color:#f5640a">${f.properties.name||'ปั๊มน้ำมัน'}</b><br>สิ่งปลูกสร้างเสี่ยงใกล้ไฟป่า</div>`)
         .addTo(mlMap);
-    });
+    }
     mlMap.on('mouseenter','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='';});
+
+    // Small circle markers (forests 5px, fuel 6px) are hard to tap precisely,
+    // especially on touch and on tilted 3D terrain — query a padded box
+    // around the click point instead of relying on the exact pixel so a
+    // near-miss still registers. Fuel takes priority since its circle often
+    // sits closer to/on top of a forest point at province zoom.
+    const _HIT_PAD_PX = 10;
+    mlMap.on('click', e=>{
+      const box=[[e.point.x-_HIT_PAD_PX, e.point.y-_HIT_PAD_PX],[e.point.x+_HIT_PAD_PX, e.point.y+_HIT_PAD_PX]];
+      const fuelHits=mlMap.queryRenderedFeatures(box,{layers:['fuel-3d-circle']});
+      if(fuelHits.length){ _showFuelPopup(fuelHits[0]); return; }
+      const forestHits=mlMap.queryRenderedFeatures(box,{layers:['forests-circle']});
+      if(forestHits.length) _showForestPopup(forestHits[0]);
+    });
 
     mlMap.on('moveend',_refreshStructures3D);
   });
