@@ -3529,7 +3529,8 @@ async function loadBoundaries() {
     // districtLayerRef just became available — in case livePhases already
     // arrived first (fetchLiveData and loadBoundaries race at boot), redo
     // the wind pins now instead of waiting for the next fire-phases refresh.
-    if(livePhases && livePhases.length){ renderWindDistrictPins(); if(mlMap) _sync3DWindPins(); }
+    // (2D only — 3D wind pins were removed, see _sync3DWindPins removal note.)
+    if(livePhases && livePhases.length) renderWindDistrictPins();
 
   } catch (err) {
     console.error("Failed to load boundary GeoJSON data:", err);
@@ -3804,7 +3805,7 @@ function applyLive(dash, history, phases){
   // FRP histogram strictly from real detections in LIVE mode.
   frpSamples=hotspots.map(h=>h.frp).filter(f=>f!=null);
   // Real backend intelligence (kept for the live-aware renderers).
-  if(phases && Array.isArray(phases.phases)){ livePhases = phases.phases; renderWindDistrictPins(); if(mlMap) _sync3DWindPins(); }
+  if(phases && Array.isArray(phases.phases)){ livePhases = phases.phases; renderWindDistrictPins(); }
   if(phases && Array.isArray(phases.notes)){ firePhaseNotes = phases.notes; renderGuideNotes(); }
   if(phases && Array.isArray(phases.forest_risk)){
     forestRiskById = {};
@@ -4738,7 +4739,7 @@ async function open3D(){
     try{ initMapLibre3D(); _3dInited=true; }
     catch(e){ toast('ไม่สามารถเปิด 3D ได้ในเบราว์เซอร์นี้'); console.error(e); }
   } else if(mlMap){
-    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); _sync3DWindPins(); },80);
+    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); },80);
   }
 }
 
@@ -4809,17 +4810,19 @@ function initMapLibre3D(){
 
     // Hotspot 🔥 emoji markers — rendered as HTML (MapLibre SDF can't render color emoji)
     // _sync3DHotspots() creates maplibregl.Marker elements to mirror the 2D style exactly.
-    // Forests (🌲), wind pins, and manual reports are the same DOM-marker approach —
-    // real elements also means real click hit-testing, no padded-box workaround needed.
+    // Forests (🌲) and manual reports are the same DOM-marker approach — real
+    // elements also means real click hit-testing, no padded-box workaround needed.
+    // (Per-district wind pins were tried in 3D and removed 2026-07-14 — user
+    // reported persistent stutter that didn't clear after the forest-marker
+    // and lazy-basemap perf fixes; wind pins stay 2D-only, see renderWindDistrictPins().)
 
     // Populate with current data
     _sync3DHotspots();
     _sync3DForests();
     _sync3DManualReports();
-    _sync3DWindPins();
 
-    // 3D hotspot/forest/wind-pin clicks are handled inline in their own
-    // _sync3D*() Marker elements — see top-level _showForestPopup() etc.
+    // 3D hotspot/forest clicks are handled inline in their own _sync3D*()
+    // Marker elements — see top-level _showForestPopup() etc.
 
     // Chiang Mai province boundary + mask. The mask is a donut polygon: a
     // rectangle a bit larger than CM_SOURCE_BOUNDS with the REAL province
@@ -4902,10 +4905,6 @@ function initMapLibre3D(){
     // Re-cull forest markers to the new viewport/zoom after every pan/zoom
     // (moveend fires once per gesture, not per-frame, so this is cheap).
     mlMap.on('moveend',_sync3DForests);
-    // Re-render wind pins after any view change (moveend also fires after a
-    // rotate-drag ends, not just pan/zoom) so their arrow rotation stays
-    // correct relative to whichever way the camera is now facing.
-    mlMap.on('moveend',_sync3DWindPins);
   });
 
   // Navigation controls
@@ -5160,53 +5159,10 @@ function _showBuildingPopup(props, lngLat){
     .addTo(mlMap);
 }
 
-// Per-district wind-direction pins, ported from renderWindDistrictPins()
-// (2D) — same source data (livePhases[].calc_breakdown) and same
-// district-center lookup (districtLayerRef, a Leaflet layer, but only its
-// .getBounds().getCenter() is used here, which works regardless of which
-// map it's attached to). Reuses the same CSS ring/breathe animation classes.
-let _3dWindMarkers=[];
-function _sync3DWindPins(){
-  _3dWindMarkers.forEach(m=>m.remove());
-  _3dWindMarkers=[];
-  if(!mlMap || !livePhases || !livePhases.length) return;
-  livePhases.forEach(p=>{
-    const b=p.calc_breakdown;
-    if(!b || b.wind_dir_deg==null) return;
-    const distNorm=normalizeDistrictName(p.district);
-    const layer=districtLayerRef[distNorm];
-    if(!layer) return; // boundaries not loaded yet — self-heals on the next livePhases refresh
-    const center=layer.getBounds().getCenter();
-    const windDirTh=DIR_COMPASS[Math.round(((b.wind_dir_deg||0)%360+360)%360/45)%8];
-    const spreadDirDeg=(b.wind_dir_deg+180)%360;
-    const spreadDirTh=DIR_COMPASS[Math.round(((spreadDirDeg%360+360)%360)/45)%8];
-    const sp=p.spread_projection;
-    const spreadNote=sp
-      ? `กำลังลุกลามไปทาง${spreadDirTh} ~${(sp.km_6h||0).toFixed(1)} กม./6ชม.`
-      : `ยังไม่มีไฟในอำเภอนี้ — ถ้าเกิดไฟ ทิศทางลามอ้างอิงคือทาง${spreadDirTh}`;
-    const delay=(Math.random()*2.4).toFixed(2)+'s';
-    // windArrowSvg() draws via a plain CSS rotate assuming north is screen-up
-    // (true for the 2D Leaflet map, which never rotates). The 3D view isn't
-    // north-up — it starts at bearing -20° and "drag = rotate" is a core
-    // interaction — so the compass bearing must be corrected by the map's
-    // CURRENT bearing to get the right SCREEN direction. Without this the
-    // arrow was pointing at a fixed screen angle regardless of which way the
-    // camera was actually facing, i.e. visibly wrong the moment the user
-    // rotated the view at all.
-    const screenDeg=((spreadDirDeg - mlMap.getBearing())%360+360)%360;
-    const el=document.createElement('div');
-    el.className='wind-pin'+(p.phase==='during'?' active':'');
-    el.style.cursor='pointer';
-    el.innerHTML=`<div class="ring" style="animation-delay:${delay}"></div><div class="arrow-wrap" style="animation-delay:${delay}">${windArrowSvg(screenDeg)}</div>`;
-    el.addEventListener('click',()=>{
-      new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
-        .setLngLat([center.lng,center.lat])
-        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6"><b style="font-size:13px;color:var(--wind)">อำเภอ${p.district}</b><br>ลม ${b.wind_speed_kmh} กม./ชม. ทิศ${windDirTh}<br><span style="color:#8b97a7">${spreadNote}</span></div>`)
-        .addTo(mlMap);
-    });
-    _3dWindMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([center.lng,center.lat]).addTo(mlMap));
-  });
-}
+// Per-district wind-direction pins in 3D were tried and removed
+// (2026-07-14) — user reported persistent stutter that didn't clear even
+// after the forest-marker zoom/viewport gating and lazy-basemap-loading
+// perf fixes. Wind pins stay 2D-only; see renderWindDistrictPins().
 </script>
 </body>
 </html>
