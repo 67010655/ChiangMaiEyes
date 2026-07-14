@@ -5091,14 +5091,23 @@ function _refreshStructures3D(){
     .catch(()=>{ /* backend/Overpass down or slow — silently keep whatever was last shown */ });
 }
 
-// Forest elevation inspector popup
+// Forest info popup. Used to also show "ความสูง (MSL)" via
+// mlMap.queryTerrainElevation() — removed 2026-07-14 after verifying against
+// the actual bundled maplibre-gl 4.7.1 source: that call returns
+// getElevationForLngLatZoom(point) - transform.elevation, i.e. the point's
+// height RELATIVE TO THE CURRENT MAP CENTER, not an absolute MSL value (this
+// build has no `exaggerated`/absolute option — that's a newer maplibre-gl
+// API). Labeling that delta "(MSL)" was actively wrong, not just imprecise —
+// confirmed live: a real ~340-360m-elevation forest in อ.สันทราย showed
+// "-17 เมตร (MSL)". Removed rather than relabeled since "elevation relative
+// to wherever the camera happens to be centered" isn't a useful number to
+// show anyway. A real absolute-MSL readout would need either a maplibre-gl
+// upgrade (if it exposes one) or decoding the Terrarium DEM tile directly.
 function _showForestPopup(f){
   const [lng,lat]=f.geometry.coordinates;
-  let elev=null;
-  try{ elev=mlMap.queryTerrainElevation([lng,lat]); }catch(_){}
   new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
     .setLngLat([lng,lat])
-    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>ความสูง: ${elev!=null?Math.round(elev)+' เมตร (MSL)':'—'}<br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
+    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
     .addTo(mlMap);
 }
 
