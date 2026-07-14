@@ -158,7 +158,7 @@
   /* ── Analytics overlay ────────────────────── */
   .analytics{
     position:fixed;inset:52px 0 0 66px;z-index:1500;
-    background:rgba(7,10,14,.97);backdrop-filter:blur(4px);
+    background:rgba(7,10,14,.97);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
     overflow-y:auto;display:none;
   }
   .analytics.open{display:block}
@@ -216,7 +216,7 @@
   /* ── Generic overlay (report / 3D) ────────── */
   .reportview,.threedview,.guideview{position:fixed;inset:52px 0 0 66px;z-index:1500;display:none;overflow:hidden}
   .reportview.open,.threedview.open,.guideview.open{display:block}
-  .reportview,.guideview{background:rgba(7,10,14,.97);backdrop-filter:blur(4px);overflow-y:auto}
+  .reportview,.guideview{background:rgba(7,10,14,.97);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);overflow-y:auto}
   .reportview::-webkit-scrollbar,.guideview::-webkit-scrollbar{width:10px}
   .reportview::-webkit-scrollbar-thumb,.guideview::-webkit-scrollbar-thumb{background:#222b36;border-radius:5px}
   .gd-body{padding:22px 26px;max-width:820px;margin:0 auto}
@@ -293,7 +293,7 @@
   .threedview{background:#070a0e}
   #ml-terrain-map{position:absolute;inset:0;width:100%;height:100%}
   /* FirePhase overlay */
-  .phaseview{position:fixed;inset:52px 0 0 66px;z-index:1500;background:rgba(7,10,14,.97);backdrop-filter:blur(4px);overflow-y:auto;display:none}
+  .phaseview{position:fixed;inset:52px 0 0 66px;z-index:1500;background:rgba(7,10,14,.97);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);overflow-y:auto;display:none}
   .phaseview.open{display:block}
   .phaseview::-webkit-scrollbar{width:10px}
   .phaseview::-webkit-scrollbar-thumb{background:#222b36;border-radius:5px}
@@ -325,7 +325,7 @@
   .td-title{top:18px;left:26px}
   .td-title h2{font-size:16px;margin:0;font-weight:700}.td-title h2 b{color:var(--green)}
   .td-title .s{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.1em;margin-top:2px}
-  .td-legend{bottom:22px;left:26px;background:rgba(13,18,24,.82);border:1px solid var(--line);border-radius:10px;padding:13px 15px;backdrop-filter:blur(6px)}
+  .td-legend{bottom:22px;left:26px;background:rgba(13,18,24,.82);border:1px solid var(--line);border-radius:10px;padding:13px 15px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   .td-legend .lr{display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);padding:3px 0}
   .td-legend .lr .d{width:11px;height:11px;border-radius:50%;flex:none}
   .td-hint{bottom:22px;right:26px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);text-align:right;line-height:1.7}
@@ -337,7 +337,7 @@
   .td-basemap-toggle{
     top:14px;left:50%;transform:translateX(-50%);
     display:flex;background:rgba(13,18,24,.9);border:1px solid var(--line);
-    border-radius:8px;overflow:hidden;pointer-events:auto;backdrop-filter:blur(6px)
+    border-radius:8px;overflow:hidden;pointer-events:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)
   }
   .td-basemap-toggle button{
     background:none;border:none;color:var(--muted);font-family:var(--mono);
@@ -425,7 +425,7 @@
   .basemap-toggle{
     top:12px;left:50%;transform:translateX(-50%);
     display:flex;background:rgba(13,18,24,.9);border:1px solid var(--line);
-    border-radius:8px;overflow:hidden;pointer-events:auto;backdrop-filter:blur(6px)
+    border-radius:8px;overflow:hidden;pointer-events:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)
   }
   .basemap-toggle button{
     background:none;border:none;color:var(--muted);font-family:var(--mono);
@@ -435,7 +435,7 @@
 
   .map-scale{
     bottom:26px;left:12px;background:rgba(13,18,24,.85);border:1px solid var(--line);
-    border-radius:8px;padding:9px 12px;font-family:var(--mono);backdrop-filter:blur(6px)
+    border-radius:8px;padding:9px 12px;font-family:var(--mono);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)
     /* purely a legend, no buttons — pointer-events:none (inherited from
        .map-overlay) so it never blocks tapping a hotspot/marker underneath */
   }
@@ -447,7 +447,7 @@
   .wind-badge{
     top:12px;right:12px;background:rgba(13,18,24,.88);border:1px solid var(--line);
     border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:12px;
-    pointer-events:auto;backdrop-filter:blur(6px)
+    pointer-events:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)
   }
   .wind-badge .arrow{width:40px;height:40px;flex:none}
   .wind-badge .arrow svg{transition:transform .8s cubic-bezier(.2,.8,.2,1)}
@@ -509,7 +509,7 @@
   .leaflet-popup-content b{color:#f5a623}
   /* District/tambon/coordinate popup: cyan accent, dark bg, scrolls internally
      since the content now includes phaseCard()'s full rich detail */
-  .district-popup .leaflet-popup-content-wrapper{background:#0d1117cc;backdrop-filter:blur(8px);border-color:#22d3ee55}
+  .district-popup .leaflet-popup-content-wrapper{background:#0d1117cc;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-color:#22d3ee55}
   .district-popup .leaflet-popup-tip{background:#0d1117}
   .district-popup .leaflet-popup-content{overflow-y:auto}
   /* compact variant (narrow viewports): tighter spacing so the popup opens short by default */
@@ -571,7 +571,7 @@
     display:flex;align-items:center;gap:6px;position:absolute;z-index:900;
     top:50px;left:70px;width:240px;
     background:rgba(13,18,24,.92);border:1px solid var(--line);border-radius:12px;
-    padding:9px 11px;pointer-events:auto;backdrop-filter:blur(6px)
+    padding:9px 11px;pointer-events:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)
   }
   .map-search svg{width:15px;height:15px;color:var(--dim);flex:none}
   .map-search input{flex:1;min-width:0;background:none;border:none;outline:none;
@@ -777,7 +777,7 @@
     .wind-badge .wt{
       display:none;position:absolute;top:54px;right:0;z-index:901;
       background:rgba(13,18,24,.94);border:1px solid var(--line);border-radius:10px;
-      padding:10px 13px;white-space:nowrap;backdrop-filter:blur(6px);
+      padding:10px 13px;white-space:nowrap;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
     }
     .wind-badge.expanded .wt{display:block}
 
