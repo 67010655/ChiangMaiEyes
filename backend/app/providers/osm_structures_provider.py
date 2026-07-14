@@ -87,7 +87,15 @@ def fetch_osm_structures(south: float, west: float, north: float, east: float) -
                 levels = 0.0
             height_m = levels * 3 if levels > 0 else 8.0
             coordinates = [[pt["lon"], pt["lat"]] for pt in el["geometry"]]
-            buildings.append(OsmBuilding(coordinates=coordinates, height_m=height_m))
+            building_tag = tags.get("building")
+            buildings.append(
+                OsmBuilding(
+                    coordinates=coordinates,
+                    height_m=height_m,
+                    name=tags.get("name"),
+                    building_type=building_tag if building_tag and building_tag != "yes" else None,
+                )
+            )
         elif el.get("type") == "node" and tags.get("amenity") == "fuel":
             fuel_stations.append(
                 OsmFuelStation(lon=el["lon"], lat=el["lat"], name=tags.get("name") or "ปั๊มน้ำมัน")

@@ -332,6 +332,8 @@ class OsmBuilding(BaseModel):
     # than directly from the browser — see OsmStructuresResponse.
     coordinates: list[list[float]] = Field(default_factory=list)
     height_m: float = 8.0
+    name: str | None = None
+    building_type: str | None = None  # OSM building=* tag value, excluding the uninformative generic "yes"
 
 
 class OsmFuelStation(BaseModel):

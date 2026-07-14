@@ -30,6 +30,15 @@ _BUILDING_WAY_NO_LEVELS = {
         {"lat": 18.791, "lon": 98.991},
     ],
 }
+_BUILDING_WAY_NAMED_SCHOOL = {
+    "type": "way",
+    "tags": {"building": "school", "name": "โรงเรียนบ้านท่าข้าม"},
+    "geometry": [
+        {"lat": 18.78, "lon": 98.98},
+        {"lat": 18.781, "lon": 98.98},
+        {"lat": 18.781, "lon": 98.981},
+    ],
+}
 _FUEL_NODE = {
     "type": "node",
     "tags": {"amenity": "fuel", "name": "Shell ห้วยแก้ว"},
@@ -62,6 +71,22 @@ def test_building_without_levels_uses_default_height(mock_post):
     mock_post.return_value = _overpass_response([_BUILDING_WAY_NO_LEVELS])
     resp = fetch_osm_structures(18.77, 98.96, 18.81, 99.01)
     assert resp.buildings[0].height_m == 8.0
+
+
+@patch("httpx.post")
+def test_generic_building_tag_yes_is_not_treated_as_a_type(mock_post):
+    mock_post.return_value = _overpass_response([_BUILDING_WAY])
+    resp = fetch_osm_structures(18.77, 98.96, 18.81, 99.01)
+    assert resp.buildings[0].building_type is None
+    assert resp.buildings[0].name is None
+
+
+@patch("httpx.post")
+def test_named_typed_building_passes_through(mock_post):
+    mock_post.return_value = _overpass_response([_BUILDING_WAY_NAMED_SCHOOL])
+    resp = fetch_osm_structures(18.77, 98.96, 18.81, 99.01)
+    assert resp.buildings[0].building_type == "school"
+    assert resp.buildings[0].name == "โรงเรียนบ้านท่าข้าม"
 
 
 @patch("httpx.post")

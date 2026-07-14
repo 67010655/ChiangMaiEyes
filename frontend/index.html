@@ -1330,7 +1330,7 @@
       <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#8b97a7"></span>อาคาร/สิ่งปลูกสร้าง (ซูมใกล้)</div>
       <div class="lr"><span class="d" style="background:#f5640a;border-radius:50%"></span>⛽ ปั๊มน้ำมัน</div>
     </div>
-    <div class="td-hud td-hint" id="tdHint">ลาก = หมุน · สกอลล์ = ซูม<br>คลิก hotspot/ป่า = ดูความสูง<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)</div>
+    <div class="td-hud td-hint" id="tdHint">ลาก = หมุน · สกอลล์ = ซูม<br>คลิกหมุด/ป่า/อาคาร = ดูข้อมูล<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)</div>
   </div>
 
   <!-- FIRE PHASE OVERLAY -->
@@ -3529,7 +3529,7 @@ async function loadBoundaries() {
     // districtLayerRef just became available — in case livePhases already
     // arrived first (fetchLiveData and loadBoundaries race at boot), redo
     // the wind pins now instead of waiting for the next fire-phases refresh.
-    if(livePhases && livePhases.length) renderWindDistrictPins();
+    if(livePhases && livePhases.length){ renderWindDistrictPins(); if(mlMap) _sync3DWindPins(); }
 
   } catch (err) {
     console.error("Failed to load boundary GeoJSON data:", err);
@@ -3647,7 +3647,8 @@ function renderForestMarkers(){
       L.circle([lat,lng],{radius,color,weight:1.2,fillColor:color,fillOpacity:0.05,dashArray:'6 4'})
         .addTo(layers.forest);
     }
-    L.circleMarker([lat,lng],{radius:4,color,weight:1.5,fillColor:'#fff',fillOpacity:0.9})
+    const forestIcon=L.divIcon({className:'',html:`<span style="font-size:20px;line-height:1;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))">🌲</span>`,iconSize:[20,20],iconAnchor:[10,16]});
+    L.marker([lat,lng],{icon:forestIcon})
       .bindPopup(
         `<b>${f.name||'ป่าชุมชน'}</b><br>`+
         `อ.${f.amphoe||'—'} ต.${f.tambon||'—'}<br>`+
@@ -3803,7 +3804,7 @@ function applyLive(dash, history, phases){
   // FRP histogram strictly from real detections in LIVE mode.
   frpSamples=hotspots.map(h=>h.frp).filter(f=>f!=null);
   // Real backend intelligence (kept for the live-aware renderers).
-  if(phases && Array.isArray(phases.phases)){ livePhases = phases.phases; renderWindDistrictPins(); }
+  if(phases && Array.isArray(phases.phases)){ livePhases = phases.phases; renderWindDistrictPins(); if(mlMap) _sync3DWindPins(); }
   if(phases && Array.isArray(phases.notes)){ firePhaseNotes = phases.notes; renderGuideNotes(); }
   if(phases && Array.isArray(phases.forest_risk)){
     forestRiskById = {};
@@ -4737,7 +4738,7 @@ async function open3D(){
     try{ initMapLibre3D(); _3dInited=true; }
     catch(e){ toast('ไม่สามารถเปิด 3D ได้ในเบราว์เซอร์นี้'); console.error(e); }
   } else if(mlMap){
-    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); },80);
+    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); _sync3DWindPins(); },80);
   }
 }
 
@@ -4793,11 +4794,11 @@ function initMapLibre3D(){
   });
 
   mlMap.on('load',()=>{
-    // GeoJSON sources for hotspots and forests
+    // GeoJSON source for hotspots (forests are now DOM emoji markers — see
+    // _sync3DForests() — but the real surveyed polygon boundaries stay a
+    // GeoJSON fill/line layer since those are actual shapes, not points).
     mlMap.addSource('hotspots-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-    mlMap.addSource('forests-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-    // Real surveyed polygon boundaries (agency shapefile, 677 CM plots) —
-    // added below the point circles so the click-target marker stays on top.
+    // Real surveyed polygon boundaries (agency shapefile, 677 CM plots).
     mlMap.addSource('forests-boundary-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
     mlMap.addLayer({id:'forests-boundary-fill',type:'fill',source:'forests-boundary-3d',paint:{
       'fill-color':['case',['==',['get','active'],true],'#43b05f','#4ade80'],
@@ -4809,39 +4810,19 @@ function initMapLibre3D(){
       'line-opacity':0.7
     }});
 
-    // Forest circles
-    mlMap.addLayer({id:'forests-circle',type:'circle',source:'forests-3d',paint:{
-      'circle-radius':5,
-      'circle-color':['case',['==',['get','active'],true],'#43b05f','#4ade80'],
-      'circle-opacity':0.88,
-      'circle-stroke-color':'#fff',
-      'circle-stroke-width':1
-    }});
-
     // Hotspot 🔥 emoji markers — rendered as HTML (MapLibre SDF can't render color emoji)
-    // _sync3DHotspots() creates maplibregl.Marker elements to mirror the 2D style exactly
+    // _sync3DHotspots() creates maplibregl.Marker elements to mirror the 2D style exactly.
+    // Forests (🌲), wind pins, and manual reports are the same DOM-marker approach —
+    // real elements also means real click hit-testing, no padded-box workaround needed.
 
     // Populate with current data
     _sync3DHotspots();
     _sync3DForests();
     _sync3DManualReports();
+    _sync3DWindPins();
 
-    // 3D hotspot clicks are handled inline in _sync3DHotspots() Marker elements
-
-    // Forest elevation inspector popup
-    function _showForestPopup(f){
-      const [lng,lat]=f.geometry.coordinates;
-      let elev=null;
-      try{ elev=mlMap.queryTerrainElevation([lng,lat]); }catch(_){}
-      new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
-        .setLngLat([lng,lat])
-        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>ความสูง: ${elev!=null?Math.round(elev)+' เมตร (MSL)':'—'}<br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
-        .addTo(mlMap);
-    }
-
-    // cursor for forests only; hotspot cursor handled by marker element style;
-    mlMap.on('mouseenter','forests-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
-    mlMap.on('mouseleave','forests-circle',()=>{mlMap.getCanvas().style.cursor='';});
+    // 3D hotspot/forest/wind-pin clicks are handled inline in their own
+    // _sync3D*() Marker elements — see top-level _showForestPopup() etc.
 
     // Chiang Mai province boundary + mask. The mask is a donut polygon: a
     // rectangle a bit larger than CM_SOURCE_BOUNDS with the REAL province
@@ -4852,8 +4833,8 @@ function initMapLibre3D(){
     // determined by ring position (ring[0]=outer, ring[1]=hole), not
     // winding direction. Inserted with an explicit beforeId so it always
     // lands right above bg/basemap/hillshade and below every data layer
-    // (forests-circle already exists by now — this fetch resolves on a
-    // later tick no matter where in this synchronous handler it's called
+    // (forests-boundary-fill already exists by now — this fetch resolves on
+    // a later tick no matter where in this synchronous handler it's called
     // from) — without this, an async layer landing wherever it happens to
     // finish loading would risk masking a hotspot/building that turns out
     // to sit just outside the exact province polygon.
@@ -4867,7 +4848,7 @@ function initMapLibre3D(){
       }});
       mlMap.addLayer({id:'cm-mask-fill',type:'fill',source:'cm-mask',paint:{
         'fill-color':'#070a0e','fill-opacity':1
-      }},'forests-circle');
+      }},'forests-boundary-fill');
 
       mlMap.addSource('cm-boundary',{type:'geojson',data:geo});
       mlMap.addLayer({id:'cm-boundary-line',type:'line',source:'cm-boundary',paint:{
@@ -4899,18 +4880,25 @@ function initMapLibre3D(){
     mlMap.on('mouseenter','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='';});
 
-    // Small circle markers (forests 5px, fuel 6px) are hard to tap precisely,
-    // especially on touch and on tilted 3D terrain — query a padded box
-    // around the click point instead of relying on the exact pixel so a
-    // near-miss still registers. Fuel takes priority since its circle often
-    // sits closer to/on top of a forest point at province zoom.
+    // Building footprints now clickable — real OSM tags via the backend
+    // /api/osm-structures proxy (name + building=* type when present).
+    mlMap.on('click','buildings-3d-fill', e=>{
+      const f=e.features[0]; if(!f) return;
+      _showBuildingPopup(f.properties||{}, e.lngLat);
+    });
+    mlMap.on('mouseenter','buildings-3d-fill',()=>{mlMap.getCanvas().style.cursor='pointer';});
+    mlMap.on('mouseleave','buildings-3d-fill',()=>{mlMap.getCanvas().style.cursor='';});
+
+    // Fuel's circle (6px) is hard to tap precisely, especially on touch and
+    // on tilted 3D terrain — query a padded box around the click point
+    // instead of relying on the exact pixel so a near-miss still registers.
+    // (Forests used to need this too, but are DOM markers now with their
+    // own real hit area — see _sync3DForests().)
     const _HIT_PAD_PX = 10;
     mlMap.on('click', e=>{
       const box=[[e.point.x-_HIT_PAD_PX, e.point.y-_HIT_PAD_PX],[e.point.x+_HIT_PAD_PX, e.point.y+_HIT_PAD_PX]];
       const fuelHits=mlMap.queryRenderedFeatures(box,{layers:['fuel-3d-circle']});
-      if(fuelHits.length){ _showFuelPopup(fuelHits[0]); return; }
-      const forestHits=mlMap.queryRenderedFeatures(box,{layers:['forests-circle']});
-      if(forestHits.length) _showForestPopup(forestHits[0]);
+      if(fuelHits.length) _showFuelPopup(fuelHits[0]);
     });
 
     mlMap.on('moveend',_refreshStructures3D);
@@ -4921,7 +4909,7 @@ function initMapLibre3D(){
 
   // Exaggeration toggle in HUD hint
   document.getElementById('tdHint').innerHTML=
-    'ลาก = หมุน · สกอลล์ = ซูม<br>คลิก hotspot/ป่า = ดูความสูง<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)<br>'+
+    'ลาก = หมุน · สกอลล์ = ซูม<br>คลิกหมุด/ป่า/อาคาร = ดูข้อมูล<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)<br>'+
     '<span style="cursor:pointer;color:var(--wind);text-decoration:underline" onclick="cycleTerrain()">ปรับระดับ terrain</span>';
 }
 
@@ -5077,19 +5065,39 @@ function _refreshStructures3D(){
     .catch(()=>{ /* backend/Overpass down or slow — silently keep whatever was last shown */ });
 }
 
+// Forest elevation-inspector popup — takes the raw allForests record
+// directly (not a queryRenderedFeatures result) since forests are DOM
+// markers now, not a canvas layer.
+function _showForestPopup(f){
+  const lng=f.longitude, lat=f.latitude;
+  let elev=null;
+  try{ elev=mlMap.queryTerrainElevation([lng,lat]); }catch(_){}
+  new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
+    .setLngLat([lng,lat])
+    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.name||'ป่าชุมชน'}</b><br>อ.${f.amphoe||'—'}<br>ความสูง: ${elev!=null?Math.round(elev)+' เมตร (MSL)':'—'}<br>จัดการไฟ: ${f.fire_management_active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
+    .addTo(mlMap);
+}
+
+// 🌲 emoji markers for community forests — DOM elements (maplibregl.Marker),
+// same reasoning as hotspots: MapLibre's SDF text renderer can't do color
+// emoji. Also a real click hit-area, unlike the old 5px canvas circle.
+let _3dForestMarkers=[];
 function _sync3DForests(){
-  if(!mlMap||!mlMap.getSource('forests-3d')) return;
-  mlMap.getSource('forests-3d').setData({
-    type:'FeatureCollection',
-    features:allForests.filter(f=>f.latitude&&f.longitude).map(f=>({
-      type:'Feature',
-      geometry:{type:'Point',coordinates:[f.longitude,f.latitude]},
-      properties:{name:f.name,amphoe:f.amphoe,active:!!f.fire_management_active,area_rai:f.area_rai}
-    }))
-  });
+  _3dForestMarkers.forEach(m=>m.remove());
+  _3dForestMarkers=[];
+  if(mlMap){
+    allForests.forEach(f=>{
+      if(!f.latitude||!f.longitude) return;
+      const el=document.createElement('span');
+      el.textContent='🌲';
+      el.style.cssText='font-size:20px;line-height:1;cursor:pointer;display:block;user-select:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))';
+      el.addEventListener('click',()=>_showForestPopup(f));
+      _3dForestMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([f.longitude,f.latitude]).addTo(mlMap));
+    });
+  }
   // Real surveyed polygon boundaries (agency shapefile) — geometry is
   // already [lon,lat] GeoJSON, same convention MapLibre expects.
-  if(mlMap.getSource('forests-boundary-3d')){
+  if(mlMap && mlMap.getSource('forests-boundary-3d')){
     mlMap.getSource('forests-boundary-3d').setData({
       type:'FeatureCollection',
       features:allForests.filter(f=>f.boundary).map(f=>({
@@ -5099,6 +5107,63 @@ function _sync3DForests(){
       }))
     });
   }
+}
+
+// Building footprint popup — real OSM tags proxied through the backend
+// (name + building=* type when OSM has them; "yes" is filtered out
+// server-side since it's not an informative type).
+const _BUILDING_TYPE_TH = {
+  house:'บ้านพักอาศัย', residential:'ที่พักอาศัย', apartments:'อาคารชุด/คอนโด',
+  commercial:'อาคารพาณิชย์', retail:'ร้านค้า', industrial:'โรงงาน/อุตสาหกรรม',
+  warehouse:'โกดัง/คลังสินค้า', school:'โรงเรียน', hospital:'โรงพยาบาล',
+  hotel:'โรงแรม', church:'โบสถ์', temple:'วัด', office:'สำนักงาน',
+  farm:'อาคารในฟาร์ม', shed:'โรงเก็บของ', garage:'โรงรถ'
+};
+function _showBuildingPopup(props, lngLat){
+  const typeLabel = props.building_type ? (_BUILDING_TYPE_TH[props.building_type]||props.building_type) : 'สิ่งปลูกสร้าง';
+  new maplibregl.Popup({closeButton:true,maxWidth:'210px'})
+    .setLngLat(lngLat)
+    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#8b97a7">${props.name||typeLabel}</b>${props.name?`<br><span style="color:#8b97a7">${typeLabel}</span>`:''}<br>ความสูงประมาณ ${Math.round(props.height_m||8)} เมตร<br><span style="color:#556070;font-size:10px">ข้อมูลอาคารจริงจาก OpenStreetMap</span></div>`)
+    .addTo(mlMap);
+}
+
+// Per-district wind-direction pins, ported from renderWindDistrictPins()
+// (2D) — same source data (livePhases[].calc_breakdown) and same
+// district-center lookup (districtLayerRef, a Leaflet layer, but only its
+// .getBounds().getCenter() is used here, which works regardless of which
+// map it's attached to). Reuses the same CSS ring/breathe animation classes.
+let _3dWindMarkers=[];
+function _sync3DWindPins(){
+  _3dWindMarkers.forEach(m=>m.remove());
+  _3dWindMarkers=[];
+  if(!mlMap || !livePhases || !livePhases.length) return;
+  livePhases.forEach(p=>{
+    const b=p.calc_breakdown;
+    if(!b || b.wind_dir_deg==null) return;
+    const distNorm=normalizeDistrictName(p.district);
+    const layer=districtLayerRef[distNorm];
+    if(!layer) return; // boundaries not loaded yet — self-heals on the next livePhases refresh
+    const center=layer.getBounds().getCenter();
+    const windDirTh=DIR_COMPASS[Math.round(((b.wind_dir_deg||0)%360+360)%360/45)%8];
+    const spreadDirDeg=(b.wind_dir_deg+180)%360;
+    const spreadDirTh=DIR_COMPASS[Math.round(((spreadDirDeg%360+360)%360)/45)%8];
+    const sp=p.spread_projection;
+    const spreadNote=sp
+      ? `กำลังลุกลามไปทาง${spreadDirTh} ~${(sp.km_6h||0).toFixed(1)} กม./6ชม.`
+      : `ยังไม่มีไฟในอำเภอนี้ — ถ้าเกิดไฟ ทิศทางลามอ้างอิงคือทาง${spreadDirTh}`;
+    const delay=(Math.random()*2.4).toFixed(2)+'s';
+    const el=document.createElement('div');
+    el.className='wind-pin'+(p.phase==='during'?' active':'');
+    el.style.cursor='pointer';
+    el.innerHTML=`<div class="ring" style="animation-delay:${delay}"></div><div class="arrow-wrap" style="animation-delay:${delay}">${windArrowSvg(spreadDirDeg)}</div>`;
+    el.addEventListener('click',()=>{
+      new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
+        .setLngLat([center.lng,center.lat])
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3;line-height:1.6"><b style="font-size:13px;color:var(--wind)">อำเภอ${p.district}</b><br>ลม ${b.wind_speed_kmh} กม./ชม. ทิศ${windDirTh}<br><span style="color:#8b97a7">${spreadNote}</span></div>`)
+        .addTo(mlMap);
+    });
+    _3dWindMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([center.lng,center.lat]).addTo(mlMap));
+  });
 }
 </script>
 </body>
