@@ -998,7 +998,22 @@ def _fetch_district_winds(
 
     Returns {district_name: (wind_speed_kmh, wind_direction_deg)}.
     Silently skips any district whose request fails.
+
+    Cached (15 min, the module's standard TTL) — this used to re-fetch all 25
+    districts from Open-Meteo on EVERY /api/fire-phases and /api/dashboard
+    call with no caching at all. Confirmed live (2026-07-14) via curl: both
+    endpoints were hanging to a 504 FUNCTION_INVOCATION_TIMEOUT (~30s) in
+    production. With 8 workers and an 8s per-request timeout, 25 requests
+    take up to ceil(25/8)*8s=32s worst case if Open-Meteo is at all slow or
+    rate-limiting a burst of 25 simultaneous requests per page load — which
+    lines up with the observed ~30-31s timeouts. Wind direction doesn't need
+    to be this fresh every single request; 15 minutes matches the cadence
+    every other "decision-support" value in this module already uses.
     """
+    cached = _get_cached("district_winds")
+    if cached is not None:
+        return cached
+
     def _one(item: tuple[str, tuple[float, float]]) -> tuple[str, tuple[float, float] | None]:
         district, (lat, lon) = item
         url = (
@@ -1021,6 +1036,7 @@ def _fetch_district_winds(
         for district, wind in pool.map(_one, centroids.items()):
             if wind is not None:
                 results[district] = wind
+    _set_cached("district_winds", results)
     return results
 
 
