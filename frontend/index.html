@@ -5091,24 +5091,79 @@ function _refreshStructures3D(){
     .catch(()=>{ /* backend/Overpass down or slow — silently keep whatever was last shown */ });
 }
 
-// Forest info popup. Used to also show "ความสูง (MSL)" via
-// mlMap.queryTerrainElevation() — removed 2026-07-14 after verifying against
-// the actual bundled maplibre-gl 4.7.1 source: that call returns
-// getElevationForLngLatZoom(point) - transform.elevation, i.e. the point's
-// height RELATIVE TO THE CURRENT MAP CENTER, not an absolute MSL value (this
-// build has no `exaggerated`/absolute option — that's a newer maplibre-gl
-// API). Labeling that delta "(MSL)" was actively wrong, not just imprecise —
-// confirmed live: a real ~340-360m-elevation forest in อ.สันทราย showed
-// "-17 เมตร (MSL)". Removed rather than relabeled since "elevation relative
-// to wherever the camera happens to be centered" isn't a useful number to
-// show anyway. A real absolute-MSL readout would need either a maplibre-gl
-// upgrade (if it exposes one) or decoding the Terrarium DEM tile directly.
+// ---- Real absolute-MSL elevation, decoded directly from the Terrarium DEM
+// tile (same public AWS dataset already used for the 3D terrain mesh) —
+// mlMap.queryTerrainElevation() was removed from the forest popup because,
+// verified against the actual bundled maplibre-gl 4.7.1 source, it returns
+// getElevationForLngLatZoom(point) - transform.elevation: the point's height
+// RELATIVE TO THE CURRENT MAP CENTER, not absolute MSL (this build has no
+// `exaggerated`/absolute option — that's a newer maplibre-gl API). Confirmed
+// live: a real ~340-360m forest in อ.สันทราย showed "-17 เมตร (MSL)".
+// Terrarium encoding: elevation = (R*256 + G + B/256) - 32768, one pixel per
+// ~30m at the tile's zoom. Tiles are cached as decoded ImageData (per
+// z/x/y) so repeat/nearby lookups in the same tile don't re-fetch.
+const _ELEV_TILE_Z = 14; // matches the terrain-dem source's configured maxzoom
+const _elevTileCache = new Map(); // "z/x/y" -> Promise<ImageData|null>
+
+function _elevTileXY(lat, lng, z){
+  const n = Math.pow(2, z);
+  const xf = (lng + 180) / 360 * n;
+  const latRad = lat * Math.PI / 180;
+  const yf = (1 - Math.asinh(Math.tan(latRad)) / Math.PI) / 2 * n;
+  const x = Math.floor(xf), y = Math.floor(yf);
+  return {
+    x, y,
+    px: Math.min(255, Math.max(0, Math.floor((xf - x) * 256))),
+    py: Math.min(255, Math.max(0, Math.floor((yf - y) * 256))),
+  };
+}
+
+function _loadElevTile(z, x, y){
+  const key = `${z}/${x}/${y}`;
+  if(_elevTileCache.has(key)) return _elevTileCache.get(key);
+  const p = new Promise(resolve=>{
+    const img = new Image();
+    img.crossOrigin = 'anonymous'; // AWS's elevation-tiles-prod bucket is public + CORS-enabled for exactly this
+    img.onload = ()=>{
+      try{
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve(ctx.getImageData(0, 0, img.width, img.height));
+      }catch(e){ resolve(null); }
+    };
+    img.onerror = ()=>resolve(null);
+    img.src = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`;
+  });
+  _elevTileCache.set(key, p);
+  return p;
+}
+
+async function getRealElevationMsl(lat, lng){
+  const {x, y, px, py} = _elevTileXY(lat, lng, _ELEV_TILE_Z);
+  const data = await _loadElevTile(_ELEV_TILE_Z, x, y);
+  if(!data) return null;
+  const idx = (py * data.width + px) * 4;
+  const r = data.data[idx], g = data.data[idx+1], b = data.data[idx+2];
+  return Math.round((r * 256 + g + b / 256) - 32768);
+}
+
+// Forest info popup — shows a loading placeholder for elevation, then fills
+// in the real decoded value once the DEM tile fetch resolves (async, so the
+// popup itself opens immediately rather than waiting on a network request).
 function _showForestPopup(f){
   const [lng,lat]=f.geometry.coordinates;
+  const elevSlotId = 'elev-'+Math.random().toString(36).slice(2);
   new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
     .setLngLat([lng,lat])
-    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
+    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>ความสูง: <span id="${elevSlotId}">กำลังโหลด…</span><br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
     .addTo(mlMap);
+  getRealElevationMsl(lat, lng).then(elev=>{
+    const el = document.getElementById(elevSlotId);
+    if(!el) return; // popup already closed/replaced — nothing to update
+    el.textContent = elev!=null ? `${elev} เมตร (MSL)` : 'ไม่ทราบ (โหลดไม่สำเร็จ)';
+  });
 }
 
 function _sync3DForests(){
