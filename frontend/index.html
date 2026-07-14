@@ -4758,20 +4758,17 @@ function initMapLibre3D(){
     version:8,
     sources:{
       'carto-dark':{type:'raster',tiles:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png','https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],tileSize:256,attribution:'© CARTO © OpenStreetMap',maxzoom:19,bounds:CM_SOURCE_BOUNDS},
-      'osm-raster':{type:'raster',tiles:['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png','https://b.tile.openstreetmap.org/{z}/{x}/{y}.png','https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors',maxzoom:19,bounds:CM_SOURCE_BOUNDS},
-      'sat-raster':{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'© Esri, Maxar, Earthstar Geographics',maxzoom:19,bounds:CM_SOURCE_BOUNDS},
       'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,bounds:CM_SOURCE_BOUNDS}
     },
     terrain:{source:'terrain-dem',exaggeration:2.2},
     layers:[
       {id:'bg',type:'background',paint:{'background-color':'#070a0e'}},
-      // Three basemap raster layers stacked here, only one visible at a time
-      // (setTdBasemap() below flips 'visibility') — MapLibre can't swap a
-      // layer's source at runtime, only toggle visibility, so all three
-      // must exist from the start rather than being added on demand.
+      // OSM/satellite basemaps are added lazily by setTdBasemap() on first
+      // use, not declared here — MapLibre still fetches tiles for a source
+      // as soon as any layer references it, even with visibility:'none', so
+      // declaring all 3 upfront would triple the tile-loading work on every
+      // 3D open for two basemaps most sessions never switch to.
       {id:'basemap-dark',type:'raster',source:'carto-dark'},
-      {id:'basemap-osm',type:'raster',source:'osm-raster',layout:{visibility:'none'}},
-      {id:'basemap-sat',type:'raster',source:'sat-raster',layout:{visibility:'none'}},
       {id:'hillshade',type:'hillshade',source:'terrain-dem',paint:{'hillshade-shadow-color':'#0c111a','hillshade-accent-color':'#2c3a50','hillshade-exaggeration':0.45}}
     ]
   };
@@ -4902,6 +4899,9 @@ function initMapLibre3D(){
     });
 
     mlMap.on('moveend',_refreshStructures3D);
+    // Re-cull forest markers to the new viewport/zoom after every pan/zoom
+    // (moveend fires once per gesture, not per-frame, so this is cheap).
+    mlMap.on('moveend',_sync3DForests);
   });
 
   // Navigation controls
@@ -4916,12 +4916,29 @@ function initMapLibre3D(){
 // 3D basemap switcher — same 3 photo/style options as 2D (DARK/OSM/ดาวเทียม).
 // TERRAIN isn't offered here since the 3D view already renders real DEM
 // terrain + hillshade underneath whichever basemap is picked.
+const _TD_BASEMAP_SOURCES={
+  osm:{id:'osm-raster',def:{type:'raster',tiles:['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png','https://b.tile.openstreetmap.org/{z}/{x}/{y}.png','https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors',maxzoom:19,bounds:CM_SOURCE_BOUNDS}},
+  sat:{id:'sat-raster',def:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'© Esri, Maxar, Earthstar Geographics',maxzoom:19,bounds:CM_SOURCE_BOUNDS}}
+};
 function setTdBasemap(key){
   if(!mlMap) return;
   const apply=()=>{
-    ['dark','osm','sat'].forEach(k=>mlMap.setLayoutProperty('basemap-'+k,'visibility', k===key?'visible':'none'));
+    // Lazily create the osm/sat source+layer on first switch to it, so a
+    // session that only ever uses DARK never fetches those tiles at all.
+    if(key!=='dark' && !mlMap.getLayer('basemap-'+key)){
+      const src=_TD_BASEMAP_SOURCES[key];
+      if(!mlMap.getSource(src.id)) mlMap.addSource(src.id, src.def);
+      mlMap.addLayer({id:'basemap-'+key,type:'raster',source:src.id}, 'hillshade');
+    }
+    ['dark','osm','sat'].forEach(k=>{
+      if(mlMap.getLayer('basemap-'+k)) mlMap.setLayoutProperty('basemap-'+k,'visibility', k===key?'visible':'none');
+    });
   };
-  if(mlMap.isStyleLoaded()) apply(); else mlMap.once('load',apply);
+  // 'idle' (not 'load'): isStyleLoaded() can go transiently false any time new
+  // tiles are streaming in for a source, not just before the very first load —
+  // 'load' only ever fires once per map lifetime, so once('load', apply) would
+  // silently never fire again if the click landed during one of those windows.
+  if(mlMap.isStyleLoaded()) apply(); else mlMap.once('idle',apply);
   document.querySelectorAll('#tdBasemap [data-tdbase]').forEach(b=>b.classList.toggle('active', b.dataset.tdbase===key));
 }
 document.querySelectorAll('#tdBasemap [data-tdbase]').forEach(b=>{
@@ -5081,13 +5098,25 @@ function _showForestPopup(f){
 // 🌲 emoji markers for community forests — DOM elements (maplibregl.Marker),
 // same reasoning as hotspots: MapLibre's SDF text renderer can't do color
 // emoji. Also a real click hit-area, unlike the old 5px canvas circle.
+//
+// PERF: allForests is 677 records. Rendering all of them as real DOM markers
+// at once — and applyLive() re-triggers this on every live-data refresh via
+// renderForestMarkers() — is what caused the 3D view to stutter/freeze after
+// this was first shipped as an unconditional loop. Fixed the same way
+// _refreshStructures3D() already handles buildings: gate on zoom, and only
+// render what's actually in the current viewport. Below the zoom floor (or
+// while 3D isn't open) the polygon boundary layer alone still shows forest
+// coverage — that part is a cheap GPU layer, always on, unaffected.
+const FOREST_3D_MIN_ZOOM=10.5;
 let _3dForestMarkers=[];
 function _sync3DForests(){
   _3dForestMarkers.forEach(m=>m.remove());
   _3dForestMarkers=[];
-  if(mlMap){
+  if(mlMap && mlMap.getZoom()>=FOREST_3D_MIN_ZOOM){
+    const b=mlMap.getBounds();
     allForests.forEach(f=>{
       if(!f.latitude||!f.longitude) return;
+      if(!b.contains([f.longitude,f.latitude])) return;
       const el=document.createElement('span');
       el.textContent='🌲';
       el.style.cssText='font-size:20px;line-height:1;cursor:pointer;display:block;user-select:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))';
