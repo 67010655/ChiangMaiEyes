@@ -1326,7 +1326,7 @@
       <div class="lr"><span class="d" style="background:#f5640a"></span>สูง 60–100</div>
       <div class="lr"><span class="d" style="background:#ff4d4d"></span>วิกฤต &gt;100</div>
       <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#43b05f;border-radius:2px"></span>ป่าชุมชน (จัดการไฟ)</div>
-      <div class="lr"><span class="d" style="background:#37d1d6;border-radius:2px"></span>ป่าชุมชน (อื่นๆ)</div>
+      <div class="lr"><span class="d" style="background:#37d1d6;border-radius:2px"></span>ป่าชุมชน (ไม่ระบุ/ไม่มีข้อมูลจัดการไฟ)</div>
       <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#8b97a7"></span>อาคาร/สิ่งปลูกสร้าง (ซูมใกล้)</div>
       <div class="lr"><span class="d" style="background:#f5640a;border-radius:50%"></span>⛽ ปั๊มน้ำมัน</div>
     </div>
@@ -1462,7 +1462,7 @@
         <summary>8. แท็บ "3D"</summary>
         <ul>
           <li>ภูมิประเทศจริงจากแบบจำลองความสูงดิจิทัล (DEM Terrarium 30ม.) <span class="gd-tag real">จริง</span> พร้อมจุดไฟจริงลอยตามความสูง</li>
-          <li>Legend ซ้ายล่าง: สีความแรงไฟ + สีป่าชุมชน (เขียว=จัดการไฟ, ฟ้า=อื่นๆ) — อิงพิกัดป่าชุมชนจริงเช่นกัน (จุดเท่านั้น เหมือนข้อ 3)</li>
+          <li>Legend ซ้ายล่าง: สีความแรงไฟ + สีป่าชุมชน (เขียว=มีข้อมูลยืนยันว่าจัดการไฟ จาก thaicfnet.org, ฟ้า=ไม่มีข้อมูลยืนยัน — ไม่ได้แปลว่าไม่จัดการไฟจริง) — อิงพิกัดป่าชุมชนจริงเช่นกัน (จุดเท่านั้น เหมือนข้อ 3)</li>
           <li><b>อาคาร/สิ่งปลูกสร้าง + ⛽ ปั๊มน้ำมัน</b> <span class="gd-tag real">จริง</span> จาก OpenStreetMap — โหลดเฉพาะตอนซูมใกล้ (ระดับอาคาร) เพราะข้อมูลทั้งจังหวัดมีมากเกินจะโหลดพร้อมกันได้ ความสูงอาคารประมาณจากจำนวนชั้นถ้ามีระบุ ไม่งั้นใช้ค่ากลาง 8 เมตร <span class="gd-tag approx">ประมาณ</span></li>
           <li>ควบคุม: ลากค้าง=หมุนมุมมอง, สกอลล์=ซูม, คลิกจุด=ดูรายละเอียด</li>
         </ul>
@@ -4902,6 +4902,10 @@ function initMapLibre3D(){
     // Re-cull forest markers to the new viewport/zoom after every pan/zoom
     // (moveend fires once per gesture, not per-frame, so this is cheap).
     mlMap.on('moveend',_sync3DForests);
+    // Re-render wind pins after any view change (moveend also fires after a
+    // rotate-drag ends, not just pan/zoom) so their arrow rotation stays
+    // correct relative to whichever way the camera is now facing.
+    mlMap.on('moveend',_sync3DWindPins);
   });
 
   // Navigation controls
@@ -5181,10 +5185,19 @@ function _sync3DWindPins(){
       ? `กำลังลุกลามไปทาง${spreadDirTh} ~${(sp.km_6h||0).toFixed(1)} กม./6ชม.`
       : `ยังไม่มีไฟในอำเภอนี้ — ถ้าเกิดไฟ ทิศทางลามอ้างอิงคือทาง${spreadDirTh}`;
     const delay=(Math.random()*2.4).toFixed(2)+'s';
+    // windArrowSvg() draws via a plain CSS rotate assuming north is screen-up
+    // (true for the 2D Leaflet map, which never rotates). The 3D view isn't
+    // north-up — it starts at bearing -20° and "drag = rotate" is a core
+    // interaction — so the compass bearing must be corrected by the map's
+    // CURRENT bearing to get the right SCREEN direction. Without this the
+    // arrow was pointing at a fixed screen angle regardless of which way the
+    // camera was actually facing, i.e. visibly wrong the moment the user
+    // rotated the view at all.
+    const screenDeg=((spreadDirDeg - mlMap.getBearing())%360+360)%360;
     const el=document.createElement('div');
     el.className='wind-pin'+(p.phase==='during'?' active':'');
     el.style.cursor='pointer';
-    el.innerHTML=`<div class="ring" style="animation-delay:${delay}"></div><div class="arrow-wrap" style="animation-delay:${delay}">${windArrowSvg(spreadDirDeg)}</div>`;
+    el.innerHTML=`<div class="ring" style="animation-delay:${delay}"></div><div class="arrow-wrap" style="animation-delay:${delay}">${windArrowSvg(screenDeg)}</div>`;
     el.addEventListener('click',()=>{
       new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
         .setLngLat([center.lng,center.lat])
