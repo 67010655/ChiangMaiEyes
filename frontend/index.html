@@ -331,6 +331,19 @@
   .td-hint{bottom:22px;right:26px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);text-align:right;line-height:1.7}
   .td-close{position:absolute;top:16px;right:24px;z-index:6;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:rgba(17,22,29,.9);color:var(--muted);font-size:18px;cursor:pointer;pointer-events:auto}
   .td-close:hover{border-color:var(--danger);color:var(--danger)}
+  /* 3D basemap switcher — same look as the 2D .basemap-toggle but a separate
+     class so it isn't caught by the mobile media query that hides .basemap-toggle
+     (that one collides with the 2D search bar; nothing occupies this space in 3D). */
+  .td-basemap-toggle{
+    top:14px;left:50%;transform:translateX(-50%);
+    display:flex;background:rgba(13,18,24,.9);border:1px solid var(--line);
+    border-radius:8px;overflow:hidden;pointer-events:auto;backdrop-filter:blur(6px)
+  }
+  .td-basemap-toggle button{
+    background:none;border:none;color:var(--muted);font-family:var(--mono);
+    font-size:10px;letter-spacing:.1em;padding:7px 12px;cursor:pointer;transition:.15s
+  }
+  .td-basemap-toggle button.active{background:rgba(255,138,61,.16);color:var(--ember)}
 
   @media print{
     @page{margin:14mm}
@@ -1302,6 +1315,11 @@
     <div id="ml-terrain-map"></div>
     <button class="td-close" id="tdClose">✕</button>
     <div class="td-hud td-title"><h2>ภูมิประเทศ <b>3D</b> · เชียงใหม่</h2><div class="s" id="tdSub">MAPLIBRE GL · AWS TERRARIUM DEM 30M</div></div>
+    <div class="td-hud td-basemap-toggle" id="tdBasemap">
+      <button class="active" data-tdbase="dark">DARK</button>
+      <button data-tdbase="osm">OSM</button>
+      <button data-tdbase="sat">ดาวเทียม</button>
+    </div>
     <div class="td-hud td-legend" id="tdLegend">
       <div class="lr"><span class="d" style="background:#facc15"></span>ไฟเล็ก &lt;30 MW</div>
       <div class="lr"><span class="d" style="background:#ff8a3d"></span>ปานกลาง 30–60</div>
@@ -4739,12 +4757,20 @@ function initMapLibre3D(){
     version:8,
     sources:{
       'carto-dark':{type:'raster',tiles:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png','https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],tileSize:256,attribution:'© CARTO © OpenStreetMap',maxzoom:19,bounds:CM_SOURCE_BOUNDS},
+      'osm-raster':{type:'raster',tiles:['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png','https://b.tile.openstreetmap.org/{z}/{x}/{y}.png','https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors',maxzoom:19,bounds:CM_SOURCE_BOUNDS},
+      'sat-raster':{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'© Esri, Maxar, Earthstar Geographics',maxzoom:19,bounds:CM_SOURCE_BOUNDS},
       'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,bounds:CM_SOURCE_BOUNDS}
     },
     terrain:{source:'terrain-dem',exaggeration:2.2},
     layers:[
       {id:'bg',type:'background',paint:{'background-color':'#070a0e'}},
-      {id:'basemap',type:'raster',source:'carto-dark'},
+      // Three basemap raster layers stacked here, only one visible at a time
+      // (setTdBasemap() below flips 'visibility') — MapLibre can't swap a
+      // layer's source at runtime, only toggle visibility, so all three
+      // must exist from the start rather than being added on demand.
+      {id:'basemap-dark',type:'raster',source:'carto-dark'},
+      {id:'basemap-osm',type:'raster',source:'osm-raster',layout:{visibility:'none'}},
+      {id:'basemap-sat',type:'raster',source:'sat-raster',layout:{visibility:'none'}},
       {id:'hillshade',type:'hillshade',source:'terrain-dem',paint:{'hillshade-shadow-color':'#0c111a','hillshade-accent-color':'#2c3a50','hillshade-exaggeration':0.45}}
     ]
   };
@@ -4898,6 +4924,21 @@ function initMapLibre3D(){
     'ลาก = หมุน · สกอลล์ = ซูม<br>คลิก hotspot/ป่า = ดูความสูง<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)<br>'+
     '<span style="cursor:pointer;color:var(--wind);text-decoration:underline" onclick="cycleTerrain()">ปรับระดับ terrain</span>';
 }
+
+// 3D basemap switcher — same 3 photo/style options as 2D (DARK/OSM/ดาวเทียม).
+// TERRAIN isn't offered here since the 3D view already renders real DEM
+// terrain + hillshade underneath whichever basemap is picked.
+function setTdBasemap(key){
+  if(!mlMap) return;
+  const apply=()=>{
+    ['dark','osm','sat'].forEach(k=>mlMap.setLayoutProperty('basemap-'+k,'visibility', k===key?'visible':'none'));
+  };
+  if(mlMap.isStyleLoaded()) apply(); else mlMap.once('load',apply);
+  document.querySelectorAll('#tdBasemap [data-tdbase]').forEach(b=>b.classList.toggle('active', b.dataset.tdbase===key));
+}
+document.querySelectorAll('#tdBasemap [data-tdbase]').forEach(b=>{
+  b.onclick=()=>setTdBasemap(b.dataset.tdbase);
+});
 
 let _terrainExag=2.2;
 function cycleTerrain(){
