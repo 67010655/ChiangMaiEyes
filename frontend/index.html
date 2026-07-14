@@ -3648,8 +3648,7 @@ function renderForestMarkers(){
       L.circle([lat,lng],{radius,color,weight:1.2,fillColor:color,fillOpacity:0.05,dashArray:'6 4'})
         .addTo(layers.forest);
     }
-    const forestIcon=L.divIcon({className:'',html:`<span style="font-size:20px;line-height:1;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))">🌲</span>`,iconSize:[20,20],iconAnchor:[10,16]});
-    L.marker([lat,lng],{icon:forestIcon})
+    L.circleMarker([lat,lng],{radius:4,color,weight:1.5,fillColor:'#fff',fillOpacity:0.9})
       .bindPopup(
         `<b>${f.name||'ป่าชุมชน'}</b><br>`+
         `อ.${f.amphoe||'—'} ต.${f.tambon||'—'}<br>`+
@@ -4792,11 +4791,11 @@ function initMapLibre3D(){
   });
 
   mlMap.on('load',()=>{
-    // GeoJSON source for hotspots (forests are now DOM emoji markers — see
-    // _sync3DForests() — but the real surveyed polygon boundaries stay a
-    // GeoJSON fill/line layer since those are actual shapes, not points).
+    // GeoJSON sources for hotspots and forests
     mlMap.addSource('hotspots-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-    // Real surveyed polygon boundaries (agency shapefile, 677 CM plots).
+    mlMap.addSource('forests-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    // Real surveyed polygon boundaries (agency shapefile, 677 CM plots) —
+    // added below the point circles so the click-target marker stays on top.
     mlMap.addSource('forests-boundary-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
     mlMap.addLayer({id:'forests-boundary-fill',type:'fill',source:'forests-boundary-3d',paint:{
       'fill-color':['case',['==',['get','active'],true],'#43b05f','#4ade80'],
@@ -4808,21 +4807,29 @@ function initMapLibre3D(){
       'line-opacity':0.7
     }});
 
+    // Forest circles — reverted from 🌲 DOM markers (2026-07-14, user found
+    // the emoji markers didn't read well) back to a plain GPU circle layer.
+    mlMap.addLayer({id:'forests-circle',type:'circle',source:'forests-3d',paint:{
+      'circle-radius':5,
+      'circle-color':['case',['==',['get','active'],true],'#43b05f','#4ade80'],
+      'circle-opacity':0.88,
+      'circle-stroke-color':'#fff',
+      'circle-stroke-width':1
+    }});
+
     // Hotspot 🔥 emoji markers — rendered as HTML (MapLibre SDF can't render color emoji)
-    // _sync3DHotspots() creates maplibregl.Marker elements to mirror the 2D style exactly.
-    // Forests (🌲) and manual reports are the same DOM-marker approach — real
-    // elements also means real click hit-testing, no padded-box workaround needed.
-    // (Per-district wind pins were tried in 3D and removed 2026-07-14 — user
-    // reported persistent stutter that didn't clear after the forest-marker
-    // and lazy-basemap perf fixes; wind pins stay 2D-only, see renderWindDistrictPins().)
+    // _sync3DHotspots() creates maplibregl.Marker elements to mirror the 2D style exactly
 
     // Populate with current data
     _sync3DHotspots();
     _sync3DForests();
     _sync3DManualReports();
 
-    // 3D hotspot/forest clicks are handled inline in their own _sync3D*()
-    // Marker elements — see top-level _showForestPopup() etc.
+    // 3D hotspot clicks are handled inline in _sync3DHotspots() Marker elements
+
+    // cursor for forests only; hotspot cursor handled by marker element style;
+    mlMap.on('mouseenter','forests-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
+    mlMap.on('mouseleave','forests-circle',()=>{mlMap.getCanvas().style.cursor='';});
 
     // Chiang Mai province boundary + mask. The mask is a donut polygon: a
     // rectangle a bit larger than CM_SOURCE_BOUNDS with the REAL province
@@ -4833,8 +4840,8 @@ function initMapLibre3D(){
     // determined by ring position (ring[0]=outer, ring[1]=hole), not
     // winding direction. Inserted with an explicit beforeId so it always
     // lands right above bg/basemap/hillshade and below every data layer
-    // (forests-boundary-fill already exists by now — this fetch resolves on
-    // a later tick no matter where in this synchronous handler it's called
+    // (forests-circle already exists by now — this fetch resolves on a
+    // later tick no matter where in this synchronous handler it's called
     // from) — without this, an async layer landing wherever it happens to
     // finish loading would risk masking a hotspot/building that turns out
     // to sit just outside the exact province polygon.
@@ -4848,7 +4855,7 @@ function initMapLibre3D(){
       }});
       mlMap.addLayer({id:'cm-mask-fill',type:'fill',source:'cm-mask',paint:{
         'fill-color':'#070a0e','fill-opacity':1
-      }},'forests-boundary-fill');
+      }},'forests-circle');
 
       mlMap.addSource('cm-boundary',{type:'geojson',data:geo});
       mlMap.addLayer({id:'cm-boundary-line',type:'line',source:'cm-boundary',paint:{
@@ -4889,22 +4896,21 @@ function initMapLibre3D(){
     mlMap.on('mouseenter','buildings-3d-fill',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','buildings-3d-fill',()=>{mlMap.getCanvas().style.cursor='';});
 
-    // Fuel's circle (6px) is hard to tap precisely, especially on touch and
-    // on tilted 3D terrain — query a padded box around the click point
-    // instead of relying on the exact pixel so a near-miss still registers.
-    // (Forests used to need this too, but are DOM markers now with their
-    // own real hit area — see _sync3DForests().)
+    // Small circle markers (forests 5px, fuel 6px) are hard to tap precisely,
+    // especially on touch and on tilted 3D terrain — query a padded box
+    // around the click point instead of relying on the exact pixel so a
+    // near-miss still registers. Fuel takes priority since its circle often
+    // sits closer to/on top of a forest point at province zoom.
     const _HIT_PAD_PX = 10;
     mlMap.on('click', e=>{
       const box=[[e.point.x-_HIT_PAD_PX, e.point.y-_HIT_PAD_PX],[e.point.x+_HIT_PAD_PX, e.point.y+_HIT_PAD_PX]];
       const fuelHits=mlMap.queryRenderedFeatures(box,{layers:['fuel-3d-circle']});
-      if(fuelHits.length) _showFuelPopup(fuelHits[0]);
+      if(fuelHits.length){ _showFuelPopup(fuelHits[0]); return; }
+      const forestHits=mlMap.queryRenderedFeatures(box,{layers:['forests-circle']});
+      if(forestHits.length) _showForestPopup(forestHits[0]);
     });
 
     mlMap.on('moveend',_refreshStructures3D);
-    // Re-cull forest markers to the new viewport/zoom after every pan/zoom
-    // (moveend fires once per gesture, not per-frame, so this is cheap).
-    mlMap.on('moveend',_sync3DForests);
   });
 
   // Navigation controls
@@ -5085,51 +5091,30 @@ function _refreshStructures3D(){
     .catch(()=>{ /* backend/Overpass down or slow — silently keep whatever was last shown */ });
 }
 
-// Forest elevation-inspector popup — takes the raw allForests record
-// directly (not a queryRenderedFeatures result) since forests are DOM
-// markers now, not a canvas layer.
+// Forest elevation inspector popup
 function _showForestPopup(f){
-  const lng=f.longitude, lat=f.latitude;
+  const [lng,lat]=f.geometry.coordinates;
   let elev=null;
   try{ elev=mlMap.queryTerrainElevation([lng,lat]); }catch(_){}
   new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
     .setLngLat([lng,lat])
-    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.name||'ป่าชุมชน'}</b><br>อ.${f.amphoe||'—'}<br>ความสูง: ${elev!=null?Math.round(elev)+' เมตร (MSL)':'—'}<br>จัดการไฟ: ${f.fire_management_active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
+    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#43b05f">${f.properties.name||'ป่าชุมชน'}</b><br>อ.${f.properties.amphoe||'—'}<br>ความสูง: ${elev!=null?Math.round(elev)+' เมตร (MSL)':'—'}<br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a></div>`)
     .addTo(mlMap);
 }
 
-// 🌲 emoji markers for community forests — DOM elements (maplibregl.Marker),
-// same reasoning as hotspots: MapLibre's SDF text renderer can't do color
-// emoji. Also a real click hit-area, unlike the old 5px canvas circle.
-//
-// PERF: allForests is 677 records. Rendering all of them as real DOM markers
-// at once — and applyLive() re-triggers this on every live-data refresh via
-// renderForestMarkers() — is what caused the 3D view to stutter/freeze after
-// this was first shipped as an unconditional loop. Fixed the same way
-// _refreshStructures3D() already handles buildings: gate on zoom, and only
-// render what's actually in the current viewport. Below the zoom floor (or
-// while 3D isn't open) the polygon boundary layer alone still shows forest
-// coverage — that part is a cheap GPU layer, always on, unaffected.
-const FOREST_3D_MIN_ZOOM=10.5;
-let _3dForestMarkers=[];
 function _sync3DForests(){
-  _3dForestMarkers.forEach(m=>m.remove());
-  _3dForestMarkers=[];
-  if(mlMap && mlMap.getZoom()>=FOREST_3D_MIN_ZOOM){
-    const b=mlMap.getBounds();
-    allForests.forEach(f=>{
-      if(!f.latitude||!f.longitude) return;
-      if(!b.contains([f.longitude,f.latitude])) return;
-      const el=document.createElement('span');
-      el.textContent='🌲';
-      el.style.cssText='font-size:20px;line-height:1;cursor:pointer;display:block;user-select:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))';
-      el.addEventListener('click',()=>_showForestPopup(f));
-      _3dForestMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([f.longitude,f.latitude]).addTo(mlMap));
-    });
-  }
+  if(!mlMap||!mlMap.getSource('forests-3d')) return;
+  mlMap.getSource('forests-3d').setData({
+    type:'FeatureCollection',
+    features:allForests.filter(f=>f.latitude&&f.longitude).map(f=>({
+      type:'Feature',
+      geometry:{type:'Point',coordinates:[f.longitude,f.latitude]},
+      properties:{name:f.name,amphoe:f.amphoe,active:!!f.fire_management_active,area_rai:f.area_rai}
+    }))
+  });
   // Real surveyed polygon boundaries (agency shapefile) — geometry is
   // already [lon,lat] GeoJSON, same convention MapLibre expects.
-  if(mlMap && mlMap.getSource('forests-boundary-3d')){
+  if(mlMap.getSource('forests-boundary-3d')){
     mlMap.getSource('forests-boundary-3d').setData({
       type:'FeatureCollection',
       features:allForests.filter(f=>f.boundary).map(f=>({
