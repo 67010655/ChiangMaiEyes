@@ -1720,8 +1720,8 @@ map.getPane('labels').style.zIndex = 350;
 map.getPane('labels').style.pointerEvents = 'none';
 
 const bases = {
-  dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    {maxZoom:19,attribution:'© OpenStreetMap contributors © CARTO'}),
+  dark: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:16,attribution:'Tiles © Esri'}),
   osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     {maxZoom:19,attribution:'© OpenStreetMap contributors'}),
   // Esri World Imagery — real satellite photo, no labels of its own.
@@ -4757,7 +4757,7 @@ function initMapLibre3D(){
   const style={
     version:8,
     sources:{
-      'carto-dark':{type:'raster',tiles:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png','https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],tileSize:256,attribution:'© CARTO © OpenStreetMap',maxzoom:19,bounds:CM_SOURCE_BOUNDS},
+      'esri-dark':{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'Tiles © Esri',maxzoom:16,bounds:CM_SOURCE_BOUNDS},
       'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,bounds:CM_SOURCE_BOUNDS}
     },
     terrain:{source:'terrain-dem',exaggeration:2.2},
@@ -4768,7 +4768,7 @@ function initMapLibre3D(){
       // as soon as any layer references it, even with visibility:'none', so
       // declaring all 3 upfront would triple the tile-loading work on every
       // 3D open for two basemaps most sessions never switch to.
-      {id:'basemap-dark',type:'raster',source:'carto-dark'},
+      {id:'basemap-dark',type:'raster',source:'esri-dark'},
       {id:'hillshade',type:'hillshade',source:'terrain-dem',paint:{'hillshade-shadow-color':'#0c111a','hillshade-accent-color':'#2c3a50','hillshade-exaggeration':0.45}}
     ]
   };

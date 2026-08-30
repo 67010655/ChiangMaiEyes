@@ -26,9 +26,9 @@ const BASEMAPS: Record<Basemap, BasemapCfg> = {
     label: "สว่าง",
     url: MAPTILER_KEY
       ? mtUrl("dataviz", "png")
-      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-    attribution: MAPTILER_KEY ? MAPTILER_ATTR : "&copy; OpenStreetMap &copy; CARTO",
-    maxZoom: 20,
+      : "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    attribution: MAPTILER_KEY ? MAPTILER_ATTR : "Tiles &copy; Esri",
+    maxZoom: MAPTILER_KEY ? 20 : 16,
   },
   satellite: {
     label: "ดาวเทียม",
