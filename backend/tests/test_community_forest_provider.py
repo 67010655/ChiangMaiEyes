@@ -38,9 +38,7 @@ def test_correct_amphoe_leaves_a_correct_label_unchanged():
 
 @patch("app.providers.community_forest_provider._fetch_thaicfnet")
 def test_fetch_community_forests_every_amphoe_matches_its_real_polygon(mock_thaicfnet):
-    # Real production bug caught this session: 14/675 official records had
-    # an amphoe label that didn't match the real district polygon actually
-    # containing their coordinates. No thaicfnet network call in a unit test.
+    # Verify source amphoe against the district boundary; no live network call.
     mock_thaicfnet.return_value = []
     forests = fetch_community_forests()
     assert len(forests) > 0

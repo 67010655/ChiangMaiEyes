@@ -144,7 +144,7 @@ def community_forests() -> CommunityForestsResponse:
     return CommunityForestsResponse(
         forests=forests,
         total=len(forests),
-        source="Royal Forest Department + thaicfnet.org",
+        source="Community forest boundary shapefile received from RECOFTC",
         cached_at=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).isoformat(),
     )
 

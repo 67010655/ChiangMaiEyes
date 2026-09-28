@@ -36,6 +36,7 @@ from app.models import (
     WeatherResponse,
 )
 from app.providers.weather_provider import fetch_live_weather
+from app.providers.community_forest_provider import official_community_forest_count
 from app.providers.pm25_provider import fetch_live_pm25
 from app.providers.history_provider import fetch_pm25_history, fetch_weather_history
 from app.providers.hotspot_provider import (
@@ -263,18 +264,6 @@ def _history_archive_quality(
     )
 
 
-def _official_community_forest_count() -> int:
-    # Reads the SAME GeoJSON file community_forest_provider.py loads, so this
-    # count can never drift from what /api/community-forests actually
-    # returns — the user explicitly asked that every part of the app
-    # reference the one real number (677 Chiang Mai polygons from the
-    # agency's shapefile), not a separately-maintained summary blob.
-    try:
-        return len(read_json(_BUNDLED_DATA_DIR, "community-forests-chiangmai.geojson").get("features", []))
-    except Exception:
-        return 0
-
-
 def _parse_datetime(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
@@ -358,7 +347,7 @@ def _build_data_quality(
             or settings.earth_engine_enabled
         )
     )
-    official_community_count = _official_community_forest_count()
+    official_community_count = official_community_forest_count()
     satellite_source_mode: SourceMode = "DERIVED" if satellite_layers_configured else "UNAVAILABLE"
     satellite_confidence = 0.62 if satellite_layers_configured else 0.3
     community_source_mode: SourceMode = "SNAPSHOT" if official_community_count > 0 else "UNAVAILABLE"
@@ -411,7 +400,11 @@ def _build_data_quality(
             confidence=0.9 if not weather_age > _LIVE_SENSOR_STALE_AFTER_MINUTES else 0.4,
             stale_after_minutes=_LIVE_SENSOR_STALE_AFTER_MINUTES,
             update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
-            note="Weather station reading used for wind direction and smoke movement.",
+            note=(
+                "TMD AWS station reading is the backend source for wind and weather. "
+                "The frontend may supplement humidity/FWI widgets with Open-Meteo when "
+                "TMD fields are sparse."
+            ),
             decision_use="Use for hourly wind/smoke movement decisions.",
         ),
         "risk": _data_quality(
@@ -481,15 +474,15 @@ def _build_data_quality(
         ),
         "community_forests": _data_quality(
             label="Community forest boundaries",
-            source="Royal Forest Department community-forest boundary shapefile" if official_community_count > 0 else "Not configured",
+            source="Community forest boundary shapefile received from RECOFTC" if official_community_count > 0 else "Not configured",
             source_mode=community_source_mode,
             latest_update=None,
             checked_at=checked_at,
             age_minutes=None,
             confidence=0.85 if official_community_count > 0 else 0.0,
             stale_after_minutes=0,
-            note=f"Official RFD real polygon boundaries loaded for {official_community_count} Chiang Mai community forests (agency shapefile, not point-only)." if official_community_count > 0 else "No verified community forest records configured.",
-            decision_use="Use directly for area/boundary analysis — these are real surveyed polygons, not estimated circles.",
+            note=f"Real polygon boundaries loaded for {official_community_count} Chiang Mai community forests from the shapefile received from RECOFTC." if official_community_count > 0 else "No verified community forest boundaries configured.",
+            decision_use="Use these polygon boundaries for community forest location and area analysis.",
         ),
         "predictions": _data_quality(
             label="Localized predictions",
@@ -943,7 +936,13 @@ def deterministic_hourly_summary(
         weather_para,
         risk_para,
     ])
-    return SummaryResponse(language="th", text=repair_thai_mojibake_tree(text), source="deterministic hourly summary")
+    return SummaryResponse(
+        language="th",
+        text=repair_thai_mojibake_tree(text),
+        source="deterministic hourly summary",
+        source_mode="DERIVED",
+        generated_at=updated,
+    )
 
 
 def get_summary(settings: Settings, pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse, risk: RiskResponse) -> SummaryResponse:

@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 
 TMD_AWS_URL = "https://www.tmd.go.th/api/weather/get-aws-weather-by-province?province=chiangmai"
 TMD_SOURCE = "Thai Meteorological Department AWS"
+OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
+OPEN_METEO_SOURCE = "Open-Meteo current weather (Chiang Mai)"
+CHIANG_MAI_TZ = datetime.timezone(datetime.timedelta(hours=7))
+MAX_OBSERVATION_AGE = datetime.timedelta(hours=3)
 
 
 def _to_float(value: Any) -> float | None:
@@ -27,7 +31,7 @@ def _required_float(value: Any, field: str) -> float:
 
 def _parse_tmd_datetime(value: str | None) -> str:
     if not value:
-        return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).isoformat()
+        raise ValueError("TMD AWS observation timestamp is missing")
 
     normalized = value
     if len(value) >= 5 and value[-5] in {"+", "-"} and value[-2] != ":":
@@ -73,7 +77,15 @@ def _pick_chiangmai_station(stations: list[dict[str, Any]]) -> dict[str, Any]:
     raise ValueError("TMD AWS returned no Chiang Mai station data")
 
 
-def fetch_live_weather() -> WeatherResponse:
+def _is_recent(value: str) -> bool:
+    observed = datetime.datetime.fromisoformat(value)
+    if observed.tzinfo is None:
+        observed = observed.replace(tzinfo=CHIANG_MAI_TZ)
+    age = datetime.datetime.now(datetime.timezone.utc) - observed.astimezone(datetime.timezone.utc)
+    return -datetime.timedelta(minutes=15) <= age <= MAX_OBSERVATION_AGE
+
+
+def _fetch_tmd_weather() -> WeatherResponse:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ChiangMaiEyes/1.0",
         "Referer": "https://www.tmd.go.th/weather/province/chiang-mai",
@@ -91,7 +103,7 @@ def fetch_live_weather() -> WeatherResponse:
     station = _pick_chiangmai_station(stations)
     wind_dir = round(_required_float(station.get("windDirection"), "windDirection"), 1)
 
-    return WeatherResponse(
+    weather = WeatherResponse(
         wind_speed_kmh=_required_float(station.get("windSpeed"), "windSpeed"),
         wind_direction_deg=wind_dir,
         wind_direction_text=get_wind_direction_text(wind_dir),
@@ -109,3 +121,47 @@ def fetch_live_weather() -> WeatherResponse:
         temperature_min_today_c=_to_float(station.get("temperatureMinToday")),
         temperature_max_today_c=_to_float(station.get("temperatureMaxToday")),
     )
+    if not _is_recent(weather.latest_update):
+        raise ValueError(f"TMD AWS observation is stale: {weather.latest_update}")
+    return weather
+
+
+def _fetch_open_meteo_weather() -> WeatherResponse:
+    response = httpx.get(
+        OPEN_METEO_URL,
+        params={
+            "latitude": 18.79,
+            "longitude": 98.98,
+            "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation",
+            "timezone": "Asia/Bangkok",
+        },
+        timeout=12.0,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    current = payload["current"]
+    latest_update = f"{current['time']}+07:00"
+    if not _is_recent(latest_update):
+        raise ValueError(f"Open-Meteo observation is stale: {latest_update}")
+    wind_dir = round(float(current["wind_direction_10m"]), 1)
+    return WeatherResponse(
+        wind_speed_kmh=float(current["wind_speed_10m"]),
+        wind_direction_deg=wind_dir,
+        wind_direction_text=get_wind_direction_text(wind_dir),
+        temperature_c=float(current["temperature_2m"]),
+        humidity_percent=float(current["relative_humidity_2m"]),
+        latest_update=latest_update,
+        source=OPEN_METEO_SOURCE,
+        station_name="Chiang Mai city grid",
+        station_latitude=float(payload.get("latitude", 18.79)),
+        station_longitude=float(payload.get("longitude", 98.98)),
+        rain_1h_mm=_to_float(current.get("precipitation")),
+    )
+
+
+def fetch_live_weather() -> WeatherResponse:
+    try:
+        return _fetch_tmd_weather()
+    except (httpx.HTTPError, ValueError, KeyError, TypeError) as exc:
+        logger.warning("TMD weather unavailable; trying Open-Meteo: %s", exc)
+        return _fetch_open_meteo_weather()

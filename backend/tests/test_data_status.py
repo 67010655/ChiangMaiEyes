@@ -138,7 +138,7 @@ def test_data_status_reports_snapshot_freshness(tmp_path: Path, monkeypatch):
     assert status.data_quality["hotspots"].age_minutes == 60
     assert status.data_quality["ndvi"].source_mode == "UNAVAILABLE"
     assert status.data_quality["community_forests"].source_mode == "SNAPSHOT"
-    assert "real polygon boundaries" in status.data_quality["community_forests"].note
+    assert "polygon boundaries" in status.data_quality["community_forests"].note
     assert "677" in status.data_quality["community_forests"].note
 
 
@@ -397,3 +397,4 @@ def test_derived_quality_age_uses_latest_input_not_oldest_input(tmp_path: Path, 
     assert status.data_quality["risk"].age_minutes == 0
     assert status.data_quality["summary"].age_minutes == 0
     assert status.data_quality["predictions"].age_minutes == 0
+    assert "Open-Meteo" in status.data_quality["weather"].note

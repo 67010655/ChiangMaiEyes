@@ -126,6 +126,8 @@ type CommunityForest = {
 
   areaRai: number;
 
+  boundary: GeoJSON.Geometry;
+
   estimatedBoundaryRadiusM?: number;
 
   fireManagement?: boolean;
@@ -305,38 +307,16 @@ function communityForestSelection(forest: CommunityForest): MapSelection {
     .filter(Boolean)
     .join(" · ");
 
-  let sourceUrl = "https://www.forest.go.th/coorspec/พิกัดป่าชุมชน/";
-  let sourceLabel = "กรมป่าไม้: พิกัดป่าชุมชน";
-
-  if (forest.name && forest.name.includes("ป่าไผ่") && forest.amphoe === "เวียงแหง") {
-    sourceUrl = "https://drive.google.com/file/d/15h1dNCRecC1WT76QBdrmFRkAtx9mRdWK/view?usp=drive_link";
-    sourceLabel = "แผนที่ป่าชุมชนบ้านป่าไผ่";
-  } else if (forest.name && forest.name.includes("ห้วยอีค่าง") && forest.amphoe === "แม่วาง") {
-    sourceUrl = "https://drive.google.com/file/d/1INxvClI2uPrNwZuN0yjsMb5EDhLycKFn/view?usp=drive_link";
-    sourceLabel = "แผนที่ป่าชุมชนบ้านห้วยอีค่าง";
-  } else if (forest.amphoe === "แม่แจ่ม") {
-    sourceUrl = "https://drive.google.com/file/d/1nuCz_rPms8NRSoh1j6TovZ6g4wh2Eqfs/view?usp=drive_link";
-    sourceLabel = "แผนที่ป่าชุมชน 88 แห่ง แม่แจ่ม";
-  } else if (forest.amphoe === "สะเมิง") {
-    sourceUrl = "https://drive.google.com/file/d/1XfeAC_7W1XpPHoJ06ZO-q4rjOkS7ibdg/view?usp=drive_link";
-    sourceLabel = "แผนที่แนวกันไฟสะเมิงใต้";
-  } else {
-    sourceUrl = "https://drive.google.com/file/d/11svnusrDw8Lty5CBE3kmVZLk9B2efnIO/view?usp=drive_link";
-    sourceLabel = "แผนที่ป่าชุมชน 608 จุด (NSDANorth)";
-  }
-
   return {
-    eyebrow: "ป่าชุมชน · พิกัดกรมป่าไม้",
+    eyebrow: "ป่าชุมชน · ขอบเขตจริง",
 
     title: forest.name,
 
-    detail: `${place || "เชียงใหม่"} · จุดพิกัดตำแหน่งทางการกรมป่าไม้ (ไม่มีไฟล์ polygon ขอบเขต)`,
+    detail: `${place || "เชียงใหม่"} · แปลงป่าชุมชนที่มีขอบเขตจาก shapefile ที่ได้รับจาก RECOFTC`,
 
     mapUrl: `https://www.google.com/maps?q=${forest.lat},${forest.lng}`,
 
-    sourceUrl,
-
-    sourceLabel,
+    sourceLabel: "Shapefile ที่ได้รับจาก RECOFTC",
 
     imageKey: "forest",
 
@@ -358,12 +338,12 @@ function communityForestSelection(forest: CommunityForest): MapSelection {
 
       {
         label: "รูปทรงข้อมูล",
-        value: "จุดพิกัด (Point)",
+        value: "ขอบเขตรูปหลายเหลี่ยม (Polygon)",
       },
 
       {
         label: "ขอบเขตอ้างอิง",
-        value: "แผนที่สแกน (Google Drive)",
+        value: "Shapefile ที่ได้รับจาก RECOFTC",
         tone: "good",
       },
     ],
@@ -394,18 +374,8 @@ function fireZoneSelection(zone: FireManagementZone): MapSelection {
       },
 
       {
-        label: "พิกัดป่าชุมชน RFD",
-        value: `${formatNumber(zone.rfdCoordinatePoints)} จุด`,
-      },
-
-      {
-        label: "พื้นที่รวมจากจุดพิกัด",
-        value: `${formatNumber(zone.estimatedAreaRai)} ไร่`,
-      },
-
-      {
-        label: "ข้อมูลละเอียด",
-        value: `${formatNumber(zone.detailedForests)} แห่ง`,
+        label: "ข้อมูลโซน",
+        value: "ขอบเขตต้นแบบ ใช้ประกอบการวางแผน",
       },
 
       {
@@ -1583,6 +1553,13 @@ export function DashboardMap({
         }
       });
     }
+
+    // Render the actual boundary for every forest, including clustered points.
+    COMMUNITY_FORESTS.forEach((forest) => {
+      L.geoJSON(forest.boundary, {
+        style: { color: "#43b05f", weight: 1.2, fillOpacity: 0.08 },
+      }).addTo(group);
+    });
 
     // Render computed clusters and individual markers
     clusters.forEach((cluster) => {

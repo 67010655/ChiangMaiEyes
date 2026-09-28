@@ -1,20 +1,9 @@
 """Community forest data — merges two sources:
 
-1. Royal Forest Department community-forest boundary shapefile (converted
-   from the agency's official UTM Zone 47N shapefile — 677 real Chiang Mai
-   plots, WGS84 polygons, provided directly by the user's agency contact in
-   2024). Primary source: real boundary polygon per plot, real area_rai,
-   village/moo/tambon/amphoe.
-2. thaicfnet.org public API (live, ~21 Chiang Mai records) — supplemental,
-   ENRICHMENT ONLY: adds fire-management-activity detail to a matching
-   official record by (name, amphoe); a thaicfnet record with no official
-   match is dropped rather than added as an extra entry. This keeps the
-   total forest count locked to exactly the agency's 677 — the user
-   explicitly asked that every part of the app reference that one number,
-   not "677 plus whatever thaicfnet happens to add today."
-
-The RFD snapshot is loaded from disk on startup (static); thaicfnet is
-fetched and cached for 24 hours.
+The boundary shapefile received from RECOFTC is the sole source for the
+community-forest count and geometries. thaicfnet activity data may enrich a
+matching polygon, but never adds another forest. The converted GeoJSON is
+loaded on startup; thaicfnet is cached for 24 hours.
 """
 import json
 import logging
@@ -35,7 +24,6 @@ _CACHE_TTL = 86_400.0  # 24 hours
 _thaicfnet_cache: tuple[float, list[dict[str, Any]]] | None = None
 
 _OFFICIAL_GEOJSON = pathlib.Path(__file__).parent.parent / "data" / "community-forests-chiangmai.geojson"
-
 
 # ---------------------------------------------------------------------------
 # Official RFD shapefile (677 real Chiang Mai polygons)
@@ -73,7 +61,7 @@ def _load_official() -> list[CommunityForest]:
                 area_rai=props.get("areaRai"),
                 boundary_radius_m=None,
                 boundary=feat.get("geometry"),
-                source="Royal Forest Department (agency shapefile, real polygon boundary)",
+                source="Community forest boundary shapefile received from RECOFTC",
             ))
         logger.info("Loaded %d community forest polygons from agency shapefile", len(forests))
         return forests
@@ -84,6 +72,11 @@ def _load_official() -> list[CommunityForest]:
 
 # Load once at import time — data is static.
 _official_forests: list[CommunityForest] = _load_official()
+
+
+def official_community_forest_count() -> int:
+    """Count the boundary records that the API can actually return."""
+    return len(_official_forests)
 
 
 # ---------------------------------------------------------------------------
@@ -136,13 +129,7 @@ def _fetch_thaicfnet() -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 def _correct_amphoe(forests: list[CommunityForest]) -> list[CommunityForest]:
-    """The RFD/thaicfnet source's own amphoe label doesn't always match the
-    real district polygon actually containing the point — confirmed by
-    direct check, not assumed: 14 of 675 official records (~2%, previous
-    point-only source) sat inside a different district's real boundary than
-    their claimed amphoe. Same class of bug already fixed for hotspots —
-    reuse that exact real-polygon-first helper instead of trusting the
-    source label."""
+    """Correct source district labels against the containing district polygon."""
     corrected = []
     for f in forests:
         real = estimate_district(f.latitude, f.longitude)

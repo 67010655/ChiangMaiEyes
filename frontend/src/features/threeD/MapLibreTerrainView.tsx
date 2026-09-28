@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "../../styles/terrain.css";
 
-import communityForestData from "../../data/community-forests-prototype.json";
+import communityForestData from "../../data/community-forests-official.json";
 import fireZoneData from "../../data/fire-management-zones-prototype.json";
 import { windDestinationName } from "../../lib/wind";
 import type { DashboardResponse } from "../../lib/types";
@@ -61,8 +61,8 @@ type CommunityForest = {
   amphoe: string;
   lat: number;
   lng: number;
-  estimatedBoundaryRadiusM: number;
-  fireManagement: boolean;
+  boundary: GeoFeature["geometry"];
+  fireManagement?: boolean;
 };
 
 type FireManagementZone = {
@@ -331,17 +331,10 @@ function buildTerrainData(
           kind: "Community forest boundary",
           label: forest.name,
           amphoe: forest.amphoe,
-          boundary: "Estimated radius from prototype community forest point",
+          boundary: "Boundary from RECOFTC supplied shapefile",
           color,
         },
-        geometry: {
-          type: "Polygon",
-          coordinates: circlePolygon(
-            forest.lng,
-            forest.lat,
-            forest.estimatedBoundaryRadiusM,
-          ),
-        },
+        geometry: forest.boundary,
       });
       communityPoints.features.push({
         type: "Feature",
@@ -350,7 +343,7 @@ function buildTerrainData(
           kind: "Community forest",
           label: forest.name,
           amphoe: forest.amphoe,
-          active: forest.fireManagement,
+          active: forest.fireManagement ?? false,
           color,
         },
         geometry: {
@@ -1070,7 +1063,7 @@ export function MapLibreTerrainView({ dashboard, layers, mapTilerKey }: Props) {
                       { label: "District", value: forest.amphoe },
                       {
                         label: "Boundary",
-                        value: "Estimated prototype radius",
+                        value: "Boundary from RECOFTC supplied shapefile",
                       },
                     ],
                   ),

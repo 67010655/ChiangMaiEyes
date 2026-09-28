@@ -50,6 +50,8 @@ def test_summary_is_deterministic_even_when_gemini_key_is_configured():
     )
 
     assert summary.source == "deterministic hourly summary"
+    assert summary.source_mode == "DERIVED"
+    assert summary.generated_at == "2026-06-23T10:15:00+07:00"
     assert "10:15" in summary.text
     assert "31" in summary.text
     assert "GISTDA Disaster STAC VIIRS 3-day 1 จุด" in summary.text

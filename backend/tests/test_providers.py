@@ -136,6 +136,7 @@ def test_dedup_same_source_keeps_latest_detection_per_location():
 
 @patch("httpx.get")
 def test_fetch_live_weather_success(mock_get):
+    observed_at = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).replace(microsecond=0)
     mock_response = MagicMock()
     mock_response.json.return_value = {
         "success": True,
@@ -155,7 +156,7 @@ def test_fetch_live_weather_success(mock_get):
                 "precip1Hr": 0,
                 "precipToday": 0,
                 "pressure": 967.9,
-                "dateTimeUtc7": "2026-06-04T11:46:00.000+0700",
+                "dateTimeUtc7": observed_at.isoformat(),
             }
         ],
     }
@@ -170,8 +171,37 @@ def test_fetch_live_weather_success(mock_get):
     assert weather.wind_direction_text == "ทิศตะวันตกค่อนไปทางใต้"
     assert weather.pressure_hpa == 967.9
     assert weather.rain_15m_mm == 0
-    assert weather.latest_update == "2026-06-04T11:46:00+07:00"
+    assert weather.latest_update == observed_at.isoformat()
     assert weather.source == "Thai Meteorological Department AWS"
+
+
+@patch("httpx.get")
+def test_fetch_live_weather_falls_back_when_tmd_observation_is_stale(mock_get):
+    old_tmd = MagicMock()
+    old_tmd.json.return_value = {"data": [{
+        "stationId": 1, "windDirection": 245, "windSpeed": 2.2,
+        "temperature": 34, "humidity": 56,
+        "dateTimeUtc7": "2026-06-28T15:52:00+07:00",
+    }]}
+    live_meteo = MagicMock()
+    observed_at = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).replace(microsecond=0)
+    live_meteo.json.return_value = {
+        "latitude": 18.79, "longitude": 98.98,
+        "current": {
+            "time": observed_at.strftime("%Y-%m-%dT%H:%M"),
+            "temperature_2m": 25.4, "relative_humidity_2m": 91.2,
+            "wind_speed_10m": 5.8, "wind_direction_10m": 348.9,
+            "precipitation": 0,
+        },
+    }
+    mock_get.side_effect = [old_tmd, live_meteo]
+
+    weather = fetch_live_weather()
+
+    assert weather.source == "Open-Meteo current weather (Chiang Mai)"
+    assert weather.latest_update.startswith(observed_at.strftime("%Y-%m-%dT%H:%M"))
+    assert weather.wind_direction_deg == 348.9
+    assert mock_get.call_count == 2
 
 @patch("httpx.get")
 def test_fetch_live_pm25_success(mock_get):

@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0",
+    "dev": "vite --config vite.config.ts --host 0.0.0.0",
+    "build": "vite build --config vite.config.ts",
+    "preview": "vite preview --config vite.config.ts --host 0.0.0.0",
     "test": "vitest run"
   },
   "dependencies": {
@@ -16,13 +16,14 @@
     "leaflet": "^1.9.4",
     "leaflet-velocity": "^2.1.4",
     "lucide-react": "^1.17.0",
-    "maplibre-gl": "^5.24.0",
+    "maplibre-gl": "^6.11.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "typescript": "^6.0.3",
     "vite": "^8.0.16"
   },
   "devDependencies": {
+    "@types/node": "^26.6.3",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "jsdom": "^29.1.1",

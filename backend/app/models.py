@@ -159,6 +159,8 @@ class SummaryResponse(BaseModel):
     language: str
     text: str
     source: str
+    source_mode: SourceMode = "DERIVED"
+    generated_at: str | None = None
 
 
 class HotspotTrendStats(BaseModel):

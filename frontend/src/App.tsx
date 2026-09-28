@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { BarChart3, Box, ClipboardList, Eye, Bell, RefreshCcw, Printer, Navigation, FileText, Flame, BookOpen } from "lucide-react";
 
 import "./styles/app.css";
@@ -21,7 +21,7 @@ const TABS: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
   { id: "guide", label: "คู่มือ", icon: BookOpen },
 ];
 
-const GUIDE_CARD_STYLE = {
+const GUIDE_CARD_STYLE: CSSProperties = {
   background: "var(--surface)",
   border: "1px solid var(--line)",
   borderRadius: 16,

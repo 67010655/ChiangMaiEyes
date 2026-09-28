@@ -28,7 +28,6 @@
 <meta name="twitter:description" content="จุดความร้อน PM2.5 ทิศทางลม และคะแนนความเสี่ยงหมอกควันเชียงใหม่ แบบเรียลไทม์" />
 <meta name="twitter:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -84,6 +83,46 @@
   body.light-mode .ph-spread{background:var(--panel-2)}
   body.light-mode .leaflet-container{background:#e0e6ee!important}
   body.light-mode #liveLoading{background:rgba(238,242,247,.55)}
+  /* These controls kept a hardcoded near-black background (meant for the
+     dark theme) while their text uses --muted/--txt, which flip to dark
+     navy in light mode — dark-on-dark, unreadable, and visually patchy
+     dark islands inside otherwise-white panels. Lighten every one so text
+     stays legibly dark-on-white/green, matching the rest of light mode. */
+  body.light-mode .an-seg,
+  body.light-mode .an-close,
+  body.light-mode .datamode .seg,
+  body.light-mode .rp-btn.ghost,
+  body.light-mode .cme-modal .tabs,
+  body.light-mode .cme-modal .coord-readout,
+  body.light-mode .mobile-drawer-tabs button,
+  body.light-mode .drawer-basemap button{background:var(--panel-2)!important}
+  body.light-mode .cme-modal input,
+  body.light-mode .cme-modal textarea{background:#fff!important}
+  body.light-mode .nav-item:hover{background:var(--panel-2)!important}
+  body.light-mode .alert:hover{background:var(--panel-2)!important}
+  body.light-mode .layer .sw{background:var(--line)!important}
+  body.light-mode .analytics::-webkit-scrollbar-thumb{background:var(--line)!important}
+  body.light-mode .rank-row .track{background:var(--line-soft)!important}
+  /* Floating map/3D chrome (search bar, basemap toggles, wind badge, legends,
+     locate FAB, zoom control) used to correctly match an ALWAYS-dark map —
+     but light mode now also switches the basemap to a light OSM tile set
+     (see toggleTheme()), so these hardcoded-dark badges became mismatched
+     dark islands floating over a now-light map. Confirmed via real
+     screenshots from the user (both 2D and 3D). */
+  body.light-mode .basemap-toggle,
+  body.light-mode .td-basemap-toggle,
+  body.light-mode .map-scale,
+  body.light-mode .wind-badge,
+  body.light-mode .wind-badge .wt,
+  body.light-mode .map-search,
+  body.light-mode .map-fab:not(.report-fab),
+  body.light-mode .mobile-fab:not(.layers-btn),
+  body.light-mode .td-legend,
+  body.light-mode .td-close,
+  body.light-mode .pick-hint{background:var(--panel) !important}
+  body.light-mode .leaflet-control-zoom a{background:var(--panel) !important;color:var(--txt) !important;border-color:var(--line) !important}
+  body.light-mode .leaflet-control-attribution{background:rgba(255,255,255,.85) !important;color:var(--dim) !important}
+  body.light-mode .leaflet-control-attribution a{color:var(--muted) !important}
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{
@@ -347,10 +386,17 @@
 
   @media print{
     @page{margin:14mm}
-    body *{visibility:hidden!important}
-    .paper,.paper *{visibility:visible!important}
-    .paper{position:absolute;left:0;top:0;margin:0;width:100%;max-width:100%;box-shadow:none;border-radius:0;background:#fff}
+    html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+    .app,.main{display:block!important;height:auto!important;min-height:0!important;overflow:visible!important}
+    .topbar,.main>:not(.reportview){display:none!important}
+    .reportview{position:static!important;display:block!important;overflow:visible!important;inset:auto!important;background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
     .rp-toolbar{display:none!important}
+    .paper{position:static!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;background:#fff!important}
+    .paper .ph,.paper .lead,.paper .figs,.paper h2,.paper li,.paper tr{break-inside:avoid}
+    .paper h2{break-after:avoid}
+    .paper td{padding:5px 8px}
+    .paper .pfoot{break-inside:avoid;margin-top:14px}
+    .paper thead{display:table-header-group}
   }
 
   /* ── Panels ───────────────────────────────── */
@@ -450,7 +496,11 @@
     pointer-events:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)
   }
   .wind-badge .arrow{width:40px;height:40px;flex:none}
-  .wind-badge .arrow svg{transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+  /* The svg carries explicit width/height="40" attributes (its native
+     size) — without this override they win over the .arrow box's own
+     size on mobile (where .arrow shrinks to 30px), so the ring overflows
+     its container uncentered instead of scaling down with it. */
+  .wind-badge .arrow svg{width:100%;height:100%;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
   .wind-badge .wt{font-family:var(--mono)}
   .wind-badge .wt .spd{font-size:18px;font-weight:600;color:var(--wind);line-height:1}
   .wind-badge .wt .spd small{font-size:9px;color:var(--muted);font-weight:400}
@@ -503,6 +553,19 @@
   @keyframes windRing{0%{transform:scale(.4);opacity:.85}100%{transform:scale(1.7);opacity:0}}
   @keyframes windBreathe{0%,100%{opacity:.65;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
 
+  /* Generic version of the wind-pin radar ring, reused for hotspot/manual-
+     report markers (ring only — no arrow-breathing, they have no compass
+     direction) so all three marker types share one consistent "live/urgent"
+     visual language. Size-agnostic: wraps whatever icon it's given.
+     Plain block, NOT flex — the manual-report icon child is itself a
+     rotated (transform:rotate) flex box (the teardrop shape), and adding a
+     second flex-centering layer around a transformed child is exactly the
+     kind of thing that renders inconsistently across engines (this is the
+     likely cause of the report pin's 👁 reading as "missing" on a real
+     phone) even though it looked fine in this environment's own browser. */
+  .pulse-wrap{position:relative;display:inline-block}
+  .pulse-wrap .ring{position:absolute;inset:-6px;border-radius:50%;border:1.5px solid currentColor;animation:windRing 2.4s ease-out infinite;opacity:0}
+
   .leaflet-popup-content-wrapper{background:#0d1117;color:#e6edf3;border:1px solid var(--ember);border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.6)}
   .leaflet-popup-tip{background:#0d1117}
   .leaflet-popup-content{font-family:var(--mono);font-size:11px;margin:11px 13px;line-height:1.6}
@@ -512,6 +575,14 @@
   .district-popup .leaflet-popup-content-wrapper{background:#0d1117cc;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-color:#22d3ee55}
   .district-popup .leaflet-popup-tip{background:#0d1117}
   .district-popup .leaflet-popup-content{overflow-y:auto}
+  /* Label over the highlighted nearest-forest markers shown while a
+     hotspot/manual-report popup is open (see showForestProximity()). */
+  .forest-proximity-tooltip{
+    background:#0d1117e6;color:#e6edf3;border:1px solid #2c3744;
+    font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:5px;
+    box-shadow:0 2px 8px rgba(0,0,0,.5);
+  }
+  .forest-proximity-tooltip::before{border-top-color:#0d1117e6}
   /* compact variant (narrow viewports): tighter spacing so the popup opens short by default */
   .district-popup.compact .leaflet-popup-content{font-size:10px;margin:8px 10px;line-height:1.4}
   .district-popup.compact .ph-card{padding:10px 11px}
@@ -606,6 +677,9 @@
   .auth-dropdown button{width:100%;background:none;border:none;color:var(--danger);text-align:left;padding:7px 6px;
     cursor:pointer;font-size:12px;border-radius:6px;font-family:var(--disp)}
   .auth-dropdown button:hover{background:var(--panel-2)}
+  /* Non-destructive dropdown actions (everything except sign-out) shouldn't
+     inherit the red "danger" color meant for that one button. */
+  .auth-dropdown button.neutral{color:var(--txt)}
 
   /* Generic modal (login/signup, hotspot report form) */
   .cme-modal-backdrop{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);
@@ -649,7 +723,53 @@
 
   @media(max-width:1180px){
     .main{grid-template-columns:66px 240px 1fr}
-    .side.right{display:none}
+    /* Below 820px this is immediately overridden again by the phone block's
+       own .side.right rule (later in source order, so it wins there) — this
+       is only "live" in the 821-1180px tablet gap. It used to be a bare
+       display:none with no way back in, which hid the whole air-quality/
+       stats panel with zero access path at iPad-landscape widths (1024px);
+       give it the same reachable bottom-sheet-drawer treatment the phone
+       layout already uses successfully, opened via #tabletInsightsBtn below. */
+    .side.right{
+      display:flex;flex-direction:column;
+      position:fixed;left:0;right:0;bottom:-100vh;z-index:1750;
+      max-height:74vh;overflow-y:auto;border:none;
+      border-top:1px solid var(--line);border-radius:16px 16px 0 0;
+      box-shadow:0 -8px 30px rgba(0,0,0,.35);
+    }
+    .side.right.drawer-open{bottom:0}
+    /* Topbar's unshrunk minimum width (brand 340px + 4 stats + auth + theme
+       toggle + clock) is ~1160px — wider than an iPad in landscape (1024px),
+       which falls in this gap (below 1180 but above the 820px phone
+       breakpoint). With nothing here to shrink it, the rightmost items
+       (theme toggle, clock) were pushed past the visible viewport edge with
+       no scrollbar — this is what read as "a button is missing" on a real
+       iPad. Reuse the same shrink moves the phone breakpoint already uses.
+    */
+    .brand{min-width:0;gap:6px}
+    .brand .sub{display:none}
+    .stat:nth-child(2){display:none}
+    .topbar{gap:8px;padding:0 10px}
+    .clock{min-width:0;padding-left:8px;font-size:10.5px}
+  }
+  /* Tablet-only trigger for the now-reachable right drawer (821-1180px) — at
+     ≤820px the phone layout's own mobile-fab-group + in-drawer tab switcher
+     already covers this, so this button would be redundant there. */
+  .tablet-insights-fab{display:none}
+  @media(min-width:821px) and (max-width:1180px){
+    .tablet-insights-fab{
+      display:flex;align-items:center;justify-content:center;
+      position:absolute;z-index:850;right:12px;bottom:28px;
+      width:46px;height:46px;border-radius:50%;border:1px solid var(--line);
+      background:var(--panel);color:var(--txt);box-shadow:0 4px 16px rgba(0,0,0,.35);
+      cursor:pointer;pointer-events:auto;
+    }
+    /* lets tapping outside the open drawer dismiss it too, same as phone */
+    .mobile-drawer-backdrop{
+      display:block;position:fixed;inset:0;z-index:1740;background:rgba(0,0,0,.4);
+      opacity:0;pointer-events:none;transition:opacity .2s ease;
+    }
+    .mobile-drawer-backdrop.open{opacity:1;pointer-events:auto}
   }
   /* Phones: map-first layout (like Google Maps) — the map fills the
      viewport, and the two side panels become bottom sheet drawers opened
@@ -711,6 +831,16 @@
     .stat .k{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px}
     .stat .v{font-size:14px}
     .clock{min-width:0;padding-left:6px;font-size:9.5px}
+    /* Standard phones, not just tiny ones, need this — a plain iPhone 16 is
+       393px CSS-wide (16 Pro 402px, 16/Pro Max 430px) and still overflowed
+       at the original ≤380px threshold, which only ever covered iPhone SE-
+       class devices. Stacking "ChiangMai"/"Eyes" onto two lines wasn't
+       enough room either — drop the wordmark entirely and keep just the
+       logo icon, since the stats + icon cluster next to it need the space
+       more than the name does (the name is still in the page <title>/tab). */
+    @media(max-width:430px){
+      .brand h1{display:none}
+    }
     /* full-screen overlays: the rail is gone, so no left offset */
     /* Each mode (วิเคราะห์/รายงาน/3D/เฟสไฟ/คู่มือ) becomes a true full-screen
        window covering the shared topbar too — it has its own header/close
@@ -743,6 +873,22 @@
     /* Leaflet's own zoom control shares the bottom-right corner — without
        this it renders on top of (not above) the layers/locate buttons. */
     .leaflet-bottom.leaflet-right{margin-bottom:150px}
+    /* Pull the attribution credit out of Leaflet's corner-flex layout
+       entirely and pin it to the true viewport edge, directly above the
+       fixed bottom nav bar — right under the FAB column (report/locate
+       buttons) instead of wherever it happened to float before. position:
+       fixed (not absolute) because the Leaflet corner div it would
+       otherwise inherit positioning from has its own margin-bottom pushing
+       it up to clear the FABs, which fights any bottom offset set here. */
+    .leaflet-control-attribution{
+      position:fixed !important;
+      right:12px !important; left:auto !important; top:auto !important;
+      bottom:calc(52px + env(safe-area-inset-bottom,0)) !important;
+      max-width:150px; text-align:right; z-index:840;
+      /* single line, truncated — a multi-line wrap grows tall enough to
+         creep up into the report/locate FABs sitting right above it */
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
     .mobile-fab,.map-fab{
       width:46px;height:46px;border-radius:50%;flex:none;
       background:rgba(13,18,24,.92);border:1px solid var(--line);color:var(--txt);
@@ -924,6 +1070,16 @@
   </div>
 </div>
 
+<!-- My-report-history modal (auth dropdown → ประวัติการรายงานของฉัน) -->
+<div class="cme-modal-backdrop" id="myReportsModalBackdrop">
+  <div class="cme-modal" style="max-width:480px">
+    <button class="close-x" onclick="closeMyReportsModal()">&times;</button>
+    <h3>ประวัติการรายงานของฉัน</h3>
+    <p class="hint">รายงานทั้งหมดที่คุณเคยส่ง รวมถึงรายการที่เกิน 3 วันแล้วและไม่แสดงบนแผนที่/แท็บระหว่างไฟอีกต่อไป — ยังเก็บไว้ที่นี่เป็นประวัติเสมอ ไม่ถูกลบ</p>
+    <div id="myReportsList" style="max-height:50vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- Pick-location hint banner (shown while placing a manual hotspot) -->
 <div class="pick-hint" id="pickHint">
   <span>แตะบนแผนที่เพื่อเลือกตำแหน่งจุดไฟ</span>
@@ -962,6 +1118,7 @@
       </button>
       <div class="auth-dropdown" id="authDropdown">
         <div class="who" id="authWhoText"></div>
+        <button class="neutral" onclick="openMyReportsModal()">📋 ประวัติการรายงานของฉัน</button>
         <button onclick="doSignOut()">ออกจากระบบ</button>
       </div>
     </div>
@@ -1145,6 +1302,13 @@
           <svg viewBox="0 0 24 24"><path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg>
         </button>
       </div>
+
+      <!-- tablet-only (821-1180px): opens the right panel as a drawer, since
+           it has no other way to be reached at this width (see the
+           @media(min-width:821px) and (max-width:1180px) rules above) -->
+      <button class="tablet-insights-fab" id="tabletInsightsBtn" aria-label="สรุปอากาศ &amp; สถิติ" title="สรุปอากาศ &amp; สถิติ">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg>
+      </button>
     </main>
     <!-- mobile-only: backdrop behind an open drawer -->
     <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop"></div>
@@ -1401,7 +1565,7 @@
           <li><b>Wind field</b> ลูกศรทิศทางลมทั่วพื้นที่ <span class="gd-tag real">จริง</span> จาก Open-Meteo</li>
           <li><b>PM2.5 stations</b> จุดสถานีตรวจฝุ่นจริงทั่วจังหวัด <span class="gd-tag real">จริง</span></li>
           <li><b>Heatmap ความหนาแน่น</b> สีเข้ม-อ่อนแสดงความหนาแน่นของจุดไฟ คำนวณจากตำแหน่งจุดไฟจริง</li>
-          <li><b>ขอบเขตป่าชุมชน</b> รูปหลายเหลี่ยมขอบเขตจริงจากกรมป่าไม้ (RFD, shapefile ที่ได้รับจากหน่วยงานโดยตรง) <span class="gd-tag real">จริง</span> — 677 แปลงในเชียงใหม่ ครบทุกอำเภอที่มีป่าชุมชนขึ้นทะเบียน (23 จาก 25 อำเภอ อีก 2 อำเภอไม่มีป่าชุมชนขึ้นทะเบียน) แต่ละแปลงมีชื่อป่า/หมู่บ้าน/หมู่ที่/ตำบล/อำเภอ/พื้นที่จริง (ไร่) สีของรูปหลายเหลี่ยม/จุดกึ่งกลางไล่ตาม<b>ความเสี่ยงเชื้อเพลิงเฉพาะป่านั้น</b> <span class="gd-tag approx">ประมาณ</span> (เขียว→เหลือง→ส้ม→แดง) คำนวณจากความเสี่ยงของอำเภอนั้นบวกระยะห่างจากจุดความร้อนจริงที่ใกล้ที่สุด คลิกดูเปอร์เซ็นต์ความเสี่ยงได้</li>
+          <li><b>ขอบเขตป่าชุมชน</b> รูปหลายเหลี่ยมจาก shapefile ที่ได้รับจาก RECOFTC <span class="gd-tag real">จริง</span> — 677 แปลงที่มีขอบเขตในเชียงใหม่ แต่ละแปลงมีชื่อป่า/หมู่บ้าน/หมู่ที่/ตำบล/อำเภอ/พื้นที่ (ไร่) สีของรูปหลายเหลี่ยม/จุดกึ่งกลางไล่ตาม<b>ความเสี่ยงเชื้อเพลิงเฉพาะป่านั้น</b> <span class="gd-tag approx">ประมาณ</span> (เขียว→เหลือง→ส้ม→แดง) คำนวณจากความเสี่ยงของอำเภอนั้นบวกระยะห่างจากจุดความร้อนจริงที่ใกล้ที่สุด คลิกดูเปอร์เซ็นต์ความเสี่ยงได้</li>
           <li><b>ขอบเขตอำเภอ/จังหวัด</b> เส้นแบ่งเขตทางการ 25 อำเภอ <span class="gd-tag real">จริง</span></li>
           <li><b>ขอบเขตตำบล</b> เส้นแบ่งเขตตำบลทางการ 204 ตำบล <span class="gd-tag real">จริง</span> — ไม่โชว์ทั้งจังหวัดตลอดเวลาเพราะจะรกเกินไป จะขึ้นให้เห็นเฉพาะตอนซูมเข้าใกล้ หรือกดเลือกอำเภอใดอำเภอหนึ่ง (จะโชว์เฉพาะตำบลในอำเภอนั้น) คลิกแต่ละตำบลดูรายละเอียดได้เหมือนค้นหา — ตรวจสอบทุกตำบลแล้วว่าติดอำเภอถูกต้องจริงตามขอบเขตอำเภอทางการ (13 ก.ค. 2569 พบและแก้ 16 ตำบลที่ไฟล์ต้นฉบับยังอ้างอำเภอเดิมก่อนปี 2552 เช่น ตำบลแม่แดด/แจ่มหลวง/บ้านจันทร์ เคยขึ้นว่าอยู่แม่แจ่ม ที่จริงย้ายไปกัลยาณิวัฒนาตั้งแต่แยกอำเภอใหม่)</li>
           <li><b>⚠️ เฝ้าระวังระดับตำบล</b> ขึ้นเฉพาะตำบลที่มีความเสี่ยง (204 ตำบลทั้งหมด แต่โชว์แค่ที่ต้องเฝ้าระวัง) <span class="gd-tag approx">ประมาณ</span> คำนวณจากความเสี่ยงอำเภอแม่ + ระยะใกล้จุดความร้อนจริง คลิกไอคอนดูรายละเอียดได้</li>
@@ -1462,7 +1626,7 @@
         <summary>8. แท็บ "3D"</summary>
         <ul>
           <li>ภูมิประเทศจริงจากแบบจำลองความสูงดิจิทัล (DEM Terrarium 30ม.) <span class="gd-tag real">จริง</span> พร้อมจุดไฟจริงลอยตามความสูง</li>
-          <li>Legend ซ้ายล่าง: สีความแรงไฟ + สีป่าชุมชน (เขียว=มีข้อมูลยืนยันว่าจัดการไฟ จาก thaicfnet.org, ฟ้า=ไม่มีข้อมูลยืนยัน — ไม่ได้แปลว่าไม่จัดการไฟจริง) — อิงพิกัดป่าชุมชนจริงเช่นกัน (จุดเท่านั้น เหมือนข้อ 3)</li>
+          <li>Legend ซ้ายล่าง: สีความแรงไฟ + สีป่าชุมชน (เขียว=มีข้อมูลยืนยันว่าจัดการไฟจาก thaicfnet.org, ฟ้า=ไม่มีข้อมูลยืนยัน — ไม่ได้แปลว่าไม่จัดการไฟจริง) — อิงแปลงป่าชุมชนที่มีขอบเขตจริง</li>
           <li><b>อาคาร/สิ่งปลูกสร้าง + ⛽ ปั๊มน้ำมัน</b> <span class="gd-tag real">จริง</span> จาก OpenStreetMap — โหลดเฉพาะตอนซูมใกล้ (ระดับอาคาร) เพราะข้อมูลทั้งจังหวัดมีมากเกินจะโหลดพร้อมกันได้ ความสูงอาคารประมาณจากจำนวนชั้นถ้ามีระบุ ไม่งั้นใช้ค่ากลาง 8 เมตร <span class="gd-tag approx">ประมาณ</span></li>
           <li>ควบคุม: ลากค้าง=หมุนมุมมอง, สกอลล์=ซูม, คลิกจุด=ดูรายละเอียด</li>
         </ul>
@@ -1500,7 +1664,7 @@
             <li>กรมควบคุมมลพิษ (PCD/Air4Thai), AQICN — สถานี PM2.5</li>
             <li>Open-Meteo — ลม ความชื้น อุณหภูมิ ฝน (ทั้งข้อมูลปัจจุบันและพยากรณ์ล่วงหน้า)</li>
             <li>NASA MODIS Terra (GIBS) — ภาพดัชนีพืชพรรณ EVI</li>
-            <li>กรมป่าไม้ (RFD) + thaicfnet.org — ตำแหน่งป่าชุมชน</li>
+            <li>Shapefile ขอบเขตป่าชุมชนที่ได้รับจาก RECOFTC; thaicfnet.org ใช้เสริมข้อมูลกิจกรรมเท่านั้น</li>
             <li>OpenStreetMap (Overpass) — ขอบเขตอำเภอ/ตำบล, อาคาร, ปั๊มน้ำมันในโหมด 3D</li>
           </ul>
         </div>
@@ -1517,7 +1681,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script type="module" src="/src/maplibre-global.ts"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1551,6 +1715,15 @@ function toggleTheme(){
       ? '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'  // moon
       : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';  // sun
   }
+  // Match the basemap tone to the UI theme — a dark satellite/street basemap
+  // under an otherwise-white UI looked inconsistent (same complaint that
+  // drove the light-mode contrast fixes). OSM's a light basemap; 'dark' is
+  // the obvious match going back the other way.
+  setBasemap(isLight ? 'osm' : 'dark');
+  if(mlMap) setTdBasemap(isLight ? 'osm' : 'dark');
+  // Wind rose is a hand-built SVG string (not CSS-styled), so it doesn't
+  // pick up the theme automatically — re-render with the last real data.
+  if(_lastWindRoseBins) windRose('roseChart', _lastWindRoseBins);
 }
 // 8-point Thai compass from a "comes-from" bearing in degrees.
 function _degToCompass(deg){
@@ -1644,6 +1817,51 @@ function kmBetween(aLat,aLon,bLat,bLon){
   const R=6371, dLat=(bLat-aLat)*Math.PI/180, dLon=(bLon-aLon)*Math.PI/180;
   const x=Math.sin(dLat/2)**2+Math.cos(aLat*Math.PI/180)*Math.cos(bLat*Math.PI/180)*Math.sin(dLon/2)**2;
   return 2*R*Math.asin(Math.sqrt(x));
+}
+// Compass bearing (0-360, 0=N) from point A to point B.
+function bearingDeg(aLat,aLon,bLat,bLon){
+  const phi1=aLat*Math.PI/180, phi2=bLat*Math.PI/180, dLon=(bLon-aLon)*Math.PI/180;
+  const y=Math.sin(dLon)*Math.cos(phi2);
+  const x=Math.cos(phi1)*Math.sin(phi2)-Math.sin(phi1)*Math.cos(phi2)*Math.cos(dLon);
+  return (Math.atan2(y,x)*180/Math.PI+360)%360;
+}
+// Shortest angular distance between two compass bearings (0-180).
+function angleDiffDeg(a,b){ const d=Math.abs(a-b)%360; return d>180?360-d:d; }
+// Half-angle of the downwind spread cone — shared with spreadCone() so a
+// forest flagged "downwind" here matches the same cone drawn on the 2D map.
+const SPREAD_HALF_ANGLE_DEG = 26;
+// Top-N nearest community forests to a point, each tagged with whether it
+// sits inside the current wind's downwind cone — used by hotspot popups
+// (both satellite-detected and manually-reported) to show what's genuinely
+// at risk nearby, not just physically closest.
+function nearestForests(lat, lon, n=3){
+  if(!allForests.length) return [];
+  const blowTo=(wind().deg+180)%360;
+  return allForests
+    .filter(f=>f.latitude && f.longitude)
+    .map(f=>{
+      const fLat=Number(f.latitude), fLon=Number(f.longitude);
+      const bearing=bearingDeg(lat,lon,fLat,fLon);
+      return {
+        forest:f,
+        km: kmBetween(lat,lon,fLat,fLon),
+        downwind: angleDiffDeg(bearing,blowTo) <= SPREAD_HALF_ANGLE_DEG,
+      };
+    })
+    .sort((a,b)=>a.km-b.km)
+    .slice(0, n);
+}
+// Plain HTML snippet, no Leaflet dependency — reused as-is inside MapLibre's
+// .setHTML() for the 3D popups too.
+function nearestForestsPopupHtml(lat, lon){
+  const rows = nearestForests(lat, lon, 3);
+  if(!rows.length) return '';
+  return '<hr style="border-color:#2c3744;margin:6px 0">'+
+    '<b style="color:var(--green)">ป่าชุมชนใกล้เคียง</b><br>'+
+    rows.map(r=>{
+      const warn = r.downwind ? '<span style="color:var(--danger)">🌬️ ปลายลม · </span>' : '';
+      return `${warn}${r.forest.name||'ป่าชุมชน'} (อ.${r.forest.amphoe||'—'}) · ${r.km.toFixed(1)} กม.`;
+    }).join('<br>');
 }
 function tambonRowsFromHotspots(){
   const buckets={};
@@ -1778,6 +1996,27 @@ const layers = {
   ndvi: null  // created on first toggle
 };
 
+// Ephemeral dashed lines + highlight markers from an open hotspot popup to
+// its nearest community forests — drawn on popupopen, cleared on popupclose
+// (see nearestForests()). Markers (not just lines) so the actual forest pin
+// shows up on the map, not just a line pointing off toward it.
+let _forestProximityLines = L.layerGroup().addTo(map);
+let _forestProximityMarkers = L.layerGroup().addTo(map);
+function showForestProximity(lat, lon){
+  _forestProximityLines.clearLayers();
+  _forestProximityMarkers.clearLayers();
+  nearestForests(lat, lon, 3).forEach(r=>{
+    const fLat=Number(r.forest.latitude), fLon=Number(r.forest.longitude);
+    const col = r.downwind ? '#ff4d4d' : '#43b05f';
+    L.polyline([[lat, lon],[fLat,fLon]],
+      {dashArray:'6 4', color:col, weight: r.downwind?3:2, opacity:.75}).addTo(_forestProximityLines);
+    L.circleMarker([fLat,fLon], {radius:8, color:col, weight:2, fillColor:'#fff', fillOpacity:.95})
+      .bindTooltip(r.forest.name||'ป่าชุมชน', {permanent:true, direction:'top', offset:[0,-8], className:'forest-proximity-tooltip'})
+      .addTo(_forestProximityMarkers);
+  });
+}
+function clearForestProximity(){ _forestProximityLines.clearLayers(); _forestProximityMarkers.clearLayers(); }
+
 // ---- EVI tile layer (MODIS Terra rolling 8-day, NASA GIBS, keyless) ----
 function _buildNdviLayer(){
   return L.tileLayer(
@@ -1838,6 +2077,27 @@ function frpColor(f){ if(f==null)return '#6b7787'; return f>100?'#ff4d4d': f>60?
 function fmtFrp(h){ return h.frp==null ? 'FRP ไม่มีข้อมูล' : `FRP ${Math.round(h.frp)} MW`; }
 // Google Maps navigation link for field officers
 function gMapsLink(lat, lng){ return `<a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;text-decoration:none;font-weight:600">🗺 นำทาง Google Maps</a>`; }
+// Shared popup content — used by BOTH the 2D Leaflet popup and the 3D
+// MapLibre popup, so the two views never drift apart. Callers append any
+// view-specific extras (2D's "ดูใน 3D" link, the owner-only delete span).
+function hotspotPopupHtml(h){
+  const isHigh = h.conf==='high';
+  return `<b>${h.id}</b> · ${h.district}<br>`+
+    `ต.${h.subdistrict||h.tambon||'—'}<br>`+
+    `${fmtFrp(h)} · ${isHigh?'🔥 confidence สูง':'🔥 confidence ต่ำ'}<br>`+
+    `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
+    `${gMapsLink(h.lat,h.lon)}<br>`+
+    nearestForestsPopupHtml(h.lat, h.lon);
+}
+function manualReportPopupHtml(r){
+  const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
+  return `<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
+    `อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>`+
+    `${(r.description||'').replace(/</g,'&lt;')}<br>`+
+    `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br>`+
+    `${gMapsLink(r.latitude,r.longitude)}<br>`+
+    nearestForestsPopupHtml(Number(r.latitude), Number(r.longitude));
+}
 // Sizing/intensity scalar: real FRP if present, else a confidence-based proxy so
 // markers still have a sensible radius (never shown as MW).
 function intensity(h){ return h.frp!=null ? h.frp : (h.conf==='high'?55:22); }
@@ -1858,22 +2118,30 @@ function renderHotspots(){
     const bgStyle = isHigh
       ? `background:${col};box-shadow:0 0 6px ${col}99`
       : `background:transparent;border:2px solid ${col};opacity:.6`;
+    // Reuses the per-district wind pin's radar-ping ring (see .pulse-wrap,
+    // shared @keyframes windRing) — ring color matches the marker's own FRP
+    // color so a critical/high-confidence hotspot reads as more urgent.
     const icon = L.divIcon({
-      html: `<span style="${bgStyle};border-radius:50%;display:inline-flex;align-items:center;justify-content:center;width:${sz}px;height:${sz}px;font-size:${emojiSz}px;line-height:1">🔥</span>`,
+      html: `<div class="pulse-wrap" style="width:${sz}px;height:${sz}px;color:${col}">`+
+        `<div class="ring" style="animation-delay:${(Math.random()*2.4).toFixed(2)}s"></div>`+
+        `<span style="${bgStyle};border-radius:50%;display:inline-flex;align-items:center;justify-content:center;width:${sz}px;height:${sz}px;font-size:${emojiSz}px;line-height:1">🔥</span>`+
+      `</div>`,
       className: '',
       iconSize: [sz, sz],
       iconAnchor: [sz/2, sz/2]
     });
     const m = L.marker([h.lat,h.lon],{icon, zIndexOffset:isHigh?100:0});
-    m.bindPopup(
-      `<b>${h.id}</b> · ${h.district}<br>`+
-      `ต.${h.subdistrict||h.tambon||'—'}<br>`+
-      `${fmtFrp(h)} · ${isHigh?'🔥 confidence สูง':'🔥 confidence ต่ำ'}<br>`+
-      `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
-      `${gMapsLink(h.lat,h.lon)}<br>`+
-      `<span style="cursor:pointer;color:var(--wind);text-decoration:underline" `+
+    // Function form (not a static string) — regenerated on every open, so
+    // the "ป่าชุมชนใกล้เคียง" section isn't permanently missing if this
+    // marker got bound before allForests finished loading (nearestForests()
+    // reads the CURRENT allForests at open time, not whatever it was here).
+    m.bindPopup(()=>
+      hotspotPopupHtml(h)+
+      `<br><span style="cursor:pointer;color:var(--wind);text-decoration:underline" `+
       `onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${h.lon},${h.lat}],zoom:12,pitch:55,bearing:0,duration:1200}),600)">📍 ดูใน 3D</span>`
     );
+    m.on('popupopen',()=>showForestProximity(h.lat, h.lon));
+    m.on('popupclose', clearForestProximity);
     m.on('click',()=>selectHotspot(h));
     layers.hotspots.addLayer(m);
   });
@@ -1888,7 +2156,7 @@ function spreadCone(h){
   const rad = blowTo*Math.PI/180;
   // length scales with wind + FRP; risk by combo
   const km = 2 + W.kmh*0.18 + intensity(h)*0.03;
-  const spreadDeg = 26;                 // half-angle
+  const spreadDeg = SPREAD_HALF_ANGLE_DEG; // half-angle — shared with nearestForests()'s downwind flag
   const pts=[[h.lat,h.lon]];
   for(let a=-spreadDeg;a<=spreadDeg;a+=4){
     const ar=(blowTo+a)*Math.PI/180;
@@ -2037,13 +2305,11 @@ function renderWindDistrictPins(){
     const spreadNote = sp
       ? `กำลังลุกลามไปทาง${spreadDirTh} ~${(sp.km_6h||0).toFixed(1)} กม./6ชม.`
       : `ยังไม่มีไฟในอำเภอนี้ — ถ้าเกิดไฟ ทิศทางลามอ้างอิงคือทาง${spreadDirTh}`;
-    // Staggered delay so 25 pins don't all pulse in lockstep; "during" phase
-    // (active fire) gets the ember-colored ring so it reads as urgent at a glance.
-    const delay = (Math.random()*2.4).toFixed(2)+'s';
-    const iconHtml = `<div class="wind-pin${p.phase==='during'?' active':''}">
-        <div class="ring" style="animation-delay:${delay}"></div>
-        <div class="arrow-wrap" style="animation-delay:${delay}">${windArrowSvg(spreadDirDeg)}</div>
-      </div>`;
+    // Static now — no ring/breathing animation (removed per user request; the
+    // radar-ping treatment lives on the hotspot/manual-report pins instead,
+    // see .pulse-wrap). "during" phase still gets the ember tint so it reads
+    // as urgent at a glance, just without motion.
+    const iconHtml = `<div class="wind-pin${p.phase==='during'?' active':''}">${windArrowSvg(spreadDirDeg)}</div>`;
     const icon = L.divIcon({className:'', html:iconHtml, iconSize:[22,22]});
     L.marker(center, {icon, zIndexOffset:-100})
       .bindTooltip(`${p.district}: ลม ${b.wind_speed_kmh} กม./ชม. ทิศ${windDirTh}`, {direction:'top', className:'district-tooltip'})
@@ -2331,8 +2597,66 @@ async function deleteManualReport(id){
     if(error) throw error;
     map.closePopup();
     await fetchManualReports();
+    // Keep the history modal in sync too if it's open when a delete happens
+    // from there (not just from a map popup).
+    if(document.getElementById('myReportsModalBackdrop')?.classList.contains('open')){
+      await renderMyReportsList();
+    }
   } catch(err){
     toast(err.message || 'ลบรายงานไม่สำเร็จ กรุณาลองใหม่');
+  }
+}
+// Reports older than this stop showing on the map/during-fire tab — a
+// field report from a week ago isn't evidence of a fire happening NOW. Never
+// deleted from Supabase though (kept as a historical record); this is a
+// client-side display filter only.
+const MANUAL_REPORT_MAX_AGE_DAYS = 3;
+function isManualReportFresh(r){
+  const ageMs = Date.now() - new Date(r.reported_at).getTime();
+  return ageMs <= MANUAL_REPORT_MAX_AGE_DAYS * 86400000;
+}
+
+// ---- My report history (all of the logged-in user's own reports, no age
+// cutoff — the live map/during-fire list only ever shows the last
+// MANUAL_REPORT_MAX_AGE_DAYS, this is where older ones remain visible). ----
+function openMyReportsModal(){
+  if(!currentUser){ toast('เข้าสู่ระบบก่อนถึงจะดูประวัติได้'); return; }
+  document.getElementById('authDropdown').classList.remove('open');
+  document.getElementById('myReportsModalBackdrop').classList.add('open');
+  renderMyReportsList();
+}
+function closeMyReportsModal(){
+  document.getElementById('myReportsModalBackdrop').classList.remove('open');
+}
+async function renderMyReportsList(){
+  const el = document.getElementById('myReportsList');
+  el.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:12px">กำลังโหลด…</div>';
+  try{
+    const { data, error } = await sb.from('manual_hotspot_reports')
+      .select('*').eq('reporter_id', currentUser.id)
+      .order('reported_at', { ascending:false }).limit(200);
+    if(error) throw error;
+    if(!data || !data.length){
+      el.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:12px">คุณยังไม่เคยส่งรายงานเลย</div>';
+      return;
+    }
+    el.innerHTML = data.map(r=>{
+      const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
+      const fresh = isManualReportFresh(r);
+      return `<div style="border-bottom:1px solid var(--line-soft);padding:9px 0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+          <b style="font-size:12px">อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}</b>
+          <span style="font-size:9px;white-space:nowrap;color:${fresh?'var(--good)':'var(--dim)'}">${fresh?'● แสดงบนแผนที่อยู่':'○ พ้น 3 วันแล้ว'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">${(r.description||'').replace(/</g,'&lt;')}</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px">
+          <span style="font-size:9.5px;color:var(--dim)">${when}</span>
+          <span style="cursor:pointer;color:var(--danger);font-size:10px;text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ลบ</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(err){
+    el.innerHTML = `<div style="padding:20px 0;text-align:center;color:var(--danger);font-size:12px">โหลดไม่สำเร็จ: ${err.message||'ลองใหม่อีกครั้ง'}</div>`;
   }
 }
 async function fetchManualReports(){
@@ -2341,7 +2665,7 @@ async function fetchManualReports(){
     const { data, error } = await sb.from('manual_hotspot_reports')
       .select('*').order('reported_at', { ascending:false }).limit(500);
     if(error) throw error;
-    manualReports = data || [];
+    manualReports = (data || []).filter(isManualReportFresh);
     renderManualReports();
   } catch(err){
     console.warn('fetchManualReports failed', err);
@@ -2350,23 +2674,36 @@ async function fetchManualReports(){
 function renderManualReports(){
   layers.manualReports.clearLayers();
   manualReports.forEach(r=>{
+    // Same shared radar-ping ring as the hotspot markers (see .pulse-wrap) —
+    // ember-colored, matching the pin's own accent color. Uses an inline SVG
+    // eye icon, not the 👁 emoji — confirmed on a real iPhone the emoji
+    // rendered as nothing at all (a plain solid pin, no mark), almost
+    // certainly an emoji-presentation/font quirk at this tiny 12px size.
+    // SVG has no such font dependency — it renders pixel-identically
+    // everywhere.
     const icon = L.divIcon({
-      html: `<span style="background:var(--ember);border:2px solid #fff;box-shadow:0 0 8px rgba(255,138,61,.8);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px">
-               <span style="transform:rotate(45deg);font-size:12px">👁</span>
-             </span>`,
+      html: `<div class="pulse-wrap" style="width:22px;height:22px;color:var(--ember)">`+
+        `<div class="ring" style="animation-delay:${(Math.random()*2.4).toFixed(2)}s"></div>`+
+        `<span style="background:var(--ember);border:2px solid #fff;box-shadow:0 0 8px rgba(255,138,61,.8);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px">
+               <svg style="transform:rotate(45deg)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+             </span></div>`,
       className:'', iconSize:[22,22], iconAnchor:[11,22]
     });
     const m = L.marker([r.latitude, r.longitude], {icon, zIndexOffset:200});
-    const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
     const isOwner = currentUser && currentUser.id === r.reporter_id;
-    m.bindPopup(
-      `<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
-      `อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>`+
-      `${(r.description||'').replace(/</g,'&lt;')}<br>`+
-      `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br>`+
-      `${gMapsLink(r.latitude,r.longitude)}`+
+    // Function form — see the comment on the hotspot popup above; same
+    // "ป่าชุมชนใกล้เคียง section permanently missing" staleness risk applies
+    // here (manual reports render on their own fetch, independent of when
+    // community forests finish loading).
+    m.bindPopup(()=>
+      manualReportPopupHtml(r)+
       (isOwner ? `<br><span style="cursor:pointer;color:var(--danger);text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>` : '')
     );
+    m.on('popupopen',()=>{
+      map.flyTo([r.latitude, r.longitude], Math.max(map.getZoom(),12), {duration:.8});
+      showForestProximity(Number(r.latitude), Number(r.longitude));
+    });
+    m.on('popupclose', clearForestProximity);
     layers.manualReports.addLayer(m);
   });
   document.getElementById('lcManual').textContent = manualReports.length;
@@ -2491,12 +2828,22 @@ async function fetchWindRose(){
   }catch(e){ /* keep placeholder bins */ }
 }
 
+let _lastWindRoseBins = null;
 function windRose(id,bins){
+  _lastWindRoseBins = bins;
   const cx=90,cy=72,R=58;
   const dirs=['N','NE','E','SE','S','SW','W','NW'];
+  // This SVG is generated as a plain string, not styled via CSS classes, so
+  // it doesn't automatically pick up the page's light/dark theme — the
+  // near-black grid rings + wedge outlines (meant to stand out on the dark
+  // theme) read as a solid dark blob on the light theme's white card.
+  const isLight = document.body.classList.contains('light-mode');
+  const gridCol = isLight ? '#d8e0ec' : '#1a212b';
+  const wedgeStroke = isLight ? '#ffffff' : '#0b0e13';
+  const labelCol = isLight ? '#3d4f66' : '#8b97a7';
   let g='';
   // rings
-  [0.33,0.66,1].forEach(r=>{g+=`<circle cx="${cx}" cy="${cy}" r="${R*r}" fill="none" stroke="#1a212b" stroke-width="1"/>`;});
+  [0.33,0.66,1].forEach(r=>{g+=`<circle cx="${cx}" cy="${cy}" r="${R*r}" fill="none" stroke="${gridCol}" stroke-width="1"/>`;});
   const max=Math.max(...bins);
   bins.forEach((v,i)=>{
     const a0=(i*45-22.5-90)*Math.PI/180, a1=(i*45+22.5-90)*Math.PI/180;
@@ -2505,11 +2852,11 @@ function windRose(id,bins){
     const x1=cx+Math.cos(a1)*r, y1=cy+Math.sin(a1)*r;
     const dominantIdx=bins.indexOf(Math.max(...bins));
     const big=(i===dominantIdx)?'#37d1d6':'rgba(55,209,214,.45)';
-    g+=`<path d="M${cx} ${cy} L${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1} Z" fill="${big}" stroke="#0b0e13" stroke-width="1"/>`;
+    g+=`<path d="M${cx} ${cy} L${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1} Z" fill="${big}" stroke="${wedgeStroke}" stroke-width="1"/>`;
   });
   dirs.forEach((d,i)=>{
     const a=(i*45-90)*Math.PI/180;
-    g+=`<text class="axis-lbl" x="${cx+Math.cos(a)*(R+10)}" y="${cy+Math.sin(a)*(R+10)+3}" text-anchor="middle" fill="#8b97a7">${d}</text>`;
+    g+=`<text class="axis-lbl" x="${cx+Math.cos(a)*(R+10)}" y="${cy+Math.sin(a)*(R+10)+3}" text-anchor="middle" fill="${labelCol}">${d}</text>`;
   });
   document.getElementById(id).innerHTML=g;
 }
@@ -2542,11 +2889,11 @@ function buildAlerts(){
   const hipm=pmStations.filter(s=>s.pm>90).sort((a,b)=>b.pm-a.pm)[0];
   if(hipm)list.push({lv:'WARN',crit:false,t:`PM2.5 เกินเกณฑ์ · ${hipm.name.replace('สถานี ','')}`,
     d:`${hipm.pm} µg/m³ · ระดับ${pmAqiLabel(hipm.pm)}`});
-  // Only surface the wind-gust alert when we actually have a wind reading.
-  if(PREVAILING){
+  // A wind reading alone is not a gust or an increasing trend.
+  if(PREVAILING && PREVAILING.kmh>=30 && !liveDataQ?.weather?.is_stale){
     const W=wind();
-    list.push({lv:'WARN',crit:false,t:`ลมกระโชกจากทิศ ${_degToCompass(W.deg)} เพิ่มขึ้น`,
-      d:`${W.kmh} km/h · เพิ่มความเร็วการลามของไฟทางลม`});
+    list.push({lv:'WARN',crit:false,t:`ลมแรงจากทิศ ${_degToCompass(W.deg)}`,
+      d:`${W.kmh} km/h · อาจเพิ่มความเร็วการลามของไฟตามลม`});
   }
   document.getElementById('alertList').innerHTML=list.map(a=>`
     <div class="alert ${a.crit?'crit':''}" ${a.h?`data-id="${a.h.id}"`:''}>
@@ -2566,26 +2913,28 @@ function setKpis(){
   // map itself still plots the full 5-day set (see ACTIVE_HOTSPOT_MINUTES).
   const activeNow=hotspots.filter(isActiveHotspot);
   const crit=activeNow.filter(h=>(h.frp||0)>=CRITICAL_FRP_MW).length;
+  const hotspotReady=!!liveDataQ?.hotspots && liveDataQ.hotspots.source_mode!=='UNAVAILABLE' && !liveDataQ.hotspots.is_stale;
+  const pmReady=!!liveDataQ?.pm25 && liveDataQ.pm25.source_mode!=='UNAVAILABLE' && !liveDataQ.pm25.is_stale && pmStations.length>0;
   const pmAvg=pmStations.length?Math.round(pmStations.reduce((s,x)=>s+x.pm,0)/pmStations.length):0;
   const pmPeak=pmStations.length?Math.max(...pmStations.map(x=>x.pm)):0;
   const aqi=Math.round(pmAvg*1.6+20);
-  document.getElementById('kpiHot').textContent=activeNow.length;
-  document.getElementById('kpiCrit').textContent=crit;
-  document.getElementById('kpiPm').innerHTML=pmAvg+'<small> µg/m³</small>';
-  document.getElementById('kpiAqi').textContent=aqi;
+  document.getElementById('kpiHot').textContent=hotspotReady?activeNow.length:'—';
+  document.getElementById('kpiCrit').textContent=hotspotReady?crit:'—';
+  document.getElementById('kpiPm').innerHTML=(pmReady?pmAvg:'—')+'<small> µg/m³</small>';
+  document.getElementById('kpiAqi').textContent=pmReady?aqi:'—';
   document.getElementById('kpiAqi').style.color = aqi>150?'#ff4d4d':aqi>100?'#ff8a3d':'#facc15';
-  document.getElementById('pmPeak').innerHTML=pmPeak+'<small> µg/m³</small>';
+  document.getElementById('pmPeak').innerHTML=(pmReady?pmPeak:'—')+'<small> µg/m³</small>';
   // PM trend: compare current avg vs yesterday's daily value if available
   const prevDayPm = daily30.length >= 2 ? daily30[daily30.length-2] : null;
-  const pmTrendPct = (prevDayPm && prevDayPm > 0) ? Math.round((pmAvg-prevDayPm)/prevDayPm*100) : null;
+  const pmTrendPct = (pmReady && prevDayPm && prevDayPm > 0) ? Math.round((pmAvg-prevDayPm)/prevDayPm*100) : null;
   document.getElementById('pmPeakTr').textContent = pmTrendPct != null
     ? (pmTrendPct >= 0 ? '▲ ' : '▼ ') + Math.abs(pmTrendPct) + '% vs เมื่อวาน'
     : '— vs เมื่อวาน';
   const visKm = pmPeak > 0 ? Math.round((28-Math.min(pmPeak,168)/6)*10)/10 : 28.0;
-  document.getElementById('visKm').innerHTML = visKm + '<small> km</small>';
-  document.getElementById('visTr').textContent = pmPeak > 150 ? '▼ ทัศนวิสัยต่ำมาก'
+  document.getElementById('visKm').innerHTML = (pmReady?visKm:'—') + '<small> km</small>';
+  document.getElementById('visTr').textContent = !pmReady ? '— ไม่มีข้อมูลฝุ่น' : pmPeak > 150 ? '▼ ทัศนวิสัยต่ำมาก'
     : pmPeak > 75 ? '▼ ทัศนวิสัยลดลง' : '— ทัศนวิสัยปกติ';
-  document.getElementById('pm24now').textContent=pmAvg;
+  document.getElementById('pm24now').textContent=pmReady?pmAvg:'—';
 }
 function setWindBadge(){
   if(!PREVAILING){
@@ -2626,6 +2975,11 @@ function openMobileDrawer(side){
   document.getElementById('mobileDrawerBackdrop').classList.add('open');
 }
 document.getElementById('mobileLayersBtn').onclick=()=>openMobileDrawer('left');
+document.getElementById('tabletInsightsBtn').onclick=()=>{
+  const rightPanel=document.querySelector('.side.right');
+  if(rightPanel.classList.contains('drawer-open')) closeMobileDrawers();
+  else openMobileDrawer('right');
+};
 document.getElementById('mobileDrawerBackdrop').onclick=closeMobileDrawers;
 document.getElementById('mobileDetailClose').onclick=closeMobileDrawers;
 
@@ -3833,6 +4187,7 @@ function applyLive(dash, history, phases){
   fetchAirQualityHourly(); // optional hourly PM2.5 supplement from Open-Meteo Air Quality
   fetchWeatherConditions(); // humidity + FWI
   rerenderAll();
+  if(document.getElementById('reportview').classList.contains('open')) buildReport();
 }
 
 // The wind rose needs hourly wind history the backend doesn't expose, so flag it
@@ -4061,11 +4416,35 @@ function renderPhasePanel(){
   // district regardless of phase, which is what made a quiet "ก่อนไฟ"/"ปกติ"
   // district show up under this tab.
   const duringOnly=livePhases.filter(p=>p.phase==='during').sort((a,b)=>(b.danger_score||0)-(a.danger_score||0));
+  // Manual (staff/public) reports are shown here too — a person on the
+  // ground seeing smoke right now is real evidence of "during fire"
+  // activity, independent of whether a satellite has confirmed it yet for
+  // that district. Kept as its own labeled, unverified section rather than
+  // folded into the district phase/danger_score itself: those numbers drive
+  // real decisions (spread projections, recommended actions) and must stay
+  // satellite-only so an unverified or mistaken report can't quietly shift
+  // an official phase. manualReports is already limited to the last
+  // MANUAL_REPORT_MAX_AGE_DAYS by fetchManualReports()/isManualReportFresh().
+  const manualReportCards = (manualReports||[]).length ? `
+    <div class="ph-card" style="grid-column:span 3">
+      <h3 style="margin-bottom:10px">👁 รายงานจากภาคสนาม (ยังไม่ยืนยัน) — ${manualReports.length}</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">
+        ${manualReports.map(r=>`
+          <div style="background:var(--panel-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;cursor:pointer"
+               onclick="map.flyTo([${r.latitude},${r.longitude}],14,{duration:.8});closeAllOverlays();">
+            <div style="font-size:11px;color:var(--ember)">🔥 อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:3px">${(r.description||'').replace(/</g,'&lt;')}</div>
+            <div style="font-size:9px;color:var(--dim);margin-top:5px">โดย ${r.reporter_name} · ${formatAge(Math.round((Date.now()-new Date(r.reported_at).getTime())/60000))} ที่แล้ว</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
   if(!duringOnly.length){
-    body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--good);font-family:var(--mono);font-size:13px">✓ ไม่มีอำเภอที่มีไฟกำลังลุกลามขณะนี้</div>';
+    body.innerHTML='<div style="grid-column:1/-1;padding:60px;text-align:center;color:var(--good);font-family:var(--mono);font-size:13px">✓ ไม่มีอำเภอที่มีไฟกำลังลุกลามขณะนี้</div>'+manualReportCards;
     return;
   }
-  body.innerHTML=duringOnly.map(p=>phaseCard(p)).join('');
+  body.innerHTML=duringOnly.map(p=>phaseCard(p)).join('')+manualReportCards;
 }
 
 function _condCard(label,value,unit,note,col){
@@ -4095,6 +4474,34 @@ function renderBeforeFire(body){
   // (danger_score>0.4, not phase-filtered), which is why it could look
   // "empty" even when the backend legitimately had before-phase districts.
   const beforeDistricts=(livePhases||[]).filter(p=>p.phase==='before').sort((a,b)=>(b.danger_score||0)-(a.danger_score||0));
+  // Tambon-level watch was already computed by the backend (tambon_warnings,
+  // same district-danger + hotspot-proximity formula as forest_risk) and
+  // already rendered as small ⚠️ map markers + a report-appendix table, but
+  // was never surfaced in this tab — which is exactly the gap reported:
+  // a tambon warning existed with no visible reasoning/next-step here.
+  const beforeTambons=(tambonWarningsData||[]).filter(t=>t.phase==='before').sort((a,b)=>(b.danger_score||0)-(a.danger_score||0));
+  const tambonWarningCards = beforeTambons.length ? `
+    <div class="ph-card" style="grid-column:span 3">
+      <h3 style="margin-bottom:10px">📍 ตำบลเฝ้าระวัง (${beforeTambons.length})</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+        ${beforeTambons.map(t=>`
+          <div style="background:var(--panel-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;cursor:pointer"
+               onclick="selectTambonSearch('${t.tambon}',[${t.latitude},${t.longitude}],'${t.amphoe}');closeAllOverlays();">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <b style="font-size:13px">ต.${t.tambon}</b>
+              <span style="font-family:var(--mono);font-size:12px;color:#facc15">${Math.round((t.danger_score||0)*100)}%</span>
+            </div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:6px">อ.${t.amphoe}</div>
+            ${(t.reasons||[]).map(r=>`<div style="font-size:10px;color:var(--dim);margin-top:2px">• ${r}</div>`).join('')}
+            ${(t.recommended_actions||[]).length?`<div style="margin-top:6px;border-top:1px dashed var(--line-soft);padding-top:6px">
+              ${t.recommended_actions.map(a=>`<div style="font-size:10.5px;color:var(--txt);margin-top:3px">✓ ${a}</div>`).join('')}
+            </div>`:''}
+            <div style="font-size:9px;color:var(--wind);margin-top:8px">📍 กดเพื่อดูขอบเขตบนแผนที่</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
 
   body.innerHTML=`
   <div class="ph-card" style="grid-column:span 3">
@@ -4127,7 +4534,8 @@ function renderBeforeFire(body){
       </div>
     </div>
   </div>
-  ${beforeDistricts.length?beforeDistricts.map(p=>phaseCard(p)).join(''):`<div class="ph-card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--good);font-family:var(--mono);font-size:13px">✓ ไม่มีอำเภอที่เข้าเกณฑ์เฝ้าระวังก่อนไฟขณะนี้</div>`}`;
+  ${beforeDistricts.length?beforeDistricts.map(p=>phaseCard(p)).join(''):`<div class="ph-card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--good);font-family:var(--mono);font-size:13px">✓ ไม่มีอำเภอที่เข้าเกณฑ์เฝ้าระวังก่อนไฟขณะนี้</div>`}
+  ${tambonWarningCards}`;
 }
 
 // Derive discrete fire incidents (specific "this district burned from date A
@@ -4515,6 +4923,7 @@ function fetchJson(path, ms){
     .finally(()=>clearTimeout(id));
 }
 async function fetchLiveData(){
+  const requestId=++liveRequestId;
   // Dashboard is required. The backend runs a heavy NASA/GISTDA chain and can
   // cold-start, so give a generous timeout and retry once before giving up.
   // The first (failed) attempt already starts warming the function instance.
@@ -4538,6 +4947,7 @@ async function fetchLiveData(){
     fetchJson('/api/history?days=7', 45000).then(h=>h).catch(()=>null),
     fetchJson('/api/fire-phases', 15000).then(p=>p).catch(()=>null),
   ]).then(([h30,h7,phases])=>{
+    if(requestId!==liveRequestId) return;
     livePhasesPending = false;
     const history=(h30||h7)?{h30,h7}:null;
     if(history||phases) applyLive(dash, history, phases);
@@ -4567,11 +4977,16 @@ function setLoading(on, msg){
 function setMode(m){
   dataMode=m;
   const footMode=document.getElementById('footMode');
-  if(footMode) footMode.textContent=m==='live'?'LIVE':'OFFLINE';
-  if(footMode) footMode.style.color=m==='live'?'var(--good)':'var(--warn)';
+  const degraded=m==='live' && liveDataQ && ['hotspots','pm25','weather'].some(k=>liveDataQ[k]?.is_stale || liveDataQ[k]?.source_mode==='UNAVAILABLE');
+  if(footMode) footMode.textContent=m==='live'?(degraded?'PARTIAL':'LIVE'):'OFFLINE';
+  if(footMode) footMode.style.color=m==='live'&&!degraded?'var(--good)':'var(--warn)';
 }
 
+let liveRequestId=0;
+let liveRefreshPending=false;
 async function goLive(userInitiated){
+  if(liveRefreshPending) return;
+  liveRefreshPending=true;
   setLoading(true);
   try{
     const n=await fetchLiveData();
@@ -4580,11 +4995,18 @@ async function goLive(userInitiated){
   }catch(e){
     setMode('offline');
     toast('ไม่สามารถเชื่อมต่อ backend ('+(e&&e.message||'error')+') — แสดงข้อมูลล่าสุดที่มี');
-  }finally{ setLoading(false); hideSplash(); }
+  }finally{ liveRefreshPending=false; setLoading(false); hideSplash(); }
 }
 
 // Boot: always LIVE
 goLive(false);
+// Live providers can take several seconds. Keep navigation available while
+// the existing loading indicator continues to report the pending refresh.
+setTimeout(hideSplash, 4000);
+// Background tabs can throttle timers; refresh as soon as the user returns.
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden && dataMode==='live') goLive(false);
+});
 
 // ============================================================
 //  REPORT (executive situation report)
@@ -4609,6 +5031,17 @@ document.getElementById('rpPng').onclick=()=>{
 };
 
 function buildReport(){
+  const paper=document.getElementById('paper');
+  const ready=['hotspots','pm25','weather'].every(domain=>{
+    const q=liveDataQ?.[domain];
+    return q && q.source_mode!=='UNAVAILABLE' && !q.is_stale;
+  }) && pmStations.length>0;
+  document.getElementById('rpPdf').disabled=!ready;
+  document.getElementById('rpPng').disabled=!ready;
+  if(!ready){
+    paper.innerHTML='<div style="padding:48px;text-align:center;color:#506070"><h2>รายงานยังไม่พร้อม</h2><p>กำลังรอข้อมูลจุดความร้อน ฝุ่น PM2.5 และสภาพอากาศที่ตรวจสอบได้</p></div>';
+    return;
+  }
   const crit=hotspots.filter(h=>(h.frp||0)>=CRITICAL_FRP_MW).sort((a,b)=>b.frp-a.frp);
   const pmMean=Math.round(mean(pmStations.map(s=>s.pm)));
   const pmPeakV=Math.max(...pmStations.map(s=>s.pm));
@@ -4791,8 +5224,8 @@ function initMapLibre3D(){
   });
 
   mlMap.on('load',()=>{
-    // GeoJSON sources for hotspots and forests
-    mlMap.addSource('hotspots-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    // GeoJSON source for forests (hotspots are rendered as DOM markers via
+    // _sync3DHotspots(), not a GPU layer — no source needed for them here)
     mlMap.addSource('forests-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
     // Real surveyed polygon boundaries (agency shapefile, 677 CM plots) —
     // added below the point circles so the click-target marker stays on top.
@@ -4819,6 +5252,18 @@ function initMapLibre3D(){
 
     // Hotspot 🔥 emoji markers — rendered as HTML (MapLibre SDF can't render color emoji)
     // _sync3DHotspots() creates maplibregl.Marker elements to mirror the 2D style exactly
+
+    // Ephemeral dashed lines from an open hotspot/manual-report popup to its
+    // nearest community forests — 3D equivalent of the 2D _forestProximityLines
+    // layer group. Populated on popup open, cleared on close (see
+    // show3DForestProximity()/clear3DForestProximity()).
+    mlMap.addSource('forest-proximity-lines',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    mlMap.addLayer({id:'forest-proximity-lines',type:'line',source:'forest-proximity-lines',paint:{
+      'line-color':['case',['==',['get','downwind'],true],'#ff4d4d','#43b05f'],
+      'line-width':['case',['==',['get','downwind'],true],3,2],
+      'line-opacity':0.75,
+      'line-dasharray':[2,1.5]
+    }});
 
     // Populate with current data
     _sync3DHotspots();
@@ -4964,6 +5409,42 @@ function cycleTerrain(){
 
 let _3dMarkers = [];
 
+// 3D equivalent of showForestProximity()/clearForestProximity() (2D, Leaflet)
+// — dashed lines via the 'forest-proximity-lines' GeoJSON source, plus real
+// highlight markers for the 3 nearest forests (not just lines), matching
+// what the user asked for on both views.
+let _3dForestProximityMarkers = [];
+function show3DForestProximity(lat, lon){
+  clear3DForestProximity();
+  const rows = nearestForests(lat, lon, 3);
+  if(mlMap.getSource('forest-proximity-lines')){
+    mlMap.getSource('forest-proximity-lines').setData({
+      type:'FeatureCollection',
+      features: rows.map(r=>({
+        type:'Feature',
+        properties:{downwind: r.downwind},
+        geometry:{type:'LineString', coordinates:[[lon,lat],[Number(r.forest.longitude),Number(r.forest.latitude)]]}
+      }))
+    });
+  }
+  rows.forEach(r=>{
+    const col = r.downwind ? '#ff4d4d' : '#43b05f';
+    const el = document.createElement('div');
+    el.style.cssText = `width:16px;height:16px;border-radius:50%;background:${col};border:2px solid #fff;box-shadow:0 0 8px ${col}cc`;
+    const marker = new maplibregl.Marker({element:el, anchor:'center'})
+      .setLngLat([Number(r.forest.longitude), Number(r.forest.latitude)])
+      .addTo(mlMap);
+    _3dForestProximityMarkers.push(marker);
+  });
+}
+function clear3DForestProximity(){
+  _3dForestProximityMarkers.forEach(m=>m.remove());
+  _3dForestProximityMarkers = [];
+  if(mlMap && mlMap.getSource('forest-proximity-lines')){
+    mlMap.getSource('forest-proximity-lines').setData({type:'FeatureCollection',features:[]});
+  }
+}
+
 function _sync3DHotspots(){
   // Remove old markers
   _3dMarkers.forEach(m=>m.remove());
@@ -4976,7 +5457,21 @@ function _sync3DHotspots(){
     const el=document.createElement('span');
     el.textContent='🔥';
     el.style.cssText=`font-size:${sz}px;line-height:1;cursor:pointer;display:block;user-select:none;${isHigh?'':'opacity:.45;filter:grayscale(.7)'}`;
-    el.addEventListener('click',()=>selectHotspot(h));
+    el.addEventListener('click',(e)=>{
+      // Marker elements sit inside the map canvas's container, so an
+      // unstopped click bubbles to the map's own click handler — combined
+      // with the Popup default closeOnClick:true, that immediately closes
+      // the popup this same click just opened. Guard on both.
+      e.stopPropagation();
+      selectHotspot(h);
+      mlMap.flyTo({center:[h.lon,h.lat], zoom:Math.max(mlMap.getZoom(),14), duration:900});
+      show3DForestProximity(h.lat, h.lon);
+      new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'220px'})
+        .setLngLat([h.lon,h.lat])
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3">${hotspotPopupHtml(h)}</div>`)
+        .on('close', clear3DForestProximity)
+        .addTo(mlMap);
+    });
     _3dMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([h.lon,h.lat]).addTo(mlMap));
   });
 }
@@ -4992,13 +5487,21 @@ function _sync3DManualReports(){
   manualReports.forEach(r=>{
     const el=document.createElement('div');
     el.style.cssText='width:22px;height:22px;background:var(--ember);border:2px solid #fff;box-shadow:0 0 8px rgba(255,138,61,.8);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;cursor:pointer';
-    el.innerHTML='<span style="transform:rotate(45deg);font-size:12px">👁</span>';
-    el.addEventListener('click',()=>{
-      const when=new Date(r.reported_at).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'});
+    // SVG, not the 👁 emoji — see the matching 2D comment in renderManualReports().
+    el.innerHTML='<svg style="transform:rotate(45deg)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+    el.addEventListener('click',(e)=>{
+      // Same click-bubbling guard as _sync3DHotspots — without this the
+      // marker's click reaches the map's own click handler, whose default
+      // closeOnClick:true on the Popup immediately closes what was just
+      // opened (reported as "no popup shows at all" in 3D).
+      e.stopPropagation();
       const isOwner = currentUser && currentUser.id === r.reporter_id;
-      new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
+      mlMap.flyTo({center:[r.longitude,r.latitude], zoom:Math.max(mlMap.getZoom(),14), duration:900});
+      show3DForestProximity(Number(r.latitude), Number(r.longitude));
+      new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'220px'})
         .setLngLat([r.longitude,r.latitude])
-        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>${(r.description||'').replace(/</g,'&lt;')}<br><span style="color:#8b97a7">โดย ${r.reporter_name} · ${when}</span>${isOwner?`<br><span style="cursor:pointer;color:#ff4d4d;text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>`:''}</div>`)
+        .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3">${manualReportPopupHtml(r)}${isOwner?`<br><span style="cursor:pointer;color:#ff4d4d;text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>`:''}</div>`)
+        .on('close', clear3DForestProximity)
         .addTo(mlMap);
     });
     _3dManualMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([r.longitude,r.latitude]).addTo(mlMap));
