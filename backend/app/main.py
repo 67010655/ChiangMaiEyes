@@ -156,10 +156,11 @@ def osm_structures(
     west: float = Query(...),
     north: float = Query(...),
     east: float = Query(...),
+    fuel_only: bool = Query(False),
 ) -> OsmStructuresResponse:
     from app.providers.osm_structures_provider import fetch_osm_structures
 
-    result = fetch_osm_structures(south, west, north, east)
+    result = fetch_osm_structures(south, west, north, east, fuel_only=fuel_only)
     # Building footprints for a fixed bbox don't meaningfully change hour to
     # hour, so a real result is cached for an hour (browser + Vercel edge) —
     # panning back over already-seen ground costs nothing: no Overpass

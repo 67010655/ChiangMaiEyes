@@ -97,6 +97,17 @@ def test_fuel_station_without_name_gets_thai_default(mock_post):
 
 
 @patch("httpx.post")
+def test_fuel_only_query_skips_building_footprints(mock_post):
+    mock_post.return_value = _overpass_response([_FUEL_NODE])
+    resp = fetch_osm_structures(18.77, 98.96, 18.81, 99.01, fuel_only=True)
+    query = mock_post.call_args.kwargs["data"]["data"]
+    assert 'way["building"]' not in query
+    assert 'node["amenity"="fuel"]' in query
+    assert resp.buildings == []
+    assert len(resp.fuel_stations) == 1
+
+
+@patch("httpx.post")
 def test_falls_back_to_second_mirror_when_first_fails(mock_post):
     mock_post.side_effect = [Exception("503 from browser-flagged mirror"), _overpass_response([_FUEL_NODE])]
     resp = fetch_osm_structures(18.77, 98.96, 18.81, 99.01)

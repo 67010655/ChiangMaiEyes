@@ -383,6 +383,19 @@
     font-size:10px;letter-spacing:.1em;padding:7px 12px;cursor:pointer;transition:.15s
   }
   .td-basemap-toggle button.active{background:rgba(255,138,61,.16);color:var(--ember)}
+  .td-view-toggle{top:53px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto}
+  .td-view-toggle button{border:1px solid #34465d;background:rgba(12,24,42,.9);color:#d8e8ff;border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:10px;cursor:pointer}
+  .td-view-toggle button:hover{border-color:#60a5fa;background:rgba(35,65,105,.94)}
+  @media(max-width:600px){
+    .td-title{top:13px;left:14px;right:54px}
+    .td-title h2{font-size:13px}
+    .td-title .s,.td-hint{display:none}
+    .td-basemap-toggle{top:45px}
+    .td-view-toggle{top:84px}
+    .td-close{top:10px;right:10px}
+    .threedview .maplibregl-ctrl-top-right{top:125px;right:10px}
+    .td-legend{bottom:16px;left:12px;padding:8px 10px}
+  }
 
   @media print{
     @page{margin:14mm}
@@ -1478,11 +1491,15 @@
   <div class="threedview" id="threedview">
     <div id="ml-terrain-map"></div>
     <button class="td-close" id="tdClose">✕</button>
-    <div class="td-hud td-title"><h2>ภูมิประเทศ <b>3D</b> · เชียงใหม่</h2><div class="s" id="tdSub">MAPLIBRE GL · AWS TERRARIUM DEM 30M</div></div>
+    <div class="td-hud td-title"><h2>ภูมิประเทศ <b>3D</b> · เชียงใหม่</h2><div class="s" id="tdSub">อาคารจริง · OpenStreetMap / MapTiler</div></div>
     <div class="td-hud td-basemap-toggle" id="tdBasemap">
       <button class="active" data-tdbase="dark">DARK</button>
       <button data-tdbase="osm">OSM</button>
       <button data-tdbase="sat">ดาวเทียม</button>
+    </div>
+    <div class="td-hud td-view-toggle">
+      <button id="tdCity" type="button">อาคาร 3D</button>
+      <button id="tdProvince" type="button">ภาพรวมจังหวัด</button>
     </div>
     <div class="td-hud td-legend" id="tdLegend">
       <div class="lr"><span class="d" style="background:#facc15"></span>ไฟเล็ก &lt;30 MW</div>
@@ -2232,6 +2249,7 @@ async function fetchWindGrid(){
 
 function _applyVelocityLayer(field){
   if(velLayer){try{velLayer.remove();}catch(_){} velLayer=null;}
+  if(document.getElementById('threedview').classList.contains('open')) return;
   velLayer=L.velocityLayer({
     // The library's own bottom-left text readout is redundant with the
     // dedicated .wind-badge widget and was overlapping the SPREAD RISK
@@ -2244,6 +2262,10 @@ function _applyVelocityLayer(field){
 }
 
 function renderWind(){
+  if(document.getElementById('threedview').classList.contains('open')){
+    if(velLayer){try{velLayer.remove();}catch(_){} velLayer=null;}
+    return;
+  }
   // Self-gated on the toggle's "on" class (default ON, 2026-07) — renderWind()
   // is called unconditionally from boot/rerenderAll(), and _applyVelocityLayer()
   // adds velLayer straight to `map` independent of layers.wind, so without this
@@ -3917,11 +3939,13 @@ setInterval(()=>goLive(false), 10*60*1000);
    ============================================================ */
 
 function closeAllOverlays(){
+  const was3D=document.getElementById('threedview').classList.contains('open');
   document.getElementById('analytics').classList.remove('open');
   document.getElementById('reportview').classList.remove('open');
   document.getElementById('threedview').classList.remove('open');
   document.getElementById('phaseview').classList.remove('open');
   document.getElementById('guideview').classList.remove('open');
+  if(was3D) setTimeout(()=>{if(!document.getElementById('threedview').classList.contains('open')) renderWind();},0);
 }
 
 function flyToDistrict(nameTh) {
@@ -5167,6 +5191,7 @@ document.getElementById('tdClose').onclick=()=>{
 
 async function open3D(){
   document.getElementById('threedview').classList.add('open');
+  if(velLayer){try{velLayer.remove();}catch(_){} velLayer=null;}
   if(!_3dInited){
     try{ initMapLibre3D(); _3dInited=true; }
     catch(e){ toast('ไม่สามารถเปิด 3D ได้ในเบราว์เซอร์นี้'); console.error(e); }
@@ -5187,13 +5212,14 @@ async function open3D(){
 const CM_SOURCE_BOUNDS=[97.9,17.1,99.7,20.3];
 
 function initMapLibre3D(){
+  const fastBuildings=!!window.mapTilerKey;
   const style={
     version:8,
     sources:{
       'esri-dark':{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'Tiles © Esri',maxzoom:16,bounds:CM_SOURCE_BOUNDS},
-      'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,bounds:CM_SOURCE_BOUNDS}
+      'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,bounds:CM_SOURCE_BOUNDS},
+      ...(fastBuildings?{'buildings-tiles':{type:'vector',tiles:[`https://api.maptiler.com/tiles/v4/{z}/{x}/{y}.pbf?key=${encodeURIComponent(window.mapTilerKey)}`],minzoom:0,maxzoom:15,bounds:CM_SOURCE_BOUNDS,attribution:'© MapTiler © OpenStreetMap contributors'}}:{})
     },
-    terrain:{source:'terrain-dem',exaggeration:2.2},
     layers:[
       {id:'bg',type:'background',paint:{'background-color':'#070a0e'}},
       // OSM/satellite basemaps are added lazily by setTdBasemap() on first
@@ -5201,27 +5227,43 @@ function initMapLibre3D(){
       // as soon as any layer references it, even with visibility:'none', so
       // declaring all 3 upfront would triple the tile-loading work on every
       // 3D open for two basemaps most sessions never switch to.
-      {id:'basemap-dark',type:'raster',source:'esri-dark'},
-      {id:'hillshade',type:'hillshade',source:'terrain-dem',paint:{'hillshade-shadow-color':'#0c111a','hillshade-accent-color':'#2c3a50','hillshade-exaggeration':0.45}}
+      {id:'basemap-dark',type:'raster',source:'esri-dark',paint:{'raster-brightness-max':0.7,'raster-contrast':0.12}},
+      {id:'hillshade',type:'hillshade',source:'terrain-dem',maxzoom:12,paint:{'hillshade-shadow-color':'#0c111a','hillshade-accent-color':'#2c3a50','hillshade-exaggeration':0.45}},
+      ...(fastBuildings?[{id:'buildings-3d-fill',type:'fill-extrusion',source:'buildings-tiles','source-layer':'building',minzoom:12,paint:{
+        'fill-extrusion-color':'#617ca5',
+        'fill-extrusion-height':['case',['has','height'],['to-number',['get','height']],9],
+        'fill-extrusion-base':['case',['has','height_min'],['to-number',['get','height_min']],0],
+        'fill-extrusion-opacity':0.87
+      }}]:[])
     ]
   };
 
   mlMap=new maplibregl.Map({
     container:'ml-terrain-map',
     style,
-    center:[98.99,18.79],
-    zoom:9,
-    pitch:52,
-    bearing:-20,
-    antialias:true,
+    center:[98.9675,18.7985],
+    zoom:16,
+    pitch:58,
+    bearing:-28,
+    antialias:false,
     // Camera-only polish (NOT the resource fix above — see CM_SOURCE_BOUNDS):
     // keeps panning/zooming from wandering into the now-untextured area
     // outside the source bounds. Padded a bit beyond CM_SOURCE_BOUNDS so the
     // user can still see a sliver of the masked edge rather than hitting a
     // hard wall exactly at the data boundary.
     maxBounds:[[97.6,16.8],[100.0,20.6]],
-    minZoom:7.3
+    minZoom:7.3,
+    maxPitch:70
   });
+
+  // Detailed city views keep buildings on a flat plane and skip the costly
+  // terrain mesh. The DEM returns when zooming out to inspect the province.
+  const syncTerrain=()=>{
+    const overview=mlMap.getZoom()<12;
+    if(overview && !mlMap.getTerrain()) mlMap.setTerrain({source:'terrain-dem',exaggeration:_terrainExag});
+    else if(!overview && mlMap.getTerrain()) mlMap.setTerrain(null);
+  };
+  mlMap.on('zoomend',syncTerrain);
 
   mlMap.on('load',()=>{
     // GeoJSON source for forests (hotspots are rendered as DOM markers via
@@ -5308,17 +5350,17 @@ function initMapLibre3D(){
       }});
     }).catch(()=>{});
 
-    // Man-made structures (houses/buildings/gas stations) — real OpenStreetMap
-    // data via Overpass, queried on-demand for the CURRENT viewport only once
-    // zoomed in close enough to be meaningful (whole-province building data
-    // would be hundreds of thousands of footprints — not fetchable or useful
-    // at province zoom). See _refreshStructures3D().
-    mlMap.addSource('buildings-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-    mlMap.addLayer({id:'buildings-3d-fill',type:'fill-extrusion',source:'buildings-3d',paint:{
-      'fill-extrusion-color':'#8b97a7',
-      'fill-extrusion-height':['coalesce',['get','height_m'],8],
-      'fill-extrusion-opacity':0.75
-    }});
+    // The vector building layer is part of the initial style so its tiles
+    // download in parallel with the basemap. Without a MapTiler key, retain
+    // the existing on-demand OSM path as a fallback.
+    if(!fastBuildings){
+      mlMap.addSource('buildings-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+      mlMap.addLayer({id:'buildings-3d-fill',type:'fill-extrusion',source:'buildings-3d',paint:{
+        'fill-extrusion-color':'#617ca5',
+        'fill-extrusion-height':['coalesce',['get','height_m'],8],
+        'fill-extrusion-opacity':0.87
+      }});
+    }
     mlMap.addSource('fuel-3d',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
     mlMap.addLayer({id:'fuel-3d-circle',type:'circle',source:'fuel-3d',paint:{
       'circle-radius':6,'circle-color':'#f5640a','circle-stroke-color':'#fff','circle-stroke-width':1.5
@@ -5332,11 +5374,11 @@ function initMapLibre3D(){
     mlMap.on('mouseenter','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='';});
 
-    // Building footprints now clickable — real OSM tags via the backend
-    // /api/osm-structures proxy (name + building=* type when present).
+    // The vector tiles include approximate height; the fallback also has
+    // OSM name/type tags when those exist.
     mlMap.on('click','buildings-3d-fill', e=>{
       const f=e.features[0]; if(!f) return;
-      _showBuildingPopup(f.properties||{}, e.lngLat);
+      _showBuildingPopup(f.properties||{}, e.lngLat, fastBuildings);
     });
     mlMap.on('mouseenter','buildings-3d-fill',()=>{mlMap.getCanvas().style.cursor='pointer';});
     mlMap.on('mouseleave','buildings-3d-fill',()=>{mlMap.getCanvas().style.cursor='';});
@@ -5356,14 +5398,17 @@ function initMapLibre3D(){
     });
 
     mlMap.on('moveend',_refreshStructures3D);
+    _refreshStructures3D();
   });
 
   // Navigation controls
   mlMap.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
+  document.getElementById('tdCity').onclick=()=>mlMap.flyTo({center:[98.9675,18.7985],zoom:16,pitch:58,bearing:-28,duration:1000});
+  document.getElementById('tdProvince').onclick=()=>mlMap.flyTo({center:[98.99,18.79],zoom:9,pitch:52,bearing:-20,duration:1000});
 
   // Exaggeration toggle in HUD hint
   document.getElementById('tdHint').innerHTML=
-    'ลาก = หมุน · สกอลล์ = ซูม<br>คลิกหมุด/ป่า/อาคาร = ดูข้อมูล<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)<br>'+
+    'ลาก = หมุน · สกอลล์ = ซูม<br>คลิกหมุด/ป่า/อาคาร = ดูข้อมูล<br>ซูมใกล้ = เห็นอาคาร 3D จริง<br>'+
     '<span style="cursor:pointer;color:var(--wind);text-decoration:underline" onclick="cycleTerrain()">ปรับระดับ terrain</span>';
 }
 
@@ -5402,9 +5447,11 @@ document.querySelectorAll('#tdBasemap [data-tdbase]').forEach(b=>{
 let _terrainExag=2.2;
 function cycleTerrain(){
   if(!mlMap) return;
-  _terrainExag=[2.2,4,1][Math.round(_terrainExag===2.2?1:_terrainExag===4?2:0)];
-  mlMap.setTerrain({source:'terrain-dem',exaggeration:_terrainExag});
-  toast('Terrain ×'+_terrainExag);
+  _terrainExag=_terrainExag===2.2?4:_terrainExag===4?1:2.2;
+  if(mlMap.getZoom()<12){
+    mlMap.setTerrain({source:'terrain-dem',exaggeration:_terrainExag});
+    toast('Terrain ×'+_terrainExag);
+  } else toast('ปรับ terrain ในภาพรวมจังหวัดแล้ว');
 }
 
 let _3dMarkers = [];
@@ -5547,9 +5594,10 @@ function _fetchOsmStructuresCacheable(url,ms){
 }
 
 function _refreshStructures3D(){
-  if(!mlMap||!mlMap.getSource('buildings-3d')) return;
+  if(!mlMap||!mlMap.getSource('fuel-3d')) return;
+  const fallbackBuildings=mlMap.getSource('buildings-3d');
   if(mlMap.getZoom()<STRUCTURES_3D_MIN_ZOOM){
-    mlMap.getSource('buildings-3d').setData({type:'FeatureCollection',features:[]});
+    if(fallbackBuildings) fallbackBuildings.setData({type:'FeatureCollection',features:[]});
     mlMap.getSource('fuel-3d').setData({type:'FeatureCollection',features:[]});
     _structuresLastBboxKey=null;
     return;
@@ -5565,24 +5613,24 @@ function _refreshStructures3D(){
 
   const applyData=data=>{
     if(myToken!==_structuresRequestToken) return; // stale response from an old viewport
-    const buildings=(data.buildings||[]).map(bd=>({
+    const buildings=fallbackBuildings?(data.buildings||[]).map(bd=>({
       type:'Feature',
       geometry:{type:'Polygon',coordinates:[bd.coordinates]},
-      properties:{height_m:bd.height_m}
-    }));
+      properties:{height_m:bd.height_m,name:bd.name,building_type:bd.building_type}
+    })):[];
     const fuel=(data.fuel_stations||[]).map(f=>({
       type:'Feature',
       geometry:{type:'Point',coordinates:[f.lon,f.lat]},
       properties:{name:f.name}
     }));
-    mlMap.getSource('buildings-3d').setData({type:'FeatureCollection',features:buildings});
+    if(fallbackBuildings) fallbackBuildings.setData({type:'FeatureCollection',features:buildings});
     mlMap.getSource('fuel-3d').setData({type:'FeatureCollection',features:fuel});
   };
 
   const cached=_osmStructuresCache.get(bboxKey);
   if(cached){ applyData(cached); return; }
 
-  const params=`south=${south}&west=${west}&north=${north}&east=${east}`;
+  const params=`south=${south}&west=${west}&north=${north}&east=${east}${fallbackBuildings?'':'&fuel_only=true'}`;
   _fetchOsmStructuresCacheable(`${API_BASE}/api/osm-structures?${params}`,20000)
     .then(data=>{
       _osmStructuresCache.set(bboxKey,data);
@@ -5703,11 +5751,12 @@ const _BUILDING_TYPE_TH = {
   hotel:'โรงแรม', church:'โบสถ์', temple:'วัด', office:'สำนักงาน',
   farm:'อาคารในฟาร์ม', shed:'โรงเก็บของ', garage:'โรงรถ'
 };
-function _showBuildingPopup(props, lngLat){
+function _showBuildingPopup(props, lngLat, fromVectorTiles=false){
   const typeLabel = props.building_type ? (_BUILDING_TYPE_TH[props.building_type]||props.building_type) : 'สิ่งปลูกสร้าง';
+  const height=Number(fromVectorTiles?props.height:props.height_m);
   new maplibregl.Popup({closeButton:true,maxWidth:'210px'})
     .setLngLat(lngLat)
-    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#8b97a7">${props.name||typeLabel}</b>${props.name?`<br><span style="color:#8b97a7">${typeLabel}</span>`:''}<br>ความสูงประมาณ ${Math.round(props.height_m||8)} เมตร<br><span style="color:#556070;font-size:10px">ข้อมูลอาคารจริงจาก OpenStreetMap</span></div>`)
+    .setHTML(`<div style="font-family:var(--mono);font-size:11px;color:#e6edf3"><b style="color:#8b97a7">${props.name||typeLabel}</b>${props.name?`<br><span style="color:#8b97a7">${typeLabel}</span>`:''}<br>ความสูงประมาณ ${Math.round(height>0?height:9)} เมตร<br><span style="color:#8b97a7;font-size:10px">${fromVectorTiles?'ข้อมูลอาคารจาก MapTiler / OpenStreetMap':'ข้อมูลอาคารจาก OpenStreetMap'}</span></div>`)
     .addTo(mlMap);
 }
 

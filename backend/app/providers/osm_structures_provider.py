@@ -61,7 +61,7 @@ def _fetch_overpass(query: str) -> dict | None:
     return None
 
 
-def fetch_osm_structures(south: float, west: float, north: float, east: float) -> OsmStructuresResponse:
+def fetch_osm_structures(south: float, west: float, north: float, east: float, fuel_only: bool = False) -> OsmStructuresResponse:
     if north - south > _MAX_BBOX_DEGREES or east - west > _MAX_BBOX_DEGREES:
         return OsmStructuresResponse(buildings=[], fuel_stations=[])
 
@@ -69,9 +69,8 @@ def fetch_osm_structures(south: float, west: float, north: float, east: float) -
     # The query's own [timeout:N] must stay below _TIMEOUT_SECONDS — otherwise
     # Overpass could still be legitimately working when our httpx client gives
     # up on it, wasting a request that would have succeeded a moment later.
-    query = (
-        f'[out:json][timeout:8];(way["building"]({bbox});node["amenity"="fuel"]({bbox}););out geom;'
-    )
+    targets = f'node["amenity"="fuel"]({bbox});' if fuel_only else f'way["building"]({bbox});node["amenity"="fuel"]({bbox});'
+    query = f'[out:json][timeout:8];({targets});out geom;'
     data = _fetch_overpass(query)
     if not data:
         return OsmStructuresResponse(buildings=[], fuel_stations=[])
