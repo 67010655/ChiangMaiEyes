@@ -3322,10 +3322,12 @@ function syncPublicMapLayers(){
   for(const key of ['spread','windDistrict','heat','tambonBoundaries','tambonWarnings']){
     const layer=layers[key];
     if(!layer) continue;
-    if(isPublic) map.removeLayer(layer);
-    else if(document.querySelector(`.layer[data-layer="${key}"]`)?.classList.contains('on')) map.addLayer(layer);
+    runMapRenderTask('visibility:'+key,()=>{
+      if(isPublic) map.removeLayer(layer);
+      else if(document.querySelector(`.layer[data-layer="${key}"]`)?.classList.contains('on')) map.addLayer(layer);
+    });
   }
-  renderWind();
+  runMapRenderTask('visibility:wind',renderWind);
 }
 
 // ============================================================
@@ -3442,8 +3444,10 @@ function hideSplash(){
   const elapsed=Date.now()-_splashStart;
   setTimeout(()=>{
     el.classList.add('hide');
-    map.invalidateSize();
-    if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, {padding:[24,24], animate:false});
+    runMapRenderTask('boundary-fit',()=>{
+      map.invalidateSize();
+      if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, {padding:[24,24], animate:false});
+    });
   }, Math.max(0,500-elapsed));
 }
 
@@ -4122,8 +4126,9 @@ map.on('click', function(e) {
 });
 
 async function loadBoundaries() {
+  let resProvince,resDistricts;
   try {
-    const [resProvince, resDistricts] = await Promise.all([
+    [resProvince,resDistricts] = await Promise.all([
       fetch('/chiangmai-province.json').then(r => {
         if (!r.ok) throw new Error("Province boundary load failed");
         return r.json();
@@ -4133,9 +4138,13 @@ async function loadBoundaries() {
         return r.json();
       })
     ]);
-
+  } catch (err) {
+    console.error("Failed to load boundary GeoJSON data:", err);
+    return;
+  }
+  _districtFeatures = resDistricts.features || [];
+  runMapRenderTask('boundary-province',()=>{
     layers.boundaries.clearLayers();
-    _districtFeatures = resDistricts.features || [];
 
     // 1. Draw Chiang Mai Province boundary (Dashed, bright, no fill)
     const provinceLayer = L.geoJSON(resProvince, {
@@ -4158,8 +4167,11 @@ async function loadBoundaries() {
     // be wrong; invalidateSize()+fitBounds() again once the map is actually
     // visible is what makes it reliably match the container.
     _provinceBoundsForFit = provinceLayer.getBounds();
-    map.fitBounds(_provinceBoundsForFit, { padding: [24, 24], animate: false });
-
+  });
+  runMapRenderTask('boundary-fit',()=>{
+    if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, { padding: [24, 24], animate: false });
+  });
+  runMapRenderTask('boundary-districts',()=>{
     // 2. Draw Chiang Mai District boundaries (Interactive hovers, Tooltips, thin borders)
     L.geoJSON(resDistricts, {
       style: {
@@ -4202,6 +4214,7 @@ async function loadBoundaries() {
         });
       }
     }).addTo(layers.boundaries);
+  });
 
     if (resDistricts.features) {
       document.getElementById('lcBoundaries').textContent = resDistricts.features.length;
@@ -4210,11 +4223,7 @@ async function loadBoundaries() {
     // arrived first (fetchLiveData and loadBoundaries race at boot), redo
     // the wind pins now instead of waiting for the next fire-phases refresh.
     // (2D only — 3D wind pins were removed, see _sync3DWindPins removal note.)
-    if(livePhases && livePhases.length) renderWindDistrictPins();
-
-  } catch (err) {
-    console.error("Failed to load boundary GeoJSON data:", err);
-  }
+    if(livePhases && livePhases.length) runMapRenderTask('district-wind',renderWindDistrictPins);
 }
 
 async function loadTambonBoundaries(){
@@ -4424,15 +4433,22 @@ function renderAqiStations(){
 }
 
 function rerenderAll(){
-  renderHotspots(); renderSpread(); renderPm(); renderWind();
-  _sync3DHotspots(); // keep 3D in sync with latest hotspot data
-  map.removeLayer(layers.heat); layers.heat=buildHeat();
-  if(document.querySelector('.layer[data-layer="heat"]').classList.contains('on')) map.addLayer(layers.heat);
+  // Publish the new response to every non-map widget before drawing layers.
+  // A failed optional canvas must never leave the previous response's KPI.
   buildAlerts(); setKpis(); setWindBadge(); rankList();
   lineChart('pmChart',pm24,{color:'#a855f7',fill:'rgba(168,85,247,.16)'});
   barChart('hotChart',hot7,['-6','-5','-4','-3','-2','-1','วันนี้'],{});
   if(analyticsEl.classList.contains('open')) renderAnalytics(currentRange);
   document.getElementById('footUpd').textContent=stamp();
+  runMapRenderTask('hotspots',renderHotspots);
+  runMapRenderTask('spread',renderSpread);
+  runMapRenderTask('pm',renderPm);
+  runMapRenderTask('wind',renderWind);
+  runMapRenderTask('3d-hotspots',_sync3DHotspots);
+  runMapRenderTask('heat',()=>{
+    map.removeLayer(layers.heat); layers.heat=buildHeat();
+    if(document.querySelector('.layer[data-layer="heat"]').classList.contains('on')) map.addLayer(layers.heat);
+  });
   syncPublicMapLayers();
 }
 
@@ -4441,7 +4457,6 @@ function applyLive(dash, history, phases){
   // dataMode==='live'. Reached only after /api/dashboard succeeded.
   setMode('live');
   currentDashboard = dash;
-  CmeCommunity.dataChanged();
   hotspots = normHotspots(dash.hotspots && dash.hotspots.items);
   // Re-assign district/tambon via frontend PiP so marker position always matches the label.
   // Boundaries load async; if they are not ready yet, keep backend values.
@@ -4498,16 +4513,14 @@ function applyLive(dash, history, phases){
   // FRP histogram strictly from real detections in LIVE mode.
   frpSamples=hotspots.map(h=>h.frp).filter(f=>f!=null);
   // Real backend intelligence (kept for the live-aware renderers).
-  if(phases && Array.isArray(phases.phases)){ livePhases = phases.phases; renderWindDistrictPins(); }
+  if(phases && Array.isArray(phases.phases)){ livePhases = phases.phases; }
   if(phases && Array.isArray(phases.notes)){ firePhaseNotes = phases.notes; renderGuideNotes(); }
   if(phases && Array.isArray(phases.forest_risk)){
     forestRiskById = {};
     phases.forest_risk.forEach(f=>{ forestRiskById[f.forest_id] = f; });
-    renderForestMarkers();
   }
   if(phases && Array.isArray(phases.tambon_warnings)){
     tambonWarningsData = phases.tambon_warnings;
-    renderTambonWarnings(phases.tambon_warnings);
   }
   if(phases && Array.isArray(phases.fire_pm25_correlation)){
     firePm25Correlation=phases.fire_pm25_correlation;
@@ -4531,8 +4544,12 @@ function applyLive(dash, history, phases){
     renderConditions();
     document.getElementById('condFwiNote').textContent=sourceLabel('weather')+' · '+CmeEvidence.stamp(weather.latest_update)+' · คะแนนทดลอง ไม่ใช่ FWI มาตรฐาน';
   }
-  rerenderAll();
   if(document.getElementById('reportview').classList.contains('open')) buildReport();
+  rerenderAll();
+  if(phases && Array.isArray(phases.phases)) runMapRenderTask('district-wind',renderWindDistrictPins);
+  if(phases && Array.isArray(phases.forest_risk)) runMapRenderTask('forests',renderForestMarkers);
+  if(phases && Array.isArray(phases.tambon_warnings)) runMapRenderTask('tambon-warnings',()=>renderTambonWarnings(phases.tambon_warnings));
+  runMapRenderTask('community',()=>CmeCommunity.dataChanged());
 }
 
 // The wind rose needs hourly wind history the backend doesn't expose, so flag it
@@ -5259,15 +5276,31 @@ function renderFreshness(){
 // ---- fetch with timeout + spinner + error fallback ----
 let lastDashboardReceivedAt=null;
 let dashboardRenderFailed=false;
+const mapRenderFailures=new Set();
+function updateMapRenderStatus(){
+  dashboardRenderFailed=mapRenderFailures.size>0;
+  document.getElementById('mapRenderStatus').hidden=!dashboardRenderFailed;
+}
+function runMapRenderTask(name,draw){
+  try{
+    draw();
+    mapRenderFailures.delete(name);
+  }catch(error){
+    mapRenderFailures.add(name);
+    console.error('Map rendering failed ('+name+')',error);
+  }
+  updateMapRenderStatus();
+  return !mapRenderFailures.has(name);
+}
 function renderDashboard(dash, history, phases){
   try{
     applyLive(dash, history, phases);
-    dashboardRenderFailed=false;
+    mapRenderFailures.delete('dashboard');
   }catch(error){
-    dashboardRenderFailed=true;
+    mapRenderFailures.add('dashboard');
     console.error('Dashboard rendering failed',error);
   }
-  document.getElementById('mapRenderStatus').hidden=!dashboardRenderFailed;
+  updateMapRenderStatus();
   return !dashboardRenderFailed;
 }
 function fetchJson(path, ms){
@@ -5364,8 +5397,8 @@ async function goLive(userInitiated){
       setMode('offline');
       toast(lastDashboardReceivedAt?'เชื่อมต่อข้อมูลล่าสุดไม่ได้ · คงข้อมูลที่รับไว้ก่อนหน้า ดูเวลาในรายละเอียดที่มา':'เชื่อมต่อข้อมูลไม่ได้ · ยังไม่มีข้อมูลจากเซิร์ฟเวอร์');
     }else{
-      dashboardRenderFailed=true;
-      document.getElementById('mapRenderStatus').hidden=false;
+      mapRenderFailures.add('dashboard');
+      updateMapRenderStatus();
       console.error('Dashboard update failed',e);
     }
   }finally{ liveRefreshPending=false; setLoading(false); hideSplash(); }

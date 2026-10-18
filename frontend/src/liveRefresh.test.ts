@@ -131,3 +131,83 @@ describe('hotspot selection with a popup', () => {
     dom.window.close();
   });
 });
+
+describe('optional map layers cannot leave dashboard widgets stale', () => {
+  function setupLayers() {
+    const state = setup();
+    const { dom, ctx } = state;
+    dom.window.document.body.insertAdjacentHTML('beforeend', [
+      'kpiHot', 'kpiCrit', 'kpiPm', 'kpiAqi', 'pmPeak', 'pmPeakTr', 'visKm', 'visTr', 'footUpd',
+    ].map(id => `<div id="${id}">previous response</div>`).join('') + '<button class="layer on" data-layer="heat"></button>');
+    const heat = {}, addLayer = vi.fn(() => { throw new Error('heat canvas failed'); });
+    const jobs = Object.fromEntries(['renderHotspots', 'renderSpread', 'renderPm', 'renderWind', '_sync3DHotspots', 'buildAlerts', 'setWindBadge', 'rankList', 'lineChart', 'barChart', 'syncPublicMapLayers'].map(name => [name, vi.fn()]));
+    Object.assign(ctx, jobs, {
+      hotspots: [], pmStations: [{ pm: 12 }], currentDashboard: { pm25: { current_pm25: 12 } },
+      liveDataQ: { hotspots: { source_mode: 'LIVE', is_stale: false }, pm25: { source_mode: 'LIVE', is_stale: false } },
+      CRITICAL_FRP_MW: 50, updatePmTrendMean: vi.fn(), updatePublicBrief: vi.fn(),
+      map: { removeLayer: vi.fn(), addLayer }, layers: { heat }, buildHeat: () => heat,
+      analyticsEl: dom.window.document.createElement('section'), pm24: [12], hot7: [0], stamp: () => 'new response time',
+    });
+    ctx.CmeEvidence = { ...ctx.CmeEvidence, filterHotspots: (items: unknown[]) => items };
+    for (const name of ['setKpis', 'rerenderAll']) {
+      const start = html.indexOf('function ' + name + '(');
+      runInContext(html.slice(start, html.indexOf('\nfunction ', start + 10)), ctx);
+    }
+    return { ...state, jobs, addLayer };
+  }
+
+  it('publishes zero hotspots and new PM/alerts/charts/time even if adding heat throws', () => {
+    const { dom, ctx, jobs, addLayer } = setupLayers();
+    dom.window.document.getElementById('kpiHot')!.textContent = '8';
+    runInContext('rerenderAll()', ctx);
+    expect(addLayer).toHaveBeenCalled();
+    expect(dom.window.document.getElementById('kpiHot')!.textContent).toBe('0');
+    expect(dom.window.document.getElementById('kpiPm')!.textContent).toContain('12');
+    expect(dom.window.document.getElementById('footUpd')!.textContent).toBe('new response time');
+    for (const name of ['buildAlerts', 'rankList', 'setWindBadge', 'lineChart', 'barChart', 'syncPublicMapLayers']) expect(jobs[name]).toHaveBeenCalledOnce();
+    expect(dom.window.document.getElementById('mapRenderStatus')!.hidden).toBe(false);
+    dom.window.close();
+  });
+
+  it('continues other layers when hotspot drawing fails and preserves both failures until recovered', () => {
+    const { dom, ctx, jobs, addLayer } = setupLayers();
+    jobs.renderHotspots.mockImplementation(() => { throw new Error('point layer failed'); });
+    runInContext('rerenderAll()', ctx);
+    for (const name of ['renderSpread', 'renderPm', 'renderWind', '_sync3DHotspots']) expect(jobs[name]).toHaveBeenCalled();
+    expect(runInContext('[...mapRenderFailures].sort()', ctx)).toEqual(['heat', 'hotspots']);
+    addLayer.mockImplementation(() => undefined);
+    runInContext('rerenderAll()', ctx);
+    expect(runInContext('[...mapRenderFailures]', ctx)).toEqual(['hotspots']);
+    expect(dom.window.document.getElementById('mapRenderStatus')!.hidden).toBe(false);
+    jobs.renderHotspots.mockImplementation(() => undefined);
+    runInContext('rerenderAll()', ctx);
+    expect(dom.window.document.getElementById('mapRenderStatus')!.hidden).toBe(true);
+    dom.window.close();
+  });
+});
+
+describe('boundary retrieval and map fitting have separate failures', () => {
+  it('retains district data and draws districts when fitting the map throws', async () => {
+    const { dom, ctx } = setup();
+    dom.window.document.body.insertAdjacentHTML('beforeend', '<span id="lcBoundaries"></span>');
+    const districts = { features: [{ properties: { nameTh: 'Fixture district' } }] };
+    const geoJSON = vi.fn(() => ({ addTo: vi.fn().mockReturnThis(), getBounds: () => ({ valid: true }) }));
+    const error = vi.fn();
+    Object.assign(ctx, { fetch: vi.fn(async () => ({ ok: true, json: async () => districts })),
+      layers: { boundaries: { clearLayers: vi.fn() } }, L: { geoJSON },
+      map: { fitBounds: vi.fn(() => { throw new Error('heat failed during fit'); }) },
+      _districtFeatures: [], _provinceBoundsForFit: null, livePhases: null, console: { error },
+    });
+    const start = html.indexOf('async function loadBoundaries()');
+    const end = html.indexOf('\nasync function ', start + 10);
+    runInContext(html.slice(start, end), ctx);
+    await runInContext('loadBoundaries()', ctx);
+    expect(geoJSON).toHaveBeenCalledTimes(2);
+    expect(ctx._districtFeatures).toEqual(districts.features);
+    expect(dom.window.document.getElementById('lcBoundaries')!.textContent).toBe('1');
+    expect(error.mock.calls.some(call => call[0].includes('boundary-fit'))).toBe(true);
+    expect(error.mock.calls.some(call => call[0].includes('Failed to load boundary GeoJSON'))).toBe(false);
+    expect(dom.window.document.getElementById('mapRenderStatus')!.hidden).toBe(false);
+    dom.window.close();
+  });
+});
