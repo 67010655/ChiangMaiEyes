@@ -7,6 +7,7 @@ from app.providers.pm25_provider import fetch_live_pm25, get_pm25_category_and_c
 from app.providers.hotspot_provider import (
     BANGKOK_TZ,
     GISTDA_DISASTER_SOURCE,
+    NASA_VIIRS_SOURCES,
     fetch_hotspot_history,
     fetch_gistda_disaster_hotspots,
     fetch_live_hotspots,
@@ -37,16 +38,15 @@ RFD = "Royal Forest Department Firemap"
 NASA = "NASA FIRMS"
 
 
-def test_reconcile_merges_nearby_cross_source_detections():
-    # Same fire seen by RFD and NASA ~200 m apart → one reconciled hotspot.
+def test_reconcile_does_not_assume_nearby_cross_source_detections_are_identical():
+    # Spatial proximity alone cannot identify one satellite detection or one field fire.
     rfd = [_hs(19.7023, 98.9434, RFD, conf=90, district="เชียงดาว", subdistrict="แม่นะ")]
     nasa = [_hs(19.7039, 98.9430, NASA, conf=75)]
     out = reconcile_hotspots([rfd, nasa])
-    assert len(out) == 1
-    assert out[0].source_count == 2
-    assert set(out[0].sources) == {RFD, NASA}
-    assert out[0].confidence == 90  # highest of the two
-    assert out[0].source == RFD  # richest record kept as representative
+    assert len(out) == 2
+    assert all(h.source_count == 1 for h in out)
+    assert out[0].confidence == 90
+    assert out[0].source == RFD
     assert out[0].subdistrict == "แม่นะ"
 
 
@@ -121,18 +121,38 @@ def test_nasa_live_fetch_requests_5_day_window(mock_get):
     assert all(url.endswith("/5") for url in requested_urls)
 
 
-def test_dedup_same_source_keeps_latest_detection_per_location():
-    # Same fire re-detected on two different days at (nearly) the same spot —
-    # a naive 5-day window would otherwise count it twice.
+def test_dedup_same_source_preserves_different_satellite_passes():
+    # Nearby pixels and separate passes are observations, not confirmed field incidents.
     older = _hs(18.916, 98.939, NASA, day="2026-05-28")
-    newer = _hs(18.9161, 98.9391, NASA, day="2026-05-30")  # ~15m away, same fire
+    newer = _hs(18.9161, 98.9391, NASA, day="2026-05-30")
     distinct = _hs(19.5, 99.1, NASA, day="2026-05-29")
 
-    result = _dedup_same_source_by_location([older, newer, distinct])
+    result = _dedup_same_source_by_location([older, newer, distinct, older.model_copy()])
 
-    assert len(result) == 2
-    kept = next(h for h in result if abs(h.latitude - 18.916) < 0.01)
-    assert kept.detected_at == newer.detected_at
+    assert len(result) == 3
+    assert {(h.latitude, h.longitude, h.detected_at) for h in result} == {
+        (h.latitude, h.longitude, h.detected_at) for h in [older, newer, distinct]
+    }
+
+
+def test_reconcile_exact_detection_preserves_sources_and_stable_id():
+    nasa = _hs(19.41368, 99.02454, NASA, satellite='N21',
+               confidence_level='nominal', confidence_raw='n', confidence_scheme='VIIRS')
+    rfd = _hs(19.41368, 99.02454, RFD, satellite='NOAA-21', subdistrict='Fixture')
+    merged = reconcile_hotspots([[nasa], [rfd]])[0]
+    assert merged.source_count == 2
+    assert {m['source'] for m in merged.source_observations} == {NASA, RFD}
+    assert merged.confidence_level == 'nominal' and merged.confidence_source == NASA
+    assert merged.source == RFD
+    other = _hs(19.5, 99.1, NASA, satellite='N21')
+    assert reconcile_hotspots([[other, rfd], [nasa]])[1].id == merged.id
+
+
+def test_reconcile_same_position_keeps_distinct_satellites_and_times():
+    points = [_hs(19.4, 99, NASA, satellite='N21'),
+              _hs(19.4, 99, RFD, satellite='N20'),
+              _hs(19.4, 99, RFD, satellite='N21', day='2026-06-01')]
+    assert len(reconcile_hotspots([points])) == 3
 
 @patch("httpx.get")
 def test_fetch_live_weather_success(mock_get):
@@ -312,20 +332,42 @@ def test_fetch_forest_firemap_hotspots_success(mock_get):
     assert hotspots[0].detected_at == "2026-06-01T02:42:00+07:00"
 
 @patch("httpx.get")
-def test_fetch_hotspot_history_buckets_clips_and_zero_fills(mock_get):
-    today = datetime.datetime.now(BANGKOK_TZ).date().isoformat()
-    # Two NASA rows for the same CM fire (round to the same cell → deduped) plus a
-    # Bangkok row that must be clipped out by the province polygon.
+def test_fetch_hotspot_history_buckets_clips_and_zero_fills(mock_get, monkeypatch):
+    from app.providers import verified_history
+    class FixedClock(datetime.datetime):
+        @classmethod
+        def now(cls, tz=None):
+            fixed = datetime.datetime(2026, 10, 12, 12, tzinfo=datetime.timezone.utc)
+            return fixed.astimezone(tz) if tz else fixed.replace(tzinfo=None)
+    monkeypatch.setattr(verified_history, 'datetime', FixedClock)
+    today = '2026-10-12'
+    # Duplicate native records are collapsed; an out-of-province row is clipped.
     csv1 = (
         "latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight\n"
         f"18.9160,98.9390,320,1,1,{today},0645,N,V,n,1,300,10,D\n"
-        f"18.9161,98.9390,320,1,1,{today},0700,N,V,n,1,300,10,D\n"
+        f"18.9160,98.9390,320,1,1,{today},0645,N,V,n,1,300,10,D\n"
         f"13.7800,100.5400,320,1,1,{today},0645,N,V,n,1,300,10,D\n"
     ).encode()
     empty = b"latitude,longitude,acq_date,acq_time\n"
-    r1, r2, r3 = MagicMock(), MagicMock(), MagicMock()
-    r1.content, r2.content, r3.content = csv1, empty, empty
-    mock_get.side_effect = [r1, r2, r3]
+    availability = (
+        "data_id,min_date,max_date\n"
+        f"VIIRS_SNPP_NRT,2020-01-01,{today}\n"
+        f"VIIRS_NOAA20_NRT,2020-01-01,{today}\n"
+        f"VIIRS_NOAA21_NRT,2020-01-01,{today}\n"
+    )
+    def response(body):
+        result = MagicMock()
+        result.content = body
+        result.text = body.decode()
+        result.url = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/"
+        return result
+    def read_url(url, timeout):
+        if "/data_availability/" in url:
+            return response(availability.encode())
+        parts=url.rstrip('/').split('/')
+        source,start=parts[7],parts[-1]
+        return response(csv1 if source==NASA_VIIRS_SOURCES[0] and start==today else empty)
+    mock_get.side_effect = read_url
 
     days = fetch_hotspot_history("nasa_key", days=5)
 

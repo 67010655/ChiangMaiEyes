@@ -1,12 +1,20 @@
-import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 
-maplibregl.setWorkerUrl(workerUrl);
+let loading: Promise<typeof import('maplibre-gl')> | null = null;
 
-// The production dashboard is still an inline classic script. Expose the
-// installed MapLibre module until that dashboard is migrated to TypeScript.
+// Keep the large 3D renderer out of the initial 2D page download.
 Object.assign(window, {
-  maplibregl,
   mapTilerKey: import.meta.env.VITE_MAPTILER_KEY || "",
+  ensureMapLibre: () => {
+    loading ??= import('maplibre-gl').then(maplibregl => {
+      maplibregl.setWorkerUrl(workerUrl);
+      Object.assign(window, {maplibregl});
+      return maplibregl;
+    }).catch(error => {
+      loading = null;
+      throw error;
+    });
+    return loading;
+  },
 });

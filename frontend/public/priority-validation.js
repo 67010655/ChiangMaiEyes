@@ -1,0 +1,38 @@
+(() => {
+  'use strict';
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmt=v=>Number.isFinite(v)?v.toFixed(1):'—';
+  const date=v=>new Date(v).toLocaleString('th-TH');
+  const style=document.createElement('style');
+  style.textContent='#priorityValidation{scroll-margin-top:150px;margin:14px 0;border:1px solid var(--line);border-radius:8px;padding:12px}#priorityValidation summary{cursor:pointer;font-weight:700}#priorityValidation table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}#priorityValidation th,#priorityValidation td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}#priorityValidation select{max-width:100%;padding:9px;background:var(--panel);color:var(--txt);border:1px solid var(--line)}#priorityValidation .priority-map{height:400px;position:relative;z-index:0;margin:12px 0}#priorityValidation .leaflet-bottom.leaflet-right{margin-bottom:0}#priorityValidation .leaflet-control-attribution{position:static!important;inset:auto!important;max-width:none;white-space:normal}#priorityValidation li{margin:6px 0}#priorityValidation a{color:var(--green)}@media(max-width:600px){#priorityValidation .priority-map{height:330px}#priorityValidation th,#priorityValidation td{padding:6px 3px}}';
+  document.head.append(style);
+  function mount(){
+    const host=document.getElementById('predictionImprovements');if(!host||document.getElementById('priorityValidation'))return;
+    const panel=document.createElement('details');panel.id='priorityValidation';
+    panel.innerHTML='<summary>ผลพัฒนาใหม่ · เลือกพื้นที่เฝ้าระวัง 12 ชั่วโมงด้วยข้อมูล 3 ฤดู</summary><p>ทดสอบย้อนหลัง: ฝึกปี 2024 เลือกรุ่นปี 2025 ตรวจผลปี 2026 ใช้ประวัติจุดความร้อน ภูมิประเทศ สิ่งปกคลุมดิน และอากาศ</p><button type="button" class="evidence-action" data-priority-load>ดูผลรุ่นใหม่และแผนที่ย้อนหลัง</button><div data-priority-output role="status"></div>';
+    host.querySelector('h3').after(panel);let map=null;
+    panel.querySelector('[data-priority-load]').addEventListener('click',async event=>{
+      const button=event.currentTarget,out=panel.querySelector('[data-priority-output]');button.disabled=true;out.textContent='กำลังอ่านผลทดสอบ 3 ฤดู…';
+      try{
+        const response=await fetch('/api/hindcast/2026/priority-validation');if(!response.ok)throw Error('ยังอ่านผลทดสอบไม่ได้ กรุณาลองใหม่');
+        const data=await response.json();if(data.schema!=='cme-priority-validation-v1')throw Error('รูปแบบข้อมูลยังไม่รองรับ');
+        const primary=data.comparison.find(r=>r.alert_area_km2===250);const ci=data.uncertainty.moving_block7day_gain_pp_vs_tuned_kernel_95pct;
+        out.innerHTML=`<h4>เลือกพื้นที่ได้ดีขึ้น · ทดสอบ ${esc(data.issues)} รอบ</h4><p>ที่พื้นที่เฝ้าระวัง 250 ตร.กม. เท่ากัน รุ่นใหม่ครอบคลุมช่องที่พบจุดความร้อนภายหลัง <strong>${fmt(primary.model_coverage_pct)}%</strong> เทียบวิธีฐานที่ปรับค่าแล้ว <strong>${fmt(primary.baseline_coverage_pct)}%</strong> หรือเพิ่ม ${fmt(primary.gain_percentage_points)} จุดเปอร์เซ็นต์ (${fmt(primary.relative_more_detected_cells_pct)}% ในเชิงจำนวนที่ครอบคลุมได้)</p><p class="evidence-note">ยังพลาดประมาณ ${fmt(100-primary.model_coverage_pct)}% ของช่องที่พบจุดความร้อน นี่คือการจัดลำดับเฝ้าระวัง ไม่ใช่ความแม่นของขอบไฟลาม และไม่ยืนยันว่าพื้นที่อื่นปลอดภัย</p><table><thead><tr><th>พื้นที่ต่อรอบ<br>ตร.กม.</th><th>วิธีฐาน</th><th>รุ่นใหม่</th></tr></thead><tbody>${data.comparison.map(r=>`<tr><td>${esc(r.alert_area_km2)}</td><td>${fmt(r.baseline_coverage_pct)}%</td><td>${fmt(r.model_coverage_pct)}%</td></tr>`).join('')}</tbody></table><p class="evidence-note">นับช่อง 500 เมตรที่มีการตรวจพบในแต่ละรอบ 12 ชั่วโมง รวม ${esc(primary.target_cell_periods.toLocaleString('th-TH'))} ช่อง-รอบ; ใช้จุดที่ตรวจพบก่อนเวลาออกผลอย่างน้อย 3 ชั่วโมง ช่วงความไม่แน่นอน 95% ของผลเพิ่ม: +${fmt(ci[0])} ถึง +${fmt(ci[1])} จุดเปอร์เซ็นต์ (สุ่มซ้ำแบบกลุ่ม 7 วัน)</p><h4>เปิดเทียบกับเหตุการณ์ย้อนหลัง</h4><label>เวลาเริ่มคาดการณ์ <select data-priority-example aria-label="เลือกตัวอย่างย้อนหลัง">${data.examples.map((e,i)=>`<option value="${i}">${esc(date(e.issued_at))}</option>`).join('')}</select></label><div data-priority-example-result></div><details><summary>วิธีทดสอบและขอบเขตการใช้</summary><p>เปรียบเทียบวิธีฐาน 18 ชุดค่าโดยเลือกจากปี 2025 ก่อนทดสอบปี 2026 ไม่ปรับรุ่นตามผลปี 2026 ช่องที่เลือกทั้งหมดมีการตรวจพบภายหลัง ${fmt(primary.model_selected_cell_periods_with_detection_pct)}% การไม่ตรวจพบยังเรียกว่าไม่มีไฟหรือเตือนผิดไม่ได้</p><ul>${data.notes_th.map(n=>`<li>${esc(n)}</li>`).join('')}</ul><p>หน้านี้เป็นผลทดสอบย้อนหลัง รุ่นใหม่นี้ยังไม่ได้แทนพยากรณ์สดบนเว็บ</p><a href="/api/hindcast/2026/priority-validation" target="_blank" rel="noopener">ตรวจข้อมูลผลทดสอบและลายนิ้วมือไฟล์</a></details>`;
+        function render(index){
+          if(map){map.remove();map=null;}const example=data.examples[index],target=out.querySelector('[data-priority-example-result]');
+          target.innerHTML=`<p>เวลา ${esc(date(example.issued_at))} ถึง ${esc(date(example.valid_until))} · พบ ${esc(example.target_cells_all)} ช่องภายหลัง · รุ่นใหม่เลือกตรง ${esc(example.ml_hits)} ช่อง · วิธีดูจุดล่าสุดตรง ${esc(example.baseline_hits)} ช่อง</p><p class="evidence-note">แผนที่ตัวอย่างเทียบกับวิธีดูจุด 24 ชั่วโมงล่าสุด ตารางทั้งฤดูด้านบนเทียบกับวิธีฐานที่ค้นปรับ 18 ชุดค่า</p><div class="priority-map" data-priority-map></div><p class="evidence-note">เขียว = พื้นที่เฝ้าระวังรุ่นใหม่ · เทา = วิธีดูจุดล่าสุด · แดง = ช่องที่ดาวเทียมตรวจพบภายหลัง · ม่วง = ขอบเขตป่าชุมชนในรายชื่อด้านล่าง ทั้งสองรุ่นเลือก 250 ตร.กม.</p><h4>ป่าชุมชนที่มีพื้นที่เฝ้าระวังใกล้ขอบเขตในตัวอย่างนี้</h4>${example.community_watchlist.length?`<ol>${example.community_watchlist.map(f=>`<li>${esc(f.name)}${f.plot_no?` · แปลง ${esc(f.plot_no)}`:''} · ${esc(f.amphoe)} — ${fmt(f.selected_area_within1km_km2)} ตร.กม. ภายในระยะ 1 กม.</li>`).join('')}</ol>`:'<p>ไม่มีพื้นที่ที่เลือกซ้อนใกล้ขอบเขตป่าชุมชนในตัวอย่างนี้ ไม่ได้หมายความว่าไม่มีความเสี่ยง</p>'}`;
+          map=L.map(target.querySelector('[data-priority-map]')).setView([18.8,98.9],8);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18}).addTo(map);
+          const layers={};layers['วิธีดูจุดล่าสุด 250 ตร.กม.']=L.geoJSON(example.baseline_geometry,{style:{color:'#89939c',weight:1,fillOpacity:.17}}).addTo(map);
+          layers['รุ่นใหม่ 250 ตร.กม.']=L.geoJSON(example.ml_geometry,{style:{color:'#38bb79',weight:1,fillOpacity:.27}}).addTo(map);
+          layers['ตรวจพบภายหลัง']=L.layerGroup(example.later_cell_centres.map(p=>L.circleMarker(p,{radius:3,color:'#e65353',weight:1,fillOpacity:.9}))).addTo(map);
+          layers['ป่าชุมชนในรายชื่อ']=L.geoJSON({type:'FeatureCollection',features:example.community_watchlist.map(f=>({type:'Feature',properties:{name:f.name},geometry:f.geometry}))},{style:{color:'#cf77ed',weight:2,fillOpacity:.03},onEachFeature:(f,l)=>l.bindTooltip(esc(f.properties.name))}).addTo(map);
+          L.control.layers(null,layers,{collapsed:true}).addTo(map);requestAnimationFrame(()=>{map.invalidateSize();const bounds=L.latLngBounds(example.later_cell_centres);bounds.extend(layers['รุ่นใหม่ 250 ตร.กม.'].getBounds());bounds.extend(layers['วิธีดูจุดล่าสุด 250 ตร.กม.'].getBounds());if(bounds.isValid())map.fitBounds(bounds,{padding:[12,12],maxZoom:10});});
+        }
+        out.querySelector('[data-priority-example]').addEventListener('change',e=>render(Number(e.target.value)));render(0);
+      }catch(error){out.textContent=error.message;}
+      finally{button.disabled=false;}
+    });
+  }
+  new MutationObserver(mount).observe(document.body,{childList:true,subtree:true});mount();
+})();

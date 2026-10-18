@@ -34,6 +34,13 @@ describe('production deployment contract', () => {
     expect(html).not.toContain('OpenWeather');
   });
 
+  it('exposes the imported NASA FIRMS archive through public 90- and 180-day filters', () => {
+    expect(html).toContain('data-archive-days="90" aria-pressed="false">90 วัน</button>');
+    expect(html).toContain('data-archive-days="180" aria-pressed="false">180 วัน</button>');
+    expect(html).toContain('NASA FIRMS/VIIRS');
+    expect(html).toContain('ไม่ใช่การยืนยันเหตุภาคสนาม');
+  });
+
   it('keeps critical Thai metadata readable instead of mojibake', () => {
     expect(html).toContain('ศูนย์เฝ้าระวังไฟป่า');
     expect(html).toContain('จังหวัดเชียงใหม่');

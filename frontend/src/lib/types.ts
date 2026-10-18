@@ -99,10 +99,10 @@ export type WeatherResponse = {
 };
 
 export type RiskResponse = {
-  score: number;
-  category: 'Low' | 'Medium' | 'High';
+  score: number | null;
+  category: 'Low' | 'Medium' | 'High' | 'ข้อมูลไม่ครบ';
   formula: string;
-  factors: Record<string, number | string>;
+  factors: Record<string, number | string | null>;
 };
 
 export type SummaryResponse = {

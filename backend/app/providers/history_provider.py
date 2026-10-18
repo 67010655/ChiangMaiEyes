@@ -2,7 +2,7 @@
 
 Open-Meteo is free, keyless, and reachable from anywhere (including Vercel),
 and its ``past_days`` parameter returns recent days without the multi-day delay
-of the ERA5 archive. We aggregate hourly readings into daily values centred on
+of the ERA5 archive. We aggregate hourly model outputs into daily values centred on
 Chiang Mai city so the authority view can look backwards in time.
 """
 import collections
@@ -19,7 +19,7 @@ _TZ = "Asia/Bangkok"
 
 
 def fetch_pm25_history(days: int = 14) -> list[tuple[str, float]]:
-    """Daily mean PM2.5 (µg/m³) for the last ``days`` days, oldest→newest."""
+    """Daily mean model PM2.5 (µg/m³), not a measured station concentration."""
     past = max(1, min(days, 92)) - 1
     try:
         response = httpx.get(
@@ -90,6 +90,6 @@ def fetch_weather_history(days: int = 14) -> list[tuple[str, float, float, float
         if tmax is None or tmin is None:
             continue
         rh_vals = humidity_by_day.get(day, [])
-        humidity = round(sum(rh_vals) / len(rh_vals)) if rh_vals else 0.0
-        out.append((day, round(float(tmax), 1), round(float(tmin), 1), round(float(wmax or 0), 1), humidity))
+        humidity = round(sum(rh_vals) / len(rh_vals)) if rh_vals else None
+        out.append((day, round(float(tmax), 1), round(float(tmin), 1), round(float(wmax), 1) if wmax is not None else None, humidity))
     return out

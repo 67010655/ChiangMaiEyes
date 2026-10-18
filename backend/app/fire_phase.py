@@ -68,7 +68,7 @@ def _is_recent_detection(detected_at: str, now: datetime, hours: float) -> bool:
         return False
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone(timedelta(hours=7)))
-    return (now - dt) <= timedelta(hours=hours)
+    return timedelta(0) <= (now - dt) <= timedelta(hours=hours)
 
 
 def _days_since_active(
@@ -217,7 +217,9 @@ def _nearest_hotspot_km(lat: float, lon: float, hotspots: list[Hotspot]) -> floa
     return min(_haversine_km(lat, lon, h.latitude, h.longitude) for h in hotspots)
 
 
-def _forest_danger_score(base_danger: float, nearest_km: float | None) -> float:
+def _forest_danger_score(base_danger: float | None, nearest_km: float | None) -> float | None:
+    if base_danger is None:
+        return None
     if nearest_km is None:
         boost = 0.0
     else:
@@ -234,68 +236,49 @@ def _in_spread_cone(forest_bearing: float, spread_dir: float) -> bool:
     return diff <= _SPREAD_CONE_HALF_DEG
 
 
-def _air_dryness(weather: WeatherResponse) -> float:
-    humidity = weather.humidity_percent if weather.humidity_percent is not None else 50.0
-    dryness = max(0.0, min(1.0, (100.0 - humidity) / 100.0))
-    if (weather.rain_today_mm or 0) > 1.0:
-        dryness *= 0.5
-    return dryness
+def _air_dryness(weather: WeatherResponse) -> float | None:
+    return dryness_from_humidity_rain(weather.humidity_percent, weather.rain_today_mm)
 
 
-def dryness_from_humidity_rain(humidity_pct: float | None, rain_mm: float | None) -> float:
+def dryness_from_humidity_rain(humidity_pct: float | None, rain_mm: float | None) -> float | None:
     """Same dryness formula as _air_dryness, but from raw numbers instead of a
     WeatherResponse — lets the predict module reuse it with forecast values."""
-    humidity = humidity_pct if humidity_pct is not None else 50.0
+    if humidity_pct is None or not math.isfinite(humidity_pct) or not 0 <= humidity_pct <= 100:
+        return None
+    humidity = humidity_pct
     dryness = max(0.0, min(1.0, (100.0 - humidity) / 100.0))
     if (rain_mm or 0) > 1.0:
         dryness *= 0.5
     return dryness
 
 
-def district_base_danger(district: str, dryness: float) -> float:
-    """The exact district-danger formula used by classify_fire_phases (fuel +
-    history + dryness), exposed so the predict module can project it forward
-    with forecasted dryness instead of live — one formula, no drift risk."""
-    phys = DISTRICT_PHYSICS.get(district, {"fuel_flammability": 1.2, "history_multiplier": 1.0})
-    fuel_norm = min(1.0, phys["fuel_flammability"] / 1.8)
-    history_norm = min(1.0, max(0.0, (phys["history_multiplier"] - 1.0) / 0.5))
-    return round(0.4 * fuel_norm + 0.2 * history_norm + 0.4 * dryness, 2)
+def district_base_danger(district: str, dryness: float | None) -> float | None:
+    """Experimental air-dryness index, not fuel load or ignition probability.
+
+    The input weather is shared across districts. No invented district fuel or
+    fire-history constants are included. Keep the argument for API compatibility.
+    """
+    return round(dryness, 2) if dryness is not None else None
 
 
 def _build_spread_projection(
     district: str,
     wind_speed_kmh: float,
     wind_dir_deg: float,
-) -> SpreadProjection:
-    """Rothermel-simplified spread rate from district physics + live wind."""
-    phys = DISTRICT_PHYSICS.get(district, {
-        "fuel_flammability": 1.2,
-        "slope_deg": 20.0,
-    })
-    fuel = phys["fuel_flammability"]
-    slope = phys["slope_deg"]
+) -> SpreadProjection | None:
+    """No rate/distance without measured fuel and a validated model.
 
-    spread_dir = (wind_dir_deg + 180) % 360
-    # Rate of Spread (km/h): fuel × slope-factor × wind-factor
-    slope_f = math.exp(0.069 * slope) / 4.0  # normalized around 20° ≈ 1.0
-    wind_f = 1.0 + wind_speed_kmh / 15.0
-    rate = round(0.5 * fuel * slope_f * wind_f, 2)
-
-    return SpreadProjection(
-        direction_deg=round(spread_dir, 1),
-        direction_text=_spread_dir_text(spread_dir),
-        rate_kmh=rate,
-        km_6h=round(rate * 6, 1),
-        km_12h=round(rate * 12, 1),
-        km_24h=round(rate * 24, 1),
-    )
+    DSM terrain summaries do not repair the former uncalibrated constants.
+    Wind illustrations remain separate from a fire-spread prediction.
+    """
+    return None
 
 
 def _nearby_forests(
     district: str,
     spread_dir: float,
     community_forests: list[CommunityForest],
-    district_danger: float = 0.0,
+    district_danger: float | None = None,
     hotspot_items: list[Hotspot] | None = None,
 ) -> tuple[list[NearbyForest], str | None]:
     """Return (nearby_list, coordination_note) for a district."""
@@ -331,8 +314,8 @@ def _nearby_forests(
     if len(in_path_forests) >= _COORDINATION_THRESHOLD:
         names = " และ ".join(f.name for f in in_path_forests[:3])
         coord_note = (
-            f"พื้นที่นี้อยู่ในแนวรอยต่อของหลายป่าชุมชน ({names}) "
-            "ผู้มีอำนาจควรประสานงานร่วมกันก่อนสั่งการภาคสนาม"
+            f"ป่าชุมชนใกล้จุดอ้างอิงอำเภอในทิศปลายลม: {names} "
+            "ตรวจพิกัดเหตุและผู้รับผิดชอบก่อนประสานงาน ระยะใกล้กันไม่ยืนยันว่าขอบเขตติดกัน"
         )
 
     return nearby[:8], coord_note  # cap at 8 to keep payload reasonable
@@ -340,7 +323,7 @@ def _nearby_forests(
 
 def _recommended_actions(
     phase: str,
-    danger_score: float,
+    danger_score: float | None,
     nearby: list[NearbyForest],
     spread: SpreadProjection | None,
 ) -> list[str]:
@@ -349,29 +332,22 @@ def _recommended_actions(
     in_path = [f for f in nearby if f.in_spread_path]
 
     if phase == "before":
-        actions.append("ลาดตระเวนทุก 4 ชั่วโมงในพื้นที่เสี่ยง")
-        actions.append("ตรวจสอบและซ่อมแนวกันไฟก่อนหน้าแล้งหนัก")
+        actions.append("ตรวจสภาพเชื้อเพลิงและแนวกันไฟกับผู้ดูแลพื้นที่ก่อนวางแผนงาน")
+        actions.append("ใช้ข้อมูลอากาศประกอบการเฝ้าระวัง ไม่มีข้อมูลปริมาณเชื้อเพลิงเฉพาะแปลง")
         if inactive:
             names = " · ".join(f.name for f in inactive[:2])
-            actions.append(f"แจ้ง {names} จัดทำแผนจัดการเชื้อเพลิงด่วน (ยังไม่มีบันทึกกิจกรรม)")
-        if danger_score >= 0.7:
-            actions.append("ประสานทีมดับเพลิงสำรองให้พร้อมปฏิบัติการภายใน 2 ชั่วโมง")
+            actions.append(f"สอบถามผู้ดูแล {names} เรื่องกิจกรรมจัดการไฟ ข้อมูลทะเบียนยังไม่ยืนยันกิจกรรมปัจจุบัน")
 
     elif phase == "during":
-        actions.append("แจ้งเตือนทีมดับเพลิงภาคสนามทันที")
+        actions.append("ตรวจเวลาจุดดาวเทียมและประสานผู้รับผิดชอบพื้นที่เพื่อยืนยันสถานการณ์ก่อนจัดการเหตุ")
         if in_path:
             names = " · ".join(f.name for f in in_path[:3])
-            actions.append(f"แจ้งเตือนป่าชุมชนปลายลม: {names} ให้เตรียมรับมือ")
-        if spread:
-            actions.append(
-                f"ไฟคาดลามทิศ{spread.direction_text} ~{spread.km_6h} กม./6ชม. "
-                f"หรือ ~{spread.km_12h} กม./12ชม. ที่ความเร็ว {spread.rate_kmh} กม./ชม."
-            )
+            actions.append(f"ตรวจสถานการณ์กับป่าชุมชนที่อยู่ทิศปลายลมจากจุดอ้างอิง: {names}")
         actions.append("ตรวจสอบแนวกันไฟและเส้นทางอพยพในทิศปลายลม")
 
     elif phase == "after":
         actions.append("ตรวจสอบรอยไหม้และประเมินพื้นที่เสียหายด้วย drone หรือลาดตระเวน")
-        actions.append("ติดตาม PM2.5 รายชั่วโมง — ควันฟุ้งกระจายสูงสุดมักอยู่ใน 24-48 ชม. หลังไฟ")
+        actions.append("ติดตาม PM2.5 และเวลาวัดจากสถานีใกล้พื้นที่ ค่าจุดดาวเทียมไม่ยืนยันสาเหตุของฝุ่น")
         actions.append("วางแผนฟื้นฟูแนวกันไฟและพันธุ์ไม้ก่อนหน้าฝนถัดไป")
 
     return actions
@@ -390,6 +366,7 @@ def classify_fire_phases(
     cf_list = community_forests or []
 
     now = datetime.now(timezone(timedelta(hours=7)))
+    weather_current = _is_recent_detection(weather.latest_update, now, 3.0)
     recent_hotspots = [h for h in hotspots.items if _is_recent_detection(h.detected_at, now, _ACTIVE_HOTSPOT_HOURS)]
 
     active_by_district: dict[str, int] = {}
@@ -405,8 +382,8 @@ def classify_fire_phases(
             if district and zone.burn_severity in _BURNED_CLASSES and zone.dnbr is not None:
                 burned[district] = (zone.dnbr, zone.burn_severity)
 
-    dryness = _air_dryness(weather)
-    humidity = weather.humidity_percent if weather.humidity_percent is not None else 50.0
+    dryness = _air_dryness(weather) if weather_current else None
+    humidity = weather.humidity_percent
     global_wind_speed = weather.wind_speed_kmh
     global_wind_dir = weather.wind_direction_deg
 
@@ -418,31 +395,27 @@ def classify_fire_phases(
             wind_source_label = "Open-Meteo (per-district centroid)"
         else:
             dist_wind_speed, dist_wind_dir = global_wind_speed, global_wind_dir
-            wind_source_label = "สถานีอุตุนิยมวิทยา (synoptic)"
+            wind_source_label = f"จุดอ้างอิงอากาศร่วม: {weather.source}"
 
         spread_dir_dist = (dist_wind_dir + 180) % 360
 
         active = active_by_district.get(district, 0)
-        fuel_norm = min(1.0, phys["fuel_flammability"] / 1.8)
-        history_norm = min(1.0, max(0.0, (phys["history_multiplier"] - 1.0) / 0.5))
-        danger = district_base_danger(district, dryness)  # same formula as fuel_norm/history_norm above
+        danger = district_base_danger(district, dryness)
 
         calc_breakdown = {
-            "formula": "danger = 0.4×fuel + 0.2×history + 0.4×dryness",
-            "fuel_flammability": phys["fuel_flammability"],
-            "fuel_norm": round(fuel_norm, 3),
-            "history_level": phys.get("history_level", "ปานกลาง"),
-            "history_multiplier": phys.get("history_multiplier", 1.0),
-            "history_norm": round(history_norm, 3),
-            "dryness": round(dryness, 3),
-            "humidity_pct": round(humidity, 1),
-            "rain_24h_mm": round(weather.rain_today_mm or 0, 1),
+            "formula": "ดัชนีอากาศแห้ง = (100 − RH)/100; ลดครึ่งเมื่อฝนที่รายงาน > 1 mm",
+            "score_basis": "air_dryness_and_detection_proximity_experimental",
+            "weather_scope": "จุดอ้างอิงอากาศร่วม ไม่ใช่ค่าตรวจทุกอำเภอ",
+            "fuel_status": "unavailable",
+            "history_status": "not_used_in_score",
+            "dryness": round(dryness, 3) if dryness is not None else None,
+            "humidity_pct": round(humidity, 1) if humidity is not None else None,
+            "rain_24h_mm": round(weather.rain_today_mm, 1) if weather.rain_today_mm is not None else None,
             "wind_speed_kmh": round(dist_wind_speed, 1),
             "wind_dir_deg": round(dist_wind_dir, 1),
             "wind_source": wind_source_label,
-            "fuel_contrib": round(0.4 * fuel_norm, 3),
-            "history_contrib": round(0.2 * history_norm, 3),
-            "dryness_contrib": round(0.4 * dryness, 3),
+            "weather_observed_at": weather.latest_update,
+            "weather_is_current": weather_current,
         }
 
         spread: SpreadProjection | None = None
@@ -452,11 +425,11 @@ def classify_fire_phases(
 
         if active > 0:
             phase = "during"
-            danger = max(danger, _DURING_FLOOR)
-            reasons = [f"พบจุดความร้อน {active} จุดในพื้นที่ตอนนี้"]
-            spread = _build_spread_projection(district, dist_wind_speed, dist_wind_dir)
+            danger = max(danger or 0, _DURING_FLOOR)
+            reasons = [f"พบจุดดาวเทียม {active} จุดใน 24 ชั่วโมงที่ผ่านมา ยังต้องยืนยันเหตุไฟในพื้นที่"]
+            spread = _build_spread_projection(district, dist_wind_speed, dist_wind_dir) if weather_current or (district_winds and district in district_winds) else None
             nearby, coord_note = _nearby_forests(
-                district, spread.direction_deg, cf_list,
+                district, spread_dir_dist, cf_list,
                 district_danger=danger, hotspot_items=recent_hotspots,
             )
         elif district in burned:
@@ -469,19 +442,22 @@ def classify_fire_phases(
             )
         elif days_since_active is not None:
             phase = "after"
-            reasons = [f"ไฟดับไปแล้ว {days_since_active} วันก่อน — อยู่ระยะฟื้นฟู"]
+            reasons = [f"มีประวัติจุดดาวเทียมล่าสุด {days_since_active} วันก่อน ไม่ยืนยันว่าไฟดับหรือพื้นที่เสียหาย"]
             nearby, _ = _nearby_forests(
                 district, spread_dir_dist, cf_list,
                 district_danger=danger, hotspot_items=recent_hotspots,
             )
+        elif dryness is None:
+            phase = "normal"
+            reasons = ["ความชื้นอากาศไม่มีข้อมูลหรือเก่าเกิน 3 ชั่วโมง จึงไม่คำนวณดัชนีทดลอง ยังไม่มีข้อมูลเชื้อเพลิงเฉพาะพื้นที่"]
         elif dryness < _DRY_AIR_GATE:
             phase = "normal"
-            reasons = [f"อากาศชื้น ความชื้น {humidity:.0f}% เชื้อเพลิงไม่แห้งพอจะติดไฟ"]
-        elif danger >= _YELLOW_THRESHOLD:
+            reasons = [f"ความชื้นอากาศ {humidity:.0f}% ยังไม่มีค่าความชื้นเชื้อเพลิงจากพื้นที่ จึงยังประเมินการติดไฟจากค่าอากาศอย่างเดียวไม่ได้"]
+        elif danger is not None and danger >= _YELLOW_THRESHOLD:
             phase = "before"
             reasons = [
-                f"เชื้อเพลิงติดไฟง่าย ({phys['history_level']})",
-                f"อากาศแห้ง ความชื้น {humidity:.0f}%",
+                f"จุดอ้างอิงอากาศรายงานความชื้น {humidity:.0f}% เข้าเกณฑ์ดัชนีอากาศแห้งทดลอง",
+                "ยังไม่มีค่าความชื้นหรือปริมาณเชื้อเพลิงจากพื้นที่ จึงไม่ยืนยันโอกาสเกิดไฟ",
             ]
             nearby, coord_note = _nearby_forests(
                 district, spread_dir_dist, cf_list,
@@ -489,14 +465,14 @@ def classify_fire_phases(
             )
         else:
             phase = "normal"
-            reasons = ["ยังไม่มีจุดความร้อน และดัชนีความเสี่ยงอยู่ระดับต่ำ"]
+            reasons = ["ไม่พบจุดดาวเทียมใน 24 ชั่วโมงที่ระบบมี และยังไม่เข้าเกณฑ์ดัชนีอากาศแห้งทดลอง ไม่ยืนยันว่าปลอดภัย"]
 
         actions = _recommended_actions(phase, danger, nearby, spread)
 
         phases.append(DistrictFirePhase(
             district=district,
             phase=phase,
-            color=_PHASE_COLOR[phase],
+            color=_PHASE_COLOR[phase] if danger is not None else "grey",
             danger_score=danger,
             active_hotspots=active,
             reasons=reasons,
@@ -507,18 +483,18 @@ def classify_fire_phases(
             calc_breakdown=calc_breakdown,
         ))
 
-    phases.sort(key=lambda p: -p.danger_score)
+    phases.sort(key=lambda p: (-(p.active_hotspots), -(p.danger_score or 0)))
 
     # PM2.5 ↔ hotspot correlation (best-effort, requires both histories)
     correlation = _build_correlation(hotspot_history or [], pm25_history or [])
 
-    source_label = f"thaicfnet.org ({len(cf_list)} ป่าชุมชน)" if cf_list else "ไม่มีข้อมูลป่าชุมชน"
+    source_label = f"RECOFTC: ขอบเขต {len(cf_list)} ป่าชุมชน" if cf_list else "ไม่มีข้อมูลป่าชุมชน"
 
     # Flat per-forest risk (every forest, not just ones near a before/during
     # district) — lets the map colour every community-forest marker by its
     # own fuel risk instead of one flat colour per district.
     danger_by_district = {p.district: p.danger_score for p in phases}
-    fallback_danger = (sum(danger_by_district.values()) / len(danger_by_district)) if danger_by_district else 0.3
+    fallback_danger = district_base_danger("", dryness)
     forest_risk: list[ForestRisk] = []
     for cf in cf_list:
         base_danger = danger_by_district.get(_normalize_district(cf.amphoe), fallback_danger)
@@ -542,7 +518,8 @@ def classify_fire_phases(
         base_danger = danger_by_district.get(_normalize_district(t["amphoe"]), fallback_danger)
         nearest_km = _nearest_hotspot_km(t["latitude"], t["longitude"], recent_hotspots)
         score = _forest_danger_score(base_danger, nearest_km)
-        tambon_phase = "during" if score >= _DURING_FLOOR else "before" if score >= _YELLOW_THRESHOLD else "normal"
+        # A nearby detection never confirms an active fire inside this tambon.
+        tambon_phase = "before" if score is not None and score >= _YELLOW_THRESHOLD else "normal"
         tambon_warnings.append(TambonWarning(
             tcode=t["tcode"],
             tambon=t["tambon"],
@@ -559,15 +536,13 @@ def classify_fire_phases(
         source_mode="DERIVED",
         phases=phases,
         notes=[
-            "ระยะเหลือง/แดงคำนวณจากจุดความร้อนจริง + ดัชนีเชื้อเพลิงรายอำเภอ + ความชื้นอากาศสด "
-            "เป็นตัวช่วยประเมิน ไม่ใช่คำเตือนทางการ",
-            "การลามไฟประมาณจากสูตร Rothermel + ทิศลม + ความชัน เป็นค่าประมาณเท่านั้น",
-            "ระยะใกล้ป่าชุมชนใช้ proximity จากพิกัด POINT ของ thaicfnet.org ยังไม่มี polygon เขตอำนาจจริง",
-            "ระยะ 'หลังไฟ' (เทา) มาจาก dNBR Sentinel-2 — แสดงเมื่อเชื่อม Copernicus แล้ว",
-            "คะแนนความเสี่ยงรายป่าชุมชน (forest_risk) = คะแนนอำเภอฐาน + ระยะใกล้จุดความร้อนจริง "
-            "ยังไม่ใช่แบบจำลองเชื้อเพลิงระดับแปลง เป็นตัวช่วยจัดลำดับความสนใจเท่านั้น",
-            "เฝ้าระวังระดับตำบล (tambon_warnings) ใช้คะแนนฐานเดียวกับอำเภอแม่ + ระยะใกล้จุดความร้อนจริง "
-            "ตำบลในอำเภอเดียวกันจึงมีคะแนนต่างกันได้ตามความใกล้ไฟ ไม่ใช่ประกาศเตือนภัยทางการ",
+            "ดัชนีทดลองใช้ความชื้นอากาศร่วมกับฝนที่มีรายงาน ไม่มีค่าคงที่เชื้อเพลิงหรือความถี่ไฟรายอำเภอ และไม่ใช่ความน่าจะเป็นเกิดไฟ",
+            "ค่า 85/100 เมื่อพบจุดดาวเทียมเป็นเกณฑ์จัดลำดับทดลอง ไม่ใช่ความรุนแรงไฟที่วัดได้",
+            "ยังไม่คำนวณอัตราหรือระยะไฟลาม: ขาดข้อมูลเชื้อเพลิงและแบบจำลองที่ตรวจสอบแล้ว ทิศปลายลมเป็นภาพประกอบคนละส่วน",
+            "ขอบเขต RECOFTC เป็น polygon; รายการใกล้เคียงและทิศปลายลมยังใช้ระยะจากจุดอ้างอิงอำเภอ/ป่า ไม่ยืนยันการลามเข้าขอบเขต",
+            "ประวัติจุดดาวเทียมไม่ยืนยันเวลาไฟดับ การฟื้นฟู หรือความเสียหาย",
+            "dNBR ใช้เฉพาะเมื่อได้รับชั้นรอยไหม้จริง ไม่ใช้ประวัติจุดดาวเทียมแทนพื้นที่รอยไหม้",
+            "ดัชนีรายป่า/ตำบลใช้ค่าจุดอ้างอิงอากาศร่วมบวกระยะใกล้จุดดาวเทียม ไม่มีข้อมูลเชื้อเพลิงรายแปลง",
         ],
         community_forests_source=source_label,
         fire_pm25_correlation=correlation,

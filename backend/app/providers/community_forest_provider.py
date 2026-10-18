@@ -7,6 +7,7 @@ loaded on startup; thaicfnet is cached for 24 hours.
 """
 import json
 import logging
+import math
 import pathlib
 import time
 from typing import Any
@@ -24,6 +25,19 @@ _CACHE_TTL = 86_400.0  # 24 hours
 _thaicfnet_cache: tuple[float, list[dict[str, Any]]] | None = None
 
 _OFFICIAL_GEOJSON = pathlib.Path(__file__).parent.parent / "data" / "community-forests-chiangmai.geojson"
+
+
+def boundary_quality(geometry):
+    polygons = [geometry.get('coordinates',[])] if geometry.get('type')=='Polygon' else geometry.get('coordinates',[]) if geometry.get('type')=='MultiPolygon' else []
+    invalid = not polygons
+    for polygon in polygons:
+        if not polygon:
+            invalid = True
+        for ring in polygon:
+            if (len(ring)<4 or ring[0]!=ring[-1] or len({tuple(p) for p in ring[:-1]})<3
+                or any(len(p)!=2 or not all(math.isfinite(v) for v in p) or not -180<=p[0]<=180 or not -90<=p[1]<=90 for p in ring)):
+                invalid = True
+    return ('needs_review','ขอบเขตต้นทางมีส่วนของรูปร่างไม่ครบ รักษาทะเบียนไว้และรอยืนยันกับเจ้าของข้อมูลก่อนใช้ตัดสินตำแหน่งเหตุ') if invalid else ('structural_check_passed','ผ่านการตรวจโครงสร้างพื้นฐาน ยังไม่ใช่การยืนยันขอบเขตภาคสนาม')
 
 # ---------------------------------------------------------------------------
 # Official RFD shapefile (677 real Chiang Mai polygons)
@@ -47,6 +61,7 @@ def _load_official() -> list[CommunityForest]:
             amphoe = str(props.get("amphoe") or "").strip()
             if lat is None or lng is None or not amphoe:
                 continue
+            quality,note = boundary_quality(feat.get('geometry') or {})
             forests.append(CommunityForest(
                 forest_id=str(props.get("id") or f"cmf-{amphoe}-{len(forests)}"),
                 name=str(props.get("name") or props.get("village") or "ป่าชุมชน").strip(),
@@ -62,6 +77,7 @@ def _load_official() -> list[CommunityForest]:
                 boundary_radius_m=None,
                 boundary=feat.get("geometry"),
                 source="Community forest boundary shapefile received from RECOFTC",
+                boundary_quality=quality, boundary_note=note,
             ))
         logger.info("Loaded %d community forest polygons from agency shapefile", len(forests))
         return forests

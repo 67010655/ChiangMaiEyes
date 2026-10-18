@@ -21,7 +21,8 @@ describe('production analytics inline dashboard', () => {
   });
 
   it('routes analytics history windows through backend days query', () => {
-    expect(html).toContain("/api/history?days=7");
+    expect(html).toContain("fetchJson('/api/history?'+params,25000)");
+    expect(html).toContain("'180d':180");
     expect(html).toContain("/api/history?days=30");
     expect(html).not.toContain("fetchJson('/api/history', 60000)");
   });

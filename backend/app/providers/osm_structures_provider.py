@@ -14,6 +14,7 @@ allowlist. Confirmed with retries that this isn't a one-off fluke.
 from __future__ import annotations
 
 import logging
+import math
 
 import httpx
 
@@ -62,7 +63,9 @@ def _fetch_overpass(query: str) -> dict | None:
 
 
 def fetch_osm_structures(south: float, west: float, north: float, east: float, fuel_only: bool = False) -> OsmStructuresResponse:
-    if north - south > _MAX_BBOX_DEGREES or east - west > _MAX_BBOX_DEGREES:
+    if (not all(math.isfinite(v) for v in (south,west,north,east))
+        or not -90 <= south < north <= 90 or not -180 <= west < east <= 180
+        or north - south > _MAX_BBOX_DEGREES or east - west > _MAX_BBOX_DEGREES):
         return OsmStructuresResponse(buildings=[], fuel_stations=[])
 
     bbox = f"{south},{west},{north},{east}"

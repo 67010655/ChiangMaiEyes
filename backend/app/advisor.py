@@ -6,36 +6,23 @@ import httpx
 
 from app.config import Settings
 from app.models import AdvisorMessage, DashboardResponse
+from app.evidence import pm_brief, wind_to_text
 
 logger = logging.getLogger(__name__)
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-SYSTEM_PROMPT = """คุณคือ "คุณเชียงใหม่" ผู้เชี่ยวชาญแบบบูรณาการระดับสูงของระบบ ChiangMaiEyes โดยคุณสวมบทบาทเป็นผู้ช่วยอัจฉริยะที่ผสมผสาน 5 บทบาทเข้าด้วยกัน:
-1. **ไกด์นำเที่ยวท้องถิ่นเชียงใหม่ (Chiang Mai Tour Guide)**: เข้าใจวัฒนธรรม แหล่งท่องเที่ยว ธรรมชาติ ย่านร้านอาหาร/คาเฟ่ และกิจกรรมท่องเที่ยวต่างๆ
-2. **นักดับไฟป่า / เจ้าหน้าที่กรมป่าไม้ (Forest Firefighter & Forestry Officer)**: มีความรู้ลึกซึ้งเกี่ยวกับชนิดของป่า เชื้อเพลิง อัตราการลุกลามของไฟตามความชันและสภาพภูมิประเทศ และมาตรการป้องกันไฟป่า
-3. **นักวิทยาศาสตร์ข้อมูลของ GISTDA (GISTDA Data Scientist)**: เชี่ยวชาญการประเมินวิเคราะห์ข้อมูลจากดาวเทียม เช่น จุดความร้อน (Hotspots) จาก VIIRS/MODIS, ดัชนีความแห้งแล้งสะสม NDVI จาก Sentinel-2, ความหนาแน่นของจุดความร้อน และข้อมูลเชิงสถิติ
-4. **วิศวกรแผนที่และสารสนเทศภูมิศาสตร์ (GIS Engineer)**: เข้าใจเรื่องพิกัดทางภูมิศาสตร์ (Latitude/Longitude), ระยะทาง (Distance in km), ทิศทางลมและมุมแบริ่ง (Bearing angle/Wind vector), ขอบเขตควันลอย (Plume Buffer)
-5. **นักวิเคราะห์ข้อมูลด้านสิ่งแวดล้อม (Data Analyst)**: สามารถสังเคราะห์ความสัมพันธ์ระหว่างข้อมูลฝุ่น PM2.5, สภาพอากาศ (อุณหภูมิ, ความชื้น, ทิศลม TMD), และจุดความร้อนได้อย่างมีหลักการ
-
-รายชื่อแลนด์มาร์กท่องเที่ยวหลักบนแผนที่ (ใช้พิกัดเหล่านี้เพื่อคำนวณและอ้างอิงความเสี่ยงเชิงพื้นที่):
-- **วัดพระธาตุดอยสุเทพ** (อ.เมือง, พิกัด: 18.8049, 98.9218) - วัดคู่เมืองบนภูเขาสูง ชัน มีป่าดิบเขาแห้งแล้งตามฤดูกาล
-- **ประตูท่าแพ** (อ.เมือง, พิกัด: 18.7876, 98.9935) - เมืองเก่า แหล่งชุมชนและท่องเที่ยวหนาแน่น
-- **ถนนนิมมานเหมินทร์** (อ.เมือง, พิกัด: 18.7992, 98.9680) - ย่านไลฟ์สไตล์ คาเฟ่ ช้อปปิ้ง
-- **อ่างแก้ว มช.** (อ.เมือง, พิกัด: 18.8027, 98.9533) - พื้นที่พักผ่อนอ่างเก็บน้ำ วิวภูเขาสุเทพ
-- **วัดเจดีย์หลวง** (อ.เมือง, พิกัด: 18.7863, 98.9862) - โบราณสถานประวัติศาสตร์ใจกลางเมืองเก่า
-- **อุทยานแห่งชาติดอยอินทนนท์** (อ.จอมทอง, พิกัด: 18.5875, 98.4864) - ยอดดอยสูง อากาศหนาวเย็นตลอดปี ป่าดิบชื้นสูง ความชื้นมาก
-- **สวนพฤกษศาสตร์สิริกิติ์** (อ.แม่ริม, พิกัด: 18.8968, 98.8600) - สวนอนุรักษ์พืชพรรณ เรือนยอดไม้ Canopy Walk
-- **ม่อนแจ่ม** (อ.แม่ริม, พิกัด: 18.9358, 98.8224) - ดอยท่องเที่ยว ชุมชนม้ง วิวภูเขาแปลงเกษตรเชิงเขา เสี่ยงไฟไหม้ป่าหญ้า/ป่าแห้งรอบๆ
-
-กติกาและหลักการวิเคราะห์ตอบคำถาม:
-- **ความเป็นมืออาชีพ**: ตอบภาษาไทยที่เป็นมิตร สุภาพ แต่เต็มไปด้วยความรู้ทางวิชาการและเทคนิคเชิงแผนที่ GIS และป่าไม้
-- **อิงข้อมูลสดจาก Dashboard**: ห้ามตกแต่งตัวเลขหรือสมมติพิกัด/แหล่งข้อมูลที่ไม่มีใน payload ให้วิเคราะห์ตรงตามตัวเลข PM2.5, ทิศลม, ขอบเขตจุดความร้อน และดัชนี NDVI ที่ส่งไปให้
-- **ความเชี่ยวชาญเชิงเทคนิค**:
-  - เมื่อวิเคราะห์ความปลอดภัยในการท่องเที่ยว ให้ประเมินทิศทางลม (Wind bearing) ร่วมกับพิกัดจุดความร้อนเพื่อระบุว่าทิศทางฝุ่นควัน (Plumes) จะพัดไปกระทบแลนด์มาร์กนั้นๆ หรือไม่
-  - สามารถอธิบายหลักการป่าไม้ เช่น อัตราการลุกลามไฟตามความชัน (Slope effect), ชนิดป่าไม้ (Forest type), ดัชนี NDVI (ดัชนีความแห้งของเชื้อเพลิงธรรมชาติ)
-  - อธิบายคำศัพท์วิทยาศาสตร์และ GIS ได้เข้าใจง่าย เช่น VIIRS (ดาวเทียมความละเอียดสูงตรวจหาจุดไฟ), Sentinel-2 NDVI (ตรวจวัดความสมบูรณ์และแห้งแล้งของพืช)
-- **สติและความปลอดภัย**: ตอบด้วยความจริงใจ หากจุดท่องเที่ยวเสี่ยงภัยจากทิศลมและฝุ่นควัน ให้แนะนำให้หลีกเลี่ยงหรือทำกิจกรรมในร่มอย่างเป็นหลักวิชาการ
+SYSTEM_PROMPT = """คุณเป็นผู้ช่วยอ่านข้อมูลของ ChiangMaiEyes สำหรับคนดูแลป่าชุมชนและประชาชนเชียงใหม่
+ตอบเป็นภาษาไทยสั้นและเข้าใจง่าย โดยใช้เฉพาะข้อมูลที่ส่งมา
+- แยกสิ่งที่วัด/ตรวจพบ แบบจำลอง และข้อมูลที่ยังไม่มี พร้อมเวลาและแหล่งที่มา
+- AQI รวมไม่ใช่ความเข้มข้น PM2.5 ห้ามแปลงหรือเติมค่าฝุ่นที่ขาด
+- ความเชื่อมั่นดาวเทียม low/nominal/high เป็นระดับคุณภาพของการตรวจพบ ไม่ใช่โอกาสเกิดไฟหรือความแม่นยำของเว็บ
+- wind_direction_deg คือพัดจาก; wind_to_text คือทิศพัดไป ให้พูดชัดและระบุระดับ/ตำแหน่งอ้างอิงเมื่อมี
+- จุดดาวเทียมยังไม่ยืนยันว่าไฟกำลังไหม้ และการไม่พบจุดยังไม่ยืนยันว่าไม่มีไฟ
+- คะแนนและภาพการลามในระบบยังเป็นสูตรทดลอง ห้ามรับรองความปลอดภัย เวลาที่ไฟจะถึง หรือสั่งระดมกำลังจากคะแนน
+- EVI/NDVI เป็นดัชนีพืชพรรณ ห้ามอ้างเป็นมวลหรือความชื้นเชื้อเพลิงที่วัดจริง
+- ช่วยระบุข้อมูลที่ควรตรวจและผู้รับผิดชอบที่ต้องประสาน ไม่สมมติรายชื่อ อำนาจสั่งการ หรือเหตุภาคสนาม
+- คำแนะนำเกี่ยวกับสุขภาพหรือการเข้าพื้นที่ต้องไม่เกินข้อมูล ห้ามบอกว่าปลอดภัยจาก RH หรือค่าลมอย่างเดียว
 """
 
 
@@ -49,10 +36,9 @@ def fallback_daily_briefing(dashboard: DashboardResponse) -> str:
     if hotspot_quality and hotspot_quality.age_minutes is not None:
         freshness = f" ข้อมูลจุดความร้อนตรวจล่าสุดประมาณ {hotspot_quality.age_minutes} นาทีที่แล้ว"
     return (
-        f"ขณะนี้ PM2.5 เฉลี่ย {dashboard.pm25.current_pm25:.0f} µg/m³ "
-        f"อยู่ในระดับ{dashboard.pm25.category} พบจุดความร้อน {dashboard.hotspots.count} จุด "
-        f"และลมพัดไปทาง{dashboard.weather.wind_direction_text}ด้วยความเร็ว {dashboard.weather.wind_speed_kmh:.0f} km/h "
-        f"คะแนนความเสี่ยงอยู่ที่ {dashboard.risk.score}/10 ระดับ {dashboard.risk.category}.{freshness} "
+        f"{pm_brief(dashboard.pm25)} พบจุดความร้อน {dashboard.hotspots.count} จุด "
+        f"ลมพัดจาก{dashboard.weather.wind_direction_text}ไป{wind_to_text(dashboard.weather.wind_direction_deg)} ความเร็ว {dashboard.weather.wind_speed_kmh:.0f} กม./ชม. "
+        f"การประเมินรวม {str(dashboard.risk.score)+'/10' if dashboard.risk.score is not None else 'ยังประเมินไม่ได้: ขาดหลักฐานเชื้อเพลิงและผลตรวจแบบจำลอง'}.{freshness} "
         "คำตอบนี้มาจากระบบประเมินพื้นฐาน ไม่ใช่โมเดล AI สด"
     )
 
@@ -61,8 +47,7 @@ def fallback_chat_reply(dashboard: DashboardResponse, user_message: str) -> str:
     lowered = user_message.lower()
     if any(word in lowered for word in ["pm", "ฝุ่น", "อากาศ", "air"]):
         focus = (
-            f"PM2.5 ล่าสุด {dashboard.pm25.current_pm25:.0f} µg/m³ "
-            f"ระดับ{dashboard.pm25.category} จาก {dashboard.pm25.source}"
+            f"{pm_brief(dashboard.pm25)} จาก {dashboard.pm25.source}"
         )
     elif any(word in lowered for word in ["ไฟ", "hotspot", "จุด"]):
         focus = (
@@ -72,13 +57,13 @@ def fallback_chat_reply(dashboard: DashboardResponse, user_message: str) -> str:
     elif any(word in lowered for word in ["ลม", "wind", "ควัน"]):
         focus = (
             f"ลม {dashboard.weather.wind_speed_kmh:.0f} km/h "
-            f"ทิศ{dashboard.weather.wind_direction_text} จาก {dashboard.weather.source}"
+            f"พัดจาก{dashboard.weather.wind_direction_text}ไป{wind_to_text(dashboard.weather.wind_direction_deg)} จาก {dashboard.weather.source}"
         )
     else:
         focus = (
-            f"ภาพรวมตอนนี้ PM2.5 {dashboard.pm25.current_pm25:.0f} µg/m³, "
+            f"ภาพรวมตอนนี้ {pm_brief(dashboard.pm25)}, "
             f"จุดความร้อน {dashboard.hotspots.count} จุด, "
-            f"ความเสี่ยง {dashboard.risk.score}/10"
+            f"การประเมินรวม {str(dashboard.risk.score)+'/10' if dashboard.risk.score is not None else 'ยังประเมินไม่ได้'}"
         )
     return (
         f"{focus}. ตอนนี้โมเดล AI สดไม่พร้อมใช้งาน จึงตอบจากกฎพื้นฐานและข้อมูลบน dashboard เท่านั้น "
@@ -92,7 +77,9 @@ def _dashboard_context(dashboard: DashboardResponse) -> str:
         {
             "district": item.district,
             "subdistrict": item.subdistrict,
-            "confidence": item.confidence,
+            "confidence_level": item.confidence_level,
+            "confidence_raw": item.confidence_raw,
+            "confidence_scheme": item.confidence_scheme,
             "source": item.source,
             "landuse": item.landuse_name or item.landuse_type,
             "latitude": item.latitude,
@@ -109,6 +96,8 @@ def _dashboard_context(dashboard: DashboardResponse) -> str:
         "trend": dashboard.pm25.trend,
         "latest_update": dashboard.pm25.latest_update,
         "source": dashboard.pm25.source,
+        "measurement_kind": dashboard.pm25.measurement_kind,
+        "note": dashboard.pm25.note,
         "stations_sample": [
             {
                 "name": s.name,
@@ -125,6 +114,7 @@ def _dashboard_context(dashboard: DashboardResponse) -> str:
         "wind_speed_kmh": dashboard.weather.wind_speed_kmh,
         "wind_direction_deg": dashboard.weather.wind_direction_deg,
         "wind_direction_text": dashboard.weather.wind_direction_text,
+        "wind_to_text": wind_to_text(dashboard.weather.wind_direction_deg),
         "temperature_c": dashboard.weather.temperature_c,
         "humidity_percent": dashboard.weather.humidity_percent,
         "latest_update": dashboard.weather.latest_update,
@@ -180,7 +170,7 @@ def _call_groq(settings: Settings, messages: list[dict[str, str]], max_tokens: i
             last_error = "Groq returned an empty response"
         except Exception as exc:  # noqa: BLE001
             last_error = str(exc)
-            logger.warning("Groq advisor request failed: %s", exc)
+            logger.warning("Groq advisor request failed")
 
     raise AdvisorUnavailable(last_error)
 
@@ -212,7 +202,7 @@ def generate_daily_briefing(settings: Settings, dashboard: DashboardResponse) ->
                 response = model.generate_content(prompt, generation_config=config)
                 return response.text.strip()
             except Exception as gemini_exc:
-                logger.error("Gemini fallback failed: %s", gemini_exc)
+                logger.error("Gemini fallback failed")
                 raise AdvisorUnavailable(f"Both Groq and Gemini failed. Groq error: {groq_exc}. Gemini error: {gemini_exc}") from gemini_exc
         else:
             raise
@@ -255,7 +245,7 @@ def chat_with_advisor(
                 response = chat.send_message(user_message, generation_config=config)
                 return response.text.strip()
             except Exception as gemini_exc:
-                logger.error("Gemini chat fallback failed: %s", gemini_exc)
+                logger.error("Gemini chat fallback failed")
                 raise AdvisorUnavailable(f"Both Groq and Gemini failed. Groq error: {groq_exc}. Gemini error: {gemini_exc}") from gemini_exc
         else:
             raise

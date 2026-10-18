@@ -1,134 +1,80 @@
 from fastapi.testclient import TestClient
-
-from app.config import Settings, get_settings
+from fastapi import HTTPException
+from app.config import Settings,get_settings
 from app.main import app
 from app.models import HistoryResponse
-from app.services import _cache, get_history
+from app.services import _cache,get_history
+from app.archive_history import read_history
 
+def setup_function(): _cache.clear()
 
-def setup_function():
-    _cache.clear()
+def test_history_uses_durable_archive_and_cache_is_keyed_by_window(monkeypatch):
+    calls=[]
+    def read(settings,days,**kwargs):
+        calls.append((days,kwargs))
+        return HistoryResponse(days=days,latest_update='2026-10-12T00:00:00Z')
+    monkeypatch.setattr('app.archive_history.read_history',read)
+    monkeypatch.setattr('app.services.fetch_hotspot_history',lambda *args: (_ for _ in ()).throw(AssertionError('live NASA requested')))
+    s=Settings(cache_dir='.')
+    get_history(s,7);get_history(s,7);get_history(s,30);get_history(s,7,as_of='2026-10-10T00:00:00Z')
+    assert len(calls)==3
+    assert [x[0] for x in calls]==[7,30,7]
 
-
-def test_get_history_cache_is_keyed_by_days(monkeypatch):
-    calls: list[int] = []
-
-    def fake_hotspot_history(_key: str, days: int):
-        calls.append(days)
-        return [(f"2026-06-{day:02d}", day) for day in range(1, days + 1)]
-
-    monkeypatch.setattr("app.services.fetch_hotspot_history", fake_hotspot_history)
-    monkeypatch.setattr("app.services.fetch_pm25_history", lambda days: [(f"2026-06-{day:02d}", 10.0) for day in range(1, days + 1)])
-    monkeypatch.setattr(
-        "app.services.fetch_weather_history",
-        lambda days: [(f"2026-06-{day:02d}", 34.0, 24.0, 7.0, 60.0) for day in range(1, days + 1)],
-    )
-
-    settings = Settings(cache_dir=".", nasa_firms_map_key="nasa")
-
-    seven = get_history(settings, days=7)
-    thirty = get_history(settings, days=30)
-
-    assert seven.days == 7
-    assert len(seven.hotspots) == 7
-    assert thirty.days == 30
-    assert len(thirty.hotspots) == 30
-    assert calls == [7, 30]
-
-
-def test_history_route_accepts_days_query_and_validates_bounds(monkeypatch):
-    def fake_get_history(_settings: Settings, days: int = 30):
-        return HistoryResponse(days=days, hotspots=[], pm25=[], weather=[], sources={}, latest_update="2026-06-28T14:00:00+07:00")
-
-    app.dependency_overrides[get_settings] = lambda: Settings(cache_dir=".")
-    monkeypatch.setattr("app.main.get_history", fake_get_history)
-    client = TestClient(app)
+def test_history_route_bounds_and_replay_arguments(monkeypatch):
+    calls=[]
+    def read(settings,days=30,**kwargs):
+        calls.append(kwargs)
+        return HistoryResponse(days=days,latest_update='2026-10-12T00:00:00Z')
+    monkeypatch.setattr('app.main.get_history',read)
+    app.dependency_overrides[get_settings]=lambda:Settings(cache_dir='.')
     try:
-        ok = client.get("/api/history?days=7")
-        low = client.get("/api/history?days=0")
-        high = client.get("/api/history?days=181")
-    finally:
-        app.dependency_overrides.clear()
+        client=TestClient(app)
+        assert client.get('/api/history?days=180&end=2026-10-10T00:00:00Z&as_of=2026-10-10T00:00:00Z').status_code==200
+        assert calls[0]['end']==calls[0]['as_of']=='2026-10-10T00:00:00Z'
+        assert client.get('/api/history?days=0').status_code==422
+        assert client.get('/api/history?days=181').status_code==422
+    finally: app.dependency_overrides.clear()
 
-    assert ok.status_code == 200
-    assert ok.json()["days"] == 7
-    assert low.status_code == 422
-    assert high.status_code == 422
+def test_archive_failure_is_unavailable_not_fake_zero(monkeypatch):
+    def unavailable(*args,**kwargs): raise HTTPException(503,'database unavailable')
+    monkeypatch.setattr('app.archive_history.read_history',unavailable)
+    h=get_history(Settings(cache_dir='.'),30)
+    assert h.status=='unavailable' and h.hotspots==[] and h.analytics=={}
 
+def test_bad_time_is_rejected_before_archive_access():
+    import pytest
+    for args in [{'end':'2026-10-10T00:00:00'}, {'as_of':'2040-01-01T00:00:00Z'}, {'end':'invalid'}]:
+        with pytest.raises(HTTPException) as exc: read_history(Settings(cache_dir='.'),7,**args)
+        assert exc.value.status_code==422
 
-def test_history_uses_real_archive_for_district_and_hourly_when_available(monkeypatch):
-    monkeypatch.setattr("app.services.fetch_pm25_history", lambda days: [])
-    monkeypatch.setattr("app.services.fetch_weather_history", lambda days: [])
-    monkeypatch.setattr(
-        "app.services._read_optional_snapshot_json",
-        lambda _settings, filename: {
-            "metadata": {
-                "season_label": "2569",
-                "build_date": "2026-06-28T14:00:00+07:00",
-                "source": "test archive",
-            },
-            "seasons": {
-                "2569": [
-                    {
-                        "date": "2026-06-27",
-                        "count": 2,
-                        "districts": {"แม่แจ่ม": 2},
-                        "hour_histogram": [0, 1, 1, *([0] * 21)],
-                    },
-                    {
-                        "date": "2026-06-28",
-                        "count": 1,
-                        "districts": {"แม่วาง": 1},
-                        "hour_histogram": [1, *([0] * 23)],
-                    },
-                ]
-            },
-        }
-        if filename == "season_history.json"
-        else None,
-    )
+def test_archive_preserves_gaps_and_pm_classes(monkeypatch):
+    def call(self,*args,**kwargs):
+        assert kwargs['json']['p_as_of']=='2026-10-11T00:00:00+00:00'
+        return {'start':'2026-10-04T00:00:00Z','end':'2026-10-11T00:00:00Z','as_of':'2026-10-11T00:00:00Z',
+          'hotspots':[{'date':'2026-10-10','count':None,'observed_count':0,'source_requests_complete':False}],
+          'pm25':[{'date':'2026-10-10','value':8,'measurement_kind':'measured'},{'date':'2026-10-10','value':80,'measurement_kind':'model'}],
+          'weather':[],'hour_histogram':[0]*24,'checked_at':'2026-10-12T00:00:00Z'}
+    monkeypatch.setattr('app.community_store.CommunityStore.call',call)
+    h=read_history(Settings(cache_dir='.',supabase_url='https://fixture.invalid',supabase_service_role_key='test'),7,end='2026-10-11T00:00:00Z',as_of='2026-10-11T00:00:00Z')
+    assert h.hotspots[0].count is None and h.pm25[0].value==8 and h.pm25_model[0].value==80
 
-    history = get_history(Settings(cache_dir="."), days=2)
+def test_dashboard_trend_compares_equal_full_days_and_does_not_drop_an_inner_gap(monkeypatch):
+    from app.models import HotspotResponse,HotspotHistoryDay
+    from app.services import _hotspot_trend
+    days=[HotspotHistoryDay(date=f'2026-10-{i:02d}',count=i,source_requests_complete=True,partial_day=i in (1,6)) for i in range(1,7)]
+    def history(*args,**kwargs): return HistoryResponse(days=6,hotspots=days,latest_update='2026-10-12T00:00:00Z')
+    monkeypatch.setattr('app.services.get_history',history)
+    snapshot=HotspotResponse(count=99,density_per_100_km2=0,latest_update='2026-10-12T00:00:00Z',source='fixture',items=[])
+    r=_hotspot_trend(Settings(cache_dir='.'),snapshot,6)
+    assert r.window_days==4 and r.previous_count==5 and r.recent_count==9
+    days[2].source_requests_complete=False
+    r=_hotspot_trend(Settings(cache_dir='.'),snapshot,6)
+    assert r.window_days==0 and r.change_percent is None
 
-    assert [day.count for day in history.hotspots] == [2, 1]
-    assert history.by_district[0].districts == {"แม่แจ่ม": 2}
-    assert history.by_district[1].districts == {"แม่วาง": 1}
-    assert sum(history.hour_histogram) == 3
-    assert history.data_quality["history_archive"].source_mode == "SNAPSHOT"
-
-
-def test_history_does_not_mix_partial_archive_with_longer_live_window(monkeypatch):
-    monkeypatch.setattr("app.services.fetch_hotspot_history", lambda _key, days: [(f"2026-06-{day:02d}", day) for day in range(1, days + 1)])
-    monkeypatch.setattr("app.services.fetch_pm25_history", lambda days: [])
-    monkeypatch.setattr("app.services.fetch_weather_history", lambda days: [])
-    monkeypatch.setattr(
-        "app.services._read_optional_snapshot_json",
-        lambda _settings, filename: {
-            "metadata": {"season_label": "2569", "build_date": "2026-06-28T14:00:00+07:00"},
-            "seasons": {
-                "2569": [
-                    {"date": "2026-06-28", "count": 0, "districts": {}, "hour_histogram": [0] * 24}
-                ]
-            },
-        }
-        if filename == "season_history.json"
-        else None,
-    )
-
-    history = get_history(Settings(cache_dir=".", nasa_firms_map_key="nasa"), days=30)
-
-    assert len(history.hotspots) == 30
-    assert history.by_district == []
-    assert history.hour_histogram == []
-
-
-def test_history_archive_is_unavailable_without_real_archive(monkeypatch):
-    monkeypatch.setattr("app.services.fetch_pm25_history", lambda days: [])
-    monkeypatch.setattr("app.services.fetch_weather_history", lambda days: [])
-    monkeypatch.setattr("app.services._read_optional_snapshot_json", lambda _settings, _filename: None)
-
-    history = get_history(Settings(cache_dir="."))
-
-    assert history.by_district == []
-    assert history.hour_histogram == []
-    assert history.data_quality["history_archive"].source_mode == "UNAVAILABLE"
+def test_trend_zero_reference_has_no_invented_percentage(monkeypatch):
+    from app.models import HotspotResponse,HotspotHistoryDay
+    from app.services import _hotspot_trend
+    h=HistoryResponse(days=4,hotspots=[HotspotHistoryDay(date=f'2026-10-{i+1:02d}',count=n,source_requests_complete=True) for i,n in enumerate([0,0,1,1])],latest_update='2026-10-12T00:00:00Z')
+    monkeypatch.setattr('app.services.get_history',lambda *a,**kw:h)
+    s=HotspotResponse(count=99,density_per_100_km2=0,latest_update='2026-10-12T00:00:00Z',source='fixture',items=[])
+    assert _hotspot_trend(Settings(cache_dir='.'),s,4).change_percent is None

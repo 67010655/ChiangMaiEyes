@@ -38,7 +38,13 @@ class Hotspot(BaseModel):
     landuse_type: str | None = None
     landuse_name: str | None = None
     satellite: str | None = None
-    confidence: int = Field(ge=0, le=100)
+    confidence: int = Field(ge=0, le=100, json_schema_extra={'deprecated': True},
+        description='Legacy internal rank, not a probability. Use native confidence_level/raw/scheme.')
+    # Legacy ranking value, NOT a calibrated probability. Display native meaning.
+    confidence_level: Literal['low', 'nominal', 'high', 'unknown'] = 'unknown'
+    confidence_raw: str | None = None
+    confidence_scheme: str | None = None
+    confidence_source: str | None = None
     # Fire Radiative Power (megawatts) and brightness temperature (kelvin) when
     # the upstream feed reports them. NASA FIRMS VIIRS/MODIS carry these; GISTDA
     # STAC and the Forest Firemap do not, so they stay ``None`` there.
@@ -50,6 +56,7 @@ class Hotspot(BaseModel):
     # this (deduplicated) hotspot, and how many of them did.
     sources: list[str] = Field(default_factory=list)
     source_count: int = 1
+    source_observations: list[dict] = Field(default_factory=list)
 
 
 class HotspotResponse(BaseModel):
@@ -65,7 +72,10 @@ class HotspotResponse(BaseModel):
 
 class HotspotHistoryDay(BaseModel):
     date: str  # ISO date YYYY-MM-DD (Bangkok day)
-    count: int
+    count: int | None
+    observed_count: int = 0
+    source_requests_complete: bool = False
+    partial_day: bool = False
 
 
 class HotspotHistoryResponse(BaseModel):
@@ -84,8 +94,8 @@ class WeatherHistoryDay(BaseModel):
     date: str
     temp_max: float
     temp_min: float
-    wind_max: float
-    humidity: float
+    wind_max: float | None
+    humidity: float | None
 
 
 class DistrictHistoryDay(BaseModel):
@@ -106,6 +116,13 @@ class HistoryResponse(BaseModel):
     sources: dict[str, str] = Field(default_factory=dict)
     data_quality: dict[str, DataQualityMetadata] = Field(default_factory=dict)
     latest_update: str
+    start: str | None = None
+    end: str | None = None
+    as_of: str | None = None
+    status: Literal['available','unavailable'] = 'available'
+    pm25_model: list[DailyMetric] = Field(default_factory=list)
+    analytics: dict = Field(default_factory=dict)
+    notes: list[str] = Field(default_factory=list)
 
 
 class Pm25Station(BaseModel):
@@ -114,19 +131,40 @@ class Pm25Station(BaseModel):
     district: str
     latitude: float
     longitude: float
-    pm25: float
+    pm25: float = Field(ge=0, allow_inf_nan=False)
     trend: str
     updated_at: str
+    measurement_kind: Literal['measured'] = 'measured'
+    source: str = 'Air4Thai PCD'
+    retrieved_at: str | None = None
+
+
+class AqiStation(BaseModel):
+    id: str
+    name: str
+    district: str
+    latitude: float
+    longitude: float
+    aqi: float = Field(ge=0, allow_inf_nan=False)
+    updated_at: str | None = None
+    retrieved_at: str
+    upstream_time_text: str | None = None
+    source: str = 'AQICN / WAQI'
+    measurement_kind: Literal['composite_aqi'] = 'composite_aqi'
 
 
 class Pm25Response(BaseModel):
-    current_pm25: float
+    current_pm25: float | None
     category: str
-    color: Literal["green", "yellow", "orange", "red", "purple"]
+    color: Literal["green", "yellow", "orange", "red", "purple", "gray"]
     trend: str
     latest_update: str
     source: str
     stations: list[Pm25Station]
+    aqi_stations: list[AqiStation] = Field(default_factory=list)
+    retrieved_at: str | None = None
+    measurement_kind: Literal['measured', 'unavailable'] = 'measured'
+    note: str = 'ค่าเฉลี่ยจากสถานีที่มีข้อมูลในรอบนี้ ไม่ใช่ค่าเฉลี่ยทั้งจังหวัดหรือค่าเฉลี่ย 24 ชั่วโมง'
 
 
 class WeatherResponse(BaseModel):
@@ -134,7 +172,7 @@ class WeatherResponse(BaseModel):
     wind_direction_deg: float
     wind_direction_text: str
     temperature_c: float
-    humidity_percent: float
+    humidity_percent: float | None = Field(default=None, ge=0, le=100, allow_inf_nan=False)
     latest_update: str
     source: str
     station_name: str | None = None
@@ -149,10 +187,10 @@ class WeatherResponse(BaseModel):
 
 
 class RiskResponse(BaseModel):
-    score: int
+    score: int | None = Field(default=None,ge=0,le=10)
     category: str
     formula: str
-    factors: dict[str, float | int | str]
+    factors: dict[str, float | int | str | None]
 
 
 class SummaryResponse(BaseModel):
@@ -169,7 +207,7 @@ class HotspotTrendStats(BaseModel):
     window_days: int
     recent_count: int
     previous_count: int
-    change_percent: float
+    change_percent: float | None
     source: str
 
 
@@ -251,6 +289,8 @@ class CommunityForest(BaseModel):
     # official-source record has one as of this shapefile import).
     boundary: dict | None = None
     source: str | None = None
+    boundary_quality: str = 'not_checked'
+    boundary_note: str | None = None
 
 
 class CommunityForestsResponse(BaseModel):
@@ -284,7 +324,7 @@ class ForestRisk(BaseModel):
     amphoe: str
     latitude: float
     longitude: float
-    danger_score: float = Field(ge=0, le=1)
+    danger_score: float | None = Field(default=None, ge=0, le=1)
     nearest_hotspot_km: float | None = None
     fire_management_active: bool = False
 
@@ -299,7 +339,7 @@ class TambonWarning(BaseModel):
     amphoe: str
     latitude: float
     longitude: float
-    danger_score: float = Field(ge=0, le=1)
+    danger_score: float | None = Field(default=None, ge=0, le=1)
     phase: Literal["normal", "before", "during"]
     nearest_hotspot_km: float | None = None
 
@@ -317,16 +357,16 @@ class DailyIgnitionForecast(BaseModel):
     # One forecast day's projected ignition-risk score, built from real
     # Open-Meteo forecast humidity/rain — not a trained model.
     date: str
-    danger_score: float = Field(ge=0, le=1)
+    danger_score: float | None = Field(default=None, ge=0, le=1)
     humidity_pct: float | None = None
     rain_mm: float | None = None
 
 
 class DistrictIgnitionForecast(BaseModel):
     district: str
-    current_danger_score: float = Field(ge=0, le=1)
+    current_danger_score: float | None = Field(default=None, ge=0, le=1)
     daily: list[DailyIgnitionForecast] = Field(default_factory=list)
-    trend: Literal["rising", "falling", "stable"] = "stable"
+    trend: Literal["rising", "falling", "stable", "unavailable"] = "unavailable"
 
 
 class OsmBuilding(BaseModel):
@@ -400,6 +440,8 @@ class LocationPm25Forecast(BaseModel):
 class FirePredictionResponse(BaseModel):
     generated_at: str
     source_mode: SourceMode = "DERIVED"
+    source_retrieved_at: dict[str, str] = Field(default_factory=dict)
+    provider_status: dict[str, str] = Field(default_factory=dict)
     district_forecasts: list[DistrictIgnitionForecast] = Field(default_factory=list)
     spread_forecast_72h: list[SpreadForecastExtended] = Field(default_factory=list)
     weather_forecast: list[WeatherForecastDay] = Field(default_factory=list)
@@ -422,7 +464,7 @@ class DistrictFirePhase(BaseModel):
     district: str
     phase: Literal["normal", "before", "during", "after"]
     color: Literal["green", "yellow", "red", "grey"]
-    danger_score: float = Field(ge=0, le=1)
+    danger_score: float | None = Field(default=None, ge=0, le=1)
     active_hotspots: int = 0
     reasons: list[str] = Field(default_factory=list)
     # Enhanced 3-phase fields (all optional — old callers unaffected)
@@ -473,8 +515,8 @@ class DataStatusResponse(BaseModel):
     refresh_status: str | None = None
     hotspot_latest_update: str
     hotspot_age_minutes: int
-    pm25_latest_update: str
-    pm25_age_minutes: int
+    pm25_latest_update: str | None
+    pm25_age_minutes: int | None
     weather_latest_update: str
     weather_age_minutes: int
     hotspot_count: int
