@@ -35,6 +35,17 @@ it('measures distance to the actual park edge for a point outside within 3 km, n
   expect(host.querySelector('.coordination-lead')!.textContent).toContain('ห่างเขตอุทยานแห่งชาติดอยสุเทพ-ปุย ประมาณ 2.4 กม.');
   expect(host.querySelectorAll('a[href="tel:1362"]')).toHaveLength(1);dom.window.close();
 });
+it('includes the non-hunting area 3003 as well as national parks, using actual polygon interiors',async()=>{
+  const {dom,c,p}=await setup();
+  const inside=p.query(18.792941,98.93570775597769);
+  expect(inside.status).toBe('inside');expect(inside.rows.map((r:any)=>r.area.id)).toContain('3003');
+  expect(c.html(18.792941,98.93570775597769)).toContain('เขตห้ามล่าสัตว์ป่าดอยสุเทพ');
+  // The temple-adjacent coordinate is inside 3003's bounding box, but outside
+  // its actual polygon. A bounding box alone must not make it an inside match.
+  const near=p.query(18.805,98.921);expect(near.status).toBe('near');expect(near.rows[0].area.id).toBe('1024');
+  expect(c.covers({lat:18.805,lon:98.921},doc.features.find((f:any)=>f.id==='3003').geometry)).toBe(false);
+  dom.window.close();
+});
 it.each([[18.75,98.97],[18.78,99.03]])('does not claim a park match more than 3 km away (%s,%s)',async(lat,lon)=>{
   const {dom,c,p}=await setup();expect(p.query(lat,lon).status).toBe('outside');
   const host=dom.window.document.getElementById('host')!;host.innerHTML=c.html(lat,lon);

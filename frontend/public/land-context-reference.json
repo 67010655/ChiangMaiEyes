@@ -1,5 +1,5 @@
 {
-  "version": "land-context-reference-v1",
+  "version": "land-context-reference-v2-esa-only",
   "checked_on": "2026-10-19",
   "qualifier": "ประเมินจากแผนที่ ไม่ใช่การสำรวจในพื้นที่",
   "meaning": "Static literature context, not a fuel model, measured fuel load, current fire-type detection or dispatch recommendation.",
@@ -25,13 +25,14 @@
       "url": "https://service.ldd.go.th/lpd/node_modules/img/Landusedistrict/2567/r04_ssk_11.pdf",
       "note": "ตารางการใช้ที่ดิน หน้า 2-10: A101 นาข้าว, F101 ป่าไม่ผลัดใบ, F201 ป่าผลัดใบ; รหัส F201 ไม่ยืนยันเบญจพรรณ"
     },
-    "cgls": {
-      "title": "Copernicus CGLS-LC100 Collection 3 · ปี 2019 · CC BY 4.0",
-      "url": "https://zenodo.org/records/3939050"
-    },
     "worldcover": {
       "title": "ESA WorldCover · ปี 2021 · CC BY 4.0",
       "url": "https://esa-worldcover.org/en/data-access"
+    },
+    "rfd_2000": {
+      "title": "กรมป่าไม้ ตารางที่ 1 เนื้อที่ป่าไม้แยกรายจังหวัด พ.ศ. 2543",
+      "url": "https://data.forest.go.th/dataset/231795fd-9355-47d1-bb6e-512054eec9ca/resource/70cedf55-68d7-4edf-884c-b13b15d17713/download/rfd-stat2545il.pdf",
+      "page": 2
     }
   },
   "profiles": {
@@ -259,48 +260,6 @@
           {
             "id": "rfd",
             "page": 7
-          }
-        ]
-      },
-      "fuel_level": {
-        "text": "ยังจัดระดับต่ำ/กลาง/สูงไม่ได้จากแผนที่เพียงอย่างเดียว ต้องทราบปริมาณและความชื้นเชื้อเพลิง",
-        "refs": [
-          {
-            "id": "rfd",
-            "page": 7
-          },
-          {
-            "id": "ecology",
-            "page": 51
-          }
-        ],
-        "status": "unknown"
-      }
-    },
-    "mixed_forest": {
-      "fire_type": {
-        "text": "ยังแยกชนิดไฟของจุดนี้ไม่ได้; ไฟผิวดินพบบ่อยในประเทศไทย",
-        "refs": [
-          {
-            "id": "rfd",
-            "page": 10
-          }
-        ]
-      },
-      "season": {
-        "text": "ช่วงเฝ้าระวังไฟภาคเหนือโดยทั่วไป ม.ค.–เม.ย.; ไม่ใช่การพยากรณ์วันเกิดไฟ",
-        "refs": [
-          {
-            "id": "season"
-          }
-        ]
-      },
-      "fuel": {
-        "text": "ซากใบไม้ กิ่งไม้ และพืชพื้นล่าง; ชนิดป่ายังแยกไม่ได้",
-        "refs": [
-          {
-            "id": "rfd",
-            "page": 1
           }
         ]
       },
@@ -727,5 +686,86 @@
         "status": "unknown"
       }
     }
+  },
+  "province_context": {
+    "source_row": "เชียงใหม 20,107.06 4,908.6 8,355.3 2,812.7 - - 179.5 15.8 - 176.5 16,448.5 81.80 3,658.6 Chiang Mai",
+    "total_forest_area_km2": "16448.5",
+    "province_area_km2": "20107.06",
+    "categories": {
+      "evergreen": {
+        "label": "ดงดิบ",
+        "source_value": "4,908.6",
+        "area_km2": "4908.6",
+        "percent": "29.842235",
+        "display_percent": 30
+      },
+      "mixed_deciduous": {
+        "label": "เบญจพรรณ",
+        "source_value": "8,355.3",
+        "area_km2": "8355.3",
+        "percent": "50.796729",
+        "display_percent": 51
+      },
+      "dipterocarp": {
+        "label": "เต็งรัง",
+        "source_value": "2,812.7",
+        "area_km2": "2812.7",
+        "percent": "17.100040",
+        "display_percent": 17
+      },
+      "swamp": {
+        "label": "พรุ",
+        "source_value": "-",
+        "area_km2": null,
+        "percent": null,
+        "display_percent": null
+      },
+      "beach": {
+        "label": "ชายหาด",
+        "source_value": "-",
+        "area_km2": null,
+        "percent": null,
+        "display_percent": null
+      },
+      "pine": {
+        "label": "สน",
+        "source_value": "179.5",
+        "area_km2": "179.5",
+        "percent": "1.091285",
+        "display_percent": 1
+      },
+      "bamboo": {
+        "label": "ไผ่",
+        "source_value": "15.8",
+        "area_km2": "15.8",
+        "percent": "0.096057",
+        "display_percent": 0
+      },
+      "mangrove": {
+        "label": "ชายเลน",
+        "source_value": "-",
+        "area_km2": null,
+        "percent": null,
+        "display_percent": null
+      },
+      "other": {
+        "label": "อื่น ๆ",
+        "source_value": "176.5",
+        "area_km2": "176.5",
+        "percent": "1.073046",
+        "display_percent": 1
+      }
+    },
+    "deciduous_percent": "67.896769",
+    "context_text": "ตามสถิติปี 2543 ป่าในเชียงใหม่ส่วนใหญ่เป็นป่าผลัดใบ (เบญจพรรณราว 51%, เต็งรังราว 17%, ดงดิบราว 30% · กรมป่าไม้ 2543) — จุดนี้ยังระบุชนิดป่าไม่ได้",
+    "formula": "category area / total forest area * 100; display rounded to whole percent, Decimal ROUND_HALF_UP",
+    "scope": "Province-wide historical composition, not a probability, present-day inventory or point-level forest classification. Source dashes remain null, not measured zeros.",
+    "source_url": "https://data.forest.go.th/dataset/231795fd-9355-47d1-bb6e-512054eec9ca/resource/70cedf55-68d7-4edf-884c-b13b15d17713/download/rfd-stat2545il.pdf",
+    "source_page": 2,
+    "table": 1,
+    "reference_year": 2000,
+    "reference_year_be": 2543,
+    "source_pdf_sha256": "8b4d3bdc0223aa99fc9361f964eac0fd59cbcdfe22850bb9ddf7d7926d27fd5d",
+    "source_pdf_bytes": 1091751
   }
 }

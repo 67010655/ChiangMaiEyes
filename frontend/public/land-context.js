@@ -6,10 +6,11 @@
   const cache=new Map();let reference=null;
   const esc=v=>root.CmeEvidence.escapeHtml(v);
   const selector='[data-land-context-point]';
-  const labels={deciduous:'ป่าผลัดใบ (เช่น เต็งรัง/เบญจพรรณ)',evergreen:'ป่าไม่ผลัดใบ',dipterocarp:'ป่าเต็งรัง',mixed_deciduous:'ป่าเบญจพรรณ',unknown_forest:'พื้นที่ต้นไม้ (ยังระบุชนิดป่าไม่ได้)',plantation:'ป่าปลูก',built:'ชุมชนและสิ่งปลูกสร้าง',water:'แหล่งน้ำ'};
+  const labels={deciduous:'ป่าผลัดใบ (เช่น เต็งรัง/เบญจพรรณ)',evergreen:'ป่าไม่ผลัดใบ',dipterocarp:'ป่าเต็งรัง',mixed_deciduous:'ป่าเบญจพรรณ',unknown_forest:'พื้นที่ป่า/ต้นไม้ (จุดนี้ยังระบุชนิดป่าไม่ได้)',plantation:'ป่าปลูก',built:'ชุมชนและสิ่งปลูกสร้าง',water:'แหล่งน้ำ'};
   function direct(code,name){
     code=String(code||'').trim().toUpperCase();name=String(name||'').trim();
-    if(!/^[AFUW]\d{3}$/.test(code))return null;
+    const namedForest=['','OTHER','O000'].includes(code)&&['เต็งรัง','เบญจพรรณ','ผสมผลัดใบ','ผลัดใบ','ป่าดิบ','ป่าปลูก'].some(word=>name.includes(word));
+    if(!/^[AFUW]\d{3}$/.test(code)&&!namedForest)return null;
     if(code.startsWith('A')){
       if(code.startsWith('A9'))return {kind:'water',label:'พื้นที่เพาะเลี้ยงสัตว์น้ำ'};
       return {kind:'crop',label:'พื้นที่เกษตร'+(code==='A101'?' (นาข้าว)':name&&!/[A-Za-z<>]/.test(name)?' ('+name+')':'')};
@@ -17,7 +18,7 @@
     if(code.startsWith('U'))return {kind:'built',label:labels.built};
     if(code.startsWith('W'))return {kind:'water',label:labels.water};
     const dd=name.includes('เต็งรัง'),md=name.includes('เบญจพรรณ')||name.includes('ผสมผลัดใบ'),eg=name.includes('ไม่ผลัดใบ')||name.includes('ป่าดิบ');
-    const kind=eg&&(dd||md)?'unknown_forest':dd&&md?'deciduous':dd?'dipterocarp':md?'mixed_deciduous':eg?'evergreen':name.includes('ผลัดใบ')||['F200','F201'].includes(code)?'deciduous':['F100','F101'].includes(code)?'evergreen':code.startsWith('F5')?'plantation':'unknown_forest';
+    const kind=eg&&(dd||md)?'unknown_forest':dd&&md?'deciduous':dd?'dipterocarp':md?'mixed_deciduous':eg?'evergreen':name.includes('ผลัดใบ')||['F200','F201'].includes(code)?'deciduous':['F100','F101'].includes(code)?'evergreen':code.startsWith('F5')||name.includes('ป่าปลูก')?'plantation':'unknown_forest';
     return {kind,label:labels[kind]};
   }
   function point(h){return {latitude:h.lat??h.latitude,longitude:h.lon??h.longitude,landuse_type:h.landuse_type||'',landuse_name:h.landuse_name||''};}
@@ -33,10 +34,14 @@
   function details(h){return `<div class="land-context-reference" data-land-context-point="${esc(JSON.stringify(point(h)))}"><p>กำลังอ่านข้อมูลอ้างอิงชนิดไฟและเชื้อเพลิง…</p><small>${qualifier}</small></div>`;}
   function safeUrl(url){return typeof url==='string'&&url.startsWith('https://')?url:'#';}
   function sourceLinks(sources){return (sources||[]).map(s=>`<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">${esc(s.name)}${s.year?' · ปี '+s.year:''}</a>${s.year?'':' · ปีสำรวจต้นทางไม่ระบุ'}`).join(' · ');}
+  function provinceHtml(d){
+    const p=d.kind==='unknown_forest'?(d.province_context||reference?.province_context):null;
+    return p?`<small class="land-context-provincial">${esc(p.context_text)}</small><small>สถิติระดับจังหวัดในอดีต ไม่ใช่การจำแนกรายจุดหรือสัดส่วนป่าปัจจุบัน · <a href="${esc(safeUrl(p.source_url)+'#page='+p.source_page)}" target="_blank" rel="noopener">กรมป่าไม้ · ตารางที่ ${esc(p.table)} · หน้า ${esc(p.source_page)}</a></small>`:'';
+  }
   function paint(node,p,result){
     const d=result||quick(p)||{kind:'unknown',headline:'ยังระบุชนิดพื้นที่ไม่ได้',sources:[],note:'ยังอ่านแผนที่ของจุดนี้ไม่ได้'};
     if(node.classList.contains('land-context-summary')){
-      node.innerHTML=`<p>${esc(d.headline)}</p><small>${qualifier}</small>${d.sources.length?`<small class="land-context-source">${sourceLinks(d.sources)}</small>`:''}`;
+      node.innerHTML=`<p>${esc(d.headline)}</p><small>${qualifier}</small>${d.sources.length?`<small class="land-context-source">${sourceLinks(d.sources)}</small>`:''}${provinceHtml(d)}`;
     }else{
       const profile=d.reference||reference?.profiles?.[d.kind]||reference?.profiles?.unknown;
       const refs=d.reference_sources||reference?.sources||{};
@@ -58,7 +63,11 @@
         if(p.latitude===null||p.longitude===null||!Number.isFinite(Number(p.latitude))||!Number.isFinite(Number(p.longitude)))return null;
         const query=new URLSearchParams(p),response=await fetch('/api/land-context?'+query,{signal:controller.signal,cache:'no-store'});
         if(!response.ok)return null;
-        const data=await response.json();return typeof data.headline==='string'&&Array.isArray(data.sources)?data:null;
+        const data=await response.json();
+        // Reject a response from an older backend during a staggered release.
+        // The withdrawn map must not restore a subtype/profile in this popup.
+        if(Array.isArray(data.sources)&&data.sources.some(s=>/CGLS|3939050/i.test((s.name||'')+' '+(s.url||''))))return null;
+        return typeof data.headline==='string'&&Array.isArray(data.sources)?data:null;
       }catch{return null;}finally{clearTimeout(timer);}
     })();
     if(cache.size>100)cache.clear();cache.set(key,task);return task;

@@ -18,7 +18,7 @@ it.each([
   ['A101','นาข้าว','crop'],['F201','','deciduous'],['F201','ป่าเบญจพรรณ','mixed_deciduous'],
   ['F202','ป่าเต็งรัง','dipterocarp'],['F202','','unknown_forest'],['F201','ป่าไม่ผลัดใบสมบูรณ์','evergreen'],
   ['F201','ป่าเต็งรัง/ป่าเบญจพรรณ','deciduous'],['F201','ป่าดิบ/ป่าเบญจพรรณ','unknown_forest'],
-  ['A902','ปลา','water'],['U201','หมู่บ้าน','built']
+  ['A902','ปลา','water'],['U201','หมู่บ้าน','built'],['','ป่าเต็งรัง','dipterocarp'],['','ป่าเบญจพรรณ','mixed_deciduous'],['OTHER','ป่าเต็งรัง','dipterocarp']
 ])('client fallback respects the same explicit land-use meanings (%s)',(code,name,kind)=>{
   const {dom,c}=setup();expect(c.direct(code,name).kind).toBe(kind);dom.window.close();
 });
@@ -38,11 +38,18 @@ it('shows rice immediately without exposing the code and keeps cited details whe
   expect(w.fetch.mock.calls.filter(([url]:any)=>url.startsWith('/api/land-context?'))).toHaveLength(1);
   expect(w.fetch.mock.calls.every(([,options]:any)=>!options?.headers?.Authorization)).toBe(true);dom.window.close();
 });
-it('renders the historical forest class and years returned by the API without calling it mixed deciduous forest',async()=>{
-  const result={kind:'mixed_forest',headline:'ป่าผสมหลายชนิด (ยังแยกผลัดใบไม่ได้)',sources:[{name:'Copernicus CGLS-LC100',year:2019,url:'https://zenodo.org/records/3939050'}],reference:reference.profiles.mixed_forest,reference_sources:reference.sources};
+it('uses a generic forest profile and cited historical provincial context without assigning a point subtype',async()=>{
+  const result={kind:'unknown_forest',headline:'พื้นที่ป่า/ต้นไม้ (จุดนี้ยังระบุชนิดป่าไม่ได้)',sources:[{name:'ESA WorldCover',year:2021,url:'https://esa-worldcover.org/en/data-access'}],reference:reference.profiles.unknown_forest,reference_sources:reference.sources,province_context:reference.province_context};
   const {dom,c,host}=setup({result});const h={lat:18.8,lon:98.9};host.innerHTML=c.summary(h)+c.details(h);await c.hydrate(host);
   const text=host.querySelector('.land-context-summary').textContent;
-  expect(text).toContain('ปี 2019');expect(text).not.toContain('เบญจพรรณ');expect(text).not.toContain('mixed_forest');dom.window.close();
+  expect(text).toContain('ปี 2021');expect(text).toContain(reference.province_context.context_text);
+  expect(text).toContain('สถิติระดับจังหวัดในอดีต');expect(text).not.toContain('ป่าไม่ผลัดใบ');
+  expect(host.querySelector('a[href$="#page=2"]')).not.toBeNull();dom.window.close();
+});
+it('rejects a stale CGLS response from an older backend during a staged release',async()=>{
+  const result={kind:'evergreen',headline:'ป่าไม่ผลัดใบ',sources:[{name:'Copernicus CGLS-LC100',year:2019,url:'https://zenodo.org/records/3939050'}],reference:reference.profiles.evergreen};
+  const {dom,c,host}=setup({result});host.innerHTML=c.summary({lat:17.8,lon:98.4})+c.details({lat:17.8,lon:98.4});await c.hydrate(host);
+  expect(host.textContent).not.toContain('ป่าไม่ผลัดใบ');expect(host.textContent).not.toContain('CGLS');dom.window.close();
 });
 it('keeps unknown land context unknown when neither API nor point code can establish a class',async()=>{
   const {dom,c,host}=setup({fail:true});host.innerHTML=c.summary({lat:18.8,lon:98.9});await c.hydrate(host);
