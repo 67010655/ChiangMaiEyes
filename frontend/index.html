@@ -2018,6 +2018,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/decision-support.js"></script>
+<link rel="stylesheet" href="/forest-coordination.css">
+<script src="/forest-coordination.js"></script>
 <script src="/community-workspace.js"></script>
 <script src="/field-checks.js"></script>
 <script src="/practice-workspace.js"></script>
@@ -2193,14 +2195,14 @@ const SPREAD_HALF_ANGLE_DEG = 26;
 function nearestForests(lat, lon, n=3){
   if(!allForests.length) return [];
   const blowTo=(wind().deg+180)%360;
-  return allForests
-    .filter(f=>f.latitude && f.longitude)
-    .map(f=>{
+  return CmeCoordination.nearest(lat,lon,allForests,n)
+    .map(row=>{
+      const f=row.forest;
       const fLat=Number(f.latitude), fLon=Number(f.longitude);
       const bearing=bearingDeg(lat,lon,fLat,fLon);
       return {
         forest:f,
-        km: kmBetween(lat,lon,fLat,fLon),
+        km: row.km,
         downwind: angleDiffDeg(bearing,blowTo) <= SPREAD_HALF_ANGLE_DEG,
       };
     })
@@ -2435,23 +2437,22 @@ function gMapsLink(lat, lng){ return `<a href="https://www.google.com/maps/dir/?
 // MapLibre popup, so the two views never drift apart. Callers append any
 // view-specific extras (2D's "ดูใน 3D" link, the owner-only delete span).
 function hotspotPopupHtml(h){
-  return `<b>${h.id}</b> · ${h.district}<br>`+
+  return CmeCoordination.html(h.lat,h.lon)+`<b>${h.id}</b> · ${h.district}<br>`+
     `ต.${h.subdistrict||h.tambon||'—'}<br>`+
     `${fmtFrp(h)} · ความเชื่อมั่น ${CmeEvidence.confidenceLabel(h.conf)}<br>`+
     `<small>ระดับคุณภาพการตรวจพบจากต้นทาง ไม่ใช่โอกาสเกิดไฟหรือความแม่นยำของระบบ</small><br>`+
     (h.confSource ? `<small>แหล่งระดับความเชื่อมั่น: ${CmeEvidence.escapeHtml(h.confSource)}</small><br>` : '')+
     `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
     `${gMapsLink(h.lat,h.lon)}<br>`+
-    nearestForestsPopupHtml(h.lat, h.lon)+CmeEvidence.fireHelpHtml();
+    CmeEvidence.fireHelpHtml();
 }
 function manualReportPopupHtml(r){
   const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
-  return `<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
+  return CmeCoordination.html(r.latitude,r.longitude)+`<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
     `อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>`+
     `${(r.description||'').replace(/</g,'&lt;')}<br>`+
     `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br>`+
-    `${gMapsLink(r.latitude,r.longitude)}<br>`+
-    nearestForestsPopupHtml(Number(r.latitude), Number(r.longitude));
+    `${gMapsLink(r.latitude,r.longitude)}<br>`;
 }
 // Sizing/intensity scalar: real FRP if present, else a confidence-based proxy so
 // markers still have a sensible radius (never shown as MW).
@@ -2499,7 +2500,7 @@ function renderHotspots(){
       hotspotPopupHtml(h)+
       `<br><span style="cursor:pointer;color:var(--wind);text-decoration:underline" `+
       `onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${h.lon},${h.lat}],zoom:12,pitch:55,bearing:0,duration:motionDuration(1200)}),600)">📍 ดูใน 3D</span>`
-    );
+    ,{maxWidth:320,maxHeight:Math.max(100,Math.min(400,window.innerHeight*.4))});
     m.on('popupopen',()=>showForestProximity(h.lat, h.lon));
     m.on('popupclose', clearForestProximity);
     m.on('click',()=>selectHotspot(h,{fromMarker:true}));
@@ -2758,6 +2759,7 @@ async function doSignOut(){
 if(sb){
   sb.auth.onAuthStateChange((_event, session)=>{
     currentUser = session?.user || null;
+    window.CmeCoordination?.authChanged();
     CmeAuth.sessionChanged(session);
     updateAuthUI();
     renderManualReports(); // refresh owner-only delete links for the new session
@@ -2765,6 +2767,7 @@ if(sb){
   });
   sb.auth.getSession().then(({data})=>{
     currentUser = data?.session?.user || null;
+    window.CmeCoordination?.authChanged();
     updateAuthUI();
   });
 }
@@ -2989,7 +2992,7 @@ function renderManualReports(){
     m.bindPopup(()=>
       manualReportPopupHtml(r)+
       (isOwner ? `<br><span style="cursor:pointer;color:var(--danger);text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>` : '')
-    );
+    ,{maxWidth:320,maxHeight:Math.max(100,Math.min(400,window.innerHeight*.4))});
     m.on('popupopen',()=>{
       map.flyTo([r.latitude, r.longitude], Math.max(map.getZoom(),12), {duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
       showForestProximity(Number(r.latitude), Number(r.longitude));
@@ -3035,6 +3038,7 @@ function selectHotspot(h,{fromMarker=false}={}){
   document.getElementById('detailEmpty').style.display='none';
   body.style.display='block';
   body.innerHTML=`
+    ${CmeCoordination.html(h.lat,h.lon)}
     <div class="dl"><span class="dk">ID</span><span class="dv">${h.id}</span></div>
     <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${h.district}</span></div>
     <div class="dl"><span class="dk">ตำบล</span><span class="dv">${h.subdistrict||h.tambon||'—'}</span></div>
@@ -4143,6 +4147,7 @@ async function loadBoundaries() {
     return;
   }
   _districtFeatures = resDistricts.features || [];
+  window.CmeCoordination?.refresh();
   runMapRenderTask('boundary-province',()=>{
     layers.boundaries.clearLayers();
 
@@ -4233,6 +4238,7 @@ async function loadTambonBoundaries(){
       fetch('/chiangmai-tambons.meta.json').then(r=>r.ok?r.json():null).catch(()=>null)
     ]);
     _tambonFeatures = geo.features || [];
+    window.CmeCoordination?.refresh();
     tambonSourceMeta = meta || geo.metadata || null;
     if(currentDashboard){
       hotspots = enrichHotspotsWithBoundaries(hotspots);
@@ -4371,6 +4377,7 @@ async function loadCommunityForests(){
     const data = await fetchJson('/api/community-forests', 20000);
     const forests = Array.isArray(data) ? data : (data.forests || []);
     allForests = forests;
+    window.CmeCoordination?.refresh();
     window.CmeTerrain?.setForests(forests);
     syncExportForests();
     renderForestMarkers();
@@ -5810,7 +5817,7 @@ function _sync3DHotspots(){
       selectHotspot(h);
       mlMap.flyTo({center:[h.lon,h.lat], zoom:Math.max(mlMap.getZoom(),14), duration:motionDuration(900)});
       show3DForestProximity(h.lat, h.lon);
-      new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'220px'})
+      new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'320px',className:'coordination-popup'})
         .setLngLat([h.lon,h.lat])
         .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3">${hotspotPopupHtml(h)}</div>`)
         .on('close', clear3DForestProximity)
@@ -5842,7 +5849,7 @@ function _sync3DManualReports(){
       const isOwner = currentUser && currentUser.id === r.reporter_id;
       mlMap.flyTo({center:[r.longitude,r.latitude], zoom:Math.max(mlMap.getZoom(),14), duration:motionDuration(900)});
       show3DForestProximity(Number(r.latitude), Number(r.longitude));
-      new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'220px'})
+      new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'320px',className:'coordination-popup'})
         .setLngLat([r.longitude,r.latitude])
         .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3">${manualReportPopupHtml(r)}${isOwner?`<br><span style="cursor:pointer;color:#ff4d4d;text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>`:''}</div>`)
         .on('close', clear3DForestProximity)
@@ -6357,6 +6364,16 @@ function buildEvidenceReport(){
 }
 document.getElementById('exportOptions').addEventListener('change',buildReport);
 renderEvidenceSources();
+
+CmeCoordination.init({
+  apiBase:API_BASE,
+  user:()=>currentUser,
+  session:async()=>sb?(await sb.auth.getSession()).data.session:null,
+  forests:()=>allForests,
+  tambons:()=>_tambonFeatures,
+  districts:()=>_districtFeatures
+});
+map.on('popupopen',event=>CmeCoordination.popupOpened(event.popup));
 
 CmeCommunity.init({
   apiBase:API_BASE,

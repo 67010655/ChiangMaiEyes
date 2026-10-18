@@ -62,12 +62,15 @@
     // This map is rebuilt when changing workspace tabs. Leaflet's delayed
     // zoom-transition callback can outlive remove() and access a deleted pane.
     miniMap=L.map(host,{scrollWheelZoom:false,zoomAnimation:false}).setView([selected.latitude,selected.longitude],12);
+    miniMap.on('popupopen',event=>root.CmeCoordination?.popupOpened(event.popup));
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri',maxZoom:18}).addTo(miniMap);
     const geometry=L.geoJSON(selected.boundary,{style:{color:'#29965a',weight:2,fillOpacity:.12}}).addTo(miniMap);
     if(geometry.getBounds().isValid())miniMap.fitBounds(geometry.getBounds(),{padding:[20,20],maxZoom:15,animate:false});
     const dash=context.dashboard();
     if(dash?.data_quality?.hotspots&&!dash.data_quality.hotspots.is_stale&&dash.data_quality.hotspots.source_mode!=='UNAVAILABLE'){
-      E().filterHotspots((dash.hotspots?.items||[]).map(h=>({...h,lat:h.latitude,lon:h.longitude})),{forest:selected}).forEach(h=>L.circleMarker([h.lat,h.lon],{radius:6,color:'#b9480b',fillColor:'#ed8d3c',fillOpacity:.9,weight:1}).bindPopup('จุดความร้อน · '+date(h.detected_at)).addTo(miniMap));
+      const items=(dash.hotspots?.items||[]).map(h=>({...h,lat:h.latitude,lon:h.longitude}));
+      const inside=E().filterHotspots(items,{forest:selected}),across=root.CmeCoordination?.nearbyCrossDistrict(items,selected)||[];
+      [...new Set([...inside,...across])].forEach(h=>L.circleMarker([h.lat,h.lon],{radius:6,color:'#b9480b',fillColor:'#ed8d3c',fillOpacity:.9,weight:1}).bindPopup(()=>`${root.CmeCoordination?.html(h.lat,h.lon,{myForestId:selected.forest_id})||''}จุดความร้อน · ${date(h.detected_at)}`,{maxWidth:320,maxHeight:300}).addTo(miniMap));
     }
   }
   function tabs(){
@@ -113,14 +116,21 @@
     if(state.create)return createForm();
     const selected=forest()||allowed[0];state.forestId=selected.forest_id;
     const related=state.incidents.filter(i=>i.forest_id===selected.forest_id||i.partner_forest_ids?.includes(selected.forest_id));
-    return `<div class="cw-layout"><section class="cw-section"><label class="cw-help" for="cwActiveForest">${state.me.is_admin?'เลือกพื้นที่ดูแลระบบ':'พื้นที่ที่ได้รับอนุมัติ'}</label><select class="cw-select" id="cwActiveForest">${options(allowed,selected.forest_id)}</select>${summary(selected)}<div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">ขอบเขตจาก RECOFTC · ดาวเทียมยังไม่ยืนยันเหตุภาคสนาม · ลมอ้างอิงจังหวัดยังไม่ใช่ลมที่วัดในป่าแห่งนี้</p><div class="cw-actions">${button('แจ้งสิ่งที่พบ','create','',true)}${button('ส่งออกรายงานพื้นที่นี้','export')}</div></section>
+    return `<div class="cw-layout"><section class="cw-section"><label class="cw-help" for="cwActiveForest">${state.me.is_admin?'เลือกพื้นที่ดูแลระบบ':'พื้นที่ที่ได้รับอนุมัติ'}</label><select class="cw-select" id="cwActiveForest">${options(allowed,selected.forest_id)}</select>${summary(selected)}${crossDistrictView(selected)}<div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">ขอบเขตจาก RECOFTC · ดาวเทียมยังไม่ยืนยันเหตุภาคสนาม · ลมอ้างอิงจังหวัดยังไม่ใช่ลมที่วัดในป่าแห่งนี้</p><div class="cw-actions">${button('แจ้งสิ่งที่พบ','create','',true)}${button('ส่งออกรายงานพื้นที่นี้','export')}</div></section>
       <section class="cw-section"><h2>งานที่ต้องดู</h2>${incidentRows(related.filter(i=>!['closed','cancelled'].includes(i.status)))}<div class="cw-actions">${button('ดูประวัติเหตุทั้งหมด','all-incidents')}</div><h3>ช่องทางประสานหน่วยงาน</h3><p class="cw-help"><a href="tel:052081758">052-081758</a> สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่)<br><a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a> · ตรวจ 9 ต.ค. 2026<br>เป็นช่องทางสอบถามผู้ประสาน ยังไม่มีรายชื่อหัวหน้าป่าแห่งนี้ที่ยืนยันแล้ว</p>${state.me.is_admin?'':`<details><summary>ขอสิทธิ์พื้นที่เพิ่มเติม</summary>${membershipView()}</details>`}</section></div>`;
+  }
+  function crossDistrictView(selected){
+    const dash=context.dashboard(),q=dash?.data_quality?.hotspots;
+    if(!root.CmeCoordination||!q||q.is_stale||q.source_mode==='UNAVAILABLE')return '';
+    const rows=root.CmeCoordination.nearbyCrossDistrict(dash.hotspots?.items||[],selected).sort((a,b)=>Date.parse(b.detected_at)-Date.parse(a.detected_at));
+    if(!rows.length)return '';
+    return `<section class="cw-cross-border"><h3>อยู่นอกเขตอำเภอ แต่ป่าเราใกล้ที่สุด</h3><p class="cw-help">${rows.length} จุดใน 24 ชม. · ภายในระยะเส้นตรง 5 กม. จากป่า · ยังไม่ยืนยันเหตุไฟ${rows.length>10?' · แสดง 10 จุดล่าสุด':''}</p>${rows.slice(0,10).map(h=>`<details><summary>จุดใกล้ป่าข้ามเขตอำเภอ · ${date(h.detected_at)}</summary>${root.CmeCoordination.html(h.lat,h.lon,{myForestId:selected.forest_id})}${button('ดูจุดนี้บนแผนที่','locate',`data-lat="${Number(h.lat)}" data-lon="${Number(h.lon)}"`)}</details>`).join('')}</section>`;
   }
   function detailView(){
     const d=state.detail,i=d.incident,name=state.catalog.find(f=>f.forest_id===i.forest_id)?.name||'ป่าชุมชน';
     const invites=d.partners.filter(p=>p.status==='invited'&&(state.me.is_admin||allowedForests().some(f=>f.forest_id===p.forest_id)));
     const coor=state.incidents.find(x=>x.id===i.id)?.coordinator_name;
-    return `<div class="cw-actions">${button('กลับรายการเหตุ','back-list')}${button('ดูตำแหน่งบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</div><div class="cw-layout"><section class="cw-section"><h2>${esc(name)}</h2>${badge(i.status)}<p class="cw-help">พบ${i.observation==='fire'?'เปลวไฟ':'ควัน'} ${date(i.observed_at)} · รับรายงาน ${date(i.created_at)}<br>พิกัด ${i.latitude.toFixed(5)}, ${i.longitude.toFixed(5)}</p><p class="cw-description">${esc(i.description||'ยังไม่มีรายละเอียดเพิ่มเติม')}</p><p>ผู้รับประสาน: ${i.coordinator_id?esc(i.coordinator_id===state.session.user.id?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):'ยังไม่มีผู้รับประสานในระบบ'}</p>
+    return `<div class="cw-actions">${button('กลับรายการเหตุ','back-list')}${button('ดูตำแหน่งบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</div><div class="cw-layout"><section class="cw-section">${root.CmeCoordination?.html(i.latitude,i.longitude,{myForestId:state.forestId})||''}<h2>${esc(name)}</h2>${badge(i.status)}<p class="cw-help">พบ${i.observation==='fire'?'เปลวไฟ':'ควัน'} ${date(i.observed_at)} · รับรายงาน ${date(i.created_at)}<br>พิกัด ${i.latitude.toFixed(5)}, ${i.longitude.toFixed(5)}</p><p class="cw-description">${esc(i.description||'ยังไม่มีรายละเอียดเพิ่มเติม')}</p><p>ผู้รับประสาน: ${i.coordinator_id?esc(i.coordinator_id===state.session.user.id?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):'ยังไม่มีผู้รับประสานในระบบ'}</p>
       <p class="cw-next">ขั้นตอนถัดไป: ${esc({pending:'ผู้รับผิดชอบตรวจสอบรายงานและบันทึกผล',confirmed:'ระบุผู้รับประสานและอัปเดตการดำเนินงาน',coordinating:'บันทึกความคืบหน้าและชุมชนที่ร่วมประสาน',controlled:'ตรวจผลและบันทึกเหตุผลก่อนปิดเหตุ',closed:'เหตุปิดแล้ว เปิดใหม่เมื่อมีหลักฐานเพิ่มเติม',cancelled:'อ่านเหตุผลที่ยกเลิกในประวัติ'}[i.status]||'อ่านประวัติเพื่อติดตามความคืบหน้า')}</p>
       ${d.can_manage&&!i.coordinator_id?button('รับเป็นผู้ประสานเหตุ','claim','',true):''}
       ${invites.map(p=>`<div class="cw-alert">คำขอร่วมประสานสำหรับ ${esc(p.name)}<div class="cw-actions">${button('รับร่วมประสาน','accept',`data-forest="${esc(p.forest_id)}"`,true)}${button('ไม่รับคำขอ','decline',`data-forest="${esc(p.forest_id)}"`)}</div></div>`).join('')}

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request, Query, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.config import Settings, get_settings
@@ -96,6 +96,33 @@ def me(ctx=Depends(session)):
     store, token, user = ctx
     data = store.rpc('me', {}, token)
     return {**data, 'user_id': user['id'], 'test_recipient': store.settings.community_email_test_recipient if data['is_admin'] else None}
+
+
+def contact_forest_ids(forest_ids: list[str] = Query(min_length=1, max_length=3)):
+    if any(not forest_id.strip() or len(forest_id) > 100 for forest_id in forest_ids):
+        raise HTTPException(422, 'รหัสป่าไม่ถูกต้อง')
+    return list(dict.fromkeys(forest_ids))
+
+
+@router.get('/contact-status')
+def contact_status(response: Response, forest_ids=Depends(contact_forest_ids), settings: Settings = Depends(get_settings)):
+    response.headers['Cache-Control'] = 'no-store'
+    rows = CommunityStore(settings).call('POST', '/rest/v1/rpc/cme_forest_contact_status',
+                                         json={'p_forest_ids': forest_ids})
+    # Explicit public allowlist, even if the DB function changes later.
+    return [{'forest_id': r['forest_id'], 'has_representative': r['has_representative'] is True} for r in rows]
+
+
+@router.get('/forest-contacts')
+def forest_contacts(response: Response, forest_ids=Depends(contact_forest_ids), ctx=Depends(session)):
+    store, token, _ = ctx
+    response.headers['Cache-Control'] = 'private, no-store'
+    response.headers['Vary'] = 'Authorization'
+    rows = store.call('POST', '/rest/v1/rpc/cme_forest_contacts', token=token,
+                      json={'p_forest_ids': forest_ids})
+    return [{'forest_id': r['forest_id'], 'representatives': [
+        {'name': rep['name'], 'email': rep['email']} for rep in r['representatives']
+    ]} for r in rows]
 
 
 @router.post('/memberships')

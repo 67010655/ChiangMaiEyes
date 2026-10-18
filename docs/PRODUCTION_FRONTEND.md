@@ -35,3 +35,29 @@ Release policy (2026-10-18):
   old branches with older config from triggering automatic deployments too.
   Existing deployments/domains and local `.vercel/project.json` links remain.
   Do not reconnect Git unless automatic deployment is explicitly requested.
+
+Forest coordination (PRODUCT_BRIEF acceptance task 7, 2026-10-18):
+- `frontend/public/forest-coordination.js` supplies the first card in hotspot,
+  manual-report and private incident details. It uses existing tambon/district
+  polygons and the 677-forest API catalog, without filtering neighbors by district.
+- Distances are approximate straight lines to forest polygon edges (zero inside).
+  A structurally damaged/missing polygon uses its labelled reference point. No
+  road/trail distance, jurisdiction assignment, or automatic dispatch is inferred.
+- The representative workspace includes fresh points within 5 km where its forest
+  is closest across a district boundary, with the neighboring forests shown.
+  District at the forest reference point takes precedence over legacy district
+  metadata where they disagree. Shared/ambiguous tambon boundaries are labelled.
+- `/api/community/contact-status` exposes only a forest id and approval presence.
+  `/api/community/forest-contacts` requires a confirmed login and returns only
+  currently approved representatives' names and confirmed account email addresses.
+  The contact action opens the user's email client; it sends nothing automatically.
+  Failed contact lookup is distinct from having no representative. Both paths keep
+  government contacts and 1362 available; sign-out clears private card data.
+- Before an explicitly authorized release, apply
+  `supabase/migrations/20261018150000_forest_coordination_contacts.sql`, then release
+  backend and frontend together. This migration has not been applied to production
+  as part of the code change. Until applied, contact lookup falls back to government
+  channels without exposing private data. Do not deploy or apply it on Git push.
+- The current authoritative 677-record catalog has no forest named Doi Pui.
+  The Hang Dong / Doi Pui boundary scenario uses isolated test fixtures only;
+  no demonstration forest or coordinator is added to production data.

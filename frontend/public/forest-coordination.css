@@ -1,0 +1,12 @@
+.coordination-card{font:13px/1.6 var(--disp,sans-serif);border:1px solid #557c6c66;border-radius:8px;padding:10px;margin:0 0 12px;overflow-wrap:anywhere;text-align:left}
+.coordination-card h3{font:600 14px/1.5 var(--disp,sans-serif);margin:0 0 5px;color:inherit}
+.coordination-card p{margin:5px 0}.coordination-lead{font-weight:600}
+.coordination-card .coordination-note{font-size:11px;opacity:.85}
+.coordination-forest{border-top:1px solid #557c6c44;padding:6px 0}
+.coordination-card a{color:var(--wind,#57cfc4);text-decoration:underline;text-underline-offset:2px}
+.coordination-card a[href^="tel:"],.coordination-contact{display:inline-block;min-height:44px;padding:10px 0;box-sizing:border-box}
+.coordination-card .coordination-cross{padding:7px;border-left:3px solid #e99c42;background:#c7801515;font-weight:600}
+.cw-cross-border{margin-top:12px}.cw-cross-border details{border-top:1px solid #557c6c44;padding:8px 0}
+.cw-cross-border summary{cursor:pointer;min-height:44px;padding:8px 0}
+.cw-section .coordination-card a,.light .coordination-card a{color:#076c76}
+.coordination-popup .maplibregl-popup-content{max-height:min(55dvh,480px);overflow-y:auto}

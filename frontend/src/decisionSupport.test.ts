@@ -32,12 +32,14 @@ describe('evidence selection for public summaries and export',()=>{
     const markers: any[]=[];
     class Clock extends Date {static now(){return now;}}
     const runtime: any={
+      innerHeight:812,
       Date:Clock, hotspots:[{lat:18,lon:99,conf:'high',frp:3,detected_at:'2026-10-09T10:00:00Z'},{lat:18,lon:99,conf:'high',frp:3,detected_at:'2026-10-07T10:00:00Z'}],
       frpColor:()=> '#ff8a3d',clearForestProximity:()=>{},
       document:{getElementById:()=>({textContent:''})},
       layers:{hotspots:{clearLayers:()=>{},addLayer:(m:any)=>markers.push(m)}},
       L:{divIcon:(o:any)=>o,marker:()=>({opacity:null as number|null,setOpacity(v:number){this.opacity=v;return this;},bindPopup(){return this;},on(){return this;}})}
     };
+    runtime.window=runtime;
     runInNewContext(readFileSync(resolve(__dirname,'../public/decision-support.js'),'utf8')+'\n'+render+'\nrenderHotspots();',runtime);
     expect(markers).toHaveLength(2);
     expect(markers.map(m=>m.opacity)).toEqual([1,.38]);

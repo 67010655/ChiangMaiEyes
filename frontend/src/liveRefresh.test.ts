@@ -104,6 +104,7 @@ describe('hotspot selection with a popup', () => {
     const ctx = createContext({ document: dom.window.document, selected: null,
       spreadCone: () => ({ km: 2 }), wind: () => ({ deg: 0 }), CRITICAL_FRP_MW: 50,
       CmeEvidence: { confidenceLabel: () => 'nominal', escapeHtml: (s: string) => s },
+      CmeCoordination: { html: () => '<section>ใครควรดูแลจุดนี้</section>' },
       formatAge: () => '20 นาที', animateDetail: vi.fn(), map: { flyTo }, motionDuration: () => 0,
       isMobileViewport: () => true, openMobileDrawer: openDrawer, closeMobileDrawers: closeDrawers,
       toggleBriefDetails: vi.fn(), setTimeout: vi.fn(),
@@ -194,6 +195,7 @@ describe('boundary retrieval and map fitting have separate failures', () => {
     const geoJSON = vi.fn(() => ({ addTo: vi.fn().mockReturnThis(), getBounds: () => ({ valid: true }) }));
     const error = vi.fn();
     Object.assign(ctx, { fetch: vi.fn(async () => ({ ok: true, json: async () => districts })),
+      window:dom.window,
       layers: { boundaries: { clearLayers: vi.fn() } }, L: { geoJSON },
       map: { fitBounds: vi.fn(() => { throw new Error('heat failed during fit'); }) },
       _districtFeatures: [], _provinceBoundsForFit: null, livePhases: null, console: { error },
