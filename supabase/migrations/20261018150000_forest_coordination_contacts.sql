@@ -1,5 +1,6 @@
 -- PRODUCT_BRIEF #7: approval status is public; personal contact details require
--- a confirmed login. No new roles, assignments, or public personal directory.
+-- an approved representative or admin login. Self-service signup is not enough.
+-- No new roles, assignments, or public personal directory.
 begin;
 
 create or replace function public.cme_forest_contact_status(p_forest_ids text[])
@@ -20,8 +21,10 @@ end $$;
 create or replace function public.cme_forest_contacts(p_forest_ids text[])
 returns jsonb language plpgsql stable security definer set search_path='' as $$
 begin
-  if not exists(select 1 from auth.users where id=auth.uid() and email_confirmed_at is not null) then
-    raise exception 'เข้าสู่ระบบและยืนยันอีเมลก่อนดูผู้ประสานงาน' using errcode='42501';
+  if not exists(select 1 from auth.users where id=auth.uid() and email_confirmed_at is not null)
+    or not (public.cme_is_admin() or exists(select 1 from public.cme_memberships
+      where user_id=auth.uid() and status='approved')) then
+    raise exception 'เฉพาะตัวแทนป่าชุมชนที่ได้รับอนุมัติ' using errcode='42501';
   end if;
   if p_forest_ids is null or cardinality(p_forest_ids) not between 1 and 3 then
     raise exception 'เลือกป่าได้ครั้งละ 1–3 แห่ง' using errcode='22023';

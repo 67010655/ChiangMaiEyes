@@ -34,6 +34,17 @@
     const date = new Date(iso);
     return iso && Number.isFinite(date.getTime()) ? date.toLocaleString('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' น.' : 'ยังไม่ระบุเวลา';
   }
+  function observationTimeHtml(iso,source='ดาวเทียม',now=Date.now()){
+    const time=iso?Date.parse(iso):NaN,age=now-time;
+    let text='ยังไม่ทราบเวลาตรวจพบ';
+    if(Number.isFinite(time)&&age>=0){
+      const minutes=Math.floor(age/60000),hours=Math.floor(minutes/60),days=Math.floor(hours/24);
+      const relative=days?days+' วันที่แล้ว':hours?hours+' ชั่วโมงที่แล้ว':minutes?minutes+' นาทีที่แล้ว':'เมื่อสักครู่';
+      const exact=new Intl.DateTimeFormat('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(time);
+      text=`ตรวจพบ ${relative} (${exact})`;
+    }else if(Number.isFinite(time))text='เวลาตรวจพบอยู่ในอนาคต โปรดตรวจสอบต้นทาง';
+    return `<p class="hotspot-detected-time">${escapeHtml(text)} · ${escapeHtml(source)}</p>`;
+  }
   function windTo(from) { return ((Number(from)+180)%360+360)%360; }
   function confidenceLevel(item) {
     return ['low','nominal','high','unknown'].includes(item.confidence_level)
@@ -72,5 +83,5 @@
   function fireHelpHtml(){
     return '<p class="fire-help">พบไฟป่าหรือควัน: <a href="tel:1362">โทร 1362 สายด่วนพิทักษ์ป่า</a><br><small>การบันทึกบนเว็บไม่ใช่การเรียกรถหรือเจ้าหน้าที่ฉุกเฉิน · <a href="https://news.dnp.go.th/news/36837" target="_blank" rel="noopener">ข้อมูลกรมอุทยานฯ</a></small></p>';
   }
-  root.CmeEvidence = {fireHelpHtml,escapeHtml,distanceKm,inBoundary,filterHotspots,stamp,windTo,confidenceLevel,confidenceLabel,dailyStats,contacts,sources};
+  root.CmeEvidence = {fireHelpHtml,observationTimeHtml,escapeHtml,distanceKm,inBoundary,filterHotspots,stamp,windTo,confidenceLevel,confidenceLabel,dailyStats,contacts,sources};
 })(typeof window!=='undefined' ? window : globalThis);

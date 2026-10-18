@@ -11,12 +11,12 @@ const neighbor={forest_id:'ban-pong',name:'บ้านปง',amphoe:'หาง
 const third={forest_id:'other',name:'อีกป่า',amphoe:'สะเมิง',latitude:18.8,longitude:98.97,boundary:rectangle(98.96,18.79,98.98,18.81)};
 const admin=[{geometry:rectangle(98.9,18.7,99,18.9),properties:{tambon_th:'บ้านปง',amphoe_th:'หางดง'}}];
 const tick=()=>new Promise(r=>setTimeout(r,5));
-function setup(){
+function setup({agencyRows=[] as any[]}={}){
   const dom=new JSDOM('<main id="host"></main>',{url:'http://localhost/',runScripts:'outside-only'}),w=dom.window as any;
   let user:any=null;
   w.eval(evidence);w.eval(coordination);
   w.fetch=vi.fn(async()=>({ok:true,json:async()=>[{forest_id:'doi-pui',has_representative:false},{forest_id:'ban-pong',has_representative:true}]}));
-  w.CmeCoordination.init({forests:()=>[neighbor,third,mine],tambons:()=>admin,districts:()=>[],user:()=>user,session:async()=>user?{user,access_token:'fixture-token'}:null});
+  w.CmeCoordination.init({agencies:()=>agencyRows,forests:()=>[neighbor,third,mine],tambons:()=>admin,districts:()=>[],user:()=>user,session:async()=>user?{user,access_token:'fixture-token'}:null});
   return {dom,w,c:w.CmeCoordination,host:w.document.getElementById('host'),setUser:(v:any)=>{user=v;}};
 }
 it('finds forests across district lines by edge distance and leads with boundary-derived location',()=>{
@@ -44,7 +44,7 @@ it('handles polygon holes, multipolygons and shared edges without substituting a
 });
 it('marks ambiguous administrative boundaries and uses a labelled reference for a damaged forest polygon',()=>{
   const {dom,c}=setup();
-  c.init({forests:()=>[{...mine,boundary_quality:'needs_review'}],tambons:()=>[...admin,...admin]});
+  c.init({agencies:()=>[],forests:()=>[{...mine,boundary_quality:'needs_review'}],tambons:()=>[...admin,...admin]});
   expect(c.administrativeArea(18.8,98.901).status).toBe('ambiguous');
   expect(c.html(18.8,98.901)).toContain('(จุดอ้างอิงป่า)');
   expect(c.html(18.8,98.901)).not.toContain('จุดนี้อยู่ ต.บ้านปง');
@@ -61,7 +61,7 @@ it('public card does not fetch or render private contact data, even if extras en
   expect(w.fetch.mock.calls.every(([url,opts]:any)=>url.includes('/contact-status?')&&!opts.headers.Authorization)).toBe(true);
   dom.window.close();
 });
-it('confirmed login fetches private contacts, escapes names, and logout removes them immediately',async()=>{
+it('approved login fetches private contacts, escapes names, and logout removes them immediately',async()=>{
   const {dom,w,c,host,setUser}=setup();setUser({id:'viewer'});
   w.fetch.mockImplementation(async(url:string)=>({ok:true,json:async()=>url.includes('/forest-contacts?')?[{forest_id:'doi-pui',representatives:[{name:'Approved <img src=x onerror=bad()>',email:'approved@example.test'}]}]:[]}));
   host.innerHTML=c.html(18.8,98.901);await c.hydrate(host);
@@ -71,6 +71,15 @@ it('confirmed login fetches private contacts, escapes names, and logout removes 
   setUser(null);const done=c.authChanged();
   expect(host.innerHTML).not.toContain('Approved');expect(host.querySelector('a[href^="mailto:"]')).toBeNull();
   await done;dom.window.close();
+});
+it('a signed-in account refused approval sees the required message and only government channels',async()=>{
+  const {dom,w,c,host,setUser}=setup();setUser({id:'unapproved'});
+  w.fetch.mockResolvedValue({ok:false,status:403,json:async()=>({detail:'เฉพาะตัวแทนป่าชุมชนที่ได้รับอนุมัติ'})});
+  host.innerHTML=c.html(18.8,98.901);await c.hydrate(host);
+  expect(host.textContent).toContain('รออนุมัติสิทธิ์ตัวแทนก่อนจึงจะดูผู้ประสานงานได้');
+  expect(host.querySelector('a[href^="mailto:"]')).toBeNull();
+  expect(host.querySelector('a[href="tel:052081758"]')).not.toBeNull();
+  expect(host.querySelectorAll('a[href="tel:1362"]')).toHaveLength(1);dom.window.close();
 });
 it('discards a private response that arrives after logout and has no persistent contact cache',async()=>{
   const {dom,w,c,host,setUser}=setup();setUser({id:'viewer'});
@@ -99,4 +108,30 @@ it('shows only recent points within five kilometres where this forest is closest
   const {dom,c}=setup(),now=new Date().toISOString();
   const points=[{id:'cross',latitude:18.8,longitude:98.901,detected_at:now},{id:'other-closest',latitude:18.8,longitude:98.94,detected_at:now},{id:'far',latitude:18.8,longitude:99.9,detected_at:now},{id:'old',latitude:18.8,longitude:98.901,detected_at:'2020-01-01T00:00:00Z'}];
   expect(c.nearbyCrossDistrict(points,mine).map((p:any)=>p.id)).toEqual(['cross']);dom.window.close();
+});
+
+const office=(name:string,tambon:string,district:string)=>({name,tambon,district,phones:['053111222'],source:'https://forestinfo.forest.go.th/telephone_region.aspx',checked_on:'2026-10-18'});
+it('prefers same tambon, then same district, regardless of other office locations',()=>{
+  const exact=office('Same tambon','บ้านปง','หางดง'),district=office('Same district','น้ำแพร่','หางดง');
+  const {dom,c}=setup({agencyRows:[district,exact]});
+  expect(c.selectAgencies(18.8,98.901)).toEqual({method:'tambon',rows:[{agency:exact}]});
+  expect(c.html(18.8,98.901)).toContain('ต้นทางกรมป่าไม้');
+  expect(c.html(18.8,98.901)).toContain('ตรวจ 2026-10-18');
+  expect(c.html(18.8,98.901)).toContain('หน่วยงานในพื้นที่ ไม่ใช่การมอบหมายผู้รับผิดชอบ');
+  c.init({agencies:()=>[district],tambons:()=>admin,forests:()=>[]});
+  expect(c.selectAgencies(18.8,98.901).method).toBe('district');dom.window.close();
+});
+it('chooses exactly one nearest office from boundary-derived area centers and labels the approximation',()=>{
+  const {dom,c}=setup(),near=office('Near office','สุเทพ','เมืองเชียงใหม่'),far=office('Far office','สะเมิงใต้','สะเมิง');
+  const areas=[...admin,{geometry:rectangle(98.88,18.79,98.9,18.81),properties:{tambon_th:'สุเทพ',amphoe_th:'เมืองเชียงใหม่'}},{geometry:rectangle(98.5,18.79,98.6,18.81),properties:{tambon_th:'สะเมิงใต้',amphoe_th:'สะเมิง'}}];
+  c.init({agencies:()=>[far,near],tambons:()=>areas,forests:()=>[]});
+  const result=c.selectAgencies(18.8,98.901);
+  expect(result.method).toBe('nearest');expect(result.rows).toHaveLength(1);expect(result.rows[0].agency.name).toBe('Near office');
+  expect(c.html(18.8,98.901)).toContain('ไม่ใช่พิกัดจริงของหน่วยงาน');dom.window.close();
+});
+it('does not duplicate the provincial fallback telephone when that same agency is selected',()=>{
+  const a={...office('Provincial office','บ้านปง','หางดง'),phones:['052081758']};
+  const {dom,c,host}=setup({agencyRows:[a]});host.innerHTML=c.html(18.8,98.901);
+  expect(host.querySelectorAll('a[href="tel:052081758"]')).toHaveLength(1);
+  expect(host.querySelectorAll('a[href="tel:1362"]')).toHaveLength(1);dom.window.close();
 });

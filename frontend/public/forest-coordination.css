@@ -3,6 +3,8 @@
 .coordination-card p{margin:5px 0}.coordination-lead{font-weight:600}
 .coordination-card .coordination-note{font-size:11px;opacity:.85}
 .coordination-forest{border-top:1px solid #557c6c44;padding:6px 0}
+.coordination-office{border-top:1px solid #557c6c44;margin-top:6px;padding-top:6px}
+.hotspot-detected-time{font:600 12px/1.5 var(--disp,sans-serif);margin:0 0 8px;overflow-wrap:anywhere}
 .coordination-card a{color:var(--wind,#57cfc4);text-decoration:underline;text-underline-offset:2px}
 .coordination-card a[href^="tel:"],.coordination-contact{display:inline-block;min-height:44px;padding:10px 0;box-sizing:border-box}
 .coordination-card .coordination-cross{padding:7px;border-left:3px solid #e99c42;background:#c7801515;font-weight:600}

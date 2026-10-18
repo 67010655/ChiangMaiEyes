@@ -70,7 +70,7 @@
     if(dash?.data_quality?.hotspots&&!dash.data_quality.hotspots.is_stale&&dash.data_quality.hotspots.source_mode!=='UNAVAILABLE'){
       const items=(dash.hotspots?.items||[]).map(h=>({...h,lat:h.latitude,lon:h.longitude}));
       const inside=E().filterHotspots(items,{forest:selected}),across=root.CmeCoordination?.nearbyCrossDistrict(items,selected)||[];
-      [...new Set([...inside,...across])].forEach(h=>L.circleMarker([h.lat,h.lon],{radius:6,color:'#b9480b',fillColor:'#ed8d3c',fillOpacity:.9,weight:1}).bindPopup(()=>`${root.CmeCoordination?.html(h.lat,h.lon,{myForestId:selected.forest_id})||''}จุดความร้อน · ${date(h.detected_at)}`,{maxWidth:320,maxHeight:300}).addTo(miniMap));
+      [...new Set([...inside,...across])].forEach(h=>L.circleMarker([h.lat,h.lon],{radius:6,color:'#b9480b',fillColor:'#ed8d3c',fillOpacity:.9,weight:1}).bindPopup(()=>`${E().observationTimeHtml(h.detected_at,'ดาวเทียม')}${root.CmeCoordination?.html(h.lat,h.lon,{myForestId:selected.forest_id})||''}`,{maxWidth:320,maxHeight:300}).addTo(miniMap));
     }
   }
   function tabs(){

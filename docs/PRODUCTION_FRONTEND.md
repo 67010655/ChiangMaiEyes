@@ -48,11 +48,28 @@ Forest coordination (PRODUCT_BRIEF acceptance task 7, 2026-10-18):
   District at the forest reference point takes precedence over legacy district
   metadata where they disagree. Shared/ambiguous tambon boundaries are labelled.
 - `/api/community/contact-status` exposes only a forest id and approval presence.
-  `/api/community/forest-contacts` requires a confirmed login and returns only
+  `/api/community/forest-contacts` requires a confirmed login plus an admin role or
+  at least one currently approved forest membership, and returns only
   currently approved representatives' names and confirmed account email addresses.
   The contact action opens the user's email client; it sends nothing automatically.
   Failed contact lookup is distinct from having no representative. Both paths keep
   government contacts and 1362 available; sign-out clears private card data.
+- `scripts/build_forest_agency_contacts.py` regenerates
+  `frontend/public/forest-agency-contacts.json` using the publisher's Windows-874
+  HTTP charset. Run it with Python 3, optionally `--checked-on YYYY-MM-DD` for a
+  reproducible verification date. Only organization, tambon/district, telephone,
+  source and checked date fields are retained; no staff or editor names or raw HTML.
+  The checked 2026-10-18 snapshot has 26 agencies with published phone numbers
+  (24 protection units, the Chiang Mai forest center, and regional office 1).
+  Development/fire-promotion units without a published number are omitted.
+- Agency selection prefers the same tambon and district, then the same district,
+  then one nearest unit by the centroid of its tambon boundary (district boundary
+  if its tambon cannot be resolved). The page gives no office coordinates, so the
+  fallback is explicitly approximate and does not claim an office-location distance.
+  The catalog's `ดอยสะเก็ต` spelling is matched to boundary `ดอยสะเก็ด` without
+  overwriting the publisher's stored address. Locality is not a legal assignment.
+- Satellite and manual-report popups show detection age and Bangkok time before
+  the coordination card. The coordination card owns the single 1362 link.
 - Before an explicitly authorized release, apply
   `supabase/migrations/20261018150000_forest_coordination_contacts.sql`, then release
   backend and frontend together. This migration has not been applied to production

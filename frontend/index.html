@@ -2437,18 +2437,17 @@ function gMapsLink(lat, lng){ return `<a href="https://www.google.com/maps/dir/?
 // MapLibre popup, so the two views never drift apart. Callers append any
 // view-specific extras (2D's "ดูใน 3D" link, the owner-only delete span).
 function hotspotPopupHtml(h){
-  return CmeCoordination.html(h.lat,h.lon)+`<b>${h.id}</b> · ${h.district}<br>`+
+  return CmeEvidence.observationTimeHtml(h.detected_at,'ดาวเทียม')+CmeCoordination.html(h.lat,h.lon)+`<b>${h.id}</b> · ${h.district}<br>`+
     `ต.${h.subdistrict||h.tambon||'—'}<br>`+
     `${fmtFrp(h)} · ความเชื่อมั่น ${CmeEvidence.confidenceLabel(h.conf)}<br>`+
     `<small>ระดับคุณภาพการตรวจพบจากต้นทาง ไม่ใช่โอกาสเกิดไฟหรือความแม่นยำของระบบ</small><br>`+
     (h.confSource ? `<small>แหล่งระดับความเชื่อมั่น: ${CmeEvidence.escapeHtml(h.confSource)}</small><br>` : '')+
-    `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
-    `${gMapsLink(h.lat,h.lon)}<br>`+
-    CmeEvidence.fireHelpHtml();
+    `${h.sat}<br>`+
+    `${gMapsLink(h.lat,h.lon)}<br>`;
 }
 function manualReportPopupHtml(r){
   const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
-  return CmeCoordination.html(r.latitude,r.longitude)+`<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
+  return CmeEvidence.observationTimeHtml(r.observed_at||r.reported_at,'รายงานโดยผู้ใช้')+CmeCoordination.html(r.latitude,r.longitude)+`<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
     `อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>`+
     `${(r.description||'').replace(/</g,'&lt;')}<br>`+
     `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br>`+

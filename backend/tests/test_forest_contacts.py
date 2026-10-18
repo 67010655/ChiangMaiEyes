@@ -1,10 +1,14 @@
 """PRODUCT_BRIEF #7: private contacts never enter the public response."""
 from types import SimpleNamespace
 
+import httpx
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.community import router, session
+from app.community_store import CommunityStore
+from app.config import Settings
 
 
 def client_app():
@@ -57,3 +61,17 @@ def test_contacts_limit_queries_to_three_forests_and_reject_missing_ids(monkeypa
     with TestClient(client_app()) as client:
         for ids in [[], [''], ['A', 'B', 'C', 'D'], ['x' * 101]]:
             assert client.get('/api/community/contact-status', params=[('forest_ids', value) for value in ids]).status_code == 422
+
+
+def test_approval_denial_from_sql_becomes_403_without_returning_any_representatives():
+    settings = Settings(supabase_url='https://fixture.example', supabase_service_role_key='fixture')
+    with httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(403, json={
+        'code': '42501', 'message': 'เฉพาะตัวแทนป่าชุมชนที่ได้รับอนุมัติ'}))) as transport:
+        store = CommunityStore(settings, transport)
+        app = client_app()
+        app.dependency_overrides[session] = lambda: (store, 'fixture-user-token', {'id': 'unapproved-user'})
+        with TestClient(app) as client:
+            response = client.get('/api/community/forest-contacts', params={'forest_ids': 'cmf-A'})
+        assert response.status_code == 403
+        assert response.json() == {'detail': 'เฉพาะตัวแทนป่าชุมชนที่ได้รับอนุมัติ'}
+        assert 'representatives' not in response.text

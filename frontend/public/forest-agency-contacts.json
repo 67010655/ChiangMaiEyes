@@ -1,0 +1,267 @@
+{
+  "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+  "source_updated_on": "2025-11-20",
+  "checked_on": "2026-10-18",
+  "agencies": [
+    {
+      "name": "สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่)",
+      "tambon": "ช้างคลาน",
+      "district": "เมืองเชียงใหม่",
+      "phones": [
+        "052081758"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "ศูนย์ป่าไม้เชียงใหม่",
+      "tambon": "ช้างคลาน",
+      "district": "เมืองเชียงใหม่",
+      "phones": [
+        "053272154"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.1 (น้ำยอน)",
+      "tambon": "ท่าตอน",
+      "district": "แม่อาย",
+      "phones": [
+        "0818819659"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.10 (ห้วยทราย)",
+      "tambon": "ห้วยทราย",
+      "district": "แม่ริม",
+      "phones": [
+        "0904692513"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม. 11 (สะเมิง)",
+      "tambon": "สะเมิงใต้",
+      "district": "สะเมิง",
+      "phones": [
+        "0818849223"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.12 (วัดจันทร์)",
+      "tambon": "แม่แจ่ม",
+      "district": "กัลยาณิวัฒนา",
+      "phones": [
+        "0833252484"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.13 (สันป่าตอง)",
+      "tambon": "น้ำบ่อหลวง",
+      "district": "สันป่าตอง",
+      "phones": [
+        "0814689323"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.14 (ห้วยโจ้)",
+      "tambon": "ดอยหล่อ",
+      "district": "ดอยหล่อ",
+      "phones": [
+        "0811119839"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.15 (สบแม่แจ่ม)",
+      "tambon": "หางดง",
+      "district": "ฮอด",
+      "phones": [
+        "0871779780"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม. 16 (ดอยเต่า)",
+      "tambon": "ดอยเต่า",
+      "district": "ดอยเต่า",
+      "phones": [
+        "0614027533"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.17 (สบวาก)",
+      "tambon": "แม่นาจร",
+      "district": "แม่แจ่ม",
+      "phones": [
+        "0924491546"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.18 (แม่นาฮ่อง)",
+      "tambon": "แม่สา",
+      "district": "แม่แจ่ม",
+      "phones": [
+        "0898511193"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.19 (ท่าผา)",
+      "tambon": "กองแขก",
+      "district": "แม่แจ่ม",
+      "phones": [
+        "0849505405"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.2 (เหมืองแร่)",
+      "tambon": "แม่คะ",
+      "district": "ฝาง",
+      "phones": [
+        "0816032296"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.20 (กิ่วลม)",
+      "tambon": "บ่อหลวง",
+      "district": "ฮอด",
+      "phones": [
+        "0945425574"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.21 (บ้านแวน)",
+      "tambon": "บ่อสลี",
+      "district": "ฮอด",
+      "phones": [
+        "0932515649"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.22 (ปางโอ้งโม้ง)",
+      "tambon": "อมก๋อย",
+      "district": "อมก๋อย",
+      "phones": [
+        "0861939933"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.23 (ยางเปา)",
+      "tambon": "อมก๋อย",
+      "district": "อมก๋อย",
+      "phones": [
+        "0883916260"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.24 (แม่ตื่น)",
+      "tambon": "แม่ตื่น",
+      "district": "อมก๋อย",
+      "phones": [
+        "0861939933"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่า ที่ ชม.3 (โป่งจ้อก)",
+      "tambon": "แม่ทะลบ",
+      "district": "ไชยปราการ",
+      "phones": [
+        "0956912057"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.4 (เชียงดาว)",
+      "tambon": "แม่นะ",
+      "district": "เชียงดาว",
+      "phones": [
+        "0871730195"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่า ที่ ชม.5 (เวียงแหง)",
+      "tambon": "เมืองแหง",
+      "district": "เวียงแหง",
+      "phones": [
+        "0987656488"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.6 (ปางกว้าง)",
+      "tambon": "อินทขิล",
+      "district": "แม่แตง",
+      "phones": [
+        "0817838430"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่า ที่ ชม.7 (บ้านหลวง)",
+      "tambon": "โหล่งขอด",
+      "district": "พร้าว",
+      "phones": [
+        "0895566289"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.8 (ห้วยส้ม)",
+      "tambon": "แม่แฝก",
+      "district": "สันทราย",
+      "phones": [
+        "0904742327"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    },
+    {
+      "name": "หน่วยป้องกันรักษาป่าที่ ชม.9 (ดอยสะเก็ด)",
+      "tambon": "เชิงดอย",
+      "district": "ดอยสะเก็ต",
+      "phones": [
+        "0819601661"
+      ],
+      "source": "https://forestinfo.forest.go.th/telephone_region.aspx",
+      "checked_on": "2026-10-18"
+    }
+  ]
+}
