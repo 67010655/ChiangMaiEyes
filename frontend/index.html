@@ -1521,6 +1521,7 @@
         <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">PM2.5 stations<small>PCD / sensor mesh</small></div><span class="cnt" id="lcPm">0</span></div>
         <div class="layer on heat" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
+        <div class="layer" data-layer="protected"><div class="sw" style="border-color:#e5a347;background:#e5a34722"></div><div class="lbl">พื้นที่อนุรักษ์ · แผนที่ 2D<small>ขอบเขตจาก GISTDA 2017 ใช้อ้างอิง ไม่ใช่แนวเขตทางกฎหมาย</small></div><span class="cnt" id="lcProtected">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
         <div class="layer on" data-layer="tambonBoundaries"><div class="sw" style="background:rgba(34,211,238,.15);border-color:#22d3ee"></div><div class="lbl">ขอบเขตตำบล<small>ซูมเข้า/กดอำเภอเพื่อดู · 204 ตำบล</small></div><span class="cnt" id="lcTambonBoundaries">0</span></div>
         <div class="layer on" data-layer="tambonWarnings"><div class="sw"></div><div class="lbl">⚠️ เฝ้าระวังระดับตำบล<small>district danger + hotspot proximity</small></div><span class="cnt" id="lcTambonWarn">0</span></div>
@@ -2020,6 +2021,7 @@
 <script src="/decision-support.js"></script>
 <link rel="stylesheet" href="/forest-coordination.css">
 <script src="/forest-coordination.js"></script>
+<script src="/protected-areas.js"></script>
 <script src="/land-context.js"></script>
 <script src="/community-workspace.js"></script>
 <script src="/field-checks.js"></script>
@@ -2345,6 +2347,7 @@ const layers = {
   windDistrict: L.layerGroup(),
   pm:       L.layerGroup(),
   forest:   L.layerGroup(),
+  protected: L.layerGroup(),
   manualReports: L.layerGroup().addTo(map),
   boundaries: L.layerGroup().addTo(map),
   tambonBoundaries: L.layerGroup().addTo(map),
@@ -6368,6 +6371,14 @@ CmeCoordination.init({
 });
 map.on('popupopen',event=>CmeCoordination.popupOpened(event.popup));
 CmeLandContext.init();
+CmeProtectedAreas.init({onReady:()=>{
+  CmeCoordination.refresh();
+  CmeCommunity.dataChanged();
+  layers.protected.clearLayers();
+  const features=CmeProtectedAreas.features();
+  document.getElementById('lcProtected').textContent=CmeProtectedAreas.status()==='ready'?features.length:'—';
+  if(features.length)L.geoJSON({type:'FeatureCollection',features},{interactive:false,style:{color:'#e5a347',weight:1.5,dashArray:'5 4',fillOpacity:.06}}).addTo(layers.protected);
+}});
 
 CmeCommunity.init({
   apiBase:API_BASE,

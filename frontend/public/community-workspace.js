@@ -70,7 +70,9 @@
     if(dash?.data_quality?.hotspots&&!dash.data_quality.hotspots.is_stale&&dash.data_quality.hotspots.source_mode!=='UNAVAILABLE'){
       const items=(dash.hotspots?.items||[]).map(h=>({...h,lat:h.latitude,lon:h.longitude}));
       const inside=E().filterHotspots(items,{forest:selected}),across=root.CmeCoordination?.nearbyCrossDistrict(items,selected)||[];
-      [...new Set([...inside,...across])].forEach(h=>L.circleMarker([h.lat,h.lon],{radius:6,color:'#b9480b',fillColor:'#ed8d3c',fillOpacity:.9,weight:1}).bindPopup(()=>`${E().observationTimeHtml(h.detected_at,'ดาวเทียม')}${root.CmeLandContext?.summary(h)||''}${root.CmeCoordination?.html(h.lat,h.lon,{myForestId:selected.forest_id})||''}<details class="land-context-details"><summary>รายละเอียดเพิ่มเติม</summary>${root.CmeLandContext?.details(h)||''}</details>`,{maxWidth:320,maxHeight:300}).addTo(miniMap));
+      const protectedPoints=(root.CmeProtectedAreas?.nearby(items,selected)||[]).map(r=>r.hotspot);
+      const points=new Map([...inside,...across,...protectedPoints].map(h=>[h.id||h.lat+','+h.lon+','+h.detected_at,h]));
+      [...points.values()].forEach(h=>L.circleMarker([h.lat,h.lon],{radius:6,color:'#b9480b',fillColor:'#ed8d3c',fillOpacity:.9,weight:1}).bindPopup(()=>`${E().observationTimeHtml(h.detected_at,'ดาวเทียม')}${root.CmeLandContext?.summary(h)||''}${root.CmeCoordination?.html(h.lat,h.lon,{myForestId:selected.forest_id})||''}<details class="land-context-details"><summary>รายละเอียดเพิ่มเติม</summary>${root.CmeLandContext?.details(h)||''}</details>`,{maxWidth:320,maxHeight:300}).addTo(miniMap));
     }
   }
   function tabs(){
@@ -116,8 +118,17 @@
     if(state.create)return createForm();
     const selected=forest()||allowed[0];state.forestId=selected.forest_id;
     const related=state.incidents.filter(i=>i.forest_id===selected.forest_id||i.partner_forest_ids?.includes(selected.forest_id));
-    return `<div class="cw-layout"><section class="cw-section"><label class="cw-help" for="cwActiveForest">${state.me.is_admin?'เลือกพื้นที่ดูแลระบบ':'พื้นที่ที่ได้รับอนุมัติ'}</label><select class="cw-select" id="cwActiveForest">${options(allowed,selected.forest_id)}</select>${summary(selected)}${crossDistrictView(selected)}<div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">ขอบเขตจาก RECOFTC · ดาวเทียมยังไม่ยืนยันเหตุภาคสนาม · ลมอ้างอิงจังหวัดยังไม่ใช่ลมที่วัดในป่าแห่งนี้</p><div class="cw-actions">${button('แจ้งสิ่งที่พบ','create','',true)}${button('ส่งออกรายงานพื้นที่นี้','export')}</div></section>
+    return `<div class="cw-layout"><section class="cw-section"><label class="cw-help" for="cwActiveForest">${state.me.is_admin?'เลือกพื้นที่ดูแลระบบ':'พื้นที่ที่ได้รับอนุมัติ'}</label><select class="cw-select" id="cwActiveForest">${options(allowed,selected.forest_id)}</select>${summary(selected)}${protectedNearbyView(selected)}${crossDistrictView(selected)}<div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">ขอบเขตจาก RECOFTC · ดาวเทียมยังไม่ยืนยันเหตุภาคสนาม · ลมอ้างอิงจังหวัดยังไม่ใช่ลมที่วัดในป่าแห่งนี้</p><div class="cw-actions">${button('แจ้งสิ่งที่พบ','create','',true)}${button('ส่งออกรายงานพื้นที่นี้','export')}</div></section>
       <section class="cw-section"><h2>งานที่ต้องดู</h2>${incidentRows(related.filter(i=>!['closed','cancelled'].includes(i.status)))}<div class="cw-actions">${button('ดูประวัติเหตุทั้งหมด','all-incidents')}</div><h3>ช่องทางประสานหน่วยงาน</h3><p class="cw-help"><a href="tel:052081758">052-081758</a> สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่)<br><a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a> · ตรวจ 9 ต.ค. 2026<br>เป็นช่องทางสอบถามผู้ประสาน ยังไม่มีรายชื่อหัวหน้าป่าแห่งนี้ที่ยืนยันแล้ว</p>${state.me.is_admin?'':`<details><summary>ขอสิทธิ์พื้นที่เพิ่มเติม</summary>${membershipView()}</details>`}</section></div>`;
+  }
+  function protectedNearbyView(selected){
+    const dash=context.dashboard(),q=dash?.data_quality?.hotspots;
+    if(!q||q.is_stale||q.source_mode==='UNAVAILABLE')return '';
+    const rows=root.CmeProtectedAreas?.nearby(dash.hotspots?.items||[],selected)||[];
+    if(!rows.length)return '';
+    const areas=new Map(rows.flatMap(r=>r.protection.rows).map(r=>[r.area.id,r]));
+    const warning=root.CmeProtectedAreas.warningHtml({status:'inside',rows:[...areas.values()]});
+    return `<section class="cw-cross-border cw-protected-nearby"><h3>จุดดาวเทียมในพื้นที่อนุรักษ์ใกล้ป่าเรา</h3>${warning}<p class="cw-help">${rows.length} จุดใน 24 ชม. · ระยะเส้นตรงถึงขอบป่าเราไม่เกิน 5 กม. ไม่ใช่ระยะเดินทาง · ยังไม่ยืนยันเหตุไฟ</p>${rows.slice(0,10).map(r=>`<details><summary>${esc(root.CmeProtectedAreas.name(r.protection.rows[0].area))} · ${date(r.hotspot.detected_at)}</summary>${root.CmeCoordination.html(r.hotspot.lat,r.hotspot.lon,{myForestId:selected.forest_id})}${button('ดูจุดนี้บนแผนที่','locate',`data-lat="${Number(r.hotspot.lat)}" data-lon="${Number(r.hotspot.lon)}"`)}</details>`).join('')}</section>`;
   }
   function crossDistrictView(selected){
     const dash=context.dashboard(),q=dash?.data_quality?.hotspots;

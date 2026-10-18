@@ -103,11 +103,11 @@
     }).filter(Boolean).sort((a,b)=>a.km-b.km||a.agency.name.localeCompare(b.agency.name)).slice(0,1);
     return {method:rows.length?'nearest':'unavailable',rows};
   }
-  function agencyHtml(lat,lon){
+  function agencyHtml(lat,lon,{includeEmergency=true}={}){
     const selected=selectAgencies(lat,lon),labels={tambon:'หน่วยงานในตำบลเดียวกัน',district:'หน่วยงานในอำเภอเดียวกัน',nearest:'หน่วยงานใกล้ที่สุดโดยประมาณ'};
     const rows=selected.rows.map(({agency:a,reference})=>`<div class="coordination-office"><strong>${esc(a.name)}</strong><br>ที่ตั้ง ${a.tambon?'ต.'+esc(a.tambon)+' ':''}อ.${esc(a.district)}<br>${a.phones.map(p=>`<a href="tel:${esc(p)}">${esc(p.slice(0,3)+'-'+p.slice(3))}</a>`).join(' · ')}<br><a href="${esc(a.source)}" target="_blank" rel="noopener">ต้นทางกรมป่าไม้</a> · ตรวจ ${esc(a.checked_on)}${reference?`<p class="coordination-note">ประมาณจากจุดกึ่งกลางขอบเขต${reference.scope}ที่ตั้ง ไม่ใช่พิกัดจริงของหน่วยงาน</p>`:''}</div>`).join('');
     const hasFallback=selected.rows.some(r=>r.agency.phones.includes('052081758'));
-    return `${rows?`<strong>${labels[selected.method]}</strong>${rows}`:`<p>${agencyState==='loading'?'กำลังโหลดเบอร์หน่วยงานในพื้นที่…':'ยังเลือกหน่วยงานในพื้นที่จากข้อมูลที่มีไม่ได้'}</p>`}<p class="coordination-note">หน่วยงานในพื้นที่ ไม่ใช่การมอบหมายผู้รับผิดชอบ</p><p>${hasFallback?'':`ช่องทางสำรอง: <a href="tel:052081758">สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่) · 052-081758</a> · <a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a><br>`}พบไฟ แจ้งสายด่วนพิทักษ์ป่า <a href="tel:1362">1362</a></p>`;
+    return `${rows?`<strong>${labels[selected.method]}</strong>${rows}`:`<p>${agencyState==='loading'?'กำลังโหลดเบอร์หน่วยงานในพื้นที่…':'ยังเลือกหน่วยงานในพื้นที่จากข้อมูลที่มีไม่ได้'}</p>`}<p class="coordination-note">หน่วยงานในพื้นที่ ไม่ใช่การมอบหมายผู้รับผิดชอบ</p><p>${hasFallback?'':`ช่องทางสำรอง: <a href="tel:052081758">สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่) · 052-081758</a> · <a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a><br>`}${includeEmergency?'พบไฟ แจ้งสายด่วนกรมอุทยานฯ <a href="tel:1362">1362</a>':''}</p>`;
   }
   async function loadAgencies(){
     if(context.agencies){agencyState='ready';return;}
@@ -122,7 +122,7 @@
     }catch{agencyState='unavailable';}finally{clearTimeout(timer);}
     document.querySelectorAll('[data-agency-slot]').forEach(slot=>{
       const card=slot.closest('.coordination-card');
-      if(card){slot.innerHTML=agencyHtml(Number(card.dataset.coordinationLat),Number(card.dataset.coordinationLon));card.dispatchEvent(new CustomEvent('cme:coordination-updated',{bubbles:true}));}
+      if(card){const result=root.CmeProtectedAreas?.query(Number(card.dataset.coordinationLat),Number(card.dataset.coordinationLon));slot.innerHTML=agencyHtml(Number(card.dataset.coordinationLat),Number(card.dataset.coordinationLon),{includeEmergency:!['inside','near'].includes(result?.status)});card.dispatchEvent(new CustomEvent('cme:coordination-updated',{bubbles:true}));}
     });
   }
   function forestDistrict(f){
@@ -137,11 +137,14 @@
   function content(lat,lon,myForestId){
     const rows=nearest(lat,lon),area=administrativeArea(lat,lon);
     const names=rows.map(r=>`${esc(r.forest.name||'ป่าชุมชน')} (${kmText(r.km)})`).join(', ');
-    return `<h3>ใครควรดูแลจุดนี้</h3><p class="coordination-lead">${areaText(area)} · ป่าชุมชนที่ใกล้ที่สุด: ${names||'กำลังรอข้อมูลป่าชุมชน'}</p>`+
+    const protectedResult=root.CmeProtectedAreas?.query(lat,lon),protectedLead=protectedResult&&root.CmeProtectedAreas.leadHtml(protectedResult,areaText(area));
+    return `<h3>ใครควรดูแลจุดนี้</h3><p class="coordination-lead">${protectedLead||areaText(area)+( ' · ป่าชุมชนที่ใกล้ที่สุด: '+(names||'กำลังรอข้อมูลป่าชุมชน'))}</p>`+
+      (protectedResult?(myForestId?root.CmeProtectedAreas.warningHtml(protectedResult):'')+root.CmeProtectedAreas.detailsHtml(protectedResult):'')+
+      (protectedLead?`<p>ป่าชุมชนใกล้เคียง: ${names||'กำลังรอข้อมูลป่าชุมชน'}</p>`:'')+
       (crossDistrict(lat,lon,myForestId,rows)?`<p class="coordination-cross">อยู่นอกเขตอำเภอ แต่ป่าเราใกล้ที่สุด</p><p>ป่าข้างเคียง: ${rows.slice(1).map(r=>esc(r.forest.name)).join(', ')||'ยังไม่มีข้อมูล'}</p>`:'')+
       '<p class="coordination-note">ระยะเส้นตรง ไม่ใช่ระยะเดินทาง · โดยประมาณถึงขอบเขตป่า; ถ้าขอบเขตรอตรวจ ใช้จุดอ้างอิงป่า · ความใกล้ไม่ใช่การมอบหมายผู้รับผิดชอบ</p>'+
       rows.map(r=>`<div class="coordination-forest"><strong>${esc(r.forest.name)}</strong><span> · อ.${esc(forestDistrict(r.forest)||'ยังไม่ทราบ')} · ${kmText(r.km)}${r.method==='reference'?' (จุดอ้างอิงป่า)':''}</span><div data-contact-forest="${esc(r.forest.forest_id)}" aria-live="polite">กำลังตรวจสอบผู้ประสานงาน…</div></div>`).join('')+
-      `<div class="coordination-agency" data-agency-slot>${agencyHtml(lat,lon)}</div>`;
+      `<div class="coordination-agency" data-agency-slot>${agencyHtml(lat,lon,{includeEmergency:!protectedLead})}</div>`;
   }
   function html(lat,lon,{myForestId=''}={}){
     if(!valid(lat,lon))return '<section class="coordination-card"><h3>ใครควรดูแลจุดนี้</h3><p>ยังไม่มีพิกัดที่ใช้ระบุพื้นที่ได้ · พบไฟ โทร <a href="tel:1362">1362</a></p></section>';

@@ -11,6 +11,12 @@
 .land-context-details{margin:8px 0;font:12px/1.6 var(--disp,sans-serif)}.land-context-details>summary{cursor:pointer;min-height:44px;padding:10px 0;box-sizing:border-box}
 .land-context-fact{border-top:1px solid #557c6c44;padding:8px 0}.land-context-fact p{margin:3px 0}
 .land-context-note{font-size:11px;opacity:.9}
+.coordination-protected{border-left:3px solid #e5a347;padding:4px 8px;margin:8px 0}.coordination-protected small{display:block;line-height:1.6;font-size:11px}.coordination-protected a[href^="tel:"]{min-height:44px;display:inline-block;padding:10px 0;box-sizing:border-box}
+.coordination-protected-warning{border-left:3px solid #e5a347;padding:8px;background:#e5a34718;font-weight:600}
+/* Bound popups can outlive an orientation change; follow the current viewport,
+   rather than the height cached by Leaflet when the marker was created. */
+.leaflet-popup:has(.coordination-card) .leaflet-popup-content{max-height:min(400px,40dvh);overflow-y:auto}
+.cw-map .leaflet-popup:has(.coordination-card) .leaflet-popup-content{max-height:min(200px,40dvh)}
 .coordination-card a{color:var(--wind,#57cfc4);text-decoration:underline;text-underline-offset:2px}
 .coordination-card a[href^="tel:"],.coordination-contact{display:inline-block;min-height:44px;padding:10px 0;box-sizing:border-box}
 .coordination-card .coordination-cross{padding:7px;border-left:3px solid #e99c42;background:#c7801515;font-weight:600}
