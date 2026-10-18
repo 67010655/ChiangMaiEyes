@@ -1,0 +1,40 @@
+{
+  "raw_triplets_ready": 39,
+  "model_input_ready": 38,
+  "excluded_model_inputs": [
+    {
+      "id": "2025-02-02-T47QMV-4496-19118-bank",
+      "reason": "AssertionError: 10kmROIextendsoutsideavailableDEMgrid; excluded ratherthanextrapolatingunknownterrain. Verifiedprepare_timed_fire_arrays.py:71."
+    }
+  ],
+  "initial_months_by_split": {
+    "train2024": {
+      "2024-03": 3,
+      "2024-04": 5
+    },
+    "validation2025": {
+      "2025-01": 1,
+      "2025-02": 6,
+      "2025-03": 3,
+      "2025-04": 1
+    },
+    "test2026_new_cases": {
+      "2026-02": 3,
+      "2026-03": 3,
+      "2026-04": 2
+    },
+    "regression2026": {
+      "2026-03": 5,
+      "2026-04": 6
+    }
+  },
+  "unique_initial_scene_ids": 35,
+  "unique_initial_dates_by_split": {
+    "train2024": 4,
+    "validation2025": 8,
+    "test2026_new_cases": 6,
+    "regression2026": 6
+  },
+  "spatial_time_separation": "Newcasecentres>=12kmOR>=14daysfromacceptedcaseswithinyear. Yearholdoutisnotanunseen-geographytest.",
+  "source_roles": "engineering_split is authoritative for thisnewexperiment; legacy split field preserved fororiginalscriptaudit."
+}

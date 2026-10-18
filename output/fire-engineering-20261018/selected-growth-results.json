@@ -1,0 +1,1812 @@
+{
+  "choice": {
+    "family": "learned_or_baseline",
+    "name": "point_no_pm__0.03",
+    "validation2025": {
+      "pooled_dice": 0.07362820086464915,
+      "pooled_iou": 0.03822117874529572,
+      "macro_dice": 0.04607108230806122,
+      "predicted_growth_km2": 20.1676,
+      "reference_growth_km2": 3.8884000000000003,
+      "intersection_km2": 0.8856,
+      "reference_coverage": 0.22775434626067276,
+      "prediction_precision": 0.043912017295067336,
+      "case_count": 11
+    },
+    "criterion": "2025poolednewgrowthDiceacrossfiniteML/baseline/surfacegraph choices; no2026scoreselection.",
+    "ml_selection_sha256": "cf965c4010cbb42c1b1831e949ae11b12d54b3bcc7a46df86a3645d7808b678a",
+    "physics_selection_sha256": "780f65e2633d065d5ba6824bbc994263af885c2d9d1b11d116c560f60faa6954"
+  },
+  "by_split": {
+    "regression2026": {
+      "pooled_dice": 0.03151032666340917,
+      "pooled_iou": 0.01600736193347621,
+      "macro_dice": 0.02506133006852094,
+      "predicted_growth_km2": 29.1536,
+      "reference_growth_km2": 4.41,
+      "intersection_km2": 0.5288,
+      "reference_coverage": 0.1199092970521542,
+      "prediction_precision": 0.018138411722737502,
+      "case_count": 11,
+      "uncertainty": {
+        "percentile95": [
+          0.0015171988715833393,
+          0.03803153059908491
+        ],
+        "sampling_unit": "initial-acquisition date, entire cases together",
+        "groups": 6,
+        "note": "Small retrospective sample; interval is descriptive, does not establish future deployment performance. No interval if all sampled support has zero predicted+reference area."
+      },
+      "community_portions": {
+        "observed_portion_periods": 47,
+        "unique_forests": 43,
+        "reference_positive_periods_ge1ha": 5,
+        "warned_positive_periods": 3,
+        "missed_positive_periods": 2,
+        "warned_without_reference_ge1ha": 11,
+        "scope": "Case-coveredclearforestportionsonly, not677forestpopulation performance. No observedscar isnot verifiedabsence."
+      }
+    },
+    "test2026_new_cases": {
+      "pooled_dice": 0.04154683006127298,
+      "pooled_iou": 0.021214104426389133,
+      "macro_dice": 0.020076447247925715,
+      "predicted_growth_km2": 14.643600000000001,
+      "reference_growth_km2": 10.9468,
+      "intersection_km2": 0.5316000000000001,
+      "reference_coverage": 0.048562136880184174,
+      "prediction_precision": 0.03630254855363436,
+      "case_count": 8,
+      "uncertainty": {
+        "percentile95": [
+          0.010263019714544849,
+          0.07893289883723688
+        ],
+        "sampling_unit": "initial-acquisition date, entire cases together",
+        "groups": 6,
+        "note": "Small retrospective sample; interval is descriptive, does not establish future deployment performance. No interval if all sampled support has zero predicted+reference area."
+      },
+      "community_portions": {
+        "observed_portion_periods": 8,
+        "unique_forests": 8,
+        "reference_positive_periods_ge1ha": 1,
+        "warned_positive_periods": 0,
+        "missed_positive_periods": 1,
+        "warned_without_reference_ge1ha": 0,
+        "scope": "Case-coveredclearforestportionsonly, not677forestpopulation performance. No observedscar isnot verifiedabsence."
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "2026-02-12-T47QMV-4771-19818-bank",
+      "split": "test2026_new_cases",
+      "initial_acquisition": "2026-02-12T04:03:31.155000+00:00",
+      "horizon_hours": 119.99838833333332,
+      "score": {
+        "predicted_growth_km2": 0.1336,
+        "reference_growth_km2": 5.7968,
+        "intersection_km2": 0.0408,
+        "dice": 0.01375961149332254,
+        "iou": 0.0069274653626731865,
+        "cumulative_dice_including_initial": 0.6194367810108792,
+        "reference_coverage": 0.007038365995031742,
+        "unmatched_prediction_km2": 0.0928,
+        "missed_reference_km2": 5.756
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.1336,
+          "reference_growth_km2": 5.7328,
+          "intersection_km2": 0.0408,
+          "dice": 0.013909723169234965,
+          "iou": 0.007003570447679209,
+          "cumulative_dice_including_initial": 0.6220270764727406,
+          "reference_coverage": 0.007116941110801005,
+          "unmatched_prediction_km2": 0.0928,
+          "missed_reference_km2": 5.692
+        },
+        "low20": {
+          "predicted_growth_km2": 0.1336,
+          "reference_growth_km2": 9.256400000000001,
+          "intersection_km2": 0.0432,
+          "dice": 0.009201277955271566,
+          "iou": 0.0046219026832712805,
+          "cumulative_dice_including_initial": 0.5058741050753116,
+          "reference_coverage": 0.004667041182317099,
+          "unmatched_prediction_km2": 0.0904,
+          "missed_reference_km2": 9.2132
+        },
+        "high20": {
+          "predicted_growth_km2": 0.1336,
+          "reference_growth_km2": 2.1536,
+          "intersection_km2": 0.0068000000000000005,
+          "dice": 0.005946135012242043,
+          "iou": 0.002981932994211542,
+          "cumulative_dice_including_initial": 0.8060994746537491,
+          "reference_coverage": 0.003157503714710253,
+          "unmatched_prediction_km2": 0.1268,
+          "missed_reference_km2": 2.1468
+        }
+      },
+      "boundary": {
+        "mean_m": 1746.8910708771327,
+        "p95_m": 3050.5081459346607
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 15.536800000000001,
+        "new_s2_reference_also_hii_monthly_positive_km2": 3.968,
+        "prediction_also_hii_monthly_positive_km2": 0.045200000000000004,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-02-27-T47QMA-4389-20789-bank",
+      "split": "test2026_new_cases",
+      "initial_acquisition": "2026-02-27T04:03:13.236000+00:00",
+      "horizon_hours": 72.16540888888889,
+      "score": {
+        "predicted_growth_km2": 0.7028,
+        "reference_growth_km2": 0.014,
+        "intersection_km2": 0.0,
+        "dice": 0.0,
+        "iou": 0.0,
+        "cumulative_dice_including_initial": 0.5816993464052288,
+        "reference_coverage": 0.0,
+        "unmatched_prediction_km2": 0.7028,
+        "missed_reference_km2": 0.014
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.7028,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.586490939044481,
+          "reference_coverage": null,
+          "unmatched_prediction_km2": 0.7028,
+          "missed_reference_km2": 0.0
+        },
+        "low20": {
+          "predicted_growth_km2": 0.7028,
+          "reference_growth_km2": 0.0444,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.571559633027523,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.7028,
+          "missed_reference_km2": 0.0444
+        },
+        "high20": {
+          "predicted_growth_km2": 0.7028,
+          "reference_growth_km2": 0.0088,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.5834699133692344,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.7028,
+          "missed_reference_km2": 0.0088
+        }
+      },
+      "boundary": {
+        "mean_m": 2137.770845768488,
+        "p95_m": 4722.075814723859
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 1.218,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0,
+        "prediction_also_hii_monthly_positive_km2": 0.0032,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-02-27-T47QMV-4795-19835-bank",
+      "split": "test2026_new_cases",
+      "initial_acquisition": "2026-02-27T04:03:27.700000+00:00",
+      "horizon_hours": 120.00058888888888,
+      "score": {
+        "predicted_growth_km2": 1.8248,
+        "reference_growth_km2": 1.6036000000000001,
+        "intersection_km2": 0.037200000000000004,
+        "dice": 0.021701085054252715,
+        "iou": 0.01096956829440906,
+        "cumulative_dice_including_initial": 0.20918607941148734,
+        "reference_coverage": 0.023197804938887505,
+        "unmatched_prediction_km2": 1.7876,
+        "missed_reference_km2": 1.5664000000000002
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 1.8248,
+          "reference_growth_km2": 0.11320000000000001,
+          "intersection_km2": 0.0056,
+          "dice": 0.005779153766769866,
+          "iou": 0.002897950734837508,
+          "cumulative_dice_including_initial": 0.2995492220444962,
+          "reference_coverage": 0.04946996466431095,
+          "unmatched_prediction_km2": 1.8192,
+          "missed_reference_km2": 0.10760000000000002
+        },
+        "low20": {
+          "predicted_growth_km2": 1.8248,
+          "reference_growth_km2": 5.9124,
+          "intersection_km2": 0.248,
+          "dice": 0.06410587809543504,
+          "iou": 0.03311435133258559,
+          "cumulative_dice_including_initial": 0.15307602339181287,
+          "reference_coverage": 0.041945741154184424,
+          "unmatched_prediction_km2": 1.5768,
+          "missed_reference_km2": 5.6644
+        },
+        "high20": {
+          "predicted_growth_km2": 1.8248,
+          "reference_growth_km2": 0.3124,
+          "intersection_km2": 0.008,
+          "dice": 0.007486430844095078,
+          "iou": 0.0037572797294758596,
+          "cumulative_dice_including_initial": 0.2809491525423729,
+          "reference_coverage": 0.02560819462227913,
+          "unmatched_prediction_km2": 1.8168,
+          "missed_reference_km2": 0.3044
+        }
+      },
+      "boundary": {
+        "mean_m": 682.0423061452311,
+        "p95_m": 3724.035616496169
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 20.5696,
+        "new_s2_reference_also_hii_monthly_positive_km2": 1.3924,
+        "prediction_also_hii_monthly_positive_km2": 0.196,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-03-27",
+      "split": "regression2026",
+      "initial_acquisition": "2026-03-26T04:03:18.443000+00:00",
+      "horizon_hours": 71.99365861111112,
+      "score": {
+        "predicted_growth_km2": 0.2988,
+        "reference_growth_km2": 0.3904,
+        "intersection_km2": 0.0,
+        "dice": 0.0,
+        "iou": 0.0,
+        "cumulative_dice_including_initial": 0.4903874593315587,
+        "reference_coverage": 0.0,
+        "unmatched_prediction_km2": 0.2988,
+        "missed_reference_km2": 0.3904
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.2988,
+          "reference_growth_km2": 0.0028,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.6873963515754561,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.2988,
+          "missed_reference_km2": 0.0028
+        },
+        "low20": {
+          "predicted_growth_km2": 0.2988,
+          "reference_growth_km2": 1.4048,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.28020956565827276,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.2988,
+          "missed_reference_km2": 1.4048
+        },
+        "high20": {
+          "predicted_growth_km2": 0.2988,
+          "reference_growth_km2": 0.1768,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.5823674042852125,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.2988,
+          "missed_reference_km2": 0.1768
+        }
+      },
+      "boundary": {
+        "mean_m": 1445.5180537313945,
+        "p95_m": 4638.1212189184935
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 1.042,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-03-27-T47QMA-4321-20292-bank",
+      "split": "test2026_new_cases",
+      "initial_acquisition": "2026-03-27T04:13:12.026000+00:00",
+      "horizon_hours": 47.83369888888889,
+      "score": {
+        "predicted_growth_km2": 0.064,
+        "reference_growth_km2": 0.5704,
+        "intersection_km2": 0.0,
+        "dice": 0.0,
+        "iou": 0.0,
+        "cumulative_dice_including_initial": 0.48904639175257736,
+        "reference_coverage": 0.0,
+        "unmatched_prediction_km2": 0.064,
+        "missed_reference_km2": 0.5704
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.064,
+          "reference_growth_km2": 0.4036,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.5649423148492744,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.064,
+          "missed_reference_km2": 0.4036
+        },
+        "low20": {
+          "predicted_growth_km2": 0.064,
+          "reference_growth_km2": 0.9064000000000001,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.38488843813387424,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.064,
+          "missed_reference_km2": 0.9064000000000001
+        },
+        "high20": {
+          "predicted_growth_km2": 0.064,
+          "reference_growth_km2": 0.2444,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.6631716906946266,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.064,
+          "missed_reference_km2": 0.2444
+        }
+      },
+      "boundary": {
+        "mean_m": 1432.5095123905069,
+        "p95_m": 1940.5456754787817
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 3.5096000000000003,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0108,
+        "prediction_also_hii_monthly_positive_km2": 0.0004,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-03-28",
+      "split": "regression2026",
+      "initial_acquisition": "2026-03-29T04:03:13.342000+00:00",
+      "horizon_hours": 120.00049444444446,
+      "score": {
+        "predicted_growth_km2": 13.534,
+        "reference_growth_km2": 0.8332,
+        "intersection_km2": 0.2008,
+        "dice": 0.027952558605713013,
+        "iou": 0.01417438445900158,
+        "cumulative_dice_including_initial": 0.14388700897454756,
+        "reference_coverage": 0.24099855976956314,
+        "unmatched_prediction_km2": 13.333200000000001,
+        "missed_reference_km2": 0.6324000000000001
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 13.534,
+          "reference_growth_km2": 0.126,
+          "intersection_km2": 0.07880000000000001,
+          "dice": 0.011537335285505126,
+          "iou": 0.005802138249933733,
+          "cumulative_dice_including_initial": 0.13477213308043268,
+          "reference_coverage": 0.6253968253968255,
+          "unmatched_prediction_km2": 13.455200000000001,
+          "missed_reference_km2": 0.04719999999999999
+        },
+        "low20": {
+          "predicted_growth_km2": 13.534,
+          "reference_growth_km2": 3.3464,
+          "intersection_km2": 0.638,
+          "dice": 0.07559062581455415,
+          "iou": 0.039279909372999064,
+          "cumulative_dice_including_initial": 0.1711250398385212,
+          "reference_coverage": 0.19065264164475257,
+          "unmatched_prediction_km2": 12.896,
+          "missed_reference_km2": 2.7084
+        },
+        "high20": {
+          "predicted_growth_km2": 13.534,
+          "reference_growth_km2": 0.2644,
+          "intersection_km2": 0.0796,
+          "dice": 0.011537569573283859,
+          "iou": 0.0058022567571507705,
+          "cumulative_dice_including_initial": 0.13368902439024388,
+          "reference_coverage": 0.3010590015128593,
+          "unmatched_prediction_km2": 13.454400000000001,
+          "missed_reference_km2": 0.18480000000000002
+        }
+      },
+      "boundary": {
+        "mean_m": 712.5568448541516,
+        "p95_m": 1859.3223763750348
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 3.7712000000000003,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.2396,
+        "prediction_also_hii_monthly_positive_km2": 0.33280000000000004,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-03-29",
+      "split": "regression2026",
+      "initial_acquisition": "2026-03-29T04:03:13.342000+00:00",
+      "horizon_hours": 120.00049444444446,
+      "score": {
+        "predicted_growth_km2": 5.9184,
+        "reference_growth_km2": 0.48760000000000003,
+        "intersection_km2": 0.0912,
+        "dice": 0.02847330627536684,
+        "iou": 0.014442262621143977,
+        "cumulative_dice_including_initial": 0.38577237377126844,
+        "reference_coverage": 0.1870385561936013,
+        "unmatched_prediction_km2": 5.8272,
+        "missed_reference_km2": 0.39640000000000003
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 5.9184,
+          "reference_growth_km2": 0.2248,
+          "intersection_km2": 0.0868,
+          "dice": 0.028258887876025523,
+          "iou": 0.014331946370781322,
+          "cumulative_dice_including_initial": 0.3951527924130664,
+          "reference_coverage": 0.3861209964412812,
+          "unmatched_prediction_km2": 5.8316,
+          "missed_reference_km2": 0.138
+        },
+        "low20": {
+          "predicted_growth_km2": 5.9184,
+          "reference_growth_km2": 1.3448,
+          "intersection_km2": 0.2632,
+          "dice": 0.07247494217424826,
+          "iou": 0.0376,
+          "cumulative_dice_including_initial": 0.38698405765450977,
+          "reference_coverage": 0.19571683521713265,
+          "unmatched_prediction_km2": 5.6552,
+          "missed_reference_km2": 1.0816
+        },
+        "high20": {
+          "predicted_growth_km2": 5.9184,
+          "reference_growth_km2": 0.20600000000000002,
+          "intersection_km2": 0.0376,
+          "dice": 0.012278753837110573,
+          "iou": 0.0061773017020437665,
+          "cumulative_dice_including_initial": 0.3859178949933001,
+          "reference_coverage": 0.1825242718446602,
+          "unmatched_prediction_km2": 5.8808,
+          "missed_reference_km2": 0.16840000000000002
+        }
+      },
+      "boundary": {
+        "mean_m": 728.1936129581554,
+        "p95_m": 1906.8508059205994
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.8208000000000001,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0308,
+        "prediction_also_hii_monthly_positive_km2": 0.0876,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-03-29-T47QMV-4111-19468-bank",
+      "split": "test2026_new_cases",
+      "initial_acquisition": "2026-03-29T04:13:44.203000+00:00",
+      "horizon_hours": 71.99392916666666,
+      "score": {
+        "predicted_growth_km2": 0.1476,
+        "reference_growth_km2": 0.37560000000000004,
+        "intersection_km2": 0.0,
+        "dice": 0.0,
+        "iou": 0.0,
+        "cumulative_dice_including_initial": 0.8375155279503106,
+        "reference_coverage": 0.0,
+        "unmatched_prediction_km2": 0.1476,
+        "missed_reference_km2": 0.37560000000000004
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.1476,
+          "reference_growth_km2": 0.0512,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.9313441083022516,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.1476,
+          "missed_reference_km2": 0.0512
+        },
+        "low20": {
+          "predicted_growth_km2": 0.1476,
+          "reference_growth_km2": 0.45320000000000005,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.8178068898592916,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.1476,
+          "missed_reference_km2": 0.45320000000000005
+        },
+        "high20": {
+          "predicted_growth_km2": 0.1476,
+          "reference_growth_km2": 0.2844,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.8619278956788545,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.1476,
+          "missed_reference_km2": 0.2844
+        }
+      },
+      "boundary": {
+        "mean_m": 1616.231768011118,
+        "p95_m": 2760.202365063511
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.7316,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.024800000000000003,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-03-29-T47QNB-5074-21003-bank",
+      "split": "test2026_new_cases",
+      "initial_acquisition": "2026-03-29T04:02:55.614000+00:00",
+      "horizon_hours": 120.00147722222223,
+      "score": {
+        "predicted_growth_km2": 2.3640000000000003,
+        "reference_growth_km2": 0.652,
+        "intersection_km2": 0.0316,
+        "dice": 0.02095490716180371,
+        "iou": 0.01058839297681276,
+        "cumulative_dice_including_initial": 0.31711378353376496,
+        "reference_coverage": 0.04846625766871166,
+        "unmatched_prediction_km2": 2.3324000000000003,
+        "missed_reference_km2": 0.6204000000000001
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 2.3640000000000003,
+          "reference_growth_km2": 0.0592,
+          "intersection_km2": 0.0012000000000000001,
+          "dice": 0.0009904258831297456,
+          "iou": 0.000495458298926507,
+          "cumulative_dice_including_initial": 0.3512006861063464,
+          "reference_coverage": 0.02027027027027027,
+          "unmatched_prediction_km2": 2.3628000000000005,
+          "missed_reference_km2": 0.058
+        },
+        "low20": {
+          "predicted_growth_km2": 2.3640000000000003,
+          "reference_growth_km2": 2.444,
+          "intersection_km2": 0.1996,
+          "dice": 0.08302828618968386,
+          "iou": 0.04331221248155542,
+          "cumulative_dice_including_initial": 0.279136690647482,
+          "reference_coverage": 0.08166939443535189,
+          "unmatched_prediction_km2": 2.1644000000000005,
+          "missed_reference_km2": 2.2443999999999997
+        },
+        "high20": {
+          "predicted_growth_km2": 2.3640000000000003,
+          "reference_growth_km2": 0.2612,
+          "intersection_km2": 0.0056,
+          "dice": 0.004266341612067652,
+          "iou": 0.0021377309512902727,
+          "cumulative_dice_including_initial": 0.3354012000406793,
+          "reference_coverage": 0.021439509954058193,
+          "unmatched_prediction_km2": 2.3584000000000005,
+          "missed_reference_km2": 0.2556
+        }
+      },
+      "boundary": {
+        "mean_m": 480.35656777727274,
+        "p95_m": 1264.593896137855
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 1.5048000000000001,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.044000000000000004,
+        "prediction_also_hii_monthly_positive_km2": 0.006,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-03-30",
+      "split": "regression2026",
+      "initial_acquisition": "2026-03-29T04:02:58.663000+00:00",
+      "horizon_hours": 120.00112277777778,
+      "score": {
+        "predicted_growth_km2": 1.2996,
+        "reference_growth_km2": 0.8904000000000001,
+        "intersection_km2": 0.16640000000000002,
+        "dice": 0.1519634703196347,
+        "iou": 0.08222968966198853,
+        "cumulative_dice_including_initial": 0.2746445867833151,
+        "reference_coverage": 0.18688230008984727,
+        "unmatched_prediction_km2": 1.1332,
+        "missed_reference_km2": 0.7240000000000001
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 1.2996,
+          "reference_growth_km2": 0.0212,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.21901608325449382,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 1.2996,
+          "missed_reference_km2": 0.0212
+        },
+        "low20": {
+          "predicted_growth_km2": 1.2996,
+          "reference_growth_km2": 2.4024,
+          "intersection_km2": 0.2436,
+          "dice": 0.13160453808752026,
+          "iou": 0.07043719639139487,
+          "cumulative_dice_including_initial": 0.21058835084962185,
+          "reference_coverage": 0.10139860139860139,
+          "unmatched_prediction_km2": 1.056,
+          "missed_reference_km2": 2.1588000000000003
+        },
+        "high20": {
+          "predicted_growth_km2": 1.2996,
+          "reference_growth_km2": 0.4,
+          "intersection_km2": 0.1012,
+          "dice": 0.11908684396328546,
+          "iou": 0.0633133133133133,
+          "cumulative_dice_including_initial": 0.2767149758454106,
+          "reference_coverage": 0.253,
+          "unmatched_prediction_km2": 1.1984000000000001,
+          "missed_reference_km2": 0.2988
+        }
+      },
+      "boundary": {
+        "mean_m": 492.35285612227545,
+        "p95_m": 1322.5732493892351
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.1012,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0244,
+        "prediction_also_hii_monthly_positive_km2": 0.0032,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-03-31",
+      "split": "regression2026",
+      "initial_acquisition": "2026-03-29T04:03:13.342000+00:00",
+      "horizon_hours": 120.00049444444446,
+      "score": {
+        "predicted_growth_km2": 2.524,
+        "reference_growth_km2": 0.46440000000000003,
+        "intersection_km2": 0.0504,
+        "dice": 0.03373042430732164,
+        "iou": 0.017154526889040164,
+        "cumulative_dice_including_initial": 0.11802076970067196,
+        "reference_coverage": 0.10852713178294573,
+        "unmatched_prediction_km2": 2.4736000000000002,
+        "missed_reference_km2": 0.41400000000000003
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 2.524,
+          "reference_growth_km2": 0.011600000000000001,
+          "intersection_km2": 0.0108,
+          "dice": 0.008518693800283956,
+          "iou": 0.0042775665399239545,
+          "cumulative_dice_including_initial": 0.10888983411314335,
+          "reference_coverage": 0.9310344827586207,
+          "unmatched_prediction_km2": 2.5132,
+          "missed_reference_km2": 0.0008000000000000004
+        },
+        "low20": {
+          "predicted_growth_km2": 2.524,
+          "reference_growth_km2": 1.478,
+          "intersection_km2": 0.15280000000000002,
+          "dice": 0.07636181909045478,
+          "iou": 0.03969656032422322,
+          "cumulative_dice_including_initial": 0.13788599682806232,
+          "reference_coverage": 0.10338294993234101,
+          "unmatched_prediction_km2": 2.3712,
+          "missed_reference_km2": 1.3252
+        },
+        "high20": {
+          "predicted_growth_km2": 2.524,
+          "reference_growth_km2": 0.1404,
+          "intersection_km2": 0.0108,
+          "dice": 0.008106890857228644,
+          "iou": 0.004069942719324691,
+          "cumulative_dice_including_initial": 0.10413559322033898,
+          "reference_coverage": 0.07692307692307693,
+          "unmatched_prediction_km2": 2.5132,
+          "missed_reference_km2": 0.1296
+        }
+      },
+      "boundary": {
+        "mean_m": 741.3986439489781,
+        "p95_m": 1824.872588292404
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.24480000000000002,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.014,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-04-02",
+      "split": "regression2026",
+      "initial_acquisition": "2026-04-03T04:03:00.932000+00:00",
+      "horizon_hours": 119.99862527777778,
+      "score": {
+        "predicted_growth_km2": 1.0196,
+        "reference_growth_km2": 0.1032,
+        "intersection_km2": 0.0148,
+        "dice": 0.026362664766654793,
+        "iou": 0.01335740072202166,
+        "cumulative_dice_including_initial": 0.5219520727654364,
+        "reference_coverage": 0.1434108527131783,
+        "unmatched_prediction_km2": 1.0048000000000001,
+        "missed_reference_km2": 0.0884
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 1.0196,
+          "reference_growth_km2": 0.0308,
+          "intersection_km2": 0.002,
+          "dice": 0.003808073115003808,
+          "iou": 0.0019076688286913392,
+          "cumulative_dice_including_initial": 0.5274566473988439,
+          "reference_coverage": 0.06493506493506493,
+          "unmatched_prediction_km2": 1.0176,
+          "missed_reference_km2": 0.0288
+        },
+        "low20": {
+          "predicted_growth_km2": 1.0196,
+          "reference_growth_km2": 1.3792,
+          "intersection_km2": 0.12240000000000001,
+          "dice": 0.10205102551275638,
+          "iou": 0.05376910911966262,
+          "cumulative_dice_including_initial": 0.3954193331087909,
+          "reference_coverage": 0.08874709976798145,
+          "unmatched_prediction_km2": 0.8972,
+          "missed_reference_km2": 1.2568
+        },
+        "high20": {
+          "predicted_growth_km2": 1.0196,
+          "reference_growth_km2": 0.0212,
+          "intersection_km2": 0.0056,
+          "dice": 0.010760953112990006,
+          "iou": 0.005409582689335393,
+          "cumulative_dice_including_initial": 0.5330188679245284,
+          "reference_coverage": 0.2641509433962264,
+          "unmatched_prediction_km2": 1.014,
+          "missed_reference_km2": 0.0156
+        }
+      },
+      "boundary": {
+        "mean_m": 1059.7120329214372,
+        "p95_m": 2354.0675390307406
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.7444000000000001,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.013600000000000001,
+        "prediction_also_hii_monthly_positive_km2": 0.008,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-04-03",
+      "split": "regression2026",
+      "initial_acquisition": "2026-04-03T04:03:00.932000+00:00",
+      "horizon_hours": 119.99862527777778,
+      "score": {
+        "predicted_growth_km2": 0.0844,
+        "reference_growth_km2": 0.1336,
+        "intersection_km2": 0.0,
+        "dice": 0.0,
+        "iou": 0.0,
+        "cumulative_dice_including_initial": 0.8356949050346699,
+        "reference_coverage": 0.0,
+        "unmatched_prediction_km2": 0.0844,
+        "missed_reference_km2": 0.1336
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.0844,
+          "reference_growth_km2": 0.0916,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.863013698630137,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.0844,
+          "missed_reference_km2": 0.0916
+        },
+        "low20": {
+          "predicted_growth_km2": 0.0844,
+          "reference_growth_km2": 1.4484000000000001,
+          "intersection_km2": 0.0132,
+          "dice": 0.017223382045929016,
+          "iou": 0.00868649644643327,
+          "cumulative_dice_including_initial": 0.4297395517867958,
+          "reference_coverage": 0.009113504556752278,
+          "unmatched_prediction_km2": 0.0712,
+          "missed_reference_km2": 1.4352
+        },
+        "high20": {
+          "predicted_growth_km2": 0.0844,
+          "reference_growth_km2": 0.005200000000000001,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.925233644859813,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.0844,
+          "missed_reference_km2": 0.005200000000000001
+        }
+      },
+      "boundary": {
+        "mean_m": 995.9164948799475,
+        "p95_m": 4074.118285808245
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.49360000000000004,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0008,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-04-14-community-cmf-th-3191",
+      "split": "regression2026",
+      "initial_acquisition": "2026-04-13T04:03:13.294000+00:00",
+      "horizon_hours": 48.00583916666667,
+      "score": {
+        "predicted_growth_km2": 0.6224000000000001,
+        "reference_growth_km2": 0.036000000000000004,
+        "intersection_km2": 0.0008,
+        "dice": 0.002430133657351154,
+        "iou": 0.00121654501216545,
+        "cumulative_dice_including_initial": 0.07649043869516309,
+        "reference_coverage": 0.02222222222222222,
+        "unmatched_prediction_km2": 0.6216,
+        "missed_reference_km2": 0.0352
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.6224000000000001,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.07819905213270142,
+          "reference_coverage": null,
+          "unmatched_prediction_km2": 0.6224000000000001,
+          "missed_reference_km2": 0.0
+        },
+        "low20": {
+          "predicted_growth_km2": 0.6224000000000001,
+          "reference_growth_km2": 0.0396,
+          "intersection_km2": 0.0008,
+          "dice": 0.002416918429003021,
+          "iou": 0.0012099213551119178,
+          "cumulative_dice_including_initial": 0.07610520425293787,
+          "reference_coverage": 0.0202020202020202,
+          "unmatched_prediction_km2": 0.6216,
+          "missed_reference_km2": 0.0388
+        },
+        "high20": {
+          "predicted_growth_km2": 0.6224000000000001,
+          "reference_growth_km2": 0.013600000000000001,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.07665505226480836,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.6224000000000001,
+          "missed_reference_km2": 0.013600000000000001
+        }
+      },
+      "boundary": {
+        "mean_m": 1211.6834169264616,
+        "p95_m": 2584.6829824924394
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.4456,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-04-15-community-cmf-th-2892",
+      "split": "regression2026",
+      "initial_acquisition": "2026-04-15T04:03:48.769000+00:00",
+      "horizon_hours": 71.99381361111111,
+      "score": {
+        "predicted_growth_km2": 0.2592,
+        "reference_growth_km2": 0.7136,
+        "intersection_km2": 0.0016,
+        "dice": 0.0032894736842105266,
+        "iou": 0.0016474464579901156,
+        "cumulative_dice_including_initial": 0.206286836935167,
+        "reference_coverage": 0.002242152466367713,
+        "unmatched_prediction_km2": 0.2576,
+        "missed_reference_km2": 0.712
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.2592,
+          "reference_growth_km2": 0.0408,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.4533527696793004,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.2592,
+          "missed_reference_km2": 0.0408
+        },
+        "low20": {
+          "predicted_growth_km2": 0.2592,
+          "reference_growth_km2": 1.5388000000000002,
+          "intersection_km2": 0.007200000000000001,
+          "dice": 0.008008898776418243,
+          "iou": 0.00402054947509493,
+          "cumulative_dice_including_initial": 0.12859097127222982,
+          "reference_coverage": 0.004678970626462178,
+          "unmatched_prediction_km2": 0.252,
+          "missed_reference_km2": 1.5316
+        },
+        "high20": {
+          "predicted_growth_km2": 0.2592,
+          "reference_growth_km2": 0.28200000000000003,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.31493670886075953,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.2592,
+          "missed_reference_km2": 0.28200000000000003
+        }
+      },
+      "boundary": {
+        "mean_m": 1479.362701718431,
+        "p95_m": 2893.6251584915017
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 1.5184,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0244,
+        "prediction_also_hii_monthly_positive_km2": 0.0004,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-04-16",
+      "split": "regression2026",
+      "initial_acquisition": "2026-04-13T04:02:55.585000+00:00",
+      "horizon_hours": 48.005830833333334,
+      "score": {
+        "predicted_growth_km2": 0.09680000000000001,
+        "reference_growth_km2": 0.0512,
+        "intersection_km2": 0.0,
+        "dice": 0.0,
+        "iou": 0.0,
+        "cumulative_dice_including_initial": 0.5169712793733681,
+        "reference_coverage": 0.0,
+        "unmatched_prediction_km2": 0.09680000000000001,
+        "missed_reference_km2": 0.0512
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 0.09680000000000001,
+          "reference_growth_km2": 0.005200000000000001,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.6082949308755761,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.09680000000000001,
+          "missed_reference_km2": 0.005200000000000001
+        },
+        "low20": {
+          "predicted_growth_km2": 0.09680000000000001,
+          "reference_growth_km2": 0.0616,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.5,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.09680000000000001,
+          "missed_reference_km2": 0.0616
+        },
+        "high20": {
+          "predicted_growth_km2": 0.09680000000000001,
+          "reference_growth_km2": 0.0364,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.5432098765432098,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.09680000000000001,
+          "missed_reference_km2": 0.0364
+        }
+      },
+      "boundary": {
+        "mean_m": 2629.1722926057073,
+        "p95_m": 5048.681003456205
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.054400000000000004,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0024000000000000002,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-04-18-T47QMA-4548-20053-bank",
+      "split": "test2026_new_cases",
+      "initial_acquisition": "2026-04-18T04:03:12.030000+00:00",
+      "horizon_hours": 120.00095222222222,
+      "score": {
+        "predicted_growth_km2": 6.4884,
+        "reference_growth_km2": 1.8424,
+        "intersection_km2": 0.4152,
+        "dice": 0.09967830220386999,
+        "iou": 0.052453383192682806,
+        "cumulative_dice_including_initial": 0.2064412374624402,
+        "reference_coverage": 0.22535822839774208,
+        "unmatched_prediction_km2": 6.0732,
+        "missed_reference_km2": 1.4272
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 6.4884,
+          "reference_growth_km2": 1.1808,
+          "intersection_km2": 0.4016,
+          "dice": 0.10473061075470715,
+          "iou": 0.05525895756508339,
+          "cumulative_dice_including_initial": 0.21888509670079634,
+          "reference_coverage": 0.3401084010840108,
+          "unmatched_prediction_km2": 6.0868,
+          "missed_reference_km2": 0.7792000000000001
+        },
+        "low20": {
+          "predicted_growth_km2": 6.4884,
+          "reference_growth_km2": 4.4576,
+          "intersection_km2": 0.8456,
+          "dice": 0.15450392837566232,
+          "iou": 0.08371945665518196,
+          "cumulative_dice_including_initial": 0.23303609904862932,
+          "reference_coverage": 0.18969849246231155,
+          "unmatched_prediction_km2": 5.6428,
+          "missed_reference_km2": 3.612
+        },
+        "high20": {
+          "predicted_growth_km2": 6.4884,
+          "reference_growth_km2": 0.534,
+          "intersection_km2": 0.1572,
+          "dice": 0.04477101845522898,
+          "iou": 0.02289809473868205,
+          "cumulative_dice_including_initial": 0.17624521072796934,
+          "reference_coverage": 0.2943820224719101,
+          "unmatched_prediction_km2": 6.331200000000001,
+          "missed_reference_km2": 0.3768
+        }
+      },
+      "boundary": {
+        "mean_m": 598.6574537365134,
+        "p95_m": 1695.205000258635
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.8228000000000001,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "initial_acquisition": "2026-04-18T04:03:08.771000+00:00",
+      "horizon_hours": 120.00094999999999,
+      "score": {
+        "predicted_growth_km2": 3.4964,
+        "reference_growth_km2": 0.3064,
+        "intersection_km2": 0.0028,
+        "dice": 0.001472599137477648,
+        "iou": 0.0007368421052631579,
+        "cumulative_dice_including_initial": 0.4530736878492827,
+        "reference_coverage": 0.009138381201044387,
+        "unmatched_prediction_km2": 3.4936,
+        "missed_reference_km2": 0.3036
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 3.4964,
+          "reference_growth_km2": 0.031200000000000002,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.4709340692303078,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 3.4964,
+          "missed_reference_km2": 0.031200000000000002
+        },
+        "low20": {
+          "predicted_growth_km2": 3.4964,
+          "reference_growth_km2": 0.4152,
+          "intersection_km2": 0.004,
+          "dice": 0.0020451988955925964,
+          "iou": 0.0010236462278636503,
+          "cumulative_dice_including_initial": 0.4464235067218787,
+          "reference_coverage": 0.009633911368015413,
+          "unmatched_prediction_km2": 3.4924,
+          "missed_reference_km2": 0.4112
+        },
+        "high20": {
+          "predicted_growth_km2": 3.4964,
+          "reference_growth_km2": 0.1464,
+          "intersection_km2": 0.0024000000000000002,
+          "dice": 0.0013176677281212257,
+          "iou": 0.0006592682122843645,
+          "cumulative_dice_including_initial": 0.4636433331367577,
+          "reference_coverage": 0.01639344262295082,
+          "unmatched_prediction_km2": 3.4939999999999998,
+          "missed_reference_km2": 0.144
+        }
+      },
+      "boundary": {
+        "mean_m": 1152.9583233768728,
+        "p95_m": 2208.4655291305003
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 0.0296,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    },
+    {
+      "id": "2026-04-21-T47QMA-4222-20322-bank",
+      "split": "test2026_new_cases",
+      "initial_acquisition": "2026-04-21T04:13:06.464000+00:00",
+      "horizon_hours": 47.83583166666667,
+      "score": {
+        "predicted_growth_km2": 2.9184,
+        "reference_growth_km2": 0.092,
+        "intersection_km2": 0.0068000000000000005,
+        "dice": 0.00451767207015679,
+        "iou": 0.0022639499267545615,
+        "cumulative_dice_including_initial": 0.3673365985475427,
+        "reference_coverage": 0.07391304347826087,
+        "unmatched_prediction_km2": 2.9116,
+        "missed_reference_km2": 0.0852
+      },
+      "sensitivity": {
+        "connected_target20": {
+          "predicted_growth_km2": 2.9184,
+          "reference_growth_km2": 0.0344,
+          "intersection_km2": 0.0068000000000000005,
+          "dice": 0.004605797886751558,
+          "iou": 0.002308214528173795,
+          "cumulative_dice_including_initial": 0.37185843733971624,
+          "reference_coverage": 0.19767441860465118,
+          "unmatched_prediction_km2": 2.9116,
+          "missed_reference_km2": 0.0276
+        },
+        "low20": {
+          "predicted_growth_km2": 2.9184,
+          "reference_growth_km2": 0.1636,
+          "intersection_km2": 0.007200000000000001,
+          "dice": 0.004672290720311486,
+          "iou": 0.002341615714843242,
+          "cumulative_dice_including_initial": 0.3620331087263955,
+          "reference_coverage": 0.04400977995110025,
+          "unmatched_prediction_km2": 2.9112,
+          "missed_reference_km2": 0.15639999999999998
+        },
+        "high20": {
+          "predicted_growth_km2": 2.9184,
+          "reference_growth_km2": 0.0424,
+          "intersection_km2": 0.004,
+          "dice": 0.002701972439881113,
+          "iou": 0.0013528138528138528,
+          "cumulative_dice_including_initial": 0.37002901519030557,
+          "reference_coverage": 0.09433962264150944,
+          "unmatched_prediction_km2": 2.9144,
+          "missed_reference_km2": 0.038400000000000004
+        }
+      },
+      "boundary": {
+        "mean_m": 1724.7487241045153,
+        "p95_m": 3798.7102136186263
+      },
+      "hii_positive_corroboration": {
+        "monthly_positive_area_km2": 1.574,
+        "new_s2_reference_also_hii_monthly_positive_km2": 0.0,
+        "prediction_also_hii_monthly_positive_km2": 0.0,
+        "semantics": "Secondarypositivecorroborationonly. No temporal precision/recall/accuracy fromHII; monthlypositives canpredateorigin andzerosareunknown."
+      }
+    }
+  ],
+  "community_portions": [
+    {
+      "case_id": "2026-02-27-T47QMA-4389-20789-bank",
+      "split": "test2026_new_cases",
+      "forest_id": "cmf-th-2793",
+      "observed_pixels": 1474,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-27",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2577",
+      "observed_pixels": 1051,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-27",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2581",
+      "observed_pixels": 517,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-27-T47QMA-4321-20292-bank",
+      "split": "test2026_new_cases",
+      "forest_id": "cmf-th-2809",
+      "observed_pixels": 9635,
+      "reference_new_scar_pixels": 113,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": true,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-27-T47QMA-4321-20292-bank",
+      "split": "test2026_new_cases",
+      "forest_id": "cmf-th-2947",
+      "observed_pixels": 4147,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-27-T47QMA-4321-20292-bank",
+      "split": "test2026_new_cases",
+      "forest_id": "cmf-th-2813",
+      "observed_pixels": 7298,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-27-T47QMA-4321-20292-bank",
+      "split": "test2026_new_cases",
+      "forest_id": "cmf-th-2811",
+      "observed_pixels": 414,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-29",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3192",
+      "observed_pixels": 370,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 28,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-03-29",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3191",
+      "observed_pixels": 10895,
+      "reference_new_scar_pixels": 13,
+      "predicted_new_scar_pixels": 1270,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-03-29",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2751",
+      "observed_pixels": 56,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-29",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3076",
+      "observed_pixels": 3047,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-29",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3133",
+      "observed_pixels": 672,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-29-T47QMV-4111-19468-bank",
+      "split": "test2026_new_cases",
+      "forest_id": "cmf-th-2886",
+      "observed_pixels": 13758,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-29-T47QMV-4111-19468-bank",
+      "split": "test2026_new_cases",
+      "forest_id": "cmf-th-2889",
+      "observed_pixels": 26959,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-29-T47QNB-5074-21003-bank",
+      "split": "test2026_new_cases",
+      "forest_id": "cmf-th-3184",
+      "observed_pixels": 80,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-30",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2743",
+      "observed_pixels": 1762,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-30",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2803",
+      "observed_pixels": 1256,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-30",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3029",
+      "observed_pixels": 1111,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-30",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2742",
+      "observed_pixels": 1222,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 64,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-03-30",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2801",
+      "observed_pixels": 217,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-30",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3028",
+      "observed_pixels": 397,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-30",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3015",
+      "observed_pixels": 139,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2752",
+      "observed_pixels": 42,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2748",
+      "observed_pixels": 4,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2744",
+      "observed_pixels": 814,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2971",
+      "observed_pixels": 20,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2970",
+      "observed_pixels": 26,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2746",
+      "observed_pixels": 89,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2749",
+      "observed_pixels": 832,
+      "reference_new_scar_pixels": 6,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2972",
+      "observed_pixels": 47,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2747",
+      "observed_pixels": 376,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2750",
+      "observed_pixels": 187,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2745",
+      "observed_pixels": 266,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-03-31",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2751",
+      "observed_pixels": 843,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 50,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-14-community-cmf-th-3191",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3192",
+      "observed_pixels": 1630,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 21,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-14-community-cmf-th-3191",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3191",
+      "observed_pixels": 14252,
+      "reference_new_scar_pixels": 15,
+      "predicted_new_scar_pixels": 753,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-14-community-cmf-th-3191",
+      "split": "regression2026",
+      "forest_id": "cmf-th-3076",
+      "observed_pixels": 1,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-15-community-cmf-th-2892",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2896",
+      "observed_pixels": 1016,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-15-community-cmf-th-2892",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2900",
+      "observed_pixels": 718,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 303,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-15-community-cmf-th-2892",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2895",
+      "observed_pixels": 49368,
+      "reference_new_scar_pixels": 230,
+      "predicted_new_scar_pixels": 154,
+      "reference_ge1ha": true,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-15-community-cmf-th-2892",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2891",
+      "observed_pixels": 27,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-15-community-cmf-th-2892",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2892",
+      "observed_pixels": 66873,
+      "reference_new_scar_pixels": 834,
+      "predicted_new_scar_pixels": 176,
+      "reference_ge1ha": true,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-16",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2732",
+      "observed_pixels": 445,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-16",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2731",
+      "observed_pixels": 160,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2928",
+      "observed_pixels": 7768,
+      "reference_new_scar_pixels": 18,
+      "predicted_new_scar_pixels": 166,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2921",
+      "observed_pixels": 7483,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 144,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2876",
+      "observed_pixels": 2967,
+      "reference_new_scar_pixels": 20,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2929",
+      "observed_pixels": 12544,
+      "reference_new_scar_pixels": 93,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": true,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2917",
+      "observed_pixels": 1898,
+      "reference_new_scar_pixels": 88,
+      "predicted_new_scar_pixels": 266,
+      "reference_ge1ha": true,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2918",
+      "observed_pixels": 1386,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 177,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2927",
+      "observed_pixels": 6601,
+      "reference_new_scar_pixels": 11,
+      "predicted_new_scar_pixels": 1143,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2923",
+      "observed_pixels": 30237,
+      "reference_new_scar_pixels": 271,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": true,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2925",
+      "observed_pixels": 84,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2926",
+      "observed_pixels": 3605,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 379,
+      "reference_ge1ha": false,
+      "warning_ge1ha": true
+    },
+    {
+      "case_id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "forest_id": "cmf-th-2924",
+      "observed_pixels": 5277,
+      "reference_new_scar_pixels": 0,
+      "predicted_new_scar_pixels": 0,
+      "reference_ge1ha": false,
+      "warning_ge1ha": false
+    }
+  ]
+}

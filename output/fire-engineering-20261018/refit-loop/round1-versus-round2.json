@@ -1,0 +1,86 @@
+{
+  "regression2026": {
+    "round1": {
+      "pooled_dice": 0.03151032666340917,
+      "pooled_iou": 0.01600736193347621,
+      "macro_dice": 0.02506133006852094,
+      "predicted_growth_km2": 29.1536,
+      "reference_growth_km2": 4.41,
+      "intersection_km2": 0.5288,
+      "reference_coverage": 0.1199092970521542,
+      "prediction_precision": 0.018138411722737502,
+      "case_count": 11,
+      "uncertainty": {
+        "percentile95": [
+          0.0015171988715833393,
+          0.03803153059908491
+        ],
+        "sampling_unit": "initial-acquisition date, entire cases together",
+        "groups": 6,
+        "note": "Small retrospective sample; interval is descriptive, does not establish future deployment performance. No interval if all sampled support has zero predicted+reference area."
+      },
+      "community_portions": {
+        "observed_portion_periods": 47,
+        "unique_forests": 43,
+        "reference_positive_periods_ge1ha": 5,
+        "warned_positive_periods": 3,
+        "missed_positive_periods": 2,
+        "warned_without_reference_ge1ha": 11,
+        "scope": "Case-coveredclearforestportionsonly, not677forestpopulation performance. No observedscar isnot verifiedabsence."
+      }
+    },
+    "round2": {
+      "pooled_dice": 0.030488105206127176,
+      "pooled_iou": 0.015480031010078277,
+      "macro_dice": 0.01967819814274986,
+      "predicted_growth_km2": 11.8324,
+      "reference_growth_km2": 4.41,
+      "intersection_km2": 0.24760000000000001,
+      "reference_coverage": 0.05614512471655329,
+      "prediction_precision": 0.02092559413136811,
+      "case_count": 11
+    }
+  },
+  "test2026_new_cases": {
+    "round1": {
+      "pooled_dice": 0.04154683006127298,
+      "pooled_iou": 0.021214104426389133,
+      "macro_dice": 0.020076447247925715,
+      "predicted_growth_km2": 14.643600000000001,
+      "reference_growth_km2": 10.9468,
+      "intersection_km2": 0.5316000000000001,
+      "reference_coverage": 0.048562136880184174,
+      "prediction_precision": 0.03630254855363436,
+      "case_count": 8,
+      "uncertainty": {
+        "percentile95": [
+          0.010263019714544849,
+          0.07893289883723688
+        ],
+        "sampling_unit": "initial-acquisition date, entire cases together",
+        "groups": 6,
+        "note": "Small retrospective sample; interval is descriptive, does not establish future deployment performance. No interval if all sampled support has zero predicted+reference area."
+      },
+      "community_portions": {
+        "observed_portion_periods": 8,
+        "unique_forests": 8,
+        "reference_positive_periods_ge1ha": 1,
+        "warned_positive_periods": 0,
+        "missed_positive_periods": 1,
+        "warned_without_reference_ge1ha": 0,
+        "scope": "Case-coveredclearforestportionsonly, not677forestpopulation performance. No observedscar isnot verifiedabsence."
+      }
+    },
+    "round2": {
+      "pooled_dice": 0.04662677056873466,
+      "pooled_iou": 0.023869872826254655,
+      "macro_dice": 0.02888040572664215,
+      "predicted_growth_km2": 7.6348,
+      "reference_growth_km2": 10.9468,
+      "intersection_km2": 0.43320000000000003,
+      "reference_coverage": 0.03957320860890854,
+      "prediction_precision": 0.05674018965788233,
+      "case_count": 8
+    }
+  }
+}

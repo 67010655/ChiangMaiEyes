@@ -1,0 +1,369 @@
+{
+  "selected_on_2025_date_cv": "point_no_pm_large__0.03",
+  "by_split": {
+    "regression2026": {
+      "pooled_dice": 0.030488105206127176,
+      "pooled_iou": 0.015480031010078277,
+      "macro_dice": 0.01967819814274986,
+      "predicted_growth_km2": 11.8324,
+      "reference_growth_km2": 4.41,
+      "intersection_km2": 0.24760000000000001,
+      "reference_coverage": 0.05614512471655329,
+      "prediction_precision": 0.02092559413136811,
+      "case_count": 11
+    },
+    "test2026_new_cases": {
+      "pooled_dice": 0.04662677056873466,
+      "pooled_iou": 0.023869872826254655,
+      "macro_dice": 0.02888040572664215,
+      "predicted_growth_km2": 7.6348,
+      "reference_growth_km2": 10.9468,
+      "intersection_km2": 0.43320000000000003,
+      "reference_coverage": 0.03957320860890854,
+      "prediction_precision": 0.05674018965788233,
+      "case_count": 8
+    }
+  },
+  "rows": [
+    {
+      "id": "2026-02-12-T47QMV-4771-19818-bank",
+      "split": "test2026_new_cases",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.002,
+          "reference_growth_km2": 5.7968,
+          "intersection_km2": 0.0012000000000000001,
+          "dice": 0.0004138787335310754,
+          "iou": 0.00020698219953084037,
+          "cumulative_dice_including_initial": 0.6195889008479247,
+          "reference_coverage": 0.00020701076455975712,
+          "unmatched_prediction_km2": 0.0007999999999999999,
+          "missed_reference_km2": 5.7956
+        }
+      }
+    },
+    {
+      "id": "2026-02-27-T47QMA-4389-20789-bank",
+      "split": "test2026_new_cases",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.19840000000000002,
+          "reference_growth_km2": 0.014,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.8243466754879258,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.19840000000000002,
+          "missed_reference_km2": 0.014
+        }
+      }
+    },
+    {
+      "id": "2026-02-27-T47QMV-4795-19835-bank",
+      "split": "test2026_new_cases",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.0536,
+          "reference_growth_km2": 1.6036000000000001,
+          "intersection_km2": 0.0204,
+          "dice": 0.024619840695148443,
+          "iou": 0.012463343108504398,
+          "cumulative_dice_including_initial": 0.34558704453441297,
+          "reference_coverage": 0.012721376901970565,
+          "unmatched_prediction_km2": 0.0332,
+          "missed_reference_km2": 1.5832000000000002
+        }
+      }
+    },
+    {
+      "id": "2026-03-27",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.0,
+          "reference_growth_km2": 0.3904,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.6294608959757023,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.0,
+          "missed_reference_km2": 0.3904
+        }
+      }
+    },
+    {
+      "id": "2026-03-27-T47QMA-4321-20292-bank",
+      "split": "test2026_new_cases",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.5036,
+          "reference_growth_km2": 0.5704,
+          "intersection_km2": 0.028800000000000003,
+          "dice": 0.053631284916201116,
+          "iou": 0.027554535017221583,
+          "cumulative_dice_including_initial": 0.3954318344039971,
+          "reference_coverage": 0.05049088359046284,
+          "unmatched_prediction_km2": 0.47480000000000006,
+          "missed_reference_km2": 0.5416
+        }
+      }
+    },
+    {
+      "id": "2026-03-28",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 3.8904,
+          "reference_growth_km2": 0.8332,
+          "intersection_km2": 0.0492,
+          "dice": 0.020831569142179693,
+          "iou": 0.010525415026527467,
+          "cumulative_dice_including_initial": 0.30648353625622266,
+          "reference_coverage": 0.059049447911665866,
+          "unmatched_prediction_km2": 3.8412,
+          "missed_reference_km2": 0.784
+        }
+      }
+    },
+    {
+      "id": "2026-03-29",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 2.9516,
+          "reference_growth_km2": 0.48760000000000003,
+          "intersection_km2": 0.0796,
+          "dice": 0.04628983484531286,
+          "iou": 0.023693296821050126,
+          "cumulative_dice_including_initial": 0.542257452271966,
+          "reference_coverage": 0.16324856439704677,
+          "unmatched_prediction_km2": 2.872,
+          "missed_reference_km2": 0.40800000000000003
+        }
+      }
+    },
+    {
+      "id": "2026-03-29-T47QMV-4111-19468-bank",
+      "split": "test2026_new_cases",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.0264,
+          "reference_growth_km2": 0.37560000000000004,
+          "intersection_km2": 0.0032,
+          "dice": 0.015920398009950248,
+          "iou": 0.00802407221664995,
+          "cumulative_dice_including_initial": 0.8723376791015878,
+          "reference_coverage": 0.008519701810436634,
+          "unmatched_prediction_km2": 0.0232,
+          "missed_reference_km2": 0.37240000000000006
+        }
+      }
+    },
+    {
+      "id": "2026-03-29-T47QNB-5074-21003-bank",
+      "split": "test2026_new_cases",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.19640000000000002,
+          "reference_growth_km2": 0.652,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.6065664997217585,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.19640000000000002,
+          "missed_reference_km2": 0.652
+        }
+      }
+    },
+    {
+      "id": "2026-03-30",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.5976,
+          "reference_growth_km2": 0.8904000000000001,
+          "intersection_km2": 0.0344,
+          "dice": 0.046236559139784944,
+          "iou": 0.023665382498624106,
+          "cumulative_dice_including_initial": 0.23633232888506242,
+          "reference_coverage": 0.03863432165318957,
+          "unmatched_prediction_km2": 0.5632,
+          "missed_reference_km2": 0.8560000000000001
+        }
+      }
+    },
+    {
+      "id": "2026-03-31",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 1.2724,
+          "reference_growth_km2": 0.46440000000000003,
+          "intersection_km2": 0.07440000000000001,
+          "dice": 0.0856748042376785,
+          "iou": 0.04475457170356112,
+          "cumulative_dice_including_initial": 0.21479430379746833,
+          "reference_coverage": 0.16020671834625325,
+          "unmatched_prediction_km2": 1.198,
+          "missed_reference_km2": 0.39
+        }
+      }
+    },
+    {
+      "id": "2026-04-02",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 1.0736,
+          "reference_growth_km2": 0.1032,
+          "intersection_km2": 0.008400000000000001,
+          "dice": 0.014276002719238614,
+          "iou": 0.0071893187264635405,
+          "cumulative_dice_including_initial": 0.5044429254955569,
+          "reference_coverage": 0.08139534883720931,
+          "unmatched_prediction_km2": 1.0652000000000001,
+          "missed_reference_km2": 0.0948
+        }
+      }
+    },
+    {
+      "id": "2026-04-03",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.22360000000000002,
+          "reference_growth_km2": 0.1336,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.756343792633015,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.22360000000000002,
+          "missed_reference_km2": 0.1336
+        }
+      }
+    },
+    {
+      "id": "2026-04-14-community-cmf-th-3191",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 1.3488,
+          "reference_growth_km2": 0.036000000000000004,
+          "intersection_km2": 0.0008,
+          "dice": 0.0011554015020219526,
+          "iou": 0.0005780346820809248,
+          "cumulative_dice_including_initial": 0.037840845854201444,
+          "reference_coverage": 0.02222222222222222,
+          "unmatched_prediction_km2": 1.348,
+          "missed_reference_km2": 0.0352
+        }
+      }
+    },
+    {
+      "id": "2026-04-15-community-cmf-th-2892",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.08800000000000001,
+          "reference_growth_km2": 0.7136,
+          "intersection_km2": 0.0008,
+          "dice": 0.0019960079840319364,
+          "iou": 0.000999000999000999,
+          "cumulative_dice_including_initial": 0.2383853769992384,
+          "reference_coverage": 0.0011210762331838565,
+          "unmatched_prediction_km2": 0.08720000000000001,
+          "missed_reference_km2": 0.7128
+        }
+      }
+    },
+    {
+      "id": "2026-04-16",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.3456,
+          "reference_growth_km2": 0.0512,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.28530259365994237,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.3456,
+          "missed_reference_km2": 0.0512
+        }
+      }
+    },
+    {
+      "id": "2026-04-18-T47QMA-4548-20053-bank",
+      "split": "test2026_new_cases",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 3.7960000000000003,
+          "reference_growth_km2": 1.8424,
+          "intersection_km2": 0.374,
+          "dice": 0.13266174801362088,
+          "iou": 0.07104323379682394,
+          "cumulative_dice_including_initial": 0.2764824239554977,
+          "reference_coverage": 0.2029960920538428,
+          "unmatched_prediction_km2": 3.422,
+          "missed_reference_km2": 1.4684
+        }
+      }
+    },
+    {
+      "id": "2026-04-19-community-cmf-th-2923",
+      "split": "regression2026",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 0.0408,
+          "reference_growth_km2": 0.3064,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "cumulative_dice_including_initial": 0.9004358797889425,
+          "reference_coverage": 0.0,
+          "unmatched_prediction_km2": 0.0408,
+          "missed_reference_km2": 0.3064
+        }
+      }
+    },
+    {
+      "id": "2026-04-21-T47QMA-4222-20322-bank",
+      "split": "test2026_new_cases",
+      "scores": {
+        "selected": {
+          "predicted_growth_km2": 2.8584,
+          "reference_growth_km2": 0.092,
+          "intersection_km2": 0.0056,
+          "dice": 0.003796095444685466,
+          "iou": 0.0019016571583808746,
+          "cumulative_dice_including_initial": 0.37153609305508045,
+          "reference_coverage": 0.06086956521739131,
+          "unmatched_prediction_km2": 2.8528000000000002,
+          "missed_reference_km2": 0.0864
+        }
+      }
+    }
+  ],
+  "community": {
+    "regression2026": {
+      "portion_periods": 47,
+      "positive_periods_ge1ha": 5,
+      "warned_positive_periods": 1,
+      "missed_positive_periods": 4,
+      "warned_without_reference_ge1ha": 5
+    },
+    "test2026_new_cases": {
+      "portion_periods": 8,
+      "positive_periods_ge1ha": 1,
+      "warned_positive_periods": 0,
+      "missed_positive_periods": 1,
+      "warned_without_reference_ge1ha": 0
+    }
+  },
+  "test_status": "Reused2026retrospectiveafterround1. No pristineholdoutclaim."
+}

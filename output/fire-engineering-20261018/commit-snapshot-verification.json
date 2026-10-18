@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "scope": "committed offline inference and numerical contracts; not new accuracy validation",
+  "checks": {
+    "isotropic_known_arrivals": "passed",
+    "nonburnable_barrier": "passed",
+    "wind_from270_spreads_east": "passed",
+    "edge_integrates_hourly_changes": "passed",
+    "fractional_image_time_crosses_hour_boundary": "passed",
+    "growth_vs_cumulative_score_distinction": "passed",
+    "frozen_models_and_selection": "PASS",
+    "aligned_checksum_verified_gis": "PASS",
+    "replays": [
+      {
+        "case": "2026-02-12-T47QMV-4771-19818-bank",
+        "all_four_arrays_exact": true,
+        "future_labels_in_input": false
+      },
+      {
+        "case": "2026-04-15-community-cmf-th-2892",
+        "all_four_arrays_exact": true,
+        "future_labels_in_input": false
+      }
+    ],
+    "no_live_api_imports": "PASS"
+  },
+  "checkout": "clean index snapshot; existing working tree app changes and raw archives absent"
+}

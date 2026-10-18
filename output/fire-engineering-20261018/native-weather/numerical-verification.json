@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "independent_gdal_metadata": {
+    "10u": "unit/grid/time metadata match",
+    "10v": "unit/grid/time metadata match"
+  },
+  "eccodes_nearest_vs_extracted_node_max_error_m_s": {
+    "10u": 0.0,
+    "10v": 0.0
+  },
+  "independent_data_decoder": "Not available: Rasterio GDAL lacks libaec for GRIB data template 5.42; eccodes 2.50 successfully decodes actual values.",
+  "cardinal_from_direction_fixtures": "PASS",
+  "chiang_mai_centre_sample": {
+    "u10_m_s": [
+      0.3494422385546979
+    ],
+    "v10_m_s": [
+      -0.5463881641797014
+    ],
+    "speed_m_s": [
+      0.6485752878747252
+    ],
+    "from_direction_deg": [
+      327.3990749504196
+    ]
+  },
+  "sample_method": "bilinear interpolate u/v at 18.7883N,98.9853E; no wind-direction averaging; no extrapolation",
+  "npz_sha256": "763c608af1c70ed7a719b5aa03ae2a436966870f39bc50fb41b1c9df3b1cb00d",
+  "grib_sha256": "975fb0466d736ed44669c7204d5714f2170237a7c064a528cb68576628c9e978"
+}

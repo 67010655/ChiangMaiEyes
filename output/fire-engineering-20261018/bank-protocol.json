@@ -1,0 +1,7 @@
+{
+  "target_new_ready_per_year": 8,
+  "max_quality_attempts_per_year": 24,
+  "roles": "2024train,2025validation;2026newcasesretrospectivegeneralizationandoldcasesregression. Previouslyinspectedyears,notprospective.",
+  "selection": "Initialimage+pastVIIRSonly;allfutureQAexclusionsretained. No positive-burn-area cutoff.",
+  "completion": "Expandbeyondold15cases,executeallproposedinputbranchesandfinitevalidationselectedcomparisons,verifyinitial-onlyreplayandproducefinaldecision. Noautomaticpromotion."
+}

@@ -1,0 +1,205 @@
+{
+  "source": "ECMWF IFS Open Data",
+  "run_init_utc": "2026-10-17T18:00:00+00:00",
+  "valid_time_utc": "2026-10-18T00:00:00+00:00",
+  "forecast_lead_hours": 6.0,
+  "retrieved_utc": "2026-10-18T04:58:51.772014+00:00",
+  "bbox_wsen": [
+    98,
+    17,
+    100,
+    20.5
+  ],
+  "actual_grid_bbox_wsen": [
+    98.0,
+    17.0,
+    100.0,
+    20.5
+  ],
+  "coordinate_reference": "Geographic latitude/longitude degrees; ECMWF spherical Earth specified in GRIB shapeOfTheEarth",
+  "grid_axis_convention": "latitude north to south, longitude west to east; coordinate arrays are cell centres",
+  "grib": {
+    "path": "output\\fire-engineering-20261018\\native-weather\\surface-selected.grib2",
+    "sha256": "975fb0466d736ed44669c7204d5714f2170237a7c064a528cb68576628c9e978",
+    "bytes": 3494303
+  },
+  "npz": {
+    "path": "output\\fire-engineering-20261018\\native-weather\\chiang-mai-surface-grid.npz",
+    "sha256": "763c608af1c70ed7a719b5aa03ae2a436966870f39bc50fb41b1c9df3b1cb00d",
+    "shape": [
+      15,
+      9
+    ],
+    "keys": [
+      "tp",
+      "10u",
+      "10v",
+      "2t",
+      "2d",
+      "wind_speed_10m_m_s",
+      "wind_from_direction_10m_deg",
+      "temperature_2m_c",
+      "relative_humidity_2m_pct"
+    ]
+  },
+  "fields": [
+    {
+      "shortName": "tp",
+      "name": "Total precipitation",
+      "units": "m",
+      "typeOfLevel": "surface",
+      "level": 0,
+      "dataDate": 20261017,
+      "dataTime": 1800,
+      "validityDate": 20261018,
+      "validityTime": 0,
+      "stepRange": "0-6",
+      "stepType": "accum",
+      "gridType": "regular_ll",
+      "Ni": 1440,
+      "Nj": 721,
+      "iDirectionIncrementInDegrees": 0.25,
+      "jDirectionIncrementInDegrees": 0.25,
+      "shapeOfTheEarth": 6,
+      "latitudeOfFirstGridPointInDegrees": 90.0,
+      "longitudeOfFirstGridPointInDegrees": 180.0,
+      "latitudeOfLastGridPointInDegrees": -90.0,
+      "longitudeOfLastGridPointInDegrees": 179.75,
+      "regional_shape": [
+        15,
+        9
+      ],
+      "regional_min": 0.0,
+      "regional_max": 0.0095977783203125
+    },
+    {
+      "shortName": "10u",
+      "name": "10 metre U wind component",
+      "units": "m s**-1",
+      "typeOfLevel": "heightAboveGround",
+      "level": 10,
+      "dataDate": 20261017,
+      "dataTime": 1800,
+      "validityDate": 20261018,
+      "validityTime": 0,
+      "stepRange": "6",
+      "stepType": "instant",
+      "gridType": "regular_ll",
+      "Ni": 1440,
+      "Nj": 721,
+      "iDirectionIncrementInDegrees": 0.25,
+      "jDirectionIncrementInDegrees": 0.25,
+      "shapeOfTheEarth": 6,
+      "latitudeOfFirstGridPointInDegrees": 90.0,
+      "longitudeOfFirstGridPointInDegrees": 180.0,
+      "latitudeOfLastGridPointInDegrees": -90.0,
+      "longitudeOfLastGridPointInDegrees": 179.75,
+      "regional_shape": [
+        15,
+        9
+      ],
+      "regional_min": -1.5342559814453125,
+      "regional_max": 1.0594940185546875
+    },
+    {
+      "shortName": "10v",
+      "name": "10 metre V wind component",
+      "units": "m s**-1",
+      "typeOfLevel": "heightAboveGround",
+      "level": 10,
+      "dataDate": 20261017,
+      "dataTime": 1800,
+      "validityDate": 20261018,
+      "validityTime": 0,
+      "stepRange": "6",
+      "stepType": "instant",
+      "gridType": "regular_ll",
+      "Ni": 1440,
+      "Nj": 721,
+      "iDirectionIncrementInDegrees": 0.25,
+      "jDirectionIncrementInDegrees": 0.25,
+      "shapeOfTheEarth": 6,
+      "latitudeOfFirstGridPointInDegrees": 90.0,
+      "longitudeOfFirstGridPointInDegrees": 180.0,
+      "latitudeOfLastGridPointInDegrees": -90.0,
+      "longitudeOfLastGridPointInDegrees": 179.75,
+      "regional_shape": [
+        15,
+        9
+      ],
+      "regional_min": -2.0089569091796875,
+      "regional_max": 0.8660430908203125
+    },
+    {
+      "shortName": "2t",
+      "name": "2 metre temperature",
+      "units": "K",
+      "typeOfLevel": "heightAboveGround",
+      "level": 2,
+      "dataDate": 20261017,
+      "dataTime": 1800,
+      "validityDate": 20261018,
+      "validityTime": 0,
+      "stepRange": "6",
+      "stepType": "instant",
+      "gridType": "regular_ll",
+      "Ni": 1440,
+      "Nj": 721,
+      "iDirectionIncrementInDegrees": 0.25,
+      "jDirectionIncrementInDegrees": 0.25,
+      "shapeOfTheEarth": 6,
+      "latitudeOfFirstGridPointInDegrees": 90.0,
+      "longitudeOfFirstGridPointInDegrees": 180.0,
+      "latitudeOfLastGridPointInDegrees": -90.0,
+      "longitudeOfLastGridPointInDegrees": 179.75,
+      "regional_shape": [
+        15,
+        9
+      ],
+      "regional_min": 292.13511657714844,
+      "regional_max": 299.41636657714844
+    },
+    {
+      "shortName": "2d",
+      "name": "2 metre dewpoint temperature",
+      "units": "K",
+      "typeOfLevel": "heightAboveGround",
+      "level": 2,
+      "dataDate": 20261017,
+      "dataTime": 1800,
+      "validityDate": 20261018,
+      "validityTime": 0,
+      "stepRange": "6",
+      "stepType": "instant",
+      "gridType": "regular_ll",
+      "Ni": 1440,
+      "Nj": 721,
+      "iDirectionIncrementInDegrees": 0.25,
+      "jDirectionIncrementInDegrees": 0.25,
+      "shapeOfTheEarth": 6,
+      "latitudeOfFirstGridPointInDegrees": 90.0,
+      "longitudeOfFirstGridPointInDegrees": 180.0,
+      "latitudeOfLastGridPointInDegrees": -90.0,
+      "longitudeOfLastGridPointInDegrees": 179.75,
+      "regional_shape": [
+        15,
+        9
+      ],
+      "regional_min": 290.6001892089844,
+      "regional_max": 298.3814392089844
+    }
+  ],
+  "packages": {
+    "ecmwf-opendata": "0.3.35",
+    "eccodes": "2.50.0",
+    "numpy": "2.5.4"
+  },
+  "limitations": [
+    "One current forecast step only; not an hourly forcing series or a validation result.",
+    "0.25 degree is the published field spacing, not 9 km, 1 km, or terrain-downscaled wind.",
+    "10 m wind is above model surface; not flame-height or resolved forest-valley wind.",
+    "tp is run-accumulated precipitation in metres; do not treat as one-hour rain.",
+    "Derived RH uses Magnus approximation, not an independently measured humidity field.",
+    "No historical forecast improvement claimed from current fields."
+  ]
+}

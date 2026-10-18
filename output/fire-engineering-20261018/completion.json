@@ -1,0 +1,19 @@
+{
+  "status": "complete",
+  "completed_utc": "2026-10-18T10:08:39.344486+00:00",
+  "rounds": 2,
+  "all_approved_input_branches_executed": true,
+  "round1_verification": "PASS",
+  "round2_verification": "PASS",
+  "manual_visual_reviewed_files": {
+    "final-results-overview.png": "8dd0dad93c6cb78620ca832dfd83cf75fe4f94e1d9157c0ce5c20ed852841c73",
+    "refit-loop\\2026-04-15-community-cmf-th-2892-two-round-comparison.png": "126b4d23bed8ce8f794db28d65d05d5bfc56c2bdc028075a15a5f1e8e8044a89"
+  },
+  "selected_model_copy_hash_verified": true,
+  "engineering_scope_complete": true,
+  "operational_growth_accuracy_achieved": false,
+  "production_changed": false,
+  "deployment_commands": 0,
+  "clean_index_snapshot_inference_verification": "PASS",
+  "committed_scope": "Offline research, selected GIS inputs, frozen models, scores and two initial-only replay bundles; excludes existing live API/UI changes and full raw caches"
+}

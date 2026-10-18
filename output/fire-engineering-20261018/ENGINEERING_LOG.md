@@ -1,0 +1,15 @@
+# Offline fire engineering — completed two finite rounds
+
+All approved branches executed offline. No production promotion/deployment.
+
+- Raw optical triplets39; usable model cases38, including8train2024/11selection2025/11legacy2026/8additional2026. OneROIexceededDEMcoverage andwasexcludedwithreason.
+- Inputsactuallyretrieved: JAXAHimawari,actualnumericECMWFGRIBandhistoricalcornerforcing,ESA2023seasonalprior,HIInumericmonthlylegalforestpositives.
+- Round1:79growthchoices.2025selectedpoint_no_pm__0.03;2026legacyDice3.151percent/additional4.155percent.
+- Round2:20newdate-CVchoicesplusparent.2025selectedpoint_no_pm_large__0.03,finalfit19pastcases;reused2026legacyDice3.049percent/additional4.663percent. Noscore-based2026thresholdselection.
+- Priority:12Himawarifusions+parent;parentretained36.073percentat250km2,fusion35.975percentonidentical231origins.
+- Completedspatial/numeric/timecontractchecks,PMfuturepoisoning,labelsfreereplayexactparity,677boundarycount,2700frozenraw/inputhashes,6productionhashesand97oldsourcehashes;allPASS.
+- Selectedmodel,featurecontract,registry,CLIreplay,researchdependencylock,sourceexclusions,fullscores,forestportionevaluation,reportsandvisuallycheckedfiguresdelivered.
+
+Correctionsretained:STAC502→boundedretry/pagination;unavailable2024_18Zrun→earlierverified12Z;atomicuniquetempfiles;stricttile/cloudQC;HIItileunion/fixedinventoryandunknown-zero;minimalwinnerinferenceavoidsunusedproviders.
+
+Completionmeansfiniteengineeringplan/test/artifactscomplete, notachievementofoperationalfire-frontaccuracy. No fire-front deployment recommended. Rankedfurtherexperimentswithsourcesandstopcriteriaarein docs/research/2026-10-18-next-model-improvements.md;theyarenotclaimedcompletedoraccurate.

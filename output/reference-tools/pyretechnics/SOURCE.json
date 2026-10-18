@@ -1,0 +1,72 @@
+{
+  "source": "https://github.com/pyregence/pyretechnics",
+  "commit": "a811ae508a5d7eeebb808b156e0e2066d4445602",
+  "mode": "upstream pure Python fallback; unmodified",
+  "license": "NOASSERTION",
+  "files": [
+    {
+      "name": "__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "burn_cells.py",
+      "sha256": "3a09cb6c9a914cad9bf3a75c71d95f31df2f26049040e260e2af9480cac4fbcf"
+    },
+    {
+      "name": "conversion.py",
+      "sha256": "8b8a154bdb969da35a34ca524525260a82ae163c2078b5f4514fc134dd3859bc"
+    },
+    {
+      "name": "crown_fire.py",
+      "sha256": "a10262d1ec03f2921a9a058c461d43795fd23a9a82bf478b76f865d4287e2e9a"
+    },
+    {
+      "name": "eulerian_level_set.py",
+      "sha256": "ab230af6ce961368cb72552ddf89b9141b8d9d7d7dd807abd4863f097ebb1dc7"
+    },
+    {
+      "name": "fire_spread.py",
+      "sha256": "305fc3f584874863c348f759c3ef75e59d84270a9d8b19749c4520180835d4e5"
+    },
+    {
+      "name": "fuel_models.py",
+      "sha256": "80e8055a35581ccbe1dbfadbd713cc3f91dce31eca4447f179f93117d9cd7775"
+    },
+    {
+      "name": "load_landfire.py",
+      "sha256": "1834d1598ff31547a80920a0c3b4ad175ac33de1a674563c7dbe9e7c449eb29c"
+    },
+    {
+      "name": "narrow_band_tracking.py",
+      "sha256": "a8979032b5b79ae74c111a0cf360e6baeabd3e5a99e24d7c5f6ca839e1185615"
+    },
+    {
+      "name": "py_types.py",
+      "sha256": "67001d1738e33bcca96bc83a3b0ad02af8c3aebdb1822cd598c21706d54832aa"
+    },
+    {
+      "name": "random.py",
+      "sha256": "2ad71a3f948573e9d88031751c34fa7013e33da921a2b62a87d08d2bf9608cba"
+    },
+    {
+      "name": "space_time_cube.py",
+      "sha256": "432224099f6632f494b11f6c150770d91b0c105432ee97eae7c53cf67e3455a9"
+    },
+    {
+      "name": "spot_fire.py",
+      "sha256": "47cbefc60e556cdc1357f20169bade041bececceae86e6ea0ed254b4f860275d"
+    },
+    {
+      "name": "suppression.py",
+      "sha256": "8484f2d99607cf4cbdb23c093ed9c6c1c996b89f4e13d9f158e05de93f3911c6"
+    },
+    {
+      "name": "surface_fire.py",
+      "sha256": "e4697f4b2d18eae15fe3778a708b108506a436659732b36d955c07ffff9d65eb"
+    },
+    {
+      "name": "vector_utils.py",
+      "sha256": "26c530d0a187d469b678cdba21dc0197c17a77de845079471ad41f20ca9760d8"
+    }
+  ]
+}

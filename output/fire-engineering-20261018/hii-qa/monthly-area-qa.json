@@ -1,0 +1,110 @@
+[
+  {
+    "source_url": "https://tamroypao.hii.or.th/tamroypao/data/csv/tamroypao_province_forest/2026/burn_area_province_forest_202601.csv",
+    "bytes": 3373,
+    "sha256": "584bf4ec26c4d3d4761cfd4e5196bb97d979c53f65d6dc14f9ed24f2a99ab5c1",
+    "retrieved_at_utc": "2026-10-18T05:14:17.414076+00:00",
+    "last_modified": "Sun, 27 Sep 2026 13:38:37 GMT",
+    "schema": [
+      "province_code",
+      "province_th",
+      "province_en",
+      "month",
+      "Forest"
+    ],
+    "province_row": {
+      "province_code": "TH50",
+      "province_th": "เชียงใหม่",
+      "province_en": "Chiang Mai",
+      "month": "202601",
+      "Forest": "17457.25"
+    },
+    "unit": "rai",
+    "unit_evidence": "official panel.js renderKpis uses s.Forest followedbyไร่; model burn.js statsOf passes rawForest withroundingonly",
+    "area_rai": 17457.25,
+    "area_km2": 27.931600000000003,
+    "area_hectares": 2793.16,
+    "area_20m_pixel_equivalent": 69829
+  },
+  {
+    "source_url": "https://tamroypao.hii.or.th/tamroypao/data/csv/tamroypao_province_forest/2026/burn_area_province_forest_202602.csv",
+    "bytes": 3398,
+    "sha256": "a10fc2a7939c85a3fd95019e1171afcd4234d13baa65703e11abe53fd41ae82c",
+    "retrieved_at_utc": "2026-10-18T05:14:17.465348+00:00",
+    "last_modified": "Sun, 27 Sep 2026 13:40:07 GMT",
+    "schema": [
+      "province_code",
+      "province_th",
+      "province_en",
+      "month",
+      "Forest"
+    ],
+    "province_row": {
+      "province_code": "TH50",
+      "province_th": "เชียงใหม่",
+      "province_en": "Chiang Mai",
+      "month": "202602",
+      "Forest": "46236.75"
+    },
+    "unit": "rai",
+    "unit_evidence": "official panel.js renderKpis uses s.Forest followedbyไร่; model burn.js statsOf passes rawForest withroundingonly",
+    "area_rai": 46236.75,
+    "area_km2": 73.9788,
+    "area_hectares": 7397.88,
+    "area_20m_pixel_equivalent": 184947
+  },
+  {
+    "source_url": "https://tamroypao.hii.or.th/tamroypao/data/csv/tamroypao_province_forest/2026/burn_area_province_forest_202603.csv",
+    "bytes": 3411,
+    "sha256": "df6ba015a6b97504d5a57d693a4adcb7361bc965bfea6507c305c734515805b2",
+    "retrieved_at_utc": "2026-10-18T05:14:17.495414+00:00",
+    "last_modified": "Sun, 27 Sep 2026 13:41:37 GMT",
+    "schema": [
+      "province_code",
+      "province_th",
+      "province_en",
+      "month",
+      "Forest"
+    ],
+    "province_row": {
+      "province_code": "TH50",
+      "province_th": "เชียงใหม่",
+      "province_en": "Chiang Mai",
+      "month": "202603",
+      "Forest": "116905.5"
+    },
+    "unit": "rai",
+    "unit_evidence": "official panel.js renderKpis uses s.Forest followedbyไร่; model burn.js statsOf passes rawForest withroundingonly",
+    "area_rai": 116905.5,
+    "area_km2": 187.0488,
+    "area_hectares": 18704.88,
+    "area_20m_pixel_equivalent": 467622
+  },
+  {
+    "source_url": "https://tamroypao.hii.or.th/tamroypao/data/csv/tamroypao_province_forest/2026/burn_area_province_forest_202604.csv",
+    "bytes": 3406,
+    "sha256": "d3bd81497f482003428a2e4149dea4eb77ac83c517d1cd9e1e0a3c1cf7b38b45",
+    "retrieved_at_utc": "2026-10-18T05:14:17.526384+00:00",
+    "last_modified": "Sun, 27 Sep 2026 13:43:06 GMT",
+    "schema": [
+      "province_code",
+      "province_th",
+      "province_en",
+      "month",
+      "Forest"
+    ],
+    "province_row": {
+      "province_code": "TH50",
+      "province_th": "เชียงใหม่",
+      "province_en": "Chiang Mai",
+      "month": "202604",
+      "Forest": "59763.25"
+    },
+    "unit": "rai",
+    "unit_evidence": "official panel.js renderKpis uses s.Forest followedbyไร่; model burn.js statsOf passes rawForest withroundingonly",
+    "area_rai": 59763.25,
+    "area_km2": 95.6212,
+    "area_hectares": 9562.12,
+    "area_20m_pixel_equivalent": 239053
+  }
+]

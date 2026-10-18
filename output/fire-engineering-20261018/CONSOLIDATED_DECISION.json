@@ -1,0 +1,59 @@
+{
+  "status": "completed_two_offline_engineering_rounds",
+  "selected_growth_pipeline_on2025cv": "point_no_pm_large__0.03",
+  "validation2025_pooled_dice": 0.0823141137643176,
+  "round1_validation2025_pooled_dice": 0.07362820086464915,
+  "final_train_cases": 19,
+  "cv2025_cases": 11,
+  "growth_choices_across_rounds": 99,
+  "priority_fusion_choices_including_parent": 13,
+  "case_count": 38,
+  "growth_test_by_split": {
+    "regression2026": {
+      "pooled_dice": 0.030488105206127176,
+      "pooled_iou": 0.015480031010078277,
+      "macro_dice": 0.01967819814274986,
+      "predicted_growth_km2": 11.8324,
+      "reference_growth_km2": 4.41,
+      "intersection_km2": 0.24760000000000001,
+      "reference_coverage": 0.05614512471655329,
+      "prediction_precision": 0.02092559413136811,
+      "case_count": 11
+    },
+    "test2026_new_cases": {
+      "pooled_dice": 0.04662677056873466,
+      "pooled_iou": 0.023869872826254655,
+      "macro_dice": 0.02888040572664215,
+      "predicted_growth_km2": 7.6348,
+      "reference_growth_km2": 10.9468,
+      "intersection_km2": 0.43320000000000003,
+      "reference_coverage": 0.03957320860890854,
+      "prediction_precision": 0.05674018965788233,
+      "case_count": 8
+    }
+  },
+  "community": {
+    "regression2026": {
+      "portion_periods": 47,
+      "positive_periods_ge1ha": 5,
+      "warned_positive_periods": 1,
+      "missed_positive_periods": 4,
+      "warned_without_reference_ge1ha": 5
+    },
+    "test2026_new_cases": {
+      "portion_periods": 8,
+      "positive_periods_ge1ha": 1,
+      "warned_positive_periods": 0,
+      "missed_positive_periods": 1,
+      "warned_without_reference_ge1ha": 0
+    }
+  },
+  "priority_retained": "hotspot_wind_pm__large",
+  "priority_coverage_at250km2_pct": 36.07268222176337,
+  "test_status": "2026reusedretrospectiveafterround1; nofreshholdoutclaim. Hyperparametersandthresholdchosenonlyfromdateblocked2025CV.",
+  "model_path": "output\\fire-engineering-20261018\\refit-loop\\model.joblib",
+  "no_usable_growth_claim": true,
+  "verification": "PASS",
+  "production_changed": false,
+  "deployment_commands_issued": 0
+}

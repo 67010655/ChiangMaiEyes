@@ -1,0 +1,4897 @@
+{
+  "rows": [
+    {
+      "issued_at": "2026-01-05T08:00:00+07:00",
+      "detections": 7,
+      "target_cells_all": 7,
+      "target_cells_in_mask": 6,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 2,
+          "250.0": 3,
+          "500.0": 4
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 2,
+          "250.0": 3,
+          "500.0": 4
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-05T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-06T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-06T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-07T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-07T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-08T08:00:00+07:00",
+      "detections": 4,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-08T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-09T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-09T20:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-10T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-10T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-11T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-11T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-12T08:00:00+07:00",
+      "detections": 5,
+      "target_cells_all": 4,
+      "target_cells_in_mask": 4,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 8,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-12T20:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 7,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-13T08:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-13T20:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-14T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 5,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-14T20:00:00+07:00",
+      "detections": 6,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-15T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-15T20:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-16T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-16T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-17T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-17T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-18T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-18T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-19T08:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-19T20:00:00+07:00",
+      "detections": 4,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 7,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-20T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 6,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-20T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-21T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-21T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 6,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-22T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-22T20:00:00+07:00",
+      "detections": 9,
+      "target_cells_all": 8,
+      "target_cells_in_mask": 8,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-23T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-23T20:00:00+07:00",
+      "detections": 5,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-24T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-24T20:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-25T08:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-25T20:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-26T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-26T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-27T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-27T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-28T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-28T20:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-29T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-29T20:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-30T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-30T20:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-31T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-01-31T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-01T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-01T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-02T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-02T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-03T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-03T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-04T08:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-04T20:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-05T08:00:00+07:00",
+      "detections": 4,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-05T20:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-06T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-06T20:00:00+07:00",
+      "detections": 6,
+      "target_cells_all": 5,
+      "target_cells_in_mask": 5,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 2
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 2
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-07T08:00:00+07:00",
+      "detections": 13,
+      "target_cells_all": 7,
+      "target_cells_in_mask": 7,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 7,
+          "250.0": 7,
+          "500.0": 7
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 7,
+          "250.0": 7,
+          "500.0": 7
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-07T20:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-08T08:00:00+07:00",
+      "detections": 11,
+      "target_cells_all": 7,
+      "target_cells_in_mask": 7,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 3,
+          "250.0": 6,
+          "500.0": 6
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 3,
+          "250.0": 6,
+          "500.0": 6
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-08T20:00:00+07:00",
+      "detections": 8,
+      "target_cells_all": 8,
+      "target_cells_in_mask": 8,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-09T08:00:00+07:00",
+      "detections": 10,
+      "target_cells_all": 8,
+      "target_cells_in_mask": 8,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 5,
+          "250.0": 6,
+          "500.0": 6
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 5,
+          "250.0": 6,
+          "500.0": 6
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-09T20:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-10T08:00:00+07:00",
+      "detections": 15,
+      "target_cells_all": 12,
+      "target_cells_in_mask": 12,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 10,
+          "250.0": 10,
+          "500.0": 10
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 10,
+          "250.0": 10,
+          "500.0": 10
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-10T20:00:00+07:00",
+      "detections": 4,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 2,
+          "250.0": 2,
+          "500.0": 2
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 2,
+          "250.0": 2,
+          "500.0": 2
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-11T08:00:00+07:00",
+      "detections": 4,
+      "target_cells_all": 4,
+      "target_cells_in_mask": 4,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-11T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-12T08:00:00+07:00",
+      "detections": 16,
+      "target_cells_all": 10,
+      "target_cells_in_mask": 10,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 2,
+          "250.0": 2,
+          "500.0": 2
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 2,
+          "250.0": 2,
+          "500.0": 2
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-12T20:00:00+07:00",
+      "detections": 46,
+      "target_cells_all": 24,
+      "target_cells_in_mask": 24,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 15,
+          "250.0": 16,
+          "500.0": 21
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 15,
+          "250.0": 16,
+          "500.0": 21
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 1
+    },
+    {
+      "issued_at": "2026-02-13T08:00:00+07:00",
+      "detections": 35,
+      "target_cells_all": 23,
+      "target_cells_in_mask": 23,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 16,
+          "250.0": 16,
+          "500.0": 16
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 16,
+          "250.0": 16,
+          "500.0": 16
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 1
+    },
+    {
+      "issued_at": "2026-02-13T20:00:00+07:00",
+      "detections": 55,
+      "target_cells_all": 32,
+      "target_cells_in_mask": 30,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 25,
+          "250.0": 25,
+          "500.0": 27
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 25,
+          "250.0": 25,
+          "500.0": 27
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-14T08:00:00+07:00",
+      "detections": 14,
+      "target_cells_all": 12,
+      "target_cells_in_mask": 12,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 10,
+          "250.0": 10,
+          "500.0": 10
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 10,
+          "250.0": 10,
+          "500.0": 10
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-14T20:00:00+07:00",
+      "detections": 39,
+      "target_cells_all": 26,
+      "target_cells_in_mask": 25,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 6,
+          "250.0": 8,
+          "500.0": 10
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 6,
+          "250.0": 8,
+          "500.0": 10
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-15T08:00:00+07:00",
+      "detections": 22,
+      "target_cells_all": 14,
+      "target_cells_in_mask": 14,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 5,
+          "250.0": 7,
+          "500.0": 7
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 5,
+          "250.0": 7,
+          "500.0": 7
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-15T20:00:00+07:00",
+      "detections": 32,
+      "target_cells_all": 17,
+      "target_cells_in_mask": 17,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 10,
+          "250.0": 11,
+          "500.0": 12
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 10,
+          "250.0": 11,
+          "500.0": 12
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-16T08:00:00+07:00",
+      "detections": 5,
+      "target_cells_all": 5,
+      "target_cells_in_mask": 4,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 2,
+          "500.0": 2
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 2,
+          "500.0": 2
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-16T20:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-17T08:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-17T20:00:00+07:00",
+      "detections": 13,
+      "target_cells_all": 9,
+      "target_cells_in_mask": 9,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 6,
+          "500.0": 8
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 6,
+          "500.0": 8
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-18T08:00:00+07:00",
+      "detections": 8,
+      "target_cells_all": 7,
+      "target_cells_in_mask": 7,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-18T20:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-19T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-19T20:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-20T08:00:00+07:00",
+      "detections": 6,
+      "target_cells_all": 4,
+      "target_cells_in_mask": 4,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-20T20:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-21T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-21T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-22T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-22T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-23T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-23T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-24T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 1
+    },
+    {
+      "issued_at": "2026-02-24T20:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-25T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-25T20:00:00+07:00",
+      "detections": 5,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-26T08:00:00+07:00",
+      "detections": 5,
+      "target_cells_all": 4,
+      "target_cells_in_mask": 4,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-26T20:00:00+07:00",
+      "detections": 10,
+      "target_cells_all": 7,
+      "target_cells_in_mask": 7,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-27T08:00:00+07:00",
+      "detections": 9,
+      "target_cells_all": 7,
+      "target_cells_in_mask": 7,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 5,
+          "250.0": 5,
+          "500.0": 5
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 5,
+          "250.0": 5,
+          "500.0": 5
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-27T20:00:00+07:00",
+      "detections": 27,
+      "target_cells_all": 18,
+      "target_cells_in_mask": 18,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 9,
+          "250.0": 10,
+          "500.0": 12
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 9,
+          "250.0": 10,
+          "500.0": 12
+        }
+      },
+      "hima_positive_events": 6,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-28T08:00:00+07:00",
+      "detections": 34,
+      "target_cells_all": 25,
+      "target_cells_in_mask": 25,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 8,
+          "250.0": 9,
+          "500.0": 9
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 8,
+          "250.0": 9,
+          "500.0": 9
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-02-28T20:00:00+07:00",
+      "detections": 70,
+      "target_cells_all": 42,
+      "target_cells_in_mask": 42,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 28,
+          "250.0": 38,
+          "500.0": 38
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 28,
+          "250.0": 38,
+          "500.0": 38
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-01T08:00:00+07:00",
+      "detections": 132,
+      "target_cells_all": 87,
+      "target_cells_in_mask": 86,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 50,
+          "250.0": 62,
+          "500.0": 68
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 50,
+          "250.0": 62,
+          "500.0": 68
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-01T20:00:00+07:00",
+      "detections": 121,
+      "target_cells_all": 74,
+      "target_cells_in_mask": 73,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 54,
+          "250.0": 59,
+          "500.0": 60
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 54,
+          "250.0": 59,
+          "500.0": 60
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-02T08:00:00+07:00",
+      "detections": 69,
+      "target_cells_all": 49,
+      "target_cells_in_mask": 49,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 19,
+          "250.0": 24,
+          "500.0": 27
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 19,
+          "250.0": 24,
+          "500.0": 27
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-02T20:00:00+07:00",
+      "detections": 261,
+      "target_cells_all": 136,
+      "target_cells_in_mask": 134,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 66,
+          "250.0": 90,
+          "500.0": 105
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 65,
+          "250.0": 91,
+          "500.0": 105
+        }
+      },
+      "hima_positive_events": 7,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-03T08:00:00+07:00",
+      "detections": 31,
+      "target_cells_all": 28,
+      "target_cells_in_mask": 27,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 13,
+          "250.0": 17,
+          "500.0": 18
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 13,
+          "250.0": 17,
+          "500.0": 18
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-03T20:00:00+07:00",
+      "detections": 72,
+      "target_cells_all": 49,
+      "target_cells_in_mask": 49,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 17,
+          "250.0": 27,
+          "500.0": 33
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 17,
+          "250.0": 27,
+          "500.0": 33
+        }
+      },
+      "hima_positive_events": 7,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-04T08:00:00+07:00",
+      "detections": 19,
+      "target_cells_all": 16,
+      "target_cells_in_mask": 15,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 8,
+          "250.0": 9,
+          "500.0": 10
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 8,
+          "250.0": 9,
+          "500.0": 10
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-04T20:00:00+07:00",
+      "detections": 21,
+      "target_cells_all": 19,
+      "target_cells_in_mask": 19,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 5,
+          "250.0": 5,
+          "500.0": 6
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 5,
+          "250.0": 5,
+          "500.0": 6
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-05T08:00:00+07:00",
+      "detections": 21,
+      "target_cells_all": 18,
+      "target_cells_in_mask": 18,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 6,
+          "250.0": 8,
+          "500.0": 10
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 6,
+          "250.0": 8,
+          "500.0": 10
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-05T20:00:00+07:00",
+      "detections": 35,
+      "target_cells_all": 31,
+      "target_cells_in_mask": 28,
+      "target_cells_outside_mask": 3,
+      "scores": {
+        "parent": {
+          "125.0": 9,
+          "250.0": 11,
+          "500.0": 16
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 9,
+          "250.0": 11,
+          "500.0": 16
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-06T08:00:00+07:00",
+      "detections": 22,
+      "target_cells_all": 19,
+      "target_cells_in_mask": 19,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 10,
+          "250.0": 13,
+          "500.0": 14
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 10,
+          "250.0": 13,
+          "500.0": 14
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-06T20:00:00+07:00",
+      "detections": 41,
+      "target_cells_all": 31,
+      "target_cells_in_mask": 31,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 20,
+          "250.0": 22,
+          "500.0": 25
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 20,
+          "250.0": 22,
+          "500.0": 25
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-07T08:00:00+07:00",
+      "detections": 41,
+      "target_cells_all": 32,
+      "target_cells_in_mask": 32,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 13,
+          "250.0": 14,
+          "500.0": 15
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 13,
+          "250.0": 14,
+          "500.0": 15
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-07T20:00:00+07:00",
+      "detections": 65,
+      "target_cells_all": 47,
+      "target_cells_in_mask": 47,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 20,
+          "250.0": 26,
+          "500.0": 40
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 20,
+          "250.0": 26,
+          "500.0": 40
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-08T08:00:00+07:00",
+      "detections": 52,
+      "target_cells_all": 41,
+      "target_cells_in_mask": 41,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 30,
+          "250.0": 31,
+          "500.0": 33
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 30,
+          "250.0": 31,
+          "500.0": 33
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-08T20:00:00+07:00",
+      "detections": 76,
+      "target_cells_all": 57,
+      "target_cells_in_mask": 57,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 28,
+          "250.0": 28,
+          "500.0": 34
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 28,
+          "250.0": 28,
+          "500.0": 34
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-09T08:00:00+07:00",
+      "detections": 36,
+      "target_cells_all": 29,
+      "target_cells_in_mask": 29,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 21,
+          "250.0": 23,
+          "500.0": 24
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 21,
+          "250.0": 23,
+          "500.0": 24
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-09T20:00:00+07:00",
+      "detections": 57,
+      "target_cells_all": 44,
+      "target_cells_in_mask": 44,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 22,
+          "250.0": 26,
+          "500.0": 28
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 22,
+          "250.0": 26,
+          "500.0": 28
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-10T08:00:00+07:00",
+      "detections": 7,
+      "target_cells_all": 7,
+      "target_cells_in_mask": 7,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 5,
+          "250.0": 5,
+          "500.0": 5
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 5,
+          "250.0": 5,
+          "500.0": 5
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-10T20:00:00+07:00",
+      "detections": 24,
+      "target_cells_all": 19,
+      "target_cells_in_mask": 19,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 11,
+          "250.0": 13,
+          "500.0": 14
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 11,
+          "250.0": 13,
+          "500.0": 14
+        }
+      },
+      "hima_positive_events": 8,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-11T08:00:00+07:00",
+      "detections": 10,
+      "target_cells_all": 9,
+      "target_cells_in_mask": 9,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 6,
+          "250.0": 7,
+          "500.0": 7
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 6,
+          "250.0": 7,
+          "500.0": 7
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-11T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-12T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-12T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-13T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-13T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-14T08:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-14T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-15T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-15T20:00:00+07:00",
+      "detections": 4,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-16T08:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-16T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-17T08:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-17T20:00:00+07:00",
+      "detections": 0,
+      "target_cells_all": 0,
+      "target_cells_in_mask": 0,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-18T08:00:00+07:00",
+      "detections": 11,
+      "target_cells_all": 9,
+      "target_cells_in_mask": 9,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-18T20:00:00+07:00",
+      "detections": 17,
+      "target_cells_all": 14,
+      "target_cells_in_mask": 14,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-19T08:00:00+07:00",
+      "detections": 5,
+      "target_cells_all": 5,
+      "target_cells_in_mask": 5,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 2,
+          "250.0": 2,
+          "500.0": 2
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 2,
+          "250.0": 2,
+          "500.0": 2
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-19T20:00:00+07:00",
+      "detections": 34,
+      "target_cells_all": 24,
+      "target_cells_in_mask": 24,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 4,
+          "250.0": 6,
+          "500.0": 6
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 4,
+          "250.0": 6,
+          "500.0": 6
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-20T08:00:00+07:00",
+      "detections": 39,
+      "target_cells_all": 27,
+      "target_cells_in_mask": 26,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 7,
+          "250.0": 10,
+          "500.0": 12
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 7,
+          "250.0": 10,
+          "500.0": 12
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-20T20:00:00+07:00",
+      "detections": 28,
+      "target_cells_all": 20,
+      "target_cells_in_mask": 20,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 18,
+          "250.0": 19,
+          "500.0": 19
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 18,
+          "250.0": 19,
+          "500.0": 19
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-21T08:00:00+07:00",
+      "detections": 45,
+      "target_cells_all": 35,
+      "target_cells_in_mask": 35,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 22,
+          "250.0": 22,
+          "500.0": 23
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 22,
+          "250.0": 22,
+          "500.0": 23
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-21T20:00:00+07:00",
+      "detections": 30,
+      "target_cells_all": 20,
+      "target_cells_in_mask": 20,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 11,
+          "250.0": 12,
+          "500.0": 12
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 11,
+          "250.0": 12,
+          "500.0": 12
+        }
+      },
+      "hima_positive_events": 5,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-22T08:00:00+07:00",
+      "detections": 68,
+      "target_cells_all": 52,
+      "target_cells_in_mask": 50,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 22,
+          "250.0": 25,
+          "500.0": 25
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 22,
+          "250.0": 25,
+          "500.0": 25
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-22T20:00:00+07:00",
+      "detections": 124,
+      "target_cells_all": 80,
+      "target_cells_in_mask": 79,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 39,
+          "250.0": 41,
+          "500.0": 44
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 39,
+          "250.0": 41,
+          "500.0": 44
+        }
+      },
+      "hima_positive_events": 6,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-23T08:00:00+07:00",
+      "detections": 148,
+      "target_cells_all": 103,
+      "target_cells_in_mask": 103,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 39,
+          "250.0": 44,
+          "500.0": 48
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 39,
+          "250.0": 44,
+          "500.0": 48
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-23T20:00:00+07:00",
+      "detections": 299,
+      "target_cells_all": 184,
+      "target_cells_in_mask": 184,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 50,
+          "250.0": 83,
+          "500.0": 109
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 55,
+          "250.0": 80,
+          "500.0": 110
+        }
+      },
+      "hima_positive_events": 27,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-24T08:00:00+07:00",
+      "detections": 173,
+      "target_cells_all": 128,
+      "target_cells_in_mask": 127,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 36,
+          "250.0": 52,
+          "500.0": 72
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 36,
+          "250.0": 52,
+          "500.0": 72
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-24T20:00:00+07:00",
+      "detections": 492,
+      "target_cells_all": 303,
+      "target_cells_in_mask": 301,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 99,
+          "250.0": 150,
+          "500.0": 201
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 99,
+          "250.0": 150,
+          "500.0": 201
+        }
+      },
+      "hima_positive_events": 33,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-25T08:00:00+07:00",
+      "detections": 250,
+      "target_cells_all": 195,
+      "target_cells_in_mask": 194,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 31,
+          "250.0": 61,
+          "500.0": 83
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 31,
+          "250.0": 60,
+          "500.0": 82
+        }
+      },
+      "hima_positive_events": 11,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-25T20:00:00+07:00",
+      "detections": 694,
+      "target_cells_all": 493,
+      "target_cells_in_mask": 488,
+      "target_cells_outside_mask": 5,
+      "scores": {
+        "parent": {
+          "125.0": 81,
+          "250.0": 143,
+          "500.0": 217
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 77,
+          "250.0": 141,
+          "500.0": 215
+        }
+      },
+      "hima_positive_events": 34,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-26T08:00:00+07:00",
+      "detections": 243,
+      "target_cells_all": 189,
+      "target_cells_in_mask": 187,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 38,
+          "250.0": 63,
+          "500.0": 92
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 35,
+          "250.0": 62,
+          "500.0": 92
+        }
+      },
+      "hima_positive_events": 11,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-26T20:00:00+07:00",
+      "detections": 532,
+      "target_cells_all": 386,
+      "target_cells_in_mask": 384,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 85,
+          "250.0": 140,
+          "500.0": 207
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 86,
+          "250.0": 137,
+          "500.0": 209
+        }
+      },
+      "hima_positive_events": 27,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-27T08:00:00+07:00",
+      "detections": 534,
+      "target_cells_all": 396,
+      "target_cells_in_mask": 395,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 82,
+          "250.0": 144,
+          "500.0": 194
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 78,
+          "250.0": 139,
+          "500.0": 194
+        }
+      },
+      "hima_positive_events": 13,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-27T20:00:00+07:00",
+      "detections": 863,
+      "target_cells_all": 616,
+      "target_cells_in_mask": 613,
+      "target_cells_outside_mask": 3,
+      "scores": {
+        "parent": {
+          "125.0": 118,
+          "250.0": 200,
+          "500.0": 298
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 120,
+          "250.0": 200,
+          "500.0": 296
+        }
+      },
+      "hima_positive_events": 41,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-28T08:00:00+07:00",
+      "detections": 753,
+      "target_cells_all": 522,
+      "target_cells_in_mask": 518,
+      "target_cells_outside_mask": 4,
+      "scores": {
+        "parent": {
+          "125.0": 103,
+          "250.0": 179,
+          "500.0": 252
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 97,
+          "250.0": 171,
+          "500.0": 252
+        }
+      },
+      "hima_positive_events": 16,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-28T20:00:00+07:00",
+      "detections": 1565,
+      "target_cells_all": 945,
+      "target_cells_in_mask": 942,
+      "target_cells_outside_mask": 3,
+      "scores": {
+        "parent": {
+          "125.0": 172,
+          "250.0": 283,
+          "500.0": 428
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 173,
+          "250.0": 283,
+          "500.0": 428
+        }
+      },
+      "hima_positive_events": 67,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-29T08:00:00+07:00",
+      "detections": 632,
+      "target_cells_all": 463,
+      "target_cells_in_mask": 462,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 84,
+          "250.0": 142,
+          "500.0": 225
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 78,
+          "250.0": 145,
+          "500.0": 227
+        }
+      },
+      "hima_positive_events": 34,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-29T20:00:00+07:00",
+      "detections": 1491,
+      "target_cells_all": 916,
+      "target_cells_in_mask": 911,
+      "target_cells_outside_mask": 5,
+      "scores": {
+        "parent": {
+          "125.0": 127,
+          "250.0": 228,
+          "500.0": 369
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 127,
+          "250.0": 228,
+          "500.0": 369
+        }
+      },
+      "hima_positive_events": 25,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-30T08:00:00+07:00",
+      "detections": 391,
+      "target_cells_all": 313,
+      "target_cells_in_mask": 312,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 51,
+          "250.0": 83,
+          "500.0": 138
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 53,
+          "250.0": 84,
+          "500.0": 138
+        }
+      },
+      "hima_positive_events": 28,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-30T20:00:00+07:00",
+      "detections": 1269,
+      "target_cells_all": 859,
+      "target_cells_in_mask": 854,
+      "target_cells_outside_mask": 5,
+      "scores": {
+        "parent": {
+          "125.0": 94,
+          "250.0": 180,
+          "500.0": 303
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 94,
+          "250.0": 180,
+          "500.0": 303
+        }
+      },
+      "hima_positive_events": 21,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-31T08:00:00+07:00",
+      "detections": 304,
+      "target_cells_all": 236,
+      "target_cells_in_mask": 236,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 43,
+          "250.0": 80,
+          "500.0": 119
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 43,
+          "250.0": 79,
+          "500.0": 119
+        }
+      },
+      "hima_positive_events": 21,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-03-31T20:00:00+07:00",
+      "detections": 450,
+      "target_cells_all": 343,
+      "target_cells_in_mask": 342,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 76,
+          "250.0": 112,
+          "500.0": 165
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 76,
+          "250.0": 112,
+          "500.0": 165
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-01T08:00:00+07:00",
+      "detections": 310,
+      "target_cells_all": 247,
+      "target_cells_in_mask": 246,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 55,
+          "250.0": 94,
+          "500.0": 126
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 55,
+          "250.0": 94,
+          "500.0": 126
+        }
+      },
+      "hima_positive_events": 7,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-01T20:00:00+07:00",
+      "detections": 673,
+      "target_cells_all": 454,
+      "target_cells_in_mask": 454,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 103,
+          "250.0": 157,
+          "500.0": 236
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 103,
+          "250.0": 157,
+          "500.0": 236
+        }
+      },
+      "hima_positive_events": 8,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-02T08:00:00+07:00",
+      "detections": 305,
+      "target_cells_all": 223,
+      "target_cells_in_mask": 223,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 68,
+          "250.0": 102,
+          "500.0": 121
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 68,
+          "250.0": 100,
+          "500.0": 121
+        }
+      },
+      "hima_positive_events": 7,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-02T20:00:00+07:00",
+      "detections": 1022,
+      "target_cells_all": 632,
+      "target_cells_in_mask": 628,
+      "target_cells_outside_mask": 4,
+      "scores": {
+        "parent": {
+          "125.0": 129,
+          "250.0": 200,
+          "500.0": 284
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 129,
+          "250.0": 200,
+          "500.0": 284
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-03T08:00:00+07:00",
+      "detections": 289,
+      "target_cells_all": 219,
+      "target_cells_in_mask": 219,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 46,
+          "250.0": 78,
+          "500.0": 107
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 44,
+          "250.0": 78,
+          "500.0": 107
+        }
+      },
+      "hima_positive_events": 21,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-03T20:00:00+07:00",
+      "detections": 711,
+      "target_cells_all": 469,
+      "target_cells_in_mask": 467,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 94,
+          "250.0": 144,
+          "500.0": 227
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 94,
+          "250.0": 144,
+          "500.0": 227
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-04T08:00:00+07:00",
+      "detections": 248,
+      "target_cells_all": 190,
+      "target_cells_in_mask": 189,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 54,
+          "250.0": 74,
+          "500.0": 103
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 56,
+          "250.0": 74,
+          "500.0": 103
+        }
+      },
+      "hima_positive_events": 7,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-04T20:00:00+07:00",
+      "detections": 434,
+      "target_cells_all": 284,
+      "target_cells_in_mask": 284,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 76,
+          "250.0": 114,
+          "500.0": 157
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 74,
+          "250.0": 114,
+          "500.0": 157
+        }
+      },
+      "hima_positive_events": 5,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-05T08:00:00+07:00",
+      "detections": 151,
+      "target_cells_all": 120,
+      "target_cells_in_mask": 120,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 32,
+          "250.0": 47,
+          "500.0": 55
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 32,
+          "250.0": 47,
+          "500.0": 55
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-05T20:00:00+07:00",
+      "detections": 252,
+      "target_cells_all": 190,
+      "target_cells_in_mask": 190,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 54,
+          "250.0": 72,
+          "500.0": 96
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 54,
+          "250.0": 72,
+          "500.0": 96
+        }
+      },
+      "hima_positive_events": 16,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-06T08:00:00+07:00",
+      "detections": 106,
+      "target_cells_all": 91,
+      "target_cells_in_mask": 90,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 26,
+          "250.0": 39,
+          "500.0": 45
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 26,
+          "250.0": 39,
+          "500.0": 45
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-06T20:00:00+07:00",
+      "detections": 98,
+      "target_cells_all": 78,
+      "target_cells_in_mask": 78,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 23,
+          "250.0": 29,
+          "500.0": 44
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 23,
+          "250.0": 29,
+          "500.0": 44
+        }
+      },
+      "hima_positive_events": 11,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-07T08:00:00+07:00",
+      "detections": 110,
+      "target_cells_all": 86,
+      "target_cells_in_mask": 85,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 24,
+          "250.0": 30,
+          "500.0": 35
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 24,
+          "250.0": 30,
+          "500.0": 35
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-07T20:00:00+07:00",
+      "detections": 234,
+      "target_cells_all": 173,
+      "target_cells_in_mask": 171,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 36,
+          "250.0": 56,
+          "500.0": 67
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 36,
+          "250.0": 56,
+          "500.0": 67
+        }
+      },
+      "hima_positive_events": 8,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-08T08:00:00+07:00",
+      "detections": 189,
+      "target_cells_all": 147,
+      "target_cells_in_mask": 147,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 40,
+          "250.0": 61,
+          "500.0": 75
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 40,
+          "250.0": 61,
+          "500.0": 75
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-08T20:00:00+07:00",
+      "detections": 442,
+      "target_cells_all": 290,
+      "target_cells_in_mask": 289,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 73,
+          "250.0": 113,
+          "500.0": 151
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 78,
+          "250.0": 120,
+          "500.0": 155
+        }
+      },
+      "hima_positive_events": 33,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-09T08:00:00+07:00",
+      "detections": 283,
+      "target_cells_all": 210,
+      "target_cells_in_mask": 210,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 66,
+          "250.0": 96,
+          "500.0": 119
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 63,
+          "250.0": 93,
+          "500.0": 119
+        }
+      },
+      "hima_positive_events": 8,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-09T20:00:00+07:00",
+      "detections": 490,
+      "target_cells_all": 308,
+      "target_cells_in_mask": 307,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 69,
+          "250.0": 110,
+          "500.0": 154
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 69,
+          "250.0": 109,
+          "500.0": 154
+        }
+      },
+      "hima_positive_events": 43,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-10T08:00:00+07:00",
+      "detections": 262,
+      "target_cells_all": 192,
+      "target_cells_in_mask": 192,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 50,
+          "250.0": 66,
+          "500.0": 87
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 50,
+          "250.0": 66,
+          "500.0": 87
+        }
+      },
+      "hima_positive_events": 16,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-10T20:00:00+07:00",
+      "detections": 354,
+      "target_cells_all": 244,
+      "target_cells_in_mask": 242,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 55,
+          "250.0": 95,
+          "500.0": 126
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 55,
+          "250.0": 95,
+          "500.0": 126
+        }
+      },
+      "hima_positive_events": 33,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-11T08:00:00+07:00",
+      "detections": 217,
+      "target_cells_all": 170,
+      "target_cells_in_mask": 163,
+      "target_cells_outside_mask": 7,
+      "scores": {
+        "parent": {
+          "125.0": 44,
+          "250.0": 65,
+          "500.0": 79
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 43,
+          "250.0": 65,
+          "500.0": 79
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-11T20:00:00+07:00",
+      "detections": 351,
+      "target_cells_all": 232,
+      "target_cells_in_mask": 230,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 43,
+          "250.0": 65,
+          "500.0": 95
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 42,
+          "250.0": 65,
+          "500.0": 95
+        }
+      },
+      "hima_positive_events": 26,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-12T08:00:00+07:00",
+      "detections": 296,
+      "target_cells_all": 218,
+      "target_cells_in_mask": 217,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 60,
+          "250.0": 88,
+          "500.0": 106
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 60,
+          "250.0": 88,
+          "500.0": 106
+        }
+      },
+      "hima_positive_events": 21,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-12T20:00:00+07:00",
+      "detections": 479,
+      "target_cells_all": 333,
+      "target_cells_in_mask": 330,
+      "target_cells_outside_mask": 3,
+      "scores": {
+        "parent": {
+          "125.0": 105,
+          "250.0": 145,
+          "500.0": 185
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 105,
+          "250.0": 145,
+          "500.0": 185
+        }
+      },
+      "hima_positive_events": 16,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-13T08:00:00+07:00",
+      "detections": 229,
+      "target_cells_all": 176,
+      "target_cells_in_mask": 176,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 41,
+          "250.0": 60,
+          "500.0": 82
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 42,
+          "250.0": 60,
+          "500.0": 83
+        }
+      },
+      "hima_positive_events": 19,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-13T20:00:00+07:00",
+      "detections": 415,
+      "target_cells_all": 255,
+      "target_cells_in_mask": 254,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 73,
+          "250.0": 95,
+          "500.0": 140
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 73,
+          "250.0": 95,
+          "500.0": 140
+        }
+      },
+      "hima_positive_events": 6,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-14T08:00:00+07:00",
+      "detections": 174,
+      "target_cells_all": 136,
+      "target_cells_in_mask": 136,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 42,
+          "250.0": 56,
+          "500.0": 73
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 42,
+          "250.0": 56,
+          "500.0": 73
+        }
+      },
+      "hima_positive_events": 8,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-14T20:00:00+07:00",
+      "detections": 505,
+      "target_cells_all": 320,
+      "target_cells_in_mask": 318,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 85,
+          "250.0": 129,
+          "500.0": 178
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 91,
+          "250.0": 129,
+          "500.0": 180
+        }
+      },
+      "hima_positive_events": 7,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-15T08:00:00+07:00",
+      "detections": 433,
+      "target_cells_all": 310,
+      "target_cells_in_mask": 310,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 64,
+          "250.0": 94,
+          "500.0": 136
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 64,
+          "250.0": 94,
+          "500.0": 136
+        }
+      },
+      "hima_positive_events": 16,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-15T20:00:00+07:00",
+      "detections": 893,
+      "target_cells_all": 543,
+      "target_cells_in_mask": 540,
+      "target_cells_outside_mask": 3,
+      "scores": {
+        "parent": {
+          "125.0": 101,
+          "250.0": 167,
+          "500.0": 233
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 99,
+          "250.0": 164,
+          "500.0": 236
+        }
+      },
+      "hima_positive_events": 50,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-16T08:00:00+07:00",
+      "detections": 298,
+      "target_cells_all": 218,
+      "target_cells_in_mask": 215,
+      "target_cells_outside_mask": 3,
+      "scores": {
+        "parent": {
+          "125.0": 45,
+          "250.0": 76,
+          "500.0": 107
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 45,
+          "250.0": 79,
+          "500.0": 107
+        }
+      },
+      "hima_positive_events": 15,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-16T20:00:00+07:00",
+      "detections": 369,
+      "target_cells_all": 262,
+      "target_cells_in_mask": 262,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 59,
+          "250.0": 84,
+          "500.0": 131
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 59,
+          "250.0": 84,
+          "500.0": 131
+        }
+      },
+      "hima_positive_events": 8,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-17T08:00:00+07:00",
+      "detections": 209,
+      "target_cells_all": 160,
+      "target_cells_in_mask": 160,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 39,
+          "250.0": 65,
+          "500.0": 73
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 39,
+          "250.0": 65,
+          "500.0": 73
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-17T20:00:00+07:00",
+      "detections": 77,
+      "target_cells_all": 54,
+      "target_cells_in_mask": 54,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 15,
+          "250.0": 16,
+          "500.0": 18
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 15,
+          "250.0": 16,
+          "500.0": 18
+        }
+      },
+      "hima_positive_events": 9,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-18T08:00:00+07:00",
+      "detections": 329,
+      "target_cells_all": 234,
+      "target_cells_in_mask": 234,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 56,
+          "250.0": 71,
+          "500.0": 88
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 56,
+          "250.0": 71,
+          "500.0": 88
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-18T20:00:00+07:00",
+      "detections": 422,
+      "target_cells_all": 258,
+      "target_cells_in_mask": 258,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 88,
+          "250.0": 121,
+          "500.0": 142
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 88,
+          "250.0": 121,
+          "500.0": 142
+        }
+      },
+      "hima_positive_events": 2,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-19T08:00:00+07:00",
+      "detections": 295,
+      "target_cells_all": 220,
+      "target_cells_in_mask": 220,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 76,
+          "250.0": 111,
+          "500.0": 137
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 75,
+          "250.0": 110,
+          "500.0": 136
+        }
+      },
+      "hima_positive_events": 6,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-19T20:00:00+07:00",
+      "detections": 474,
+      "target_cells_all": 278,
+      "target_cells_in_mask": 276,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 89,
+          "250.0": 119,
+          "500.0": 154
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 89,
+          "250.0": 119,
+          "500.0": 154
+        }
+      },
+      "hima_positive_events": 4,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-20T08:00:00+07:00",
+      "detections": 155,
+      "target_cells_all": 121,
+      "target_cells_in_mask": 121,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 36,
+          "250.0": 46,
+          "500.0": 68
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 36,
+          "250.0": 46,
+          "500.0": 68
+        }
+      },
+      "hima_positive_events": 5,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-20T20:00:00+07:00",
+      "detections": 298,
+      "target_cells_all": 199,
+      "target_cells_in_mask": 198,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 41,
+          "250.0": 58,
+          "500.0": 80
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 40,
+          "250.0": 58,
+          "500.0": 80
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-21T08:00:00+07:00",
+      "detections": 60,
+      "target_cells_all": 51,
+      "target_cells_in_mask": 50,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 17,
+          "250.0": 22,
+          "500.0": 27
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 17,
+          "250.0": 22,
+          "500.0": 27
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-21T20:00:00+07:00",
+      "detections": 121,
+      "target_cells_all": 87,
+      "target_cells_in_mask": 85,
+      "target_cells_outside_mask": 2,
+      "scores": {
+        "parent": {
+          "125.0": 19,
+          "250.0": 30,
+          "500.0": 37
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 19,
+          "250.0": 30,
+          "500.0": 37
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-22T08:00:00+07:00",
+      "detections": 126,
+      "target_cells_all": 102,
+      "target_cells_in_mask": 101,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 26,
+          "250.0": 28,
+          "500.0": 35
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 26,
+          "250.0": 28,
+          "500.0": 35
+        }
+      },
+      "hima_positive_events": 3,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-22T20:00:00+07:00",
+      "detections": 134,
+      "target_cells_all": 90,
+      "target_cells_in_mask": 89,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 22,
+          "250.0": 25,
+          "500.0": 31
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 22,
+          "250.0": 25,
+          "500.0": 31
+        }
+      },
+      "hima_positive_events": 12,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-23T08:00:00+07:00",
+      "detections": 57,
+      "target_cells_all": 52,
+      "target_cells_in_mask": 52,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 17,
+          "250.0": 22,
+          "500.0": 24
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 17,
+          "250.0": 22,
+          "500.0": 24
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-23T20:00:00+07:00",
+      "detections": 103,
+      "target_cells_all": 75,
+      "target_cells_in_mask": 75,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 23,
+          "250.0": 28,
+          "500.0": 31
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 23,
+          "250.0": 28,
+          "500.0": 31
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-24T08:00:00+07:00",
+      "detections": 80,
+      "target_cells_all": 61,
+      "target_cells_in_mask": 61,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 20,
+          "250.0": 26,
+          "500.0": 29
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 20,
+          "250.0": 26,
+          "500.0": 29
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-24T20:00:00+07:00",
+      "detections": 93,
+      "target_cells_all": 64,
+      "target_cells_in_mask": 64,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 24,
+          "250.0": 34,
+          "500.0": 40
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 24,
+          "250.0": 34,
+          "500.0": 40
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-25T08:00:00+07:00",
+      "detections": 1,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-25T20:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 1,
+      "target_cells_in_mask": 1,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-26T08:00:00+07:00",
+      "detections": 4,
+      "target_cells_all": 4,
+      "target_cells_in_mask": 4,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-26T20:00:00+07:00",
+      "detections": 11,
+      "target_cells_all": 9,
+      "target_cells_in_mask": 9,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-27T08:00:00+07:00",
+      "detections": 22,
+      "target_cells_all": 18,
+      "target_cells_in_mask": 17,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 2
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 2
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-27T20:00:00+07:00",
+      "detections": 7,
+      "target_cells_all": 4,
+      "target_cells_in_mask": 4,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-28T08:00:00+07:00",
+      "detections": 13,
+      "target_cells_all": 12,
+      "target_cells_in_mask": 12,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 4,
+          "250.0": 4,
+          "500.0": 4
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-28T20:00:00+07:00",
+      "detections": 2,
+      "target_cells_all": 2,
+      "target_cells_in_mask": 2,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 1,
+          "250.0": 1,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-29T08:00:00+07:00",
+      "detections": 3,
+      "target_cells_all": 3,
+      "target_cells_in_mask": 3,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 1
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 1
+        }
+      },
+      "hima_positive_events": 1,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-29T20:00:00+07:00",
+      "detections": 4,
+      "target_cells_all": 4,
+      "target_cells_in_mask": 4,
+      "target_cells_outside_mask": 0,
+      "scores": {
+        "parent": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 0,
+          "250.0": 0,
+          "500.0": 0
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    },
+    {
+      "issued_at": "2026-04-30T08:00:00+07:00",
+      "detections": 22,
+      "target_cells_all": 20,
+      "target_cells_in_mask": 19,
+      "target_cells_outside_mask": 1,
+      "scores": {
+        "parent": {
+          "125.0": 5,
+          "250.0": 5,
+          "500.0": 6
+        },
+        "hima_w0.05_r1000": {
+          "125.0": 5,
+          "250.0": 5,
+          "500.0": 6
+        }
+      },
+      "hima_positive_events": 0,
+      "retrieved_frames": 2
+    }
+  ],
+  "summary": {
+    "parent": {
+      "hits": 6988,
+      "target_cells_all": 19372,
+      "coverage_pct": 36.07268222176337,
+      "budgets": {
+        "125.0": {
+          "hits": 4717,
+          "coverage_pct": 24.34957670865166
+        },
+        "250.0": {
+          "hits": 6988,
+          "coverage_pct": 36.07268222176337
+        },
+        "500.0": {
+          "hits": 9491,
+          "coverage_pct": 48.99339252529424
+        }
+      }
+    },
+    "hima_w0.05_r1000": {
+      "hits": 6969,
+      "target_cells_all": 19372,
+      "coverage_pct": 35.97460251909973,
+      "budgets": {
+        "125.0": {
+          "hits": 4705,
+          "coverage_pct": 24.287631633285155
+        },
+        "250.0": {
+          "hits": 6969,
+          "coverage_pct": 35.97460251909973
+        },
+        "500.0": {
+          "hits": 9500,
+          "coverage_pct": 49.03985133181912
+        }
+      }
+    }
+  },
+  "issues": 231,
+  "selected_on2025": "hima_w0.05_r1000"
+}

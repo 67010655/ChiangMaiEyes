@@ -1,0 +1,121 @@
+{
+  "id": "2026-02-12-T47QMV-4771-19818-bank",
+  "collection": "sentinel-2-c1-l2a",
+  "split": "retrospective_test2026",
+  "candidate": {
+    "id": "2026-02-12-T47QMV-4771-19818-bank",
+    "date": "2026-02-12",
+    "year": 2026,
+    "latitude": 17.92487,
+    "longitude": 98.78453,
+    "weather_run_interval_hours": 6,
+    "initial_neighbour_count": 3,
+    "forced_initial_scene": "S2C_T47QMV_20260212T040159_L2A",
+    "catalog_source": "catalogs/bank-2026.json",
+    "cohort": "initial_image_past_hotspot_bank",
+    "initial_acquisition": "2026-02-12T04:03:31.155000+00:00"
+  },
+  "bounds_utm47": [
+    472100,
+    1976900,
+    482100,
+    1986900
+  ],
+  "initial_acquisition": "2026-02-12T04:03:31.155000+00:00",
+  "final_acquisition": "2026-02-17T04:03:25.353000+00:00",
+  "horizon_hours": 119.99838833333332,
+  "baseline_scene": "S2B_T47QMV_20260207T040047_L2A",
+  "initial_scene": "S2C_T47QMV_20260212T040159_L2A",
+  "final_scene": "S2B_T47QMV_20260217T035255_L2A",
+  "weather": {
+    "model": "ecmwf_ifs",
+    "run_init": "2026-02-11T18:00:00+00:00",
+    "assumed_model_availability_delay_hours": 6,
+    "archive_note": "Provider describes preMay2026IFS archive as Cycle49R1hindcasts. Single initialization, not stitched future runs; not verified original as-issued distribution.",
+    "sha256": "515852f5b86813eb682c3f43728fdd9232ea71e83094bfe8e28f339aac4767b8",
+    "request": {
+      "latitude": 17.92487,
+      "longitude": 98.78453,
+      "models": "ecmwf_ifs",
+      "run": "2026-02-11T18:00",
+      "forecast_days": 9,
+      "wind_speed_unit": "ms",
+      "timezone": "UTC",
+      "hourly": "wind_speed_10m,wind_direction_10m,temperature_2m,relative_humidity_2m,precipitation"
+    }
+  },
+  "clear_land_fraction": 0.862224,
+  "initial_hotspots": [
+    {
+      "latitude": 17.92436,
+      "longitude": 98.78043,
+      "detected_at": "2026-02-11T14:02:00+07:00",
+      "satellite": "NOAA21",
+      "product": "VIIRS_NOAA21_SP",
+      "confidence": "n",
+      "frp": 4.8,
+      "scan_km": 0.43,
+      "track_km": 0.46
+    },
+    {
+      "latitude": 17.92487,
+      "longitude": 98.78453,
+      "detected_at": "2026-02-11T14:02:00+07:00",
+      "satellite": "NOAA21",
+      "product": "VIIRS_NOAA21_SP",
+      "confidence": "n",
+      "frp": 4.8,
+      "scan_km": 0.43,
+      "track_km": 0.46
+    },
+    {
+      "latitude": 17.92641,
+      "longitude": 98.79684,
+      "detected_at": "2026-02-11T14:02:00+07:00",
+      "satellite": "NOAA21",
+      "product": "VIIRS_NOAA21_SP",
+      "confidence": "n",
+      "frp": 3.32,
+      "scan_km": 0.43,
+      "track_km": 0.46
+    },
+    {
+      "latitude": 17.95024,
+      "longitude": 98.77724,
+      "detected_at": "2026-02-11T14:03:00+07:00",
+      "satellite": "NOAA21",
+      "product": "VIIRS_NOAA21_SP",
+      "confidence": "n",
+      "frp": 2.77,
+      "scan_km": 0.43,
+      "track_km": 0.46
+    }
+  ],
+  "excluded_triplets": [
+    {
+      "start": "S2C_T47QMV_20260212T040159_L2A",
+      "before": "S2B_T47QMV_20260207T040047_L2A",
+      "after": "S2C_T47QMV_20260215T040949_L2A",
+      "reason": "SCLtripletprecheckbelow65percentclearland",
+      "fraction": 0.0
+    },
+    {
+      "start": "S2C_T47QMV_20260212T040159_L2A",
+      "before": "S2C_T47QMV_20260205T041220_L2A",
+      "after": "S2C_T47QMV_20260215T040949_L2A",
+      "reason": "SCLtripletprecheckbelow65percentclearland",
+      "fraction": 0.0
+    },
+    {
+      "start": "S2C_T47QMV_20260212T040159_L2A",
+      "before": "S2C_T47QMV_20260202T040011_L2A",
+      "after": "S2C_T47QMV_20260215T040949_L2A",
+      "reason": "SCLtripletprecheckbelow65percentclearland",
+      "fraction": 0.0
+    }
+  ],
+  "initialization_note": "Retrospective initial optical image provided at acquisition time. Real image publication/processing latency is NOT simulated; catalog_created is retained.",
+  "reference_note": "Satellite-derived spectral burn-change candidate, not independently surveyed fire perimeter.",
+  "engineering_cohort": "expanded_bank",
+  "engineering_split": "test2026_new_cases"
+}

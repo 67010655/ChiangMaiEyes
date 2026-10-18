@@ -1,0 +1,12 @@
+{
+  "case_id": "2026-02-12-T47QMV-4771-19818-bank",
+  "selected": "point_no_pm_large__0.03",
+  "initial_acquisition": "2026-02-12T04:03:31.155000+00:00",
+  "requested_valid_until": "2026-02-17T04:03:25.353000+00:00",
+  "predicted_area_km2": 0.002,
+  "applicable_fraction": 0.904892,
+  "unknown_semantics": "Outsideapplicabilityisunknown/unmodeled, notanallclear.",
+  "future_images_or_labels_read": false,
+  "prediction_sha256": "623b2c3b69eb53ff72b9d352b77c056f194cfbe46d74b95a9b611e8aa117c849",
+  "production_changed": false
+}

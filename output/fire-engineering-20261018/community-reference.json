@@ -1,0 +1,1162 @@
+{
+  "source": "backend\\app\\data\\community-forests-chiangmai.geojson",
+  "source_polygons": 677,
+  "reference": "20mpixelcentresinside suppliedRFDpolygons; newlyobserved spectralscar, not confirmedincident/damage.",
+  "unit": "One20mpixel=0.0004km2.1ha=25pixels. Cloud/non-detection is not verified unburned.",
+  "cases": [
+    {
+      "case": "2024-03-29-T47QMA-4617-20909-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 1,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2845",
+          "name": "ป่าชุมชนบ้านกองขากน้อย",
+          "pixels_in_case": 127,
+          "clear_observed_pixels": 127,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 14
+        }
+      ]
+    },
+    {
+      "case": "2024-03-29-T47QMV-4363-19424-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 3,
+      "forests_with_observed_new_scar_ge1ha": 2,
+      "forests": [
+        {
+          "id": "cmf-th-2900",
+          "name": "ป่าชุมชนบ้านแม่แฮหลวง",
+          "pixels_in_case": 11949,
+          "clear_observed_pixels": 11949,
+          "new_scar_pixels": 250,
+          "initial_scar_pixels": 10
+        },
+        {
+          "id": "cmf-th-2895",
+          "name": "ป่าชุมชนบ้านสบลาน",
+          "pixels_in_case": 44785,
+          "clear_observed_pixels": 44783,
+          "new_scar_pixels": 269,
+          "initial_scar_pixels": 97
+        },
+        {
+          "id": "cmf-th-2891",
+          "name": "ป่าชุมชนบ้านห้วยโค้ง",
+          "pixels_in_case": 16,
+          "clear_observed_pixels": 16,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2024-03-29-T47QNB-5129-21262-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2024-04-01-T47QMA-4467-20844-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 3,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2945",
+          "name": "ป่าชุมชนบ้านห้วยขมิ้น",
+          "pixels_in_case": 254,
+          "clear_observed_pixels": 254,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2850",
+          "name": "ป่าชุมชนบ้านป่าเกี๊ยะใน",
+          "pixels_in_case": 514,
+          "clear_observed_pixels": 514,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2846",
+          "name": "ป่าชุมชนบ้านเด่นฮ่อม",
+          "pixels_in_case": 141,
+          "clear_observed_pixels": 141,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2024-04-03-T47QMA-4580-20274-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2024-04-03-T47QMB-4792-21157-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 12,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-3043",
+          "name": "ป่าชุมชนบ้านปางม่วง",
+          "pixels_in_case": 178,
+          "clear_observed_pixels": 178,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2801",
+          "name": "ป่าชุมชนบ้านปางฮ่าง",
+          "pixels_in_case": 467,
+          "clear_observed_pixels": 467,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3040",
+          "name": "ป่าชุมชนบ้านไร่",
+          "pixels_in_case": 160,
+          "clear_observed_pixels": 160,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3041",
+          "name": "ป่าชุมชนบ้านต้นงุ้น",
+          "pixels_in_case": 409,
+          "clear_observed_pixels": 409,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3042",
+          "name": "ป่าชุมชนบ้านสบเปิง",
+          "pixels_in_case": 514,
+          "clear_observed_pixels": 514,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2804",
+          "name": "ป่าชุมชนบ้านผาหมอน",
+          "pixels_in_case": 902,
+          "clear_observed_pixels": 902,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3027",
+          "name": "ป่าชุมชนบ้านแม่แมม",
+          "pixels_in_case": 265,
+          "clear_observed_pixels": 265,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2807",
+          "name": "ป่าชุมชนบ้านม่อนเงาะ",
+          "pixels_in_case": 835,
+          "clear_observed_pixels": 835,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3036",
+          "name": "ป่าชุมชนบ้านเหล่า",
+          "pixels_in_case": 198,
+          "clear_observed_pixels": 198,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2808",
+          "name": "ป่าชุมชนบ้านม่อนเงาะ",
+          "pixels_in_case": 1331,
+          "clear_observed_pixels": 1331,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3127",
+          "name": "ป่าชุมชนบ้านศรีดงเย็น",
+          "pixels_in_case": 514,
+          "clear_observed_pixels": 514,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3125",
+          "name": "ป่าชุมชนบ้านต้นลุง",
+          "pixels_in_case": 735,
+          "clear_observed_pixels": 735,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2024-04-03-T47QNB-5302-21863-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 5,
+      "forests_with_observed_new_scar_ge1ha": 2,
+      "forests": [
+        {
+          "id": "cmf-th-2683",
+          "name": "ป่าชุมชนบ้านปางปอย",
+          "pixels_in_case": 14373,
+          "clear_observed_pixels": 14369,
+          "new_scar_pixels": 814,
+          "initial_scar_pixels": 491
+        },
+        {
+          "id": "cmf-th-3181",
+          "name": "ป่าชุมชนบ้านสันดอยนาค",
+          "pixels_in_case": 1742,
+          "clear_observed_pixels": 1742,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2682",
+          "name": "ป่าชุมชนบ้านเหมืองแร่",
+          "pixels_in_case": 1366,
+          "clear_observed_pixels": 1366,
+          "new_scar_pixels": 63,
+          "initial_scar_pixels": 10
+        },
+        {
+          "id": "cmf-th-2700",
+          "name": "ป่าชุมชนบ้านโป่งถืบใน",
+          "pixels_in_case": 361,
+          "clear_observed_pixels": 361,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2721",
+          "name": "ป่าชุมชนบ้านดอยป่าไผ่",
+          "pixels_in_case": 1384,
+          "clear_observed_pixels": 1384,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2024-04-18-T47QMB-4577-21403-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2025-01-23-T47QMA-4392-20603-bank",
+      "split": "selection2025",
+      "forests_in_case": 5,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2791",
+          "name": "ป่าชุมชนบ้านแม่วาก",
+          "pixels_in_case": 466,
+          "clear_observed_pixels": 466,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2792",
+          "name": "ป่าชุมชนบ้านสบวาก",
+          "pixels_in_case": 4407,
+          "clear_observed_pixels": 4304,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2739",
+          "name": "ป่าชุมชนบ้านใหม่พัฒนาสันติ",
+          "pixels_in_case": 1058,
+          "clear_observed_pixels": 1049,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2740",
+          "name": "ป่าชุมชนบ้านใหม่พัฒนาสันติ",
+          "pixels_in_case": 462,
+          "clear_observed_pixels": 462,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2790",
+          "name": "ป่าชุมชนบ้านแม่นาจร",
+          "pixels_in_case": 1343,
+          "clear_observed_pixels": 1325,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2025-02-02-T47QMA-4570-20105-bank",
+      "split": "selection2025",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2025-02-15-T47QMA-4331-20200-bank",
+      "split": "selection2025",
+      "forests_in_case": 5,
+      "forests_with_observed_new_scar_ge1ha": 1,
+      "forests": [
+        {
+          "id": "cmf-th-3082",
+          "name": "ป่าชุมชนบ้านบ่อหลวง",
+          "pixels_in_case": 3599,
+          "clear_observed_pixels": 3599,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 148
+        },
+        {
+          "id": "cmf-th-2784",
+          "name": "ป่าชุมชนบ้านแม่หืด",
+          "pixels_in_case": 40,
+          "clear_observed_pixels": 40,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2783",
+          "name": "ป่าชุมชนบ้านบ่อพะแวน",
+          "pixels_in_case": 3817,
+          "clear_observed_pixels": 3500,
+          "new_scar_pixels": 55,
+          "initial_scar_pixels": 782
+        },
+        {
+          "id": "cmf-th-2943",
+          "name": "ป่าชุมชนบ้านอมขูด",
+          "pixels_in_case": 882,
+          "clear_observed_pixels": 882,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2809",
+          "name": "ป่าชุมชนบ้านหัวดอย",
+          "pixels_in_case": 11275,
+          "clear_observed_pixels": 11194,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2025-02-17-T47QMA-4407-20002-bank",
+      "split": "selection2025",
+      "forests_in_case": 2,
+      "forests_with_observed_new_scar_ge1ha": 1,
+      "forests": [
+        {
+          "id": "cmf-th-2778",
+          "name": "ป่าชุมชนบ้านขุน",
+          "pixels_in_case": 52245,
+          "clear_observed_pixels": 47650,
+          "new_scar_pixels": 184,
+          "initial_scar_pixels": 3128
+        },
+        {
+          "id": "cmf-th-2833",
+          "name": "ป่าชุมชนบ้านกิ่วลม",
+          "pixels_in_case": 11813,
+          "clear_observed_pixels": 11813,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 117
+        }
+      ]
+    },
+    {
+      "case": "2025-02-17-T47QMV-4564-19786-bank",
+      "split": "selection2025",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2025-02-22-T47QMV-4409-19350",
+      "split": "selection2025",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2025-02-22-T47QNA-5196-20738-bank",
+      "split": "selection2025",
+      "forests_in_case": 11,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-3046",
+          "name": "ป่าชุมชนบ้านป่าเปางาม",
+          "pixels_in_case": 81,
+          "clear_observed_pixels": 81,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3164",
+          "name": "ป่าชุมชนบ้านป่าเหียง",
+          "pixels_in_case": 285,
+          "clear_observed_pixels": 285,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3045",
+          "name": "ป่าชุมชนบ้านป่าเปางาม",
+          "pixels_in_case": 32,
+          "clear_observed_pixels": 32,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3087",
+          "name": "ป่าชุมชนบ้านป่าตึง",
+          "pixels_in_case": 544,
+          "clear_observed_pixels": 544,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3100",
+          "name": "ป่าชุมชนบ้านแพะ",
+          "pixels_in_case": 232,
+          "clear_observed_pixels": 231,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3104",
+          "name": "ป่าชุมชนบ้านใหม่",
+          "pixels_in_case": 289,
+          "clear_observed_pixels": 289,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3058",
+          "name": "ป่าชุมชนบ้านสหกรณ์ 1",
+          "pixels_in_case": 684,
+          "clear_observed_pixels": 684,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3065",
+          "name": "ป่าชุมชนบ้านใหม่",
+          "pixels_in_case": 1405,
+          "clear_observed_pixels": 1405,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3170",
+          "name": "ป่าชุมชนบ้านม่วงเขียว",
+          "pixels_in_case": 210,
+          "clear_observed_pixels": 208,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3171",
+          "name": "ป่าชุมชนบ้านม่วงเขียว",
+          "pixels_in_case": 381,
+          "clear_observed_pixels": 381,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2856",
+          "name": "ป่าชุมชนบ้านสหกรณ์ 8",
+          "pixels_in_case": 2477,
+          "clear_observed_pixels": 2477,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2025-03-24",
+      "split": "selection2025",
+      "forests_in_case": 1,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2890",
+          "name": "ป่าชุมชนบ้านห้วยบง",
+          "pixels_in_case": 6270,
+          "clear_observed_pixels": 6216,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 799
+        }
+      ]
+    },
+    {
+      "case": "2025-03-24-T47QMA-4731-20015",
+      "split": "selection2025",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2025-03-29",
+      "split": "selection2025",
+      "forests_in_case": 2,
+      "forests_with_observed_new_scar_ge1ha": 2,
+      "forests": [
+        {
+          "id": "cmf-th-2886",
+          "name": "ป่าชุมชนบ้านโอโลคี",
+          "pixels_in_case": 16048,
+          "clear_observed_pixels": 14786,
+          "new_scar_pixels": 32,
+          "initial_scar_pixels": 329
+        },
+        {
+          "id": "cmf-th-2889",
+          "name": "ป่าชุมชนบ้านห้วยผึ้ง",
+          "pixels_in_case": 48154,
+          "clear_observed_pixels": 40737,
+          "new_scar_pixels": 387,
+          "initial_scar_pixels": 775
+        }
+      ]
+    },
+    {
+      "case": "2025-04-06-T47QMA-4256-20694-bank",
+      "split": "selection2025",
+      "forests_in_case": 3,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-3110",
+          "name": "ป่าชุมชนบ้านสบแม่สะต๊อบ",
+          "pixels_in_case": 3025,
+          "clear_observed_pixels": 2484,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 74
+        },
+        {
+          "id": "cmf-th-2815",
+          "name": "ป่าชุมชนบ้านนากลาง",
+          "pixels_in_case": 736,
+          "clear_observed_pixels": 44,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2880",
+          "name": "ป่าชุมชนบ้านนาฮ่อง",
+          "pixels_in_case": 4505,
+          "clear_observed_pixels": 4505,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-02-12-T47QMV-4771-19818-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2026-02-27-T47QMA-4389-20789-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 1,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2793",
+          "name": "ป่าชุมชนบ้านแม่เอาะ",
+          "pixels_in_case": 1709,
+          "clear_observed_pixels": 1474,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 18
+        }
+      ]
+    },
+    {
+      "case": "2026-02-27-T47QMV-4795-19835-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2026-03-27",
+      "split": "retrospective_test2026",
+      "forests_in_case": 2,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2577",
+          "name": "ป่าชุมชนบ้านหัวโท",
+          "pixels_in_case": 1051,
+          "clear_observed_pixels": 1051,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2581",
+          "name": "ป่าชุมชนบ้านห้วยจะค่าน",
+          "pixels_in_case": 517,
+          "clear_observed_pixels": 517,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-03-27-T47QMA-4321-20292-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 4,
+      "forests_with_observed_new_scar_ge1ha": 1,
+      "forests": [
+        {
+          "id": "cmf-th-2809",
+          "name": "ป่าชุมชนบ้านหัวดอย",
+          "pixels_in_case": 9777,
+          "clear_observed_pixels": 9635,
+          "new_scar_pixels": 113,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2947",
+          "name": "ป่าชุมชนบ้านโม่งหลวง",
+          "pixels_in_case": 4147,
+          "clear_observed_pixels": 4147,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2813",
+          "name": "ป่าชุมชนบ้านนายางดิน",
+          "pixels_in_case": 7959,
+          "clear_observed_pixels": 7298,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2811",
+          "name": "ป่าชุมชนบ้านอมเม็ง",
+          "pixels_in_case": 414,
+          "clear_observed_pixels": 414,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-03-28",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2026-03-29",
+      "split": "retrospective_test2026",
+      "forests_in_case": 5,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-3192",
+          "name": "ป่าชุมชนบ้านทรายมูล",
+          "pixels_in_case": 370,
+          "clear_observed_pixels": 370,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3191",
+          "name": "ป่าชุมชนบ้านทรายมูล",
+          "pixels_in_case": 10895,
+          "clear_observed_pixels": 10895,
+          "new_scar_pixels": 13,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2751",
+          "name": "ป่าชุมชนบ้านแม่ขนิลเหนือ",
+          "pixels_in_case": 56,
+          "clear_observed_pixels": 56,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3076",
+          "name": "ป่าชุมชนบ้านแม่สาบ",
+          "pixels_in_case": 3047,
+          "clear_observed_pixels": 3047,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3133",
+          "name": "ป่าชุมชนบ้านบวกเต๋ย",
+          "pixels_in_case": 672,
+          "clear_observed_pixels": 672,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-03-29-T47QMV-4111-19468-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 2,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2886",
+          "name": "ป่าชุมชนบ้านโอโลคี",
+          "pixels_in_case": 13758,
+          "clear_observed_pixels": 13758,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2889",
+          "name": "ป่าชุมชนบ้านห้วยผึ้ง",
+          "pixels_in_case": 27312,
+          "clear_observed_pixels": 26959,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 1112
+        }
+      ]
+    },
+    {
+      "case": "2026-03-29-T47QNB-5074-21003-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 1,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-3184",
+          "name": "ป่าชุมชนบ้านป่าสักงาม",
+          "pixels_in_case": 80,
+          "clear_observed_pixels": 80,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-03-30",
+      "split": "retrospective_test2026",
+      "forests_in_case": 7,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2743",
+          "name": "ป่าชุมชนบ้านผาแด่น",
+          "pixels_in_case": 1762,
+          "clear_observed_pixels": 1762,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2803",
+          "name": "ป่าชุมชนบ้านแม่หลอด",
+          "pixels_in_case": 1257,
+          "clear_observed_pixels": 1256,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 15
+        },
+        {
+          "id": "cmf-th-3029",
+          "name": "ป่าชุมชนบ้านป่ายางหนาด",
+          "pixels_in_case": 1111,
+          "clear_observed_pixels": 1111,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2742",
+          "name": "ป่าชุมชนบ้านท่าผา (แม่ตอ)",
+          "pixels_in_case": 1222,
+          "clear_observed_pixels": 1222,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2801",
+          "name": "ป่าชุมชนบ้านปางฮ่าง",
+          "pixels_in_case": 217,
+          "clear_observed_pixels": 217,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3028",
+          "name": "ป่าชุมชนบ้านผาเด็ง",
+          "pixels_in_case": 397,
+          "clear_observed_pixels": 397,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3015",
+          "name": "ป่าชุมชนบ้านป่าแป๋",
+          "pixels_in_case": 139,
+          "clear_observed_pixels": 139,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-03-31",
+      "split": "retrospective_test2026",
+      "forests_in_case": 12,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2752",
+          "name": "ป่าชุมชนบ้านปงใต้",
+          "pixels_in_case": 42,
+          "clear_observed_pixels": 42,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2748",
+          "name": "ป่าชุมชนบ้านปงเหนือ",
+          "pixels_in_case": 4,
+          "clear_observed_pixels": 4,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2744",
+          "name": "ป่าชุมชนบ้านทุ่งโป่งใต้",
+          "pixels_in_case": 814,
+          "clear_observed_pixels": 814,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2971",
+          "name": "ป่าชุมชนบ้านทุ่งโป่ง",
+          "pixels_in_case": 20,
+          "clear_observed_pixels": 20,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2970",
+          "name": "ป่าชุมชนบ้านทุ่งโป่ง",
+          "pixels_in_case": 26,
+          "clear_observed_pixels": 26,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2746",
+          "name": "ป่าชุมชนบ้านทุ่งโป่ง",
+          "pixels_in_case": 89,
+          "clear_observed_pixels": 89,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2749",
+          "name": "ป่าชุมชนบ้านน้ำซุ้ม",
+          "pixels_in_case": 832,
+          "clear_observed_pixels": 832,
+          "new_scar_pixels": 6,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2972",
+          "name": "ป่าชุมชนบ้านเก๊าเดื่อ",
+          "pixels_in_case": 47,
+          "clear_observed_pixels": 47,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2747",
+          "name": "ป่าชุมชนบ้านเก๊าเดื่อ",
+          "pixels_in_case": 376,
+          "clear_observed_pixels": 376,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2750",
+          "name": "ป่าชุมชนบ้านน้ำซุ้ม",
+          "pixels_in_case": 187,
+          "clear_observed_pixels": 187,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2745",
+          "name": "ป่าชุมชนบ้านแม่ฮะเหนือ",
+          "pixels_in_case": 266,
+          "clear_observed_pixels": 266,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2751",
+          "name": "ป่าชุมชนบ้านแม่ขนิลเหนือ",
+          "pixels_in_case": 843,
+          "clear_observed_pixels": 843,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-04-02",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2026-04-03",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2026-04-14-community-cmf-th-3191",
+      "split": "retrospective_test2026",
+      "forests_in_case": 3,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-3192",
+          "name": "ป่าชุมชนบ้านทรายมูล",
+          "pixels_in_case": 1642,
+          "clear_observed_pixels": 1630,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-3191",
+          "name": "ป่าชุมชนบ้านทรายมูล",
+          "pixels_in_case": 15874,
+          "clear_observed_pixels": 14252,
+          "new_scar_pixels": 15,
+          "initial_scar_pixels": 8
+        },
+        {
+          "id": "cmf-th-3076",
+          "name": "ป่าชุมชนบ้านแม่สาบ",
+          "pixels_in_case": 4638,
+          "clear_observed_pixels": 1,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-04-15-community-cmf-th-2892",
+      "split": "retrospective_test2026",
+      "forests_in_case": 5,
+      "forests_with_observed_new_scar_ge1ha": 2,
+      "forests": [
+        {
+          "id": "cmf-th-2896",
+          "name": "ป่าชุมชนบ้านยางเปียงใต้",
+          "pixels_in_case": 1016,
+          "clear_observed_pixels": 1016,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2900",
+          "name": "ป่าชุมชนบ้านแม่แฮหลวง",
+          "pixels_in_case": 718,
+          "clear_observed_pixels": 718,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2895",
+          "name": "ป่าชุมชนบ้านสบลาน",
+          "pixels_in_case": 49493,
+          "clear_observed_pixels": 49368,
+          "new_scar_pixels": 230,
+          "initial_scar_pixels": 13
+        },
+        {
+          "id": "cmf-th-2891",
+          "name": "ป่าชุมชนบ้านห้วยโค้ง",
+          "pixels_in_case": 27,
+          "clear_observed_pixels": 27,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2892",
+          "name": "ป่าชุมชนบ้านหลังป่าข่า",
+          "pixels_in_case": 75026,
+          "clear_observed_pixels": 66873,
+          "new_scar_pixels": 834,
+          "initial_scar_pixels": 251
+        }
+      ]
+    },
+    {
+      "case": "2026-04-16",
+      "split": "retrospective_test2026",
+      "forests_in_case": 2,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": [
+        {
+          "id": "cmf-th-2732",
+          "name": "ป่าชุมชนบ้านห้วยทราย",
+          "pixels_in_case": 445,
+          "clear_observed_pixels": 445,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2731",
+          "name": "ป่าชุมชนบ้านห้วยทราย",
+          "pixels_in_case": 160,
+          "clear_observed_pixels": 160,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        }
+      ]
+    },
+    {
+      "case": "2026-04-18-T47QMA-4548-20053-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    },
+    {
+      "case": "2026-04-19-community-cmf-th-2923",
+      "split": "retrospective_test2026",
+      "forests_in_case": 11,
+      "forests_with_observed_new_scar_ge1ha": 3,
+      "forests": [
+        {
+          "id": "cmf-th-2928",
+          "name": "ป่าชุมชนบ้านธารทอง",
+          "pixels_in_case": 7768,
+          "clear_observed_pixels": 7768,
+          "new_scar_pixels": 18,
+          "initial_scar_pixels": 73
+        },
+        {
+          "id": "cmf-th-2921",
+          "name": "ป่าชุมชนบ้านแม่กำปอง",
+          "pixels_in_case": 9361,
+          "clear_observed_pixels": 7483,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2876",
+          "name": "ป่าชุมชนบ้านห้วยแก้ว",
+          "pixels_in_case": 2973,
+          "clear_observed_pixels": 2967,
+          "new_scar_pixels": 20,
+          "initial_scar_pixels": 14
+        },
+        {
+          "id": "cmf-th-2929",
+          "name": "ป่าชุมชนบ้านธารทอง",
+          "pixels_in_case": 12544,
+          "clear_observed_pixels": 12544,
+          "new_scar_pixels": 93,
+          "initial_scar_pixels": 400
+        },
+        {
+          "id": "cmf-th-2917",
+          "name": "ป่าชุมชนบ้านแม่ลาย",
+          "pixels_in_case": 2504,
+          "clear_observed_pixels": 1898,
+          "new_scar_pixels": 88,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2918",
+          "name": "ป่าชุมชนบ้านแม่ลาย",
+          "pixels_in_case": 2664,
+          "clear_observed_pixels": 1386,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2927",
+          "name": "ป่าชุมชนบ้านป๊อก",
+          "pixels_in_case": 6772,
+          "clear_observed_pixels": 6601,
+          "new_scar_pixels": 11,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2923",
+          "name": "ป่าชุมชนบ้านปางจำปี",
+          "pixels_in_case": 30329,
+          "clear_observed_pixels": 30237,
+          "new_scar_pixels": 271,
+          "initial_scar_pixels": 1795
+        },
+        {
+          "id": "cmf-th-2925",
+          "name": "ป่าชุมชนบ้านปางจำปี",
+          "pixels_in_case": 84,
+          "clear_observed_pixels": 84,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2926",
+          "name": "ป่าชุมชนบ้านป๊อก",
+          "pixels_in_case": 4656,
+          "clear_observed_pixels": 3605,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 0
+        },
+        {
+          "id": "cmf-th-2924",
+          "name": "ป่าชุมชนบ้านปางจำปี",
+          "pixels_in_case": 5277,
+          "clear_observed_pixels": 5277,
+          "new_scar_pixels": 0,
+          "initial_scar_pixels": 345
+        }
+      ]
+    },
+    {
+      "case": "2026-04-21-T47QMA-4222-20322-bank",
+      "split": "retrospective_test2026",
+      "forests_in_case": 0,
+      "forests_with_observed_new_scar_ge1ha": 0,
+      "forests": []
+    }
+  ]
+}

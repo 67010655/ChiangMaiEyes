@@ -1,0 +1,11 @@
+{
+  "status": "offline_experiment_complete",
+  "feature_semantics": "wind direction,3h thermal delay,2day PM lag and group isolation passed",
+  "frozen_model_inference": "passed",
+  "utc_to_ict_issue_normalization": "passed",
+  "future_input_truncation": "exact feature equality passed",
+  "unavailable_hotspot_rows_removed_for_check": 5117,
+  "selected_cells": 1000,
+  "selected_area_km2": 250.0,
+  "production_changed": false
+}

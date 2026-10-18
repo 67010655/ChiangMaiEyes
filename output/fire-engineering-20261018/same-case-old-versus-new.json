@@ -1,0 +1,25 @@
+{
+  "cohort": "Exactlysame11previouslyinspected2026cases; retrospectivecomparison, nofuturemodelselection.",
+  "old": {
+    "pooled_dice": 0.014046687775501337,
+    "pooled_iou": 0.007073020140522545,
+    "macro_dice": 0.010543505559132811,
+    "predicted_growth_km2": 98.6748,
+    "reference_growth_km2": 4.41,
+    "intersection_km2": 0.7240000000000001,
+    "reference_coverage": 0.16417233560090705,
+    "prediction_precision": 0.007337233011873346,
+    "case_count": 11
+  },
+  "new": {
+    "pooled_dice": 0.03151032666340917,
+    "pooled_iou": 0.01600736193347621,
+    "macro_dice": 0.02506133006852094,
+    "predicted_growth_km2": 29.1536,
+    "reference_growth_km2": 4.41,
+    "intersection_km2": 0.5288,
+    "reference_coverage": 0.1199092970521542,
+    "prediction_precision": 0.018138411722737502,
+    "case_count": 11
+  }
+}

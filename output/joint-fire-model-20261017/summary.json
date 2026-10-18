@@ -1,0 +1,1031 @@
+{
+  "protocol": {
+    "version": "joint-input-ablation-v1",
+    "deployment_policy": "OFFLINE ONLY. No production files, UI or deployments.",
+    "groups": [
+      "hotspot_context",
+      "hotspot_wind",
+      "hotspot_pm",
+      "hotspot_wind_pm"
+    ],
+    "common_context": "Same terrain, land cover, calendar and province T/RH/rain/solar; original single-point wind removed from common features.",
+    "wind": "12spatial GFS previous-day1 locations; mean/variation of true-east/north vectors, direction relative to past hotspots; not terrain-resolved fire-front winds.",
+    "pm": "Official35T/36T daily measured PM, latest date<=issue ICT date-2; exact publishing time/window unverified; city context only, not spatial PM map.",
+    "target": "Nominal/high VIIRS detections next12h in500m grid; no claim of fire perimeter or confirmed incidents.",
+    "expansion_target": "Grid-centre distance>500m and<=5km from prior24h hotspots; later detections may also be separate ignitions.",
+    "train": 2024,
+    "selection": 2025,
+    "retrospective_test": 2026,
+    "hotspot_latency_hours": 3,
+    "issue_ict_hours": [
+      8,
+      20
+    ],
+    "candidate_configs": {
+      "small": {
+        "max_iter": 60,
+        "max_leaf_nodes": 15
+      },
+      "large": {
+        "max_iter": 100,
+        "max_leaf_nodes": 31
+      }
+    },
+    "feature_names": [
+      "longitude",
+      "latitude",
+      "elevation",
+      "slope",
+      "cover10",
+      "cover20",
+      "cover30",
+      "cover40",
+      "day_distance",
+      "day_count",
+      "day_age",
+      "day_frp",
+      "week_distance",
+      "week_count",
+      "month_distance",
+      "month_count",
+      "temperature_mean",
+      "temperature_max",
+      "rh_mean",
+      "rh_max",
+      "rain_mean",
+      "rain_max",
+      "solar_mean",
+      "solar_max",
+      "doy_sin",
+      "doy_cos",
+      "morning_issue",
+      "local_u",
+      "local_v",
+      "local_speed_mean",
+      "local_speed_max",
+      "local_u_std",
+      "local_v_std",
+      "local_first_u",
+      "local_first_v",
+      "local_last_u",
+      "local_last_v",
+      "nearest_source_speed",
+      "source_to_cell_alignment",
+      "signed_alongwind_distance",
+      "crosswind_distance",
+      "downwind_recent_kernel",
+      "upwind_recent_kernel",
+      "station35t",
+      "station36t",
+      "mean_latest",
+      "mean3days",
+      "mean7days",
+      "trend3days",
+      "trend7days",
+      "max3days",
+      "valid_stations",
+      "available_days7"
+    ],
+    "group_columns": {
+      "hotspot_context": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26
+      ],
+      "hotspot_wind": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "hotspot_pm": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ],
+      "hotspot_wind_pm": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ]
+    },
+    "budgets_km2": [
+      125,
+      250,
+      500
+    ],
+    "training_negative_sampling": "All future-positive cells plus1024uniform negative cells per issue; scores are not calibrated probabilities.",
+    "test_history": "2026 already inspected in earlier work; not an untouched independent season. No further tuning from2026.",
+    "sources": [
+      {
+        "path": "output/joint-fire-model-20261017/pm-2024.json",
+        "sha256": "4f4434cf78d2798c737657c17e7c2ffa3c94f5a8541a3c8a99927aad9713a904"
+      },
+      {
+        "path": "output/joint-fire-model-20261017/gfs-spatial-2024.json",
+        "sha256": "0445a75826a5a64f8356ff8712db048b815c82d70ae4ef67b43bf672f50bbfa8"
+      },
+      {
+        "path": "output/hindcast-2024/firms-points.json",
+        "sha256": "ae6ad08c181e0928bd458ed6e6c9b025b25479257f16dd9de281582af9365a22"
+      },
+      {
+        "path": "output/joint-fire-model-20261017/pm-2025.json",
+        "sha256": "4b7e52cc955d612048c92bdbd6162a1f9fa8d46a0e8958461f19aa9385a39d7a"
+      },
+      {
+        "path": "output/joint-fire-model-20261017/gfs-spatial-2025.json",
+        "sha256": "4e314bbd0311616a0c6e455292dc00dab84b638427e6c07195bd32ebb586c431"
+      },
+      {
+        "path": "output/hindcast-2025/firms-points.json",
+        "sha256": "fc8f5490933373412d12798d43029087f6423003abde35213b980b47d639d1ea"
+      },
+      {
+        "path": "output/joint-fire-model-20261017/pm-2026.json",
+        "sha256": "4626c27c0b767c51df155addb065d90ac7c25c91d31f4ce1c955e18a3a8ed829"
+      },
+      {
+        "path": "output/joint-fire-model-20261017/gfs-spatial-2026.json",
+        "sha256": "b161eab5f08962117e638b94cea101db78eb5c4cf10cc301a64ba91583eeace0"
+      },
+      {
+        "path": "output/hindcast-2026/firms-points.json",
+        "sha256": "28f39aa74a35f16e06593473e9d91d34f11f073ea367ecc42e49b12527ed3eb4"
+      }
+    ]
+  },
+  "selection": {
+    "chosen_per_group": {
+      "hotspot_context": "hotspot_context__large",
+      "hotspot_wind": "hotspot_wind__large",
+      "hotspot_pm": "hotspot_pm__large",
+      "hotspot_wind_pm": "hotspot_wind_pm__large"
+    },
+    "selected_primary": "hotspot_wind_pm__large",
+    "selection_year": 2025,
+    "criterion": "Pooled coverage at250km2; only one frozen model per group goes to2026."
+  },
+  "validation": {
+    "issues": 235,
+    "target_cells": 8729,
+    "expansion_target_cells": 4374,
+    "scores": {
+      "hotspot_context__small": {
+        "125.0": {
+          "hits": 3284,
+          "expansion_hits": 1328
+        },
+        "250.0": {
+          "hits": 4309,
+          "expansion_hits": 2028
+        },
+        "500.0": {
+          "hits": 5195,
+          "expansion_hits": 2747
+        }
+      },
+      "hotspot_context__large": {
+        "125.0": {
+          "hits": 3403,
+          "expansion_hits": 1425
+        },
+        "250.0": {
+          "hits": 4374,
+          "expansion_hits": 2101
+        },
+        "500.0": {
+          "hits": 5246,
+          "expansion_hits": 2789
+        }
+      },
+      "hotspot_wind__small": {
+        "125.0": {
+          "hits": 3302,
+          "expansion_hits": 1346
+        },
+        "250.0": {
+          "hits": 4317,
+          "expansion_hits": 2044
+        },
+        "500.0": {
+          "hits": 5214,
+          "expansion_hits": 2761
+        }
+      },
+      "hotspot_wind__large": {
+        "125.0": {
+          "hits": 3379,
+          "expansion_hits": 1423
+        },
+        "250.0": {
+          "hits": 4366,
+          "expansion_hits": 2102
+        },
+        "500.0": {
+          "hits": 5273,
+          "expansion_hits": 2803
+        }
+      },
+      "hotspot_pm__small": {
+        "125.0": {
+          "hits": 3288,
+          "expansion_hits": 1340
+        },
+        "250.0": {
+          "hits": 4318,
+          "expansion_hits": 2047
+        },
+        "500.0": {
+          "hits": 5208,
+          "expansion_hits": 2760
+        }
+      },
+      "hotspot_pm__large": {
+        "125.0": {
+          "hits": 3393,
+          "expansion_hits": 1423
+        },
+        "250.0": {
+          "hits": 4393,
+          "expansion_hits": 2119
+        },
+        "500.0": {
+          "hits": 5229,
+          "expansion_hits": 2776
+        }
+      },
+      "hotspot_wind_pm__small": {
+        "125.0": {
+          "hits": 3305,
+          "expansion_hits": 1359
+        },
+        "250.0": {
+          "hits": 4325,
+          "expansion_hits": 2057
+        },
+        "500.0": {
+          "hits": 5223,
+          "expansion_hits": 2767
+        }
+      },
+      "hotspot_wind_pm__large": {
+        "125.0": {
+          "hits": 3360,
+          "expansion_hits": 1408
+        },
+        "250.0": {
+          "hits": 4406,
+          "expansion_hits": 2135
+        },
+        "500.0": {
+          "hits": 5258,
+          "expansion_hits": 2807
+        }
+      },
+      "previous_boost15": {
+        "125.0": {
+          "hits": 3317,
+          "expansion_hits": 1350
+        },
+        "250.0": {
+          "hits": 4322,
+          "expansion_hits": 2047
+        },
+        "500.0": {
+          "hits": 5201,
+          "expansion_hits": 2745
+        }
+      },
+      "day": {
+        "125.0": {
+          "hits": 2584,
+          "expansion_hits": 675
+        },
+        "250.0": {
+          "hits": 3884,
+          "expansion_hits": 1533
+        },
+        "500.0": {
+          "hits": 5004,
+          "expansion_hits": 2625
+        }
+      },
+      "kernel": {
+        "125.0": {
+          "hits": 2791,
+          "expansion_hits": 760
+        },
+        "250.0": {
+          "hits": 3936,
+          "expansion_hits": 1627
+        },
+        "500.0": {
+          "hits": 4972,
+          "expansion_hits": 2593
+        }
+      }
+    }
+  },
+  "test": {
+    "issues": 235,
+    "target_cells": 19374,
+    "expansion_target_cells": 10685,
+    "scores": {
+      "hotspot_context__large": {
+        "125.0": {
+          "hits": 4687,
+          "expansion_hits": 1565
+        },
+        "250.0": {
+          "hits": 6961,
+          "expansion_hits": 2641
+        },
+        "500.0": {
+          "hits": 9471,
+          "expansion_hits": 4168
+        }
+      },
+      "hotspot_wind__large": {
+        "125.0": {
+          "hits": 4719,
+          "expansion_hits": 1572
+        },
+        "250.0": {
+          "hits": 6962,
+          "expansion_hits": 2613
+        },
+        "500.0": {
+          "hits": 9458,
+          "expansion_hits": 4134
+        }
+      },
+      "hotspot_pm__large": {
+        "125.0": {
+          "hits": 4700,
+          "expansion_hits": 1558
+        },
+        "250.0": {
+          "hits": 6957,
+          "expansion_hits": 2648
+        },
+        "500.0": {
+          "hits": 9495,
+          "expansion_hits": 4167
+        }
+      },
+      "hotspot_wind_pm__large": {
+        "125.0": {
+          "hits": 4717,
+          "expansion_hits": 1554
+        },
+        "250.0": {
+          "hits": 6988,
+          "expansion_hits": 2632
+        },
+        "500.0": {
+          "hits": 9491,
+          "expansion_hits": 4167
+        }
+      },
+      "previous_boost15": {
+        "125.0": {
+          "hits": 4637,
+          "expansion_hits": 1449
+        },
+        "250.0": {
+          "hits": 6792,
+          "expansion_hits": 2506
+        },
+        "500.0": {
+          "hits": 9376,
+          "expansion_hits": 4039
+        }
+      },
+      "day": {
+        "125.0": {
+          "hits": 2954,
+          "expansion_hits": 402
+        },
+        "250.0": {
+          "hits": 5058,
+          "expansion_hits": 835
+        },
+        "500.0": {
+          "hits": 8073,
+          "expansion_hits": 2579
+        }
+      },
+      "kernel": {
+        "125.0": {
+          "hits": 3513,
+          "expansion_hits": 418
+        },
+        "250.0": {
+          "hits": 5510,
+          "expansion_hits": 1088
+        },
+        "500.0": {
+          "hits": 8290,
+          "expansion_hits": 2781
+        }
+      }
+    }
+  },
+  "monthly_test": {
+    "01": {
+      "issues": 58,
+      "target_cells": 70,
+      "expansion_target_cells": 2,
+      "scores": {
+        "hotspot_context__large": {
+          "125.0": {
+            "hits": 1,
+            "expansion_hits": 1
+          },
+          "250.0": {
+            "hits": 5,
+            "expansion_hits": 1
+          },
+          "500.0": {
+            "hits": 6,
+            "expansion_hits": 1
+          }
+        },
+        "hotspot_wind__large": {
+          "125.0": {
+            "hits": 3,
+            "expansion_hits": 1
+          },
+          "250.0": {
+            "hits": 4,
+            "expansion_hits": 1
+          },
+          "500.0": {
+            "hits": 7,
+            "expansion_hits": 1
+          }
+        },
+        "hotspot_pm__large": {
+          "125.0": {
+            "hits": 3,
+            "expansion_hits": 1
+          },
+          "250.0": {
+            "hits": 5,
+            "expansion_hits": 1
+          },
+          "500.0": {
+            "hits": 6,
+            "expansion_hits": 1
+          }
+        },
+        "hotspot_wind_pm__large": {
+          "125.0": {
+            "hits": 3,
+            "expansion_hits": 1
+          },
+          "250.0": {
+            "hits": 5,
+            "expansion_hits": 1
+          },
+          "500.0": {
+            "hits": 7,
+            "expansion_hits": 1
+          }
+        },
+        "previous_boost15": {
+          "125.0": {
+            "hits": 3,
+            "expansion_hits": 1
+          },
+          "250.0": {
+            "hits": 4,
+            "expansion_hits": 1
+          },
+          "500.0": {
+            "hits": 7,
+            "expansion_hits": 2
+          }
+        },
+        "day": {
+          "125.0": {
+            "hits": 1,
+            "expansion_hits": 1
+          },
+          "250.0": {
+            "hits": 2,
+            "expansion_hits": 2
+          },
+          "500.0": {
+            "hits": 2,
+            "expansion_hits": 2
+          }
+        },
+        "kernel": {
+          "125.0": {
+            "hits": 1,
+            "expansion_hits": 1
+          },
+          "250.0": {
+            "hits": 2,
+            "expansion_hits": 2
+          },
+          "500.0": {
+            "hits": 2,
+            "expansion_hits": 2
+          }
+        }
+      }
+    },
+    "02": {
+      "issues": 56,
+      "target_cells": 373,
+      "expansion_target_cells": 142,
+      "scores": {
+        "hotspot_context__large": {
+          "125.0": {
+            "hits": 183,
+            "expansion_hits": 111
+          },
+          "250.0": {
+            "hits": 218,
+            "expansion_hits": 134
+          },
+          "500.0": {
+            "hits": 235,
+            "expansion_hits": 141
+          }
+        },
+        "hotspot_wind__large": {
+          "125.0": {
+            "hits": 180,
+            "expansion_hits": 110
+          },
+          "250.0": {
+            "hits": 216,
+            "expansion_hits": 134
+          },
+          "500.0": {
+            "hits": 234,
+            "expansion_hits": 140
+          }
+        },
+        "hotspot_pm__large": {
+          "125.0": {
+            "hits": 187,
+            "expansion_hits": 115
+          },
+          "250.0": {
+            "hits": 217,
+            "expansion_hits": 133
+          },
+          "500.0": {
+            "hits": 236,
+            "expansion_hits": 139
+          }
+        },
+        "hotspot_wind_pm__large": {
+          "125.0": {
+            "hits": 184,
+            "expansion_hits": 115
+          },
+          "250.0": {
+            "hits": 216,
+            "expansion_hits": 133
+          },
+          "500.0": {
+            "hits": 231,
+            "expansion_hits": 140
+          }
+        },
+        "previous_boost15": {
+          "125.0": {
+            "hits": 180,
+            "expansion_hits": 111
+          },
+          "250.0": {
+            "hits": 214,
+            "expansion_hits": 132
+          },
+          "500.0": {
+            "hits": 229,
+            "expansion_hits": 141
+          }
+        },
+        "day": {
+          "125.0": {
+            "hits": 167,
+            "expansion_hits": 103
+          },
+          "250.0": {
+            "hits": 183,
+            "expansion_hits": 119
+          },
+          "500.0": {
+            "hits": 211,
+            "expansion_hits": 134
+          }
+        },
+        "kernel": {
+          "125.0": {
+            "hits": 167,
+            "expansion_hits": 103
+          },
+          "250.0": {
+            "hits": 183,
+            "expansion_hits": 119
+          },
+          "500.0": {
+            "hits": 209,
+            "expansion_hits": 134
+          }
+        }
+      }
+    },
+    "03": {
+      "issues": 62,
+      "target_cells": 8727,
+      "expansion_target_cells": 5000,
+      "scores": {
+        "hotspot_context__large": {
+          "125.0": {
+            "hits": 1971,
+            "expansion_hits": 697
+          },
+          "250.0": {
+            "hits": 3007,
+            "expansion_hits": 1176
+          },
+          "500.0": {
+            "hits": 4260,
+            "expansion_hits": 1881
+          }
+        },
+        "hotspot_wind__large": {
+          "125.0": {
+            "hits": 1987,
+            "expansion_hits": 690
+          },
+          "250.0": {
+            "hits": 3013,
+            "expansion_hits": 1161
+          },
+          "500.0": {
+            "hits": 4254,
+            "expansion_hits": 1863
+          }
+        },
+        "hotspot_pm__large": {
+          "125.0": {
+            "hits": 1969,
+            "expansion_hits": 679
+          },
+          "250.0": {
+            "hits": 3011,
+            "expansion_hits": 1176
+          },
+          "500.0": {
+            "hits": 4260,
+            "expansion_hits": 1860
+          }
+        },
+        "hotspot_wind_pm__large": {
+          "125.0": {
+            "hits": 1972,
+            "expansion_hits": 670
+          },
+          "250.0": {
+            "hits": 3029,
+            "expansion_hits": 1155
+          },
+          "500.0": {
+            "hits": 4260,
+            "expansion_hits": 1862
+          }
+        },
+        "previous_boost15": {
+          "125.0": {
+            "hits": 1940,
+            "expansion_hits": 620
+          },
+          "250.0": {
+            "hits": 2931,
+            "expansion_hits": 1111
+          },
+          "500.0": {
+            "hits": 4193,
+            "expansion_hits": 1801
+          }
+        },
+        "day": {
+          "125.0": {
+            "hits": 1241,
+            "expansion_hits": 258
+          },
+          "250.0": {
+            "hits": 2065,
+            "expansion_hits": 446
+          },
+          "500.0": {
+            "hits": 3378,
+            "expansion_hits": 908
+          }
+        },
+        "kernel": {
+          "125.0": {
+            "hits": 1490,
+            "expansion_hits": 263
+          },
+          "250.0": {
+            "hits": 2314,
+            "expansion_hits": 476
+          },
+          "500.0": {
+            "hits": 3523,
+            "expansion_hits": 1019
+          }
+        }
+      }
+    },
+    "04": {
+      "issues": 59,
+      "target_cells": 10204,
+      "expansion_target_cells": 5541,
+      "scores": {
+        "hotspot_context__large": {
+          "125.0": {
+            "hits": 2532,
+            "expansion_hits": 756
+          },
+          "250.0": {
+            "hits": 3731,
+            "expansion_hits": 1330
+          },
+          "500.0": {
+            "hits": 4970,
+            "expansion_hits": 2145
+          }
+        },
+        "hotspot_wind__large": {
+          "125.0": {
+            "hits": 2549,
+            "expansion_hits": 771
+          },
+          "250.0": {
+            "hits": 3729,
+            "expansion_hits": 1317
+          },
+          "500.0": {
+            "hits": 4963,
+            "expansion_hits": 2130
+          }
+        },
+        "hotspot_pm__large": {
+          "125.0": {
+            "hits": 2541,
+            "expansion_hits": 763
+          },
+          "250.0": {
+            "hits": 3724,
+            "expansion_hits": 1338
+          },
+          "500.0": {
+            "hits": 4993,
+            "expansion_hits": 2167
+          }
+        },
+        "hotspot_wind_pm__large": {
+          "125.0": {
+            "hits": 2558,
+            "expansion_hits": 768
+          },
+          "250.0": {
+            "hits": 3738,
+            "expansion_hits": 1343
+          },
+          "500.0": {
+            "hits": 4993,
+            "expansion_hits": 2164
+          }
+        },
+        "previous_boost15": {
+          "125.0": {
+            "hits": 2514,
+            "expansion_hits": 717
+          },
+          "250.0": {
+            "hits": 3643,
+            "expansion_hits": 1262
+          },
+          "500.0": {
+            "hits": 4947,
+            "expansion_hits": 2095
+          }
+        },
+        "day": {
+          "125.0": {
+            "hits": 1545,
+            "expansion_hits": 40
+          },
+          "250.0": {
+            "hits": 2808,
+            "expansion_hits": 268
+          },
+          "500.0": {
+            "hits": 4482,
+            "expansion_hits": 1535
+          }
+        },
+        "kernel": {
+          "125.0": {
+            "hits": 1855,
+            "expansion_hits": 51
+          },
+          "250.0": {
+            "hits": 3011,
+            "expansion_hits": 491
+          },
+          "500.0": {
+            "hits": 4556,
+            "expansion_hits": 1626
+          }
+        }
+      }
+    }
+  },
+  "gain_pp_vs_previous_model_95pct_7day_block": {
+    "hotspot_context__large": [
+      0.6448739234985429,
+      1.2360445826461626
+    ],
+    "hotspot_wind__large": [
+      0.688506223630513,
+      1.1187107925140924
+    ],
+    "hotspot_pm__large": [
+      0.566182245231895,
+      1.0325551478453732
+    ],
+    "hotspot_wind_pm__large": [
+      0.6767529838352047,
+      1.2115271431696644
+    ],
+    "day": [
+      -10.854191391844404,
+      -4.886446782718935
+    ],
+    "kernel": [
+      -7.772704956334992,
+      -3.9823398104247354
+    ]
+  },
+  "production_changed": false
+}

@@ -1,0 +1,11 @@
+{
+  "chosen_per_group": {
+    "hotspot_context": "hotspot_context__large",
+    "hotspot_wind": "hotspot_wind__large",
+    "hotspot_pm": "hotspot_pm__large",
+    "hotspot_wind_pm": "hotspot_wind_pm__large"
+  },
+  "selected_primary": "hotspot_wind_pm__large",
+  "selection_year": 2025,
+  "criterion": "Pooled coverage at250km2; only one frozen model per group goes to2026."
+}

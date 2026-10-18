@@ -1,0 +1,10 @@
+{
+  "selected_on2025": "hima_w0.05_r1000",
+  "delta_percentage_points": -0.09807970266363952,
+  "paired_circular7day_block95_pp": [
+    -0.25510016692525567,
+    0.06432818592420796
+  ],
+  "original_model_retained": true,
+  "interpretation": "No demonstrated improvement at fixed250km2; source useful for positive monitoring evidence but this late-fusion hypothesis does not replace parent."
+}

@@ -1,0 +1,176 @@
+{
+  "point_pm_versus_point_no_pm": {
+    "threshold_selected_from_full_on2025": "0.03",
+    "same_train_cases_and_sampled_pixels": true,
+    "same_learner_iterations_leaves": true,
+    "test_by_split": {
+      "regression2026": {
+        "full": {
+          "pooled_dice": 0.03151032666340917,
+          "pooled_iou": 0.01600736193347621,
+          "macro_dice": 0.02506133006852094,
+          "predicted_growth_km2": 29.1536,
+          "reference_growth_km2": 4.41,
+          "intersection_km2": 0.5288,
+          "reference_coverage": 0.1199092970521542,
+          "prediction_precision": 0.018138411722737502,
+          "case_count": 11
+        },
+        "without_component": {
+          "pooled_dice": 0.03151032666340917,
+          "pooled_iou": 0.01600736193347621,
+          "macro_dice": 0.02506133006852094,
+          "predicted_growth_km2": 29.1536,
+          "reference_growth_km2": 4.41,
+          "intersection_km2": 0.5288,
+          "reference_coverage": 0.1199092970521542,
+          "prediction_precision": 0.018138411722737502,
+          "case_count": 11
+        },
+        "difference_pooled_dice_pp": 0.0
+      },
+      "test2026_new_cases": {
+        "full": {
+          "pooled_dice": 0.04154683006127298,
+          "pooled_iou": 0.021214104426389133,
+          "macro_dice": 0.020076447247925715,
+          "predicted_growth_km2": 14.643600000000001,
+          "reference_growth_km2": 10.9468,
+          "intersection_km2": 0.5316000000000001,
+          "reference_coverage": 0.048562136880184174,
+          "prediction_precision": 0.03630254855363436,
+          "case_count": 8
+        },
+        "without_component": {
+          "pooled_dice": 0.04154683006127298,
+          "pooled_iou": 0.021214104426389133,
+          "macro_dice": 0.020076447247925715,
+          "predicted_growth_km2": 14.643600000000001,
+          "reference_growth_km2": 10.9468,
+          "intersection_km2": 0.5316000000000001,
+          "reference_coverage": 0.048562136880184174,
+          "prediction_precision": 0.03630254855363436,
+          "case_count": 8
+        },
+        "difference_pooled_dice_pp": 0.0
+      }
+    },
+    "interpretation": "Matchedthresholdretrospectiveablation; notcausalevidence or automaticallysignificant."
+  },
+  "all_versus_all_no_pm": {
+    "threshold_selected_from_full_on2025": "0.003",
+    "same_train_cases_and_sampled_pixels": true,
+    "same_learner_iterations_leaves": true,
+    "test_by_split": {
+      "regression2026": {
+        "full": {
+          "pooled_dice": 0.01653947666163045,
+          "pooled_iou": 0.008338697174467983,
+          "macro_dice": 0.0166764735801586,
+          "predicted_growth_km2": 400.3912,
+          "reference_growth_km2": 4.41,
+          "intersection_km2": 3.3476000000000004,
+          "reference_coverage": 0.759092970521542,
+          "prediction_precision": 0.008360823114993537,
+          "case_count": 11
+        },
+        "without_component": {
+          "pooled_dice": 0.01653947666163045,
+          "pooled_iou": 0.008338697174467983,
+          "macro_dice": 0.0166764735801586,
+          "predicted_growth_km2": 400.3912,
+          "reference_growth_km2": 4.41,
+          "intersection_km2": 3.3476000000000004,
+          "reference_coverage": 0.759092970521542,
+          "prediction_precision": 0.008360823114993537,
+          "case_count": 11
+        },
+        "difference_pooled_dice_pp": 0.0
+      },
+      "test2026_new_cases": {
+        "full": {
+          "pooled_dice": 0.04952116916246967,
+          "pooled_iou": 0.02538923692968532,
+          "macro_dice": 0.05315199891496465,
+          "predicted_growth_km2": 251.06640000000002,
+          "reference_growth_km2": 10.9468,
+          "intersection_km2": 6.4876000000000005,
+          "reference_coverage": 0.5926480798041437,
+          "prediction_precision": 0.025840176144637433,
+          "case_count": 8
+        },
+        "without_component": {
+          "pooled_dice": 0.04952116916246967,
+          "pooled_iou": 0.02538923692968532,
+          "macro_dice": 0.05315199891496465,
+          "predicted_growth_km2": 251.06640000000002,
+          "reference_growth_km2": 10.9468,
+          "intersection_km2": 6.4876000000000005,
+          "reference_coverage": 0.5926480798041437,
+          "prediction_precision": 0.025840176144637433,
+          "case_count": 8
+        },
+        "difference_pooled_dice_pp": 0.0
+      }
+    },
+    "interpretation": "Matchedthresholdretrospectiveablation; notcausalevidence or automaticallysignificant."
+  },
+  "all_versus_all_no_wind": {
+    "threshold_selected_from_full_on2025": "0.003",
+    "same_train_cases_and_sampled_pixels": true,
+    "same_learner_iterations_leaves": true,
+    "test_by_split": {
+      "regression2026": {
+        "full": {
+          "pooled_dice": 0.01653947666163045,
+          "pooled_iou": 0.008338697174467983,
+          "macro_dice": 0.0166764735801586,
+          "predicted_growth_km2": 400.3912,
+          "reference_growth_km2": 4.41,
+          "intersection_km2": 3.3476000000000004,
+          "reference_coverage": 0.759092970521542,
+          "prediction_precision": 0.008360823114993537,
+          "case_count": 11
+        },
+        "without_component": {
+          "pooled_dice": 0.020156959533339958,
+          "pooled_iou": 0.010181089672941372,
+          "macro_dice": 0.0176551431395304,
+          "predicted_growth_km2": 325.5604,
+          "reference_growth_km2": 4.41,
+          "intersection_km2": 3.3256,
+          "reference_coverage": 0.7541043083900226,
+          "prediction_precision": 0.010215001578816097,
+          "case_count": 11
+        },
+        "difference_pooled_dice_pp": -0.36174828717095087
+      },
+      "test2026_new_cases": {
+        "full": {
+          "pooled_dice": 0.04952116916246967,
+          "pooled_iou": 0.02538923692968532,
+          "macro_dice": 0.05315199891496465,
+          "predicted_growth_km2": 251.06640000000002,
+          "reference_growth_km2": 10.9468,
+          "intersection_km2": 6.4876000000000005,
+          "reference_coverage": 0.5926480798041437,
+          "prediction_precision": 0.025840176144637433,
+          "case_count": 8
+        },
+        "without_component": {
+          "pooled_dice": 0.040354582571067374,
+          "pooled_iou": 0.020592798172647402,
+          "macro_dice": 0.050310983102329586,
+          "predicted_growth_km2": 198.5164,
+          "reference_growth_km2": 10.9468,
+          "intersection_km2": 4.2264,
+          "reference_coverage": 0.38608543135893597,
+          "prediction_precision": 0.02128992869103006,
+          "case_count": 8
+        },
+        "difference_pooled_dice_pp": 0.9166586591402299
+      }
+    },
+    "interpretation": "Matchedthresholdretrospectiveablation; notcausalevidence or automaticallysignificant."
+  }
+}

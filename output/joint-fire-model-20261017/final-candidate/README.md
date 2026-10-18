@@ -1,0 +1,1 @@
+Offline frozen candidate. Read ../FINAL_RESULTS.md and feature-contract.json before use. No production deployment. Run predict_joint_fire_candidate.py for historical inference; outputs stay in this folder.

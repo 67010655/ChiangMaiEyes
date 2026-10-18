@@ -1,0 +1,8 @@
+{
+  "frontend/index.html": "c196306f70e51cf26f528941ac9e6c4bb364376c156603b97d68c3537fc04fc5",
+  "frontend/public/priority-validation.js": "1a7db41c7313b81d7ead6f4bf4f197803d62970a7da5d0fa42ab56e6f932b182",
+  "backend/app/main.py": "909fb5da9f6fca7180d9b4898d6f42a997b0f2d4c2134f48630b66d8416874c7",
+  "backend/app/season_hindcast.py": "a34ffa93892fe2e5a9f2af4e7028ff87fc40ea30f6674f74def8b3c7b9aa0f63",
+  "backend/app/data/priority-validation.json": "ccebc11639d20c06ebe5e7f37146545db92023f52e90f8637487fafd2d50c48c",
+  "backend/requirements.txt": "c5d42e328f78a9e5a20a571f6f87a32b5ca68ca688ec9de4146763eee3d0ce9b"
+}

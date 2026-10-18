@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "checks": [
+    "four fresh TH50 monthly CSV rows and month schema match",
+    "original fractional rai retained with official UI unit chain",
+    "area conversion and20m pixel-equivalent consistency",
+    "two TIFF SHA256 hashes match",
+    "HTTP Range206 verified",
+    "native CRS resolution int16 classes0/6000 and nodata null verified",
+    "case-grid sample1178positive pixels",
+    "observation coverage explicitly unavailable; negatives forbidden"
+  ],
+  "numeric_tiff_bytes": 2643406,
+  "csv_bytes": 13588,
+  "caveat": "No independent forest accuracy validation or exact-interval fire perimeter supplied"
+}

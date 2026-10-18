@@ -1,0 +1,102 @@
+[
+  {
+    "url": "https://tamroypao.hii.or.th/product/B2F/2026/BURNSCAR_47QMA_20M_202603_B2F.tif",
+    "bytes": 1278633,
+    "sha256": "7531489737cc13292a70da3f72c3e31a229d09ccde04ca9d155a08f924f41da2",
+    "last_modified": "Thu, 02 Apr 2026 10:44:33 GMT",
+    "accept_ranges": "bytes",
+    "range_status": 206,
+    "content_range": "bytes 0-15/1278633",
+    "raster": {
+      "crs": "EPSG:32647",
+      "transform": [
+        20.0,
+        0.0,
+        399960.0,
+        0.0,
+        -20.0,
+        2100000.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "shape": [
+        5490,
+        5490
+      ],
+      "dtype": [
+        "int16"
+      ],
+      "nodata": null,
+      "count": 1,
+      "bounds": [
+        399960.0,
+        1990200.0,
+        509760.0,
+        2100000.0
+      ],
+      "tags": {
+        "AREA_OR_POINT": "Area"
+      },
+      "image_structure": {
+        "COMPRESSION": "LZW",
+        "INTERLEAVE": "BAND"
+      },
+      "overviews": [],
+      "classes": {
+        "0": 29762739,
+        "6000": 377361
+      }
+    }
+  },
+  {
+    "url": "https://tamroypao.hii.or.th/product/B2F/2026/BURNSCAR_47QMV_20M_202603_B2F.tif",
+    "bytes": 1364773,
+    "sha256": "6ce1e3a35fa3645c008bbb95366283f30546e3685fa7fe82837f0af002b4b7d8",
+    "last_modified": "Thu, 02 Apr 2026 10:55:50 GMT",
+    "accept_ranges": "bytes",
+    "range_status": 206,
+    "content_range": "bytes 0-15/1364773",
+    "raster": {
+      "crs": "EPSG:32647",
+      "transform": [
+        20.0,
+        0.0,
+        399960.0,
+        0.0,
+        -20.0,
+        2000040.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "shape": [
+        5490,
+        5490
+      ],
+      "dtype": [
+        "int16"
+      ],
+      "nodata": null,
+      "count": 1,
+      "bounds": [
+        399960.0,
+        1890240.0,
+        509760.0,
+        2000040.0
+      ],
+      "tags": {
+        "AREA_OR_POINT": "Area"
+      },
+      "image_structure": {
+        "COMPRESSION": "LZW",
+        "INTERLEAVE": "BAND"
+      },
+      "overviews": [],
+      "classes": {
+        "0": 29583233,
+        "6000": 556867
+      }
+    }
+  }
+]

@@ -1,0 +1,939 @@
+{
+  "rows": [
+    {
+      "id": "2025-01-23-T47QMA-4392-20603-bank",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.046800002455711365,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.0076,
+          "cumulative_dice_including_initial": 0.2451612806121719,
+          "unmatched_prediction_km2": 0.046800002455711365,
+          "missed_reference_km2": 0.0
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.046800002455711365,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.0076,
+          "cumulative_dice_including_initial": 0.2451612806121719,
+          "unmatched_prediction_km2": 0.046800002455711365,
+          "missed_reference_km2": 0.0
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.046800002455711365,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.0076,
+          "cumulative_dice_including_initial": 0.2451612806121719,
+          "unmatched_prediction_km2": 0.046800002455711365,
+          "missed_reference_km2": 0.0
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.046800002455711365,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.0076,
+          "cumulative_dice_including_initial": 0.2451612806121719,
+          "unmatched_prediction_km2": 0.046800002455711365,
+          "missed_reference_km2": 0.0
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.046800002455711365,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.0076,
+          "cumulative_dice_including_initial": 0.2451612806121719,
+          "unmatched_prediction_km2": 0.046800002455711365,
+          "missed_reference_km2": 0.0
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.046800002455711365,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.0076,
+          "cumulative_dice_including_initial": 0.2451612806121719,
+          "unmatched_prediction_km2": 0.046800002455711365,
+          "missed_reference_km2": 0.0
+        }
+      }
+    },
+    {
+      "id": "2025-02-02-T47QMA-4570-20105-bank",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.02279999852180481,
+          "reference_growth_km2": 0.06799998879432678,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.0148000000000001,
+          "cumulative_dice_including_initial": 0.9571778966896427,
+          "unmatched_prediction_km2": 0.02279999852180481,
+          "missed_reference_km2": 0.06799998879432678
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.02279999852180481,
+          "reference_growth_km2": 0.06799998879432678,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.0148000000000001,
+          "cumulative_dice_including_initial": 0.9571778966896427,
+          "unmatched_prediction_km2": 0.02279999852180481,
+          "missed_reference_km2": 0.06799998879432678
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.02279999852180481,
+          "reference_growth_km2": 0.06799998879432678,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.0148000000000001,
+          "cumulative_dice_including_initial": 0.9571778966896427,
+          "unmatched_prediction_km2": 0.02279999852180481,
+          "missed_reference_km2": 0.06799998879432678
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.02279999852180481,
+          "reference_growth_km2": 0.06799998879432678,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.0148000000000001,
+          "cumulative_dice_including_initial": 0.9571778966896427,
+          "unmatched_prediction_km2": 0.02279999852180481,
+          "missed_reference_km2": 0.06799998879432678
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.02279999852180481,
+          "reference_growth_km2": 0.06799998879432678,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.0148000000000001,
+          "cumulative_dice_including_initial": 0.9571778966896427,
+          "unmatched_prediction_km2": 0.02279999852180481,
+          "missed_reference_km2": 0.06799998879432678
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.02279999852180481,
+          "reference_growth_km2": 0.06799998879432678,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.0148000000000001,
+          "cumulative_dice_including_initial": 0.9571778966896427,
+          "unmatched_prediction_km2": 0.02279999852180481,
+          "missed_reference_km2": 0.06799998879432678
+        }
+      }
+    },
+    {
+      "id": "2025-02-15-T47QMA-4331-20200-bank",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.0844000056385994,
+          "reference_growth_km2": 0.04360000044107437,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 2.0420000000000003,
+          "cumulative_dice_including_initial": 0.9696106348777501,
+          "unmatched_prediction_km2": 0.0844000056385994,
+          "missed_reference_km2": 0.04360000044107437
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.09360000491142273,
+          "reference_growth_km2": 0.04360000044107437,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 2.0420000000000003,
+          "cumulative_dice_including_initial": 0.9674973928791512,
+          "unmatched_prediction_km2": 0.09360000491142273,
+          "missed_reference_km2": 0.04360000044107437
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.0844000056385994,
+          "reference_growth_km2": 0.04360000044107437,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 2.0420000000000003,
+          "cumulative_dice_including_initial": 0.9696106348777501,
+          "unmatched_prediction_km2": 0.0844000056385994,
+          "missed_reference_km2": 0.04360000044107437
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.09360000491142273,
+          "reference_growth_km2": 0.04360000044107437,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 2.0420000000000003,
+          "cumulative_dice_including_initial": 0.9674973928791512,
+          "unmatched_prediction_km2": 0.09360000491142273,
+          "missed_reference_km2": 0.04360000044107437
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.0844000056385994,
+          "reference_growth_km2": 0.04360000044107437,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 2.0420000000000003,
+          "cumulative_dice_including_initial": 0.9696106348777501,
+          "unmatched_prediction_km2": 0.0844000056385994,
+          "missed_reference_km2": 0.04360000044107437
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.1088000014424324,
+          "reference_growth_km2": 0.04360000044107437,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 2.0420000000000003,
+          "cumulative_dice_including_initial": 0.9640260594335404,
+          "unmatched_prediction_km2": 0.1088000014424324,
+          "missed_reference_km2": 0.04360000044107437
+        }
+      }
+    },
+    {
+      "id": "2025-02-17-T47QMA-4407-20002-bank",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.42399999499320984,
+          "reference_growth_km2": 0.9936000108718872,
+          "intersection_km2": 0.004399999976158142,
+          "dice": 0.00620767488424638,
+          "iou": 0.00311350124385998,
+          "reference_coverage": 0.004428341312413159,
+          "known_initial_scar_km2": 1.8692000000000002,
+          "cumulative_dice_including_initial": 0.7267649332214449,
+          "unmatched_prediction_km2": 0.4195999950170517,
+          "missed_reference_km2": 0.9892000108957291
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.44679999351501465,
+          "reference_growth_km2": 0.9936000108718872,
+          "intersection_km2": 0.004399999976158142,
+          "dice": 0.006109413999940909,
+          "iou": 0.003064066826353293,
+          "reference_coverage": 0.004428341312413159,
+          "known_initial_scar_km2": 1.8692000000000002,
+          "cumulative_dice_including_initial": 0.7235653040816611,
+          "unmatched_prediction_km2": 0.4423999935388565,
+          "missed_reference_km2": 0.9892000108957291
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.43400001525878906,
+          "reference_growth_km2": 0.9936000108718872,
+          "intersection_km2": 0.004399999976158142,
+          "dice": 0.006164191504092037,
+          "iou": 0.0030916244345827676,
+          "reference_coverage": 0.004428341312413159,
+          "known_initial_scar_km2": 1.8692000000000002,
+          "cumulative_dice_including_initial": 0.7253581070457256,
+          "unmatched_prediction_km2": 0.4296000152826309,
+          "missed_reference_km2": 0.9892000108957291
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.44679999351501465,
+          "reference_growth_km2": 0.9936000108718872,
+          "intersection_km2": 0.004399999976158142,
+          "dice": 0.006109413999940909,
+          "iou": 0.003064066826353293,
+          "reference_coverage": 0.004428341312413159,
+          "known_initial_scar_km2": 1.8692000000000002,
+          "cumulative_dice_including_initial": 0.7235653040816611,
+          "unmatched_prediction_km2": 0.4423999935388565,
+          "missed_reference_km2": 0.9892000108957291
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.43400001525878906,
+          "reference_growth_km2": 0.9936000108718872,
+          "intersection_km2": 0.004399999976158142,
+          "dice": 0.006164191504092037,
+          "iou": 0.0030916244345827676,
+          "reference_coverage": 0.004428341312413159,
+          "known_initial_scar_km2": 1.8692000000000002,
+          "cumulative_dice_including_initial": 0.7253581070457256,
+          "unmatched_prediction_km2": 0.4296000152826309,
+          "missed_reference_km2": 0.9892000108957291
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.44679999351501465,
+          "reference_growth_km2": 0.9936000108718872,
+          "intersection_km2": 0.004399999976158142,
+          "dice": 0.006109413999940909,
+          "iou": 0.003064066826353293,
+          "reference_coverage": 0.004428341312413159,
+          "known_initial_scar_km2": 1.8692000000000002,
+          "cumulative_dice_including_initial": 0.7235653040816611,
+          "unmatched_prediction_km2": 0.4423999935388565,
+          "missed_reference_km2": 0.9892000108957291
+        }
+      }
+    },
+    {
+      "id": "2025-02-17-T47QMV-4564-19786-bank",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.12559999525547028,
+          "reference_growth_km2": 0.12399999052286148,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 7.1808000000000005,
+          "cumulative_dice_including_initial": 0.9829172151485657,
+          "unmatched_prediction_km2": 0.12559999525547028,
+          "missed_reference_km2": 0.12399999052286148
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.12559999525547028,
+          "reference_growth_km2": 0.12399999052286148,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 7.1808000000000005,
+          "cumulative_dice_including_initial": 0.9829172151485657,
+          "unmatched_prediction_km2": 0.12559999525547028,
+          "missed_reference_km2": 0.12399999052286148
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.12559999525547028,
+          "reference_growth_km2": 0.12399999052286148,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 7.1808000000000005,
+          "cumulative_dice_including_initial": 0.9829172151485657,
+          "unmatched_prediction_km2": 0.12559999525547028,
+          "missed_reference_km2": 0.12399999052286148
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.12559999525547028,
+          "reference_growth_km2": 0.12399999052286148,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 7.1808000000000005,
+          "cumulative_dice_including_initial": 0.9829172151485657,
+          "unmatched_prediction_km2": 0.12559999525547028,
+          "missed_reference_km2": 0.12399999052286148
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.12559999525547028,
+          "reference_growth_km2": 0.12399999052286148,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 7.1808000000000005,
+          "cumulative_dice_including_initial": 0.9829172151485657,
+          "unmatched_prediction_km2": 0.12559999525547028,
+          "missed_reference_km2": 0.12399999052286148
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.12559999525547028,
+          "reference_growth_km2": 0.12399999052286148,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 7.1808000000000005,
+          "cumulative_dice_including_initial": 0.9829172151485657,
+          "unmatched_prediction_km2": 0.12559999525547028,
+          "missed_reference_km2": 0.12399999052286148
+        }
+      }
+    },
+    {
+      "id": "2025-02-22-T47QMV-4409-19350",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.07159999758005142,
+          "reference_growth_km2": 0.12999998033046722,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.34,
+          "cumulative_dice_including_initial": 0.7713248832102616,
+          "unmatched_prediction_km2": 0.07159999758005142,
+          "missed_reference_km2": 0.12999998033046722
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.08159999549388885,
+          "reference_growth_km2": 0.12999998033046722,
+          "intersection_km2": 0.004799999762326479,
+          "dice": 0.0453686229748045,
+          "iou": 0.023210833258929975,
+          "reference_coverage": 0.0369230806814325,
+          "known_initial_scar_km2": 0.34,
+          "cumulative_dice_including_initial": 0.7734410253735843,
+          "unmatched_prediction_km2": 0.07679999573156238,
+          "missed_reference_km2": 0.12519998056814075
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.07159999758005142,
+          "reference_growth_km2": 0.12999998033046722,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.34,
+          "cumulative_dice_including_initial": 0.7713248832102616,
+          "unmatched_prediction_km2": 0.07159999758005142,
+          "missed_reference_km2": 0.12999998033046722
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.08159999549388885,
+          "reference_growth_km2": 0.12999998033046722,
+          "intersection_km2": 0.004799999762326479,
+          "dice": 0.0453686229748045,
+          "iou": 0.023210833258929975,
+          "reference_coverage": 0.0369230806814325,
+          "known_initial_scar_km2": 0.34,
+          "cumulative_dice_including_initial": 0.7734410253735843,
+          "unmatched_prediction_km2": 0.07679999573156238,
+          "missed_reference_km2": 0.12519998056814075
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.07159999758005142,
+          "reference_growth_km2": 0.12999998033046722,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.34,
+          "cumulative_dice_including_initial": 0.7713248832102616,
+          "unmatched_prediction_km2": 0.07159999758005142,
+          "missed_reference_km2": 0.12999998033046722
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.10119999945163727,
+          "reference_growth_km2": 0.12999998033046722,
+          "intersection_km2": 0.004799999762326479,
+          "dice": 0.04152249292452587,
+          "iou": 0.021201414248831457,
+          "reference_coverage": 0.0369230806814325,
+          "known_initial_scar_km2": 0.34,
+          "cumulative_dice_including_initial": 0.7568042304934611,
+          "unmatched_prediction_km2": 0.09639999968931079,
+          "missed_reference_km2": 0.12519998056814075
+        }
+      }
+    },
+    {
+      "id": "2025-02-22-T47QNA-5196-20738-bank",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.04800000041723251,
+          "reference_growth_km2": 0.00559999980032444,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.0476,
+          "cumulative_dice_including_initial": 0.6397849453011447,
+          "unmatched_prediction_km2": 0.04800000041723251,
+          "missed_reference_km2": 0.00559999980032444
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.04800000041723251,
+          "reference_growth_km2": 0.00559999980032444,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.0476,
+          "cumulative_dice_including_initial": 0.6397849453011447,
+          "unmatched_prediction_km2": 0.04800000041723251,
+          "missed_reference_km2": 0.00559999980032444
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.04800000041723251,
+          "reference_growth_km2": 0.00559999980032444,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.0476,
+          "cumulative_dice_including_initial": 0.6397849453011447,
+          "unmatched_prediction_km2": 0.04800000041723251,
+          "missed_reference_km2": 0.00559999980032444
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.04800000041723251,
+          "reference_growth_km2": 0.00559999980032444,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.0476,
+          "cumulative_dice_including_initial": 0.6397849453011447,
+          "unmatched_prediction_km2": 0.04800000041723251,
+          "missed_reference_km2": 0.00559999980032444
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.04800000041723251,
+          "reference_growth_km2": 0.00559999980032444,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.0476,
+          "cumulative_dice_including_initial": 0.6397849453011447,
+          "unmatched_prediction_km2": 0.04800000041723251,
+          "missed_reference_km2": 0.00559999980032444
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.04800000041723251,
+          "reference_growth_km2": 0.00559999980032444,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 0.0476,
+          "cumulative_dice_including_initial": 0.6397849453011447,
+          "unmatched_prediction_km2": 0.04800000041723251,
+          "missed_reference_km2": 0.00559999980032444
+        }
+      }
+    },
+    {
+      "id": "2025-03-24",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 1.2691999673843384,
+          "reference_growth_km2": 0.40959998965263367,
+          "intersection_km2": 0.007599999662488699,
+          "dice": 0.00905408608170619,
+          "iou": 0.004547630359223188,
+          "reference_coverage": 0.01855468714472862,
+          "known_initial_scar_km2": 2.8876,
+          "cumulative_dice_including_initial": 0.7768178203245805,
+          "unmatched_prediction_km2": 1.2615999677218497,
+          "missed_reference_km2": 0.40199998999014497
+        },
+        "point_active24": {
+          "predicted_growth_km2": 2.0399999618530273,
+          "reference_growth_km2": 0.40959998965263367,
+          "intersection_km2": 0.014800000004470348,
+          "dice": 0.012083605729477127,
+          "iou": 0.006078528133428506,
+          "reference_coverage": 0.03613281342370558,
+          "known_initial_scar_km2": 2.8876,
+          "cumulative_dice_including_initial": 0.7057679255707968,
+          "unmatched_prediction_km2": 2.025199961848557,
+          "missed_reference_km2": 0.3947999896481633
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 1.2691999673843384,
+          "reference_growth_km2": 0.40959998965263367,
+          "intersection_km2": 0.007599999662488699,
+          "dice": 0.00905408608170619,
+          "iou": 0.004547630359223188,
+          "reference_coverage": 0.01855468714472862,
+          "known_initial_scar_km2": 2.8876,
+          "cumulative_dice_including_initial": 0.7768178203245805,
+          "unmatched_prediction_km2": 1.2615999677218497,
+          "missed_reference_km2": 0.40199998999014497
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 2.049999952316284,
+          "reference_growth_km2": 0.40959998965263367,
+          "intersection_km2": 0.014800000004470348,
+          "dice": 0.012034477438329179,
+          "iou": 0.006053665066998587,
+          "reference_coverage": 0.03613281342370558,
+          "known_initial_scar_km2": 2.8876,
+          "cumulative_dice_including_initial": 0.7049108710491672,
+          "unmatched_prediction_km2": 2.035199952311814,
+          "missed_reference_km2": 0.3947999896481633
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 1.4295998811721802,
+          "reference_growth_km2": 0.40959998965263367,
+          "intersection_km2": 0.007199999410659075,
+          "dice": 0.007829490992112933,
+          "iou": 0.003930130958525266,
+          "reference_coverage": 0.017578124005240146,
+          "known_initial_scar_km2": 2.8876,
+          "cumulative_dice_including_initial": 0.760348825520004,
+          "unmatched_prediction_km2": 1.422399881761521,
+          "missed_reference_km2": 0.4023999902419746
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 2.1903998851776123,
+          "reference_growth_km2": 0.40959998965263367,
+          "intersection_km2": 0.007999999448657036,
+          "dice": 0.006153846025995948,
+          "iou": 0.0030864196887661084,
+          "reference_coverage": 0.019531249147348696,
+          "known_initial_scar_km2": 2.8876,
+          "cumulative_dice_including_initial": 0.6914700646490176,
+          "unmatched_prediction_km2": 2.1823998857289553,
+          "missed_reference_km2": 0.40159999020397663
+        }
+      }
+    },
+    {
+      "id": "2025-03-24-T47QMA-4731-20015",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.23360000550746918,
+          "reference_growth_km2": 0.4891999661922455,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 4.9268,
+          "cumulative_dice_including_initial": 0.9316591681825782,
+          "unmatched_prediction_km2": 0.23360000550746918,
+          "missed_reference_km2": 0.4891999661922455
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.23360000550746918,
+          "reference_growth_km2": 0.4891999661922455,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 4.9268,
+          "cumulative_dice_including_initial": 0.9316591681825782,
+          "unmatched_prediction_km2": 0.23360000550746918,
+          "missed_reference_km2": 0.4891999661922455
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.2255999892950058,
+          "reference_growth_km2": 0.4891999661922455,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 4.9268,
+          "cumulative_dice_including_initial": 0.9323644110274122,
+          "unmatched_prediction_km2": 0.2255999892950058,
+          "missed_reference_km2": 0.4891999661922455
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.23360000550746918,
+          "reference_growth_km2": 0.4891999661922455,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 4.9268,
+          "cumulative_dice_including_initial": 0.9316591681825782,
+          "unmatched_prediction_km2": 0.23360000550746918,
+          "missed_reference_km2": 0.4891999661922455
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.23360000550746918,
+          "reference_growth_km2": 0.4891999661922455,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 4.9268,
+          "cumulative_dice_including_initial": 0.9316591681825782,
+          "unmatched_prediction_km2": 0.23360000550746918,
+          "missed_reference_km2": 0.4891999661922455
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.23360000550746918,
+          "reference_growth_km2": 0.4891999661922455,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 4.9268,
+          "cumulative_dice_including_initial": 0.9316591681825782,
+          "unmatched_prediction_km2": 0.23360000550746918,
+          "missed_reference_km2": 0.4891999661922455
+        }
+      }
+    },
+    {
+      "id": "2025-03-29",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.13040000200271606,
+          "reference_growth_km2": 1.6248000860214233,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.6256000000000002,
+          "cumulative_dice_including_initial": 0.649408745373193,
+          "unmatched_prediction_km2": 0.13040000200271606,
+          "missed_reference_km2": 1.6248000860214233
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.15680000185966492,
+          "reference_growth_km2": 1.6248000860214233,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.6256000000000002,
+          "cumulative_dice_including_initial": 0.64600221412109,
+          "unmatched_prediction_km2": 0.15680000185966492,
+          "missed_reference_km2": 1.6248000860214233
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.13040000200271606,
+          "reference_growth_km2": 1.6248000860214233,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.6256000000000002,
+          "cumulative_dice_including_initial": 0.649408745373193,
+          "unmatched_prediction_km2": 0.13040000200271606,
+          "missed_reference_km2": 1.6248000860214233
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.15680000185966492,
+          "reference_growth_km2": 1.6248000860214233,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.6256000000000002,
+          "cumulative_dice_including_initial": 0.64600221412109,
+          "unmatched_prediction_km2": 0.15680000185966492,
+          "missed_reference_km2": 1.6248000860214233
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.12039999663829803,
+          "reference_growth_km2": 1.6248000860214233,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.6256000000000002,
+          "cumulative_dice_including_initial": 0.650708499362064,
+          "unmatched_prediction_km2": 0.12039999663829803,
+          "missed_reference_km2": 1.6248000860214233
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.1467999964952469,
+          "reference_growth_km2": 1.6248000860214233,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": 0.0,
+          "known_initial_scar_km2": 1.6256000000000002,
+          "cumulative_dice_including_initial": 0.6472883544214223,
+          "unmatched_prediction_km2": 0.1467999964952469,
+          "missed_reference_km2": 1.6248000860214233
+        }
+      }
+    },
+    {
+      "id": "2025-04-06-T47QMA-4256-20694-bank",
+      "split": "validation2025",
+      "scores": {
+        "point_active6": {
+          "predicted_growth_km2": 0.01640000008046627,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.1824,
+          "cumulative_dice_including_initial": 0.9569779641211845,
+          "unmatched_prediction_km2": 0.01640000008046627,
+          "missed_reference_km2": 0.0
+        },
+        "point_active24": {
+          "predicted_growth_km2": 0.01640000008046627,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.1824,
+          "cumulative_dice_including_initial": 0.9569779641211845,
+          "unmatched_prediction_km2": 0.01640000008046627,
+          "missed_reference_km2": 0.0
+        },
+        "spatial_active6": {
+          "predicted_growth_km2": 0.01640000008046627,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.1824,
+          "cumulative_dice_including_initial": 0.9569779641211845,
+          "unmatched_prediction_km2": 0.01640000008046627,
+          "missed_reference_km2": 0.0
+        },
+        "spatial_active24": {
+          "predicted_growth_km2": 0.01640000008046627,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.1824,
+          "cumulative_dice_including_initial": 0.9569779641211845,
+          "unmatched_prediction_km2": 0.01640000008046627,
+          "missed_reference_km2": 0.0
+        },
+        "spatial_seasonal_active6": {
+          "predicted_growth_km2": 0.01640000008046627,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.1824,
+          "cumulative_dice_including_initial": 0.9569779641211845,
+          "unmatched_prediction_km2": 0.01640000008046627,
+          "missed_reference_km2": 0.0
+        },
+        "spatial_seasonal_active24": {
+          "predicted_growth_km2": 0.01640000008046627,
+          "reference_growth_km2": 0.0,
+          "intersection_km2": 0.0,
+          "dice": 0.0,
+          "iou": 0.0,
+          "reference_coverage": null,
+          "known_initial_scar_km2": 0.1824,
+          "cumulative_dice_including_initial": 0.9569779641211845,
+          "unmatched_prediction_km2": 0.01640000008046627,
+          "missed_reference_km2": 0.0
+        }
+      }
+    }
+  ],
+  "summary": {
+    "point_active6": {
+      "pooled_dice": 0.0037728729396110166,
+      "pooled_iou": 0.0018900018382010902,
+      "macro_dice": 0.0013874328150865973,
+      "predicted_growth_km2": 2.4727999698370695,
+      "reference_growth_km2": 3.888400012627244,
+      "intersection_km2": 0.011999999638646841,
+      "reference_coverage": 0.003086102149901727,
+      "prediction_precision": 0.0048527983601672035,
+      "case_count": 11
+    },
+    "point_active24": {
+      "pooled_dice": 0.006666296270935453,
+      "pooled_iou": 0.0033442951666669564,
+      "macro_dice": 0.005778331154929322,
+      "predicted_growth_km2": 3.311999959871173,
+      "reference_growth_km2": 3.888400012627244,
+      "intersection_km2": 0.02399999974295497,
+      "reference_coverage": 0.006172204419559983,
+      "prediction_precision": 0.007246376821782479,
+      "case_count": 11
+    },
+    "spatial_active6": {
+      "pooled_dice": 0.0037716870958237553,
+      "pooled_iou": 0.0018894066732960948,
+      "macro_dice": 0.0013834797805271114,
+      "predicted_growth_km2": 2.4747999738901854,
+      "reference_growth_km2": 3.888400012627244,
+      "intersection_km2": 0.011999999638646841,
+      "reference_coverage": 0.003086102149901727,
+      "prediction_precision": 0.004848876582047078,
+      "case_count": 11
+    },
+    "spatial_active24": {
+      "pooled_dice": 0.0066570508893370635,
+      "pooled_iou": 0.0033396415264654437,
+      "macro_dice": 0.005773864946643145,
+      "predicted_growth_km2": 3.3219999503344297,
+      "reference_growth_km2": 3.888400012627244,
+      "intersection_km2": 0.02399999974295497,
+      "reference_coverage": 0.006172204419559983,
+      "prediction_precision": 0.007224563546588512,
+      "case_count": 11
+    },
+    "spatial_seasonal_active6": {
+      "pooled_dice": 0.003557409085147576,
+      "pooled_iou": 0.0017818739698983403,
+      "macro_dice": 0.0012721529542004519,
+      "predicted_growth_km2": 2.6331998985260725,
+      "reference_growth_km2": 3.888400012627244,
+      "intersection_km2": 0.011599999386817217,
+      "reference_coverage": 0.0029832320103763033,
+      "prediction_precision": 0.004405286280509994,
+      "case_count": 11
+    },
+    "spatial_seasonal_active24": {
+      "pooled_dice": 0.004664027181911692,
+      "pooled_iou": 0.00233746459014845,
+      "macro_dice": 0.0048896139045875205,
+      "predicted_growth_km2": 3.487199878320098,
+      "reference_growth_km2": 3.888400012627244,
+      "intersection_km2": 0.017199999187141657,
+      "reference_coverage": 0.004423413005680008,
+      "prediction_precision": 0.004932323866513633,
+      "case_count": 11
+    }
+  },
+  "selected": "point_active24",
+  "ranking": [
+    "point_active24",
+    "spatial_active24",
+    "spatial_seasonal_active24",
+    "point_active6",
+    "spatial_active6",
+    "spatial_seasonal_active6"
+  ]
+}

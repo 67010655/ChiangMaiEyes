@@ -1,0 +1,48 @@
+{
+  "version": "copernicus-average-0.001deg-v1",
+  "west": 98.006,
+  "north": 20.15,
+  "step_degrees": 0.001,
+  "width": 1569,
+  "height": 2879,
+  "nodata": -32768,
+  "sha256": "3e3911a751f9a6bccc4d5e6107d43db53a547ed663b23eb57b3f8910ebd01043",
+  "source_tiles": [
+    {
+      "filename": "Copernicus_DSM_COG_10_N17_00_E098_00_DEM-cdf9514bb4d7a949.tif",
+      "sha256": "cdf9514bb4d7a9494f717fce0c25ebbd2592609d848a39e368ff4b3652b76528"
+    },
+    {
+      "filename": "Copernicus_DSM_COG_10_N17_00_E099_00_DEM-1802bf0e81b0999e.tif",
+      "sha256": "1802bf0e81b0999e8a7933d4c21b998dfbfe723de1ce726b8dbe1c83d18ac439"
+    },
+    {
+      "filename": "Copernicus_DSM_COG_10_N18_00_E098_00_DEM-19b4e37886d541b6.tif",
+      "sha256": "19b4e37886d541b604a4a4362113e91f68932650e74a5da860e126b6c8c50310"
+    },
+    {
+      "filename": "Copernicus_DSM_COG_10_N18_00_E099_00_DEM-a0a21b0857d51f59.tif",
+      "sha256": "a0a21b0857d51f5960d9e4f2fe6ebed5c3b22d516574ee6906f9a0ce8b725d3a"
+    },
+    {
+      "filename": "Copernicus_DSM_COG_10_N19_00_E098_00_DEM-f17b40414f0df45c.tif",
+      "sha256": "f17b40414f0df45ca61e1a6915debe09b9c12669b5f64cb9561db97d9bb5249d"
+    },
+    {
+      "filename": "Copernicus_DSM_COG_10_N19_00_E099_00_DEM-86c22e90a6a6cf12.tif",
+      "sha256": "86c22e90a6a6cf12b247fbb2c225f2d45b05de7529cb231233e4ba351e0f466b"
+    },
+    {
+      "filename": "Copernicus_DSM_COG_10_N20_00_E098_00_DEM-7c7232b30a48f91d.tif",
+      "sha256": "7c7232b30a48f91d19006b41df8fc41bcd6af590c74caa0dade99f31a6a9c716"
+    },
+    {
+      "filename": "Copernicus_DSM_COG_10_N20_00_E099_00_DEM-8965f85514b577b4.tif",
+      "sha256": "8965f85514b577b4b606c658412bfe3d713c0abf478d237539af309d8edb3757"
+    }
+  ],
+  "method": "Average resampling of GLO-30 DSM to 0.001 degrees; local 3x3 Horn slope at runtime.",
+  "meaning": "Approximately 105-111 m grid, not the original 30 m resolution; includes canopy/buildings.",
+  "attribution": "produced using Copernicus WorldDEM-30 \u00a9 DLR e.V. 2010-2014 and \u00a9 Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+  "license_url": "https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/DEM/resources/license/License-COPDEM-30.pdf"
+}

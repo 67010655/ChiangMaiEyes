@@ -1,0 +1,8 @@
+{
+  "commit": "5f30f37fd33796cad272602e36b645fd67f8e592",
+  "url": "https://raw.githubusercontent.com/openwfm/wrfxpy/5f30f37fd33796cad272602e36b645fd67f8e592/src/fmda/fuel_moisture_model.py",
+  "upstream_sha256": "842a0bbe38a70654eaca51014678d63c34107c32998de1dbeb3b09c0dd62746d",
+  "stored_sha256": "20dada3cc33492a1ed96b78ac6b84fd29e15228c49a076299230e0148785fae6",
+  "newline_note": "Original download saved as Windows CRLF; text equality verified against pinned source",
+  "license": "MIT permission notice retained in original source"
+}

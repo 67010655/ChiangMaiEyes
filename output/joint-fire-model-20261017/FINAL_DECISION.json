@@ -1,0 +1,146 @@
+{
+  "selected_model_on2025": "hotspot_wind_pm__large",
+  "model_family": "HistGradientBoosting",
+  "common_validation_issues": 231,
+  "common_test_issues": 231,
+  "common_test_target_cells": 19372,
+  "selected_test_coverage_pct": 36.07268222176337,
+  "old_test_coverage_pct": 35.06091265744373,
+  "baseline_test_coverage_pct": 28.44311377245509,
+  "gain_pp_vs_old": 1.0117695643196365,
+  "gain_pp_vs_old_7day_block_95pct": [
+    0.6839406693618356,
+    1.2106806001425823
+  ],
+  "production_changed": false,
+  "tested_new_candidates": 12,
+  "all_test_scores": {
+    "spatial_pm_hgb": {
+      "125.0": {
+        "hits": 4717,
+        "expansion_hits": 1544
+      },
+      "250.0": {
+        "hits": 6931,
+        "expansion_hits": 2629
+      },
+      "500.0": {
+        "hits": 9489,
+        "expansion_hits": 4154
+      }
+    },
+    "hotspot_wind_pm__large": {
+      "125.0": {
+        "hits": 4717,
+        "expansion_hits": 1554
+      },
+      "250.0": {
+        "hits": 6988,
+        "expansion_hits": 2632
+      },
+      "500.0": {
+        "hits": 9491,
+        "expansion_hits": 4167
+      }
+    },
+    "previous_boost15": {
+      "125.0": {
+        "hits": 4637,
+        "expansion_hits": 1449
+      },
+      "250.0": {
+        "hits": 6792,
+        "expansion_hits": 2506
+      },
+      "500.0": {
+        "hits": 9376,
+        "expansion_hits": 4039
+      }
+    },
+    "kernel": {
+      "125.0": {
+        "hits": 3513,
+        "expansion_hits": 418
+      },
+      "250.0": {
+        "hits": 5510,
+        "expansion_hits": 1088
+      },
+      "500.0": {
+        "hits": 8290,
+        "expansion_hits": 2781
+      }
+    },
+    "hotspot_context__large": {
+      "125.0": {
+        "hits": 4687,
+        "expansion_hits": 1565
+      },
+      "250.0": {
+        "hits": 6961,
+        "expansion_hits": 2641
+      },
+      "500.0": {
+        "hits": 9471,
+        "expansion_hits": 4168
+      }
+    },
+    "hotspot_wind__large": {
+      "125.0": {
+        "hits": 4719,
+        "expansion_hits": 1572
+      },
+      "250.0": {
+        "hits": 6962,
+        "expansion_hits": 2613
+      },
+      "500.0": {
+        "hits": 9458,
+        "expansion_hits": 4134
+      }
+    },
+    "hotspot_pm__large": {
+      "125.0": {
+        "hits": 4700,
+        "expansion_hits": 1558
+      },
+      "250.0": {
+        "hits": 6957,
+        "expansion_hits": 2648
+      },
+      "500.0": {
+        "hits": 9495,
+        "expansion_hits": 4167
+      }
+    },
+    "day": {
+      "125.0": {
+        "hits": 2954,
+        "expansion_hits": 402
+      },
+      "250.0": {
+        "hits": 5058,
+        "expansion_hits": 835
+      },
+      "500.0": {
+        "hits": 8073,
+        "expansion_hits": 2579
+      }
+    },
+    "hotspot_wind_pm__lgb_wide": {
+      "125.0": {
+        "hits": 4746,
+        "expansion_hits": 1604
+      },
+      "250.0": {
+        "hits": 7016,
+        "expansion_hits": 2725
+      },
+      "500.0": {
+        "hits": 9554,
+        "expansion_hits": 4271
+      }
+    }
+  },
+  "model_sha256": "0ce5941b496d942d492b621e40de0f5c9af70cb3a6b9fe5181804dece19571c7"
+}

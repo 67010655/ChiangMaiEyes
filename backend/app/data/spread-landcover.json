@@ -1,0 +1,114 @@
+{
+  "west": 98.006,
+  "north": 20.15,
+  "step_degrees": 0.001,
+  "width": 1569,
+  "height": 2879,
+  "version": "esa-worldcover2021-nearest-0.001deg-v1",
+  "sha256": "e9a97c1cffb52ca49610dd346f663093e29854224408c97af5cc621f915eb2d2",
+  "nodata": 0,
+  "sources": [
+    {
+      "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N15E096_Map.tif",
+      "crs": "EPSG:4326",
+      "native_transform": [
+        8.333333333333333e-05,
+        0.0,
+        96.0,
+        0.0,
+        -8.333333333333333e-05,
+        18.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "native_shape": [
+        36000,
+        36000
+      ]
+    },
+    {
+      "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N15E099_Map.tif",
+      "crs": "EPSG:4326",
+      "native_transform": [
+        8.333333333333333e-05,
+        0.0,
+        99.0,
+        0.0,
+        -8.333333333333333e-05,
+        18.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "native_shape": [
+        36000,
+        36000
+      ]
+    },
+    {
+      "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N18E096_Map.tif",
+      "crs": "EPSG:4326",
+      "native_transform": [
+        8.333333333333333e-05,
+        0.0,
+        96.0,
+        0.0,
+        -8.333333333333333e-05,
+        21.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "native_shape": [
+        36000,
+        36000
+      ]
+    },
+    {
+      "url": "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N18E099_Map.tif",
+      "crs": "EPSG:4326",
+      "native_transform": [
+        8.333333333333333e-05,
+        0.0,
+        99.0,
+        0.0,
+        -8.333333333333333e-05,
+        21.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "native_shape": [
+        36000,
+        36000
+      ]
+    }
+  ],
+  "reference_year": 2021,
+  "classes": {
+    "10": "tree",
+    "20": "shrub",
+    "30": "grass",
+    "40": "crop",
+    "50": "built-up",
+    "60": "bare/sparse",
+    "70": "snow/ice",
+    "80": "water",
+    "90": "herbaceous wetland",
+    "95": "mangroves",
+    "100": "moss/lichen"
+  },
+  "blocked_classes": [
+    0,
+    50,
+    60,
+    70,
+    80
+  ],
+  "method": "Nearest-neighbour categorical resampling onto the terrain grid; cell-centre class, not majority or proof of a complete barrier.",
+  "meaning": "Historical land-cover mask only. It does not measure fuel loading, moisture, firebreak width or 2026 land-use changes.",
+  "attribution": "© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium",
+  "license": "CC BY 4.0",
+  "source_url": "https://esa-worldcover.org/en/data-access"
+}

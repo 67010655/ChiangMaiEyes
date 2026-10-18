@@ -1,0 +1,16 @@
+{
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "scikit-learn": "1.9.1",
+  "joblib": "1.6.0",
+  "pyproj": "3.8.0",
+  "shapely": "2.2.0",
+  "httpx": "0.28.1",
+  "threadpoolctl": "3.7.0",
+  "matplotlib": "3.11.2",
+  "rasterio": "1.5.2",
+  "ecmwf-opendata": "0.3.35",
+  "eccodes": "2.50.0",
+  "Cython": "3.0.12",
+  "sortedcontainers": "2.4.0"
+}

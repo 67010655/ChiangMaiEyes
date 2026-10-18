@@ -1,0 +1,240 @@
+{
+  "status": "PASS",
+  "numeric": {
+    "isotropic_known_arrivals": "passed",
+    "nonburnable_barrier": "passed",
+    "wind_from270_spreads_east": "passed",
+    "edge_integrates_hourly_changes": "passed",
+    "fractional_image_time_crosses_hour_boundary": "passed",
+    "growth_vs_cumulative_score_distinction": "passed",
+    "actual_native_grib_to_spatial_surface_rate_and_graph": "passed; current field numerical smoke only, not historical skill"
+  },
+  "frozen": {
+    "production_files_unchanged": {
+      "frontend/index.html": "c196306f70e51cf26f528941ac9e6c4bb364376c156603b97d68c3537fc04fc5",
+      "frontend/public/priority-validation.js": "1a7db41c7313b81d7ead6f4bf4f197803d62970a7da5d0fa42ab56e6f932b182",
+      "backend/app/main.py": "909fb5da9f6fca7180d9b4898d6f42a997b0f2d4c2134f48630b66d8416874c7",
+      "backend/app/season_hindcast.py": "a34ffa93892fe2e5a9f2af4e7028ff87fc40ea30f6674f74def8b3c7b9aa0f63",
+      "backend/app/data/priority-validation.json": "ccebc11639d20c06ebe5e7f37146545db92023f52e90f8637487fafd2d50c48c",
+      "backend/requirements.txt": "c5d42e328f78a9e5a20a571f6f87a32b5ca68ca688ec9de4146763eee3d0ce9b"
+    },
+    "old_frozen_input_count": 97,
+    "deployment_commands_issued": 0
+  },
+  "full": {
+    "case_temporal_contracts": [
+      {
+        "id": "2024-03-29-T47QMA-4617-20909-bank",
+        "split": "train2024",
+        "corner_points": 4
+      },
+      {
+        "id": "2024-03-29-T47QMV-4363-19424-bank",
+        "split": "train2024",
+        "corner_points": 4
+      },
+      {
+        "id": "2024-03-29-T47QNB-5129-21262-bank",
+        "split": "train2024",
+        "corner_points": 4
+      },
+      {
+        "id": "2024-04-01-T47QMA-4467-20844-bank",
+        "split": "train2024",
+        "corner_points": 4
+      },
+      {
+        "id": "2024-04-03-T47QMA-4580-20274-bank",
+        "split": "train2024",
+        "corner_points": 4
+      },
+      {
+        "id": "2024-04-03-T47QMB-4792-21157-bank",
+        "split": "train2024",
+        "corner_points": 4
+      },
+      {
+        "id": "2024-04-03-T47QNB-5302-21863-bank",
+        "split": "train2024",
+        "corner_points": 4
+      },
+      {
+        "id": "2024-04-18-T47QMB-4577-21403-bank",
+        "split": "train2024",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-01-23-T47QMA-4392-20603-bank",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-02-02-T47QMA-4570-20105-bank",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-02-15-T47QMA-4331-20200-bank",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-02-17-T47QMA-4407-20002-bank",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-02-17-T47QMV-4564-19786-bank",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-02-22-T47QMV-4409-19350",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-02-22-T47QNA-5196-20738-bank",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-03-24",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-03-24-T47QMA-4731-20015",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-03-29",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2025-04-06-T47QMA-4256-20694-bank",
+        "split": "validation2025",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-02-12-T47QMV-4771-19818-bank",
+        "split": "test2026_new_cases",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-02-27-T47QMA-4389-20789-bank",
+        "split": "test2026_new_cases",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-02-27-T47QMV-4795-19835-bank",
+        "split": "test2026_new_cases",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-03-27",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-03-27-T47QMA-4321-20292-bank",
+        "split": "test2026_new_cases",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-03-28",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-03-29",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-03-29-T47QMV-4111-19468-bank",
+        "split": "test2026_new_cases",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-03-29-T47QNB-5074-21003-bank",
+        "split": "test2026_new_cases",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-03-30",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-03-31",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-04-02",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-04-03",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-04-14-community-cmf-th-3191",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-04-15-community-cmf-th-2892",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-04-16",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-04-18-T47QMA-4548-20053-bank",
+        "split": "test2026_new_cases",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-04-19-community-cmf-th-2923",
+        "split": "regression2026",
+        "corner_points": 4
+      },
+      {
+        "id": "2026-04-21-T47QMA-4222-20322-bank",
+        "split": "test2026_new_cases",
+        "corner_points": 4
+      }
+    ],
+    "frozen_model_selection": "passed",
+    "labels_free_replay_case": "2026-02-12-T47QMV-4771-19818-bank",
+    "replay_exact_prediction_parity": "passed",
+    "future_pm_poisoning_invariance": "passed on the full PM-consuming feature branch",
+    "replay_input_files": [
+      "case.json",
+      "initial-state.npz",
+      "single-run-weather.json"
+    ],
+    "initial_state_allowlist": [
+      "initial_nbr",
+      "initial_falsecolor",
+      "initial_valid20",
+      "initial_scar_fraction",
+      "initial_scar20",
+      "elevation_m",
+      "slope",
+      "aspect",
+      "landcover",
+      "burnable",
+      "seeds_point"
+    ]
+  }
+}

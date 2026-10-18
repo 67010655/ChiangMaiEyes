@@ -1,0 +1,18 @@
+{
+  "production_promoted": false,
+  "priority": {
+    "path": "output\\joint-fire-model-20261017\\final-candidate\\model.joblib",
+    "sha256": "0ce5941b496d942d492b621e40de0f5c9af70cb3a6b9fe5181804dece19571c7",
+    "role": "Retainedofflinecandidatefornext12hhotspot-cellranking",
+    "coverage_pct_at250km2": 36.07268222176337,
+    "contract": "output\\joint-fire-model-20261017\\final-candidate\\feature-contract.json"
+  },
+  "growth": {
+    "path": "output\\fire-engineering-20261018\\selected-growth-candidate\\model.joblib",
+    "sha256": "82450b4d2cb819bf2a11a4870f8df34163c6a684727cc7c1e9333cdc1d5b69a3",
+    "role": "Experimentalnew-spectral-scarprediction; notreadyasoperationalfirefront",
+    "choice": "point_no_pm_large__0.03",
+    "final_train_cases": 19,
+    "test_status": "2026reusedretrospectiveafterround1; nofreshholdoutclaim. Hyperparametersandthresholdchosenonlyfromdateblocked2025CV."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "case_id": "2026-04-15-community-cmf-th-2892",
+  "selected": "point_no_pm_large__0.03",
+  "group": "point_no_pm",
+  "selection_sha256": "cd8edb2f0ad93b0e3ed69a11c0ec616dc7b16b1e17c3ab173a5a35c1c3d5bb66",
+  "future_optical_or_target_labels_included": false,
+  "included_case_files": [
+    "case.json",
+    "initial-state.npz",
+    "single-run-weather.json"
+  ],
+  "operational_status": "Offline retrospective candidate, not promoted."
+}

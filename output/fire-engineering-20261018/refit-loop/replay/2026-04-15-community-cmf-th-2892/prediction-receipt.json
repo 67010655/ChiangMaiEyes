@@ -1,0 +1,12 @@
+{
+  "case_id": "2026-04-15-community-cmf-th-2892",
+  "selected": "point_no_pm_large__0.03",
+  "initial_acquisition": "2026-04-15T04:03:48.769000+00:00",
+  "requested_valid_until": "2026-04-18T04:03:26.498000+00:00",
+  "predicted_area_km2": 0.10200000000000001,
+  "applicable_fraction": 0.950432,
+  "unknown_semantics": "Outsideapplicabilityisunknown/unmodeled, notanallclear.",
+  "future_images_or_labels_read": false,
+  "prediction_sha256": "867df0c461f7dfbe57ee544757691b71e1342b9e1fa970749c170ecea3d1a698",
+  "production_changed": false
+}

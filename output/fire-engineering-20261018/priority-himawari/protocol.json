@@ -1,0 +1,61 @@
+{
+  "target": "Next12hVIIRS500mcells, not perimeter; identical parent common origins, budget250km2.",
+  "parent": "Frozen2024trained2025selected hotspot_wind_pm large model, unmodified.",
+  "choices": {
+    "parent": [
+      0,
+      1000
+    ],
+    "hima_w0.05_r1000": [
+      0.05,
+      1000
+    ],
+    "hima_w0.05_r3000": [
+      0.05,
+      3000
+    ],
+    "hima_w0.05_r5000": [
+      0.05,
+      5000
+    ],
+    "hima_w0.2_r1000": [
+      0.2,
+      1000
+    ],
+    "hima_w0.2_r3000": [
+      0.2,
+      3000
+    ],
+    "hima_w0.2_r5000": [
+      0.2,
+      5000
+    ],
+    "hima_w0.5_r1000": [
+      0.5,
+      1000
+    ],
+    "hima_w0.5_r3000": [
+      0.5,
+      3000
+    ],
+    "hima_w0.5_r5000": [
+      0.5,
+      5000
+    ],
+    "hima_w1.0_r1000": [
+      1.0,
+      1000
+    ],
+    "hima_w1.0_r3000": [
+      1.0,
+      3000
+    ],
+    "hima_w1.0_r5000": [
+      1.0,
+      5000
+    ]
+  },
+  "selection": "2025pooledcoverageat250km2, tie parent then smallerweight then radius. Freeze before2026.",
+  "himawari": "Two nominal UTC JAXA frames fromissue-3h/-6h; rel3/5nonvolcanic only. NoFRP because unitsunverified. Availabilitydelayassumed3h, no cloudnegativeclaims.",
+  "scope": "Retrospective previouslyinspectedyears; no pristine prospective holdout; no deploy."
+}

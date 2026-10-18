@@ -1,0 +1,98 @@
+{
+  "id": "2026-04-15-community-cmf-th-2892",
+  "collection": "sentinel-2-c1-l2a",
+  "split": "retrospective_test2026",
+  "candidate": {
+    "id": "2026-04-15-community-cmf-th-2892",
+    "date": "2026-04-15",
+    "year": 2026,
+    "latitude": 17.65678,
+    "longitude": 98.41024,
+    "cohort": "community_known_hotspot_enriched",
+    "forest_id": "cmf-th-2892",
+    "forest_name": "ป่าชุมชนบ้านหลังป่าข่า",
+    "season_inside_forest_detections": 103,
+    "peak_day_inside_forest_detections": 17
+  },
+  "bounds_utm47": [
+    432400,
+    1947400,
+    442400,
+    1957400
+  ],
+  "initial_acquisition": "2026-04-15T04:03:48.769000+00:00",
+  "final_acquisition": "2026-04-18T04:03:26.498000+00:00",
+  "horizon_hours": 71.99381361111111,
+  "baseline_scene": "S2C_T47QMV_20260413T040057_L2A",
+  "initial_scene": "S2A_T47QMV_20260415T035942_L2A",
+  "final_scene": "S2B_T47QMV_20260418T035826_L2A",
+  "weather": {
+    "model": "ecmwf_ifs",
+    "run_init": "2026-04-14T18:00:00+00:00",
+    "assumed_model_availability_delay_hours": 6,
+    "archive_note": "Provider describes preMay2026IFS archive as Cycle49R1hindcasts. Single initialization, not stitched future runs; not verified original as-issued distribution.",
+    "sha256": "8c15491214087e3fb5e61acc38d0fbe130bd646a596fd1a6fba8b4c54c5b4c97",
+    "request": {
+      "latitude": 17.65678,
+      "longitude": 98.41024,
+      "models": "ecmwf_ifs",
+      "run": "2026-04-14T18:00",
+      "forecast_days": 9,
+      "wind_speed_unit": "ms",
+      "timezone": "UTC",
+      "hourly": "wind_speed_10m,wind_direction_10m,temperature_2m,relative_humidity_2m,precipitation"
+    }
+  },
+  "clear_land_fraction": 0.943776,
+  "initial_hotspots": [
+    {
+      "latitude": 17.66778,
+      "longitude": 98.41409,
+      "detected_at": "2026-04-14T13:31:00+07:00",
+      "satellite": "SNPP",
+      "product": "VIIRS_SNPP_SP",
+      "confidence": "n",
+      "frp": 7.26,
+      "scan_km": 0.5,
+      "track_km": 0.41
+    },
+    {
+      "latitude": 17.6335,
+      "longitude": 98.37799,
+      "detected_at": "2026-04-14T13:51:00+07:00",
+      "satellite": "NOAA20",
+      "product": "VIIRS_NOAA20_SP",
+      "confidence": "n",
+      "frp": 5.52,
+      "scan_km": 0.42,
+      "track_km": 0.38
+    },
+    {
+      "latitude": 17.63807,
+      "longitude": 98.38545,
+      "detected_at": "2026-04-14T13:51:00+07:00",
+      "satellite": "NOAA20",
+      "product": "VIIRS_NOAA20_SP",
+      "confidence": "n",
+      "frp": 3.99,
+      "scan_km": 0.42,
+      "track_km": 0.38
+    },
+    {
+      "latitude": 17.66371,
+      "longitude": 98.41784,
+      "detected_at": "2026-04-14T13:51:00+07:00",
+      "satellite": "NOAA20",
+      "product": "VIIRS_NOAA20_SP",
+      "confidence": "n",
+      "frp": 4.3,
+      "scan_km": 0.42,
+      "track_km": 0.38
+    }
+  ],
+  "excluded_triplets": [],
+  "initialization_note": "Retrospective initial optical image provided at acquisition time. Real image publication/processing latency is NOT simulated; catalog_created is retained.",
+  "reference_note": "Satellite-derived spectral burn-change candidate, not independently surveyed fire perimeter.",
+  "engineering_cohort": "previously_inspected_regression",
+  "engineering_split": "regression2026"
+}

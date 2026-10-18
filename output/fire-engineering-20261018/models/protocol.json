@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "scope": "Offline only; no production promotion or deployment.",
+  "train": "2024 whole cases; one deterministic negative sample per case, inverse-sampling weights preserve pixel prior.",
+  "select": "2025 pooled new-growth Dice, tie less predicted area then lexical name. No2026scores for model/threshold choice.",
+  "test": "2026newcasebank and alreadyinspected2026regression separately; retrospective and not a pristine prospective holdout.",
+  "configs": {
+    "point_no_pm": [
+      "point_no_pm",
+      60,
+      15
+    ],
+    "point_pm": [
+      "point_pm",
+      60,
+      15
+    ],
+    "hima": [
+      "hima",
+      60,
+      15
+    ],
+    "seasonal": [
+      "seasonal",
+      60,
+      15
+    ],
+    "spatial": [
+      "spatial",
+      60,
+      15
+    ],
+    "all_no_pm": [
+      "all_no_pm",
+      60,
+      15
+    ],
+    "all": [
+      "all",
+      60,
+      15
+    ],
+    "all_large": [
+      "all",
+      120,
+      31
+    ],
+    "all_no_wind": [
+      "all_no_wind",
+      60,
+      15
+    ]
+  },
+  "thresholds": [
+    0.001,
+    0.003,
+    0.01,
+    0.03,
+    0.1,
+    0.3,
+    0.5
+  ],
+  "baselines": "no growth, initial scar / past VIIRS / JAXA distance100/300/1000m with initial-only vegetation eligibility",
+  "reference": "Existing fixed20m spectral-change algorithm and QC; exact observed2–7day image intervals, not12h arrival time.",
+  "hima": "8 nominal archived snapshots at3hcadence, ending>=3hbeforeinitial. delayassumed; missing/empty unknown; FRP excluded.",
+  "spatial_weather": "Same original IFS run/times,4corner nearest samples+actual model coords; no terrain downscaling. Changes sampling AND downscaling convention; not isolated wind-only.",
+  "fuel": "Initial-only spectral change plus2023samecalendar-month coarse ESAseasonalprior; not measured fuel load.",
+  "pm": "Lagged35T/36T daily<=initialICTdate-2; ablated under same learner/threshold budget.",
+  "initial_imagery_latency": "Retrospectively initialized at acquisition; publication delay not simulated.",
+  "completion": "All finite input ablations, frozen selection, year-separated evaluation, causal replay, numerical verification and report."
+}

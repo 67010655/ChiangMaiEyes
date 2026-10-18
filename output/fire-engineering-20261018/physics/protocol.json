@@ -1,0 +1,82 @@
+{
+  "configs": [
+    {
+      "name": "point_active6",
+      "family": "pyre_graph",
+      "fuel": "mapped8",
+      "moisture": "dynamic",
+      "seed": "point",
+      "scale": 0.25,
+      "wind_factor": 0.2,
+      "active_hours": 6,
+      "spatial": false,
+      "seasonal": false
+    },
+    {
+      "name": "point_active24",
+      "family": "pyre_graph",
+      "fuel": "mapped8",
+      "moisture": "dynamic",
+      "seed": "point",
+      "scale": 0.25,
+      "wind_factor": 0.2,
+      "active_hours": 24,
+      "spatial": false,
+      "seasonal": false
+    },
+    {
+      "name": "spatial_active6",
+      "family": "pyre_graph",
+      "fuel": "mapped8",
+      "moisture": "dynamic",
+      "seed": "point",
+      "scale": 0.25,
+      "wind_factor": 0.2,
+      "active_hours": 6,
+      "spatial": true,
+      "seasonal": false
+    },
+    {
+      "name": "spatial_active24",
+      "family": "pyre_graph",
+      "fuel": "mapped8",
+      "moisture": "dynamic",
+      "seed": "point",
+      "scale": 0.25,
+      "wind_factor": 0.2,
+      "active_hours": 24,
+      "spatial": true,
+      "seasonal": false
+    },
+    {
+      "name": "spatial_seasonal_active6",
+      "family": "pyre_graph",
+      "fuel": "mapped8",
+      "moisture": "dynamic",
+      "seed": "point",
+      "scale": 0.25,
+      "wind_factor": 0.2,
+      "active_hours": 6,
+      "spatial": true,
+      "seasonal": true
+    },
+    {
+      "name": "spatial_seasonal_active24",
+      "family": "pyre_graph",
+      "fuel": "mapped8",
+      "moisture": "dynamic",
+      "seed": "point",
+      "scale": 0.25,
+      "wind_factor": 0.2,
+      "active_hours": 24,
+      "spatial": true,
+      "seasonal": true
+    }
+  ],
+  "train": "No learned parameters. Fixed hypotheses before2025scoring.",
+  "selection": "2025pooledDice; tie smaller predicted area then name. Freeze before2026.",
+  "wind": "Nearest actual returned4corner IFS model nodes, same initialization/validhours, m/s east/north to meteorological FROM.",
+  "seasonal": "Multiply Rothermel head rate by clip(1.5-initial100mmeanNDVI,.5,1.5). Explicit empirical sensitivity, not validated fuel load.",
+  "active_hours": "Total elapsed spread cap6/24h, not a daily suppression cycle. Image horizons longer; limited-growth hypothesis.",
+  "boundary": "No crown/spotting/suppression/subgrid wind. Current native GRIB only numerical integration smoke, not substituted for historical wind."
+}

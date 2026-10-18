@@ -1,0 +1,43 @@
+{
+  "round": 2,
+  "reason": "Round1traininghad8casesfrom4dates. Testwhethermoreindependentpast-eventdatahelpsbeforeaddinganotherdatasource.",
+  "designed_after_round1_2026_inspection": true,
+  "test_status": "All2026casesreusedretrospectiveevaluation, nofreshunseenholdoutclaim.",
+  "selection": "2025dateblocked3foldCV; everyfold includesall2024casesplusother2025dategroups. Same11held2025cases/labelsasparentselection. Noheldevent/datepixelsinfitting.",
+  "grouping": "All2025caseswithsameactualinitialUTCdateareheldtogether; newcasecentre>=12kmOR>=14days, remainingcrossdateeventcorrelationpossible.",
+  "train_final": "Fitselectedarchitectureonall2024+2025casesafterthreshold/configchoice; no2026fitting.",
+  "configs": {
+    "point_no_pm_small": [
+      "point_no_pm",
+      60,
+      15
+    ],
+    "point_no_pm_large": [
+      "point_no_pm",
+      120,
+      31
+    ],
+    "point_pm_small": [
+      "point_pm",
+      60,
+      15
+    ],
+    "all_small": [
+      "all",
+      60,
+      15
+    ]
+  },
+  "thresholds": [
+    0.003,
+    0.01,
+    0.03,
+    0.1,
+    0.3
+  ],
+  "parent": "Previouslyfrozen2024-trainedpoint_no_pm__0.03; eligibletooutscoreCVcandidates.",
+  "criterion": "2025poolednewgrowthDice; tieslesspredictedarea thenname. Freezechoiceandfinalweightsbeforeanyround2_2026score.",
+  "sampling": "Allpositivepixels+up15000negativespercase; inverse-selectionweights. Same deterministic sampledrowsforallcandidatesandfolds.",
+  "stop": "Exactly4configurationsx5thresholdsplusparent, thentest/causalreplay/report. Noadditional2026-drivenretuninginthisround.",
+  "scope": "Offlineonly, noapp/UI/deploy."
+}

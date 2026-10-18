@@ -1,0 +1,270 @@
+{
+  "warning": "Training split/gain diagnostic only, not causal attribution or independent evidence of accuracy.",
+  "features": [
+    {
+      "feature": "day_distance",
+      "training_split_count": 161,
+      "training_gain": 283998.35182078043
+    },
+    {
+      "feature": "week_distance",
+      "training_split_count": 93,
+      "training_gain": 61641.91377233179
+    },
+    {
+      "feature": "month_distance",
+      "training_split_count": 180,
+      "training_gain": 13260.034022067792
+    },
+    {
+      "feature": "day_count",
+      "training_split_count": 37,
+      "training_gain": 4895.643993015778
+    },
+    {
+      "feature": "longitude",
+      "training_split_count": 175,
+      "training_gain": 4574.221909796398
+    },
+    {
+      "feature": "doy_sin",
+      "training_split_count": 72,
+      "training_gain": 4492.363029877022
+    },
+    {
+      "feature": "elevation",
+      "training_split_count": 179,
+      "training_gain": 4425.351529278065
+    },
+    {
+      "feature": "slope",
+      "training_split_count": 126,
+      "training_gain": 4274.155676496343
+    },
+    {
+      "feature": "local_u",
+      "training_split_count": 98,
+      "training_gain": 4070.856482090967
+    },
+    {
+      "feature": "doy_cos",
+      "training_split_count": 93,
+      "training_gain": 3987.983556154545
+    },
+    {
+      "feature": "latitude",
+      "training_split_count": 140,
+      "training_gain": 3302.239979178974
+    },
+    {
+      "feature": "rh_max",
+      "training_split_count": 53,
+      "training_gain": 3106.2045288446457
+    },
+    {
+      "feature": "solar_mean",
+      "training_split_count": 65,
+      "training_gain": 2553.862617848953
+    },
+    {
+      "feature": "rh_mean",
+      "training_split_count": 76,
+      "training_gain": 2436.4020944075
+    },
+    {
+      "feature": "day_age",
+      "training_split_count": 92,
+      "training_gain": 2418.244715029542
+    },
+    {
+      "feature": "temperature_mean",
+      "training_split_count": 79,
+      "training_gain": 2258.9453564141486
+    },
+    {
+      "feature": "month_count",
+      "training_split_count": 62,
+      "training_gain": 2169.6380454977984
+    },
+    {
+      "feature": "week_count",
+      "training_split_count": 41,
+      "training_gain": 2014.5940739033092
+    },
+    {
+      "feature": "local_first_u",
+      "training_split_count": 71,
+      "training_gain": 2010.134655391791
+    },
+    {
+      "feature": "mean7days",
+      "training_split_count": 57,
+      "training_gain": 1799.1887887567973
+    },
+    {
+      "feature": "local_v",
+      "training_split_count": 69,
+      "training_gain": 1672.771976657775
+    },
+    {
+      "feature": "trend3days",
+      "training_split_count": 64,
+      "training_gain": 1433.3938768021017
+    },
+    {
+      "feature": "local_first_v",
+      "training_split_count": 72,
+      "training_gain": 1422.318994593368
+    },
+    {
+      "feature": "downwind_recent_kernel",
+      "training_split_count": 50,
+      "training_gain": 1367.365087521329
+    },
+    {
+      "feature": "local_last_v",
+      "training_split_count": 65,
+      "training_gain": 1336.6859399079385
+    },
+    {
+      "feature": "day_frp",
+      "training_split_count": 78,
+      "training_gain": 1277.524013423046
+    },
+    {
+      "feature": "local_v_std",
+      "training_split_count": 60,
+      "training_gain": 1137.124369556306
+    },
+    {
+      "feature": "solar_max",
+      "training_split_count": 31,
+      "training_gain": 1064.7685564892852
+    },
+    {
+      "feature": "upwind_recent_kernel",
+      "training_split_count": 40,
+      "training_gain": 1043.2186553902736
+    },
+    {
+      "feature": "max3days",
+      "training_split_count": 21,
+      "training_gain": 981.5171043059869
+    },
+    {
+      "feature": "local_speed_max",
+      "training_split_count": 43,
+      "training_gain": 977.6598178262963
+    },
+    {
+      "feature": "local_last_u",
+      "training_split_count": 47,
+      "training_gain": 967.0752021617882
+    },
+    {
+      "feature": "local_u_std",
+      "training_split_count": 46,
+      "training_gain": 955.0291385597156
+    },
+    {
+      "feature": "station35t",
+      "training_split_count": 39,
+      "training_gain": 926.8351175020777
+    },
+    {
+      "feature": "trend7days",
+      "training_split_count": 40,
+      "training_gain": 898.2763702767431
+    },
+    {
+      "feature": "mean3days",
+      "training_split_count": 29,
+      "training_gain": 868.1706915995952
+    },
+    {
+      "feature": "nearest_source_speed",
+      "training_split_count": 42,
+      "training_gain": 813.4052446457548
+    },
+    {
+      "feature": "signed_alongwind_distance",
+      "training_split_count": 39,
+      "training_gain": 555.2517969765853
+    },
+    {
+      "feature": "temperature_max",
+      "training_split_count": 27,
+      "training_gain": 533.866346366584
+    },
+    {
+      "feature": "crosswind_distance",
+      "training_split_count": 34,
+      "training_gain": 526.0729844754186
+    },
+    {
+      "feature": "cover40",
+      "training_split_count": 16,
+      "training_gain": 496.5529401453642
+    },
+    {
+      "feature": "cover10",
+      "training_split_count": 15,
+      "training_gain": 472.8807489641315
+    },
+    {
+      "feature": "local_speed_mean",
+      "training_split_count": 19,
+      "training_gain": 400.7932753920604
+    },
+    {
+      "feature": "source_to_cell_alignment",
+      "training_split_count": 27,
+      "training_gain": 373.83469397350603
+    },
+    {
+      "feature": "station36t",
+      "training_split_count": 18,
+      "training_gain": 337.92853275462693
+    },
+    {
+      "feature": "rain_mean",
+      "training_split_count": 10,
+      "training_gain": 310.962446536685
+    },
+    {
+      "feature": "mean_latest",
+      "training_split_count": 5,
+      "training_gain": 131.04091024840062
+    },
+    {
+      "feature": "cover30",
+      "training_split_count": 4,
+      "training_gain": 48.07371294097856
+    },
+    {
+      "feature": "cover20",
+      "training_split_count": 0,
+      "training_gain": 0.0
+    },
+    {
+      "feature": "rain_max",
+      "training_split_count": 0,
+      "training_gain": 0.0
+    },
+    {
+      "feature": "morning_issue",
+      "training_split_count": 0,
+      "training_gain": 0.0
+    },
+    {
+      "feature": "valid_stations",
+      "training_split_count": 0,
+      "training_gain": 0.0
+    },
+    {
+      "feature": "available_days7",
+      "training_split_count": 0,
+      "training_gain": 0.0
+    }
+  ]
+}

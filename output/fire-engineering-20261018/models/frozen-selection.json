@@ -1,0 +1,17 @@
+{
+  "files": {
+    "selection.json": "cf965c4010cbb42c1b1831e949ae11b12d54b3bcc7a46df86a3645d7808b678a",
+    "protocol.json": "588e1584225e74072174b2a8a4a09d547a7181d083be19a427c48f8083e9d6bd",
+    "feature-contract.json": "45be057a485c1a6049ec606737b529e2ee3a0200db92514507b71a7c94cf47f2",
+    "point_no_pm.joblib": "8a3322ca7e9bb7fed3a4eec9eafa5077d3193cc7a82971b60a49696ec5d5e119",
+    "point_pm.joblib": "26da63c751d936ed674214f66aeb1df1e1ace1f0e651c34ab0a644f2e63216ed",
+    "hima.joblib": "d50acc9edd8f3ec4ab805ee61ac1135f2bcf13c1d07a1053b45e745ef2185915",
+    "seasonal.joblib": "6a5571c3f91a4207ed55dbd3af5ff83d16225d8c8fbdcecd6f2cd1023d45999e",
+    "spatial.joblib": "d49f0666b50176c4ac849b7b3b996d3a009929a17a354e82b6ec3dbc06ff0dec",
+    "all_no_pm.joblib": "9bebb96bec8d487b1cf17233dd8adba347f7a6759babb79557097999682b8cbd",
+    "all.joblib": "0505630dc18bc37a13074c24a05b2297ad792808b5278064149b59d4aae7027e",
+    "all_large.joblib": "1ae12babe6ae3b1e42e87a51b4bd35855a110cc490e5a71bd4424c2a670dd3f8",
+    "all_no_wind.joblib": "474b452739b2d2e9571b15c6f6c665fb04774cc7f13effe672a45e90a64b3a0e"
+  },
+  "2026_scores_seen_for_selection": false
+}
