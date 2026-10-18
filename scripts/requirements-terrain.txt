@@ -1,0 +1,6 @@
+# Offline processing only; do not add these native packages to Vercel runtime.
+rasterio==1.5.2
+pyproj==3.8.0
+shapely==2.2.0
+numpy==2.5.4
+httpx==0.28.1

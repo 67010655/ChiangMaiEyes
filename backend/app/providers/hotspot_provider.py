@@ -1,4 +1,5 @@
 import csv
+from app.evidence import detection_identity, native_confidence
 import datetime
 import json
 import logging
@@ -63,7 +64,18 @@ GISTDA_VIIRS_SOURCE = "GISTDA API Gateway VIIRS 1-day"
 GISTDA_DISASTER_SOURCE = "GISTDA Disaster STAC VIIRS 3-day"
 GISTDA_DISASTER_STAC_URL = "https://vallaris.dragonfly.gistda.or.th/core/api/stac/1.0/fire/search"
 GISTDA_DISASTER_COLLECTION = "viirs_3days"
-CHIANG_MAI_BBOX = "97.25,17.35,99.68,20.28"
+@lru_cache(maxsize=1)
+def province_bbox() -> str:
+    ring=_province_ring()
+    if not ring: raise ValueError('Province boundary is required to define source coverage')
+    # Round outward, never crop the southern tip or any other boundary vertex.
+    west=math.floor(min(p[0] for p in ring)*10000)/10000
+    south=math.floor(min(p[1] for p in ring)*10000)/10000
+    east=math.ceil(max(p[0] for p in ring)*10000)/10000
+    north=math.ceil(max(p[1] for p in ring)*10000)/10000
+    return f'{west:.4f},{south:.4f},{east:.4f},{north:.4f}'
+
+CHIANG_MAI_BBOX = province_bbox()
 FOREST_FIREMAP_SOURCE = "Royal Forest Department Firemap"
 FOREST_FIREMAP_URL = "https://wildfire.forest.go.th/firemap/getdb.php"
 BANGKOK_TZ = datetime.timezone(datetime.timedelta(hours=7))
@@ -199,6 +211,7 @@ def fetch_gistda_hotspots(api_key: str) -> list[Hotspot]:
                     district=properties.get("ap_tn") or estimate_district(lat, lon),
                     confidence=confidence,
                     source=GISTDA_VIIRS_SOURCE,
+                    **native_confidence(properties.get('confidence')),
                     detected_at=detected_at,
                     satellite="VIIRS"
                 ))
@@ -257,7 +270,7 @@ def _get_gistda_json(url: str | httpx.URL, *, params: dict | None = None, timeou
             last_error = ex
             if attempt == 1:
                 break
-            logger.warning("Retrying GISTDA Disaster request after error: %s", ex)
+            logger.warning("Retrying GISTDA Disaster request after an upstream failure")
     raise last_error or RuntimeError("GISTDA Disaster request failed")
 
 
@@ -309,6 +322,7 @@ def fetch_gistda_disaster_hotspots(
                         satellite=properties.get("satellite") or properties.get("instrument") or "VIIRS",
                         confidence=_confidence_from_raw(properties.get("confidence") or properties.get("f_alarm")),
                         source=GISTDA_DISASTER_SOURCE,
+                        **native_confidence(properties.get('confidence')),
                         detected_at=_gistda_detected_at(properties),
                     )
                 )
@@ -400,8 +414,7 @@ def _nasa_detected_at(acq_date: str | None, acq_time: str | int | None) -> str:
         )
         return dt_utc.astimezone(BANGKOK_TZ).isoformat()
     except Exception:
-        fallback_date = date_part or datetime.datetime.now(BANGKOK_TZ).date().isoformat()
-        return f"{fallback_date}T00:00:00+07:00"
+        raise ValueError('NASA acquisition time is missing or invalid') from None
 
 
 def _float_or_none(raw: object) -> float | None:
@@ -413,39 +426,29 @@ def _float_or_none(raw: object) -> float | None:
     if not text:
         return None
     try:
-        return float(text)
+        value = float(text)
+        return value if math.isfinite(value) else None
     except ValueError:
         return None
 
 
-# NASA's max per-call day-range. A fire not re-detected on the very next
-# satellite pass used to vanish from the map entirely (1-day window) even
-# though it was probably still burning — 5 days keeps it visible (correctly
-# aged) until it genuinely drops out of the rolling window, and matches the
-# window fetch_hotspot_history already chains for the trend charts.
+# A five-day observation window supports age filters. A past detection does
+# not establish that a fire is still burning.
 _NASA_LIVE_DAY_RANGE = 5
-# Grid cell (~100m) used to collapse the SAME location re-detected across
-# multiple days/satellites in that window into one point, so a persistent
-# fire doesn't get counted 3-5x as separate "active hotspots".
-_DEDUP_GRID_DECIMALS = 3
 
 
 def _dedup_same_source_by_location(hotspots: list[Hotspot]) -> list[Hotspot]:
-    """Keep only the most recent detection per grid cell (see
-    _DEDUP_GRID_DECIMALS) — used within a single source's own multi-day
-    window so it never collapses points from a different source."""
-    latest_by_cell: dict[tuple[float, float], Hotspot] = {}
+    """Remove exact repeated observations, preserving every separate pass/pixel."""
+    observations: dict[str, Hotspot] = {}
     for hs in hotspots:
-        cell = (round(hs.latitude, _DEDUP_GRID_DECIMALS), round(hs.longitude, _DEDUP_GRID_DECIMALS))
-        current = latest_by_cell.get(cell)
-        if current is None or hs.detected_at > current.detected_at:
-            latest_by_cell[cell] = hs
-    return list(latest_by_cell.values())
+        key = detection_identity(hs.model_dump(), hs.source, hs.latitude, hs.longitude, hs.detected_at)
+        observations.setdefault(key, hs)
+    return list(observations.values())
 
 
 def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
     # NASA FIRMS Area API bounding box for Chiang Mai (west, south, east, north).
-    bbox = "97.25,17.35,99.68,20.28"
+    bbox = province_bbox()
     hotspots: list[Hotspot] = []
     idx = 0
     for src in NASA_VIIRS_SOURCES:
@@ -455,7 +458,7 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
             response = httpx.get(url, timeout=15.0)
             response.raise_for_status()
         except Exception as ex:
-            logger.warning("NASA FIRMS %s fetch failed: %s", src, ex)
+            logger.warning("NASA FIRMS %s request failed", src)
             continue
 
         reader = csv.DictReader(response.content.decode("utf-8").splitlines())
@@ -472,6 +475,7 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
                     longitude=lon,
                     district=estimate_district(lat, lon),
                     confidence=confidence,
+                    **native_confidence(row.get('confidence')),
                     frp=_float_or_none(row.get("frp")),
                     brightness=_float_or_none(row.get("bright_ti4") or row.get("brightness")),
                     source="NASA FIRMS",
@@ -485,69 +489,9 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
     return _dedup_same_source_by_location(hotspots)
 
 def fetch_hotspot_history(map_key: str, days: int = 5) -> list[tuple[str, int]]:
-    """Daily in-province hotspot counts for the last ``days`` days from NASA
-    VIIRS, returned oldest→newest as (YYYY-MM-DD, count) with missing days
-    zero-filled. NASA is reachable from anywhere (unlike RFD), so this gives a
-    consistent historical trend on both the user's machine and Vercel.
-
-    NASA's Area CSV API caps each request at a 5-day range, so for longer
-    windows we chain date-anchored 5-day requests and dedup detections across
-    windows and satellites.
-    """
-    ring = _province_ring()
-    bbox = "97.25,17.35,99.68,20.28"
-    span = max(1, min(days, 31))
-    today = datetime.datetime.now(BANGKOK_TZ).date()
-    earliest = today - datetime.timedelta(days=span - 1)
-
-    # Build every (satellite, 5-day window) request up front, then fetch them with
-    # bounded concurrency — a 30-day window is up to 18 calls and sequential would
-    # blow the request timeout.
-    urls: list[str] = []
-    window_start = earliest
-    while window_start <= today:
-        chunk = min(5, (today - window_start).days + 1)  # ≤5-day API limit
-        start_str = window_start.isoformat()
-        for src in NASA_VIIRS_SOURCES:
-            urls.append(f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{chunk}/{start_str}")
-        window_start += datetime.timedelta(days=5)
-
-    def _fetch(url: str) -> str | None:
-        try:
-            response = httpx.get(url, timeout=20.0)
-            response.raise_for_status()
-            return response.content.decode("utf-8")
-        except Exception as ex:  # noqa: BLE001 — one satellite/window failing is fine
-            logger.warning("NASA FIRMS history fetch failed (%s): %s", url[-40:], ex)
-            return None
-
-    seen: set[tuple[float, float, str]] = set()
-    per_day: dict[str, int] = {}
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        for body in pool.map(_fetch, urls):
-            if not body:
-                continue
-            for row in csv.DictReader(body.splitlines()):
-                try:
-                    lat = float(row["latitude"])
-                    lon = float(row["longitude"])
-                    if ring and not _point_in_ring(lon, lat, ring):
-                        continue
-                    day = _nasa_detected_at(row.get("acq_date"), row.get("acq_time"))[:10]
-                    key = (round(lat, 3), round(lon, 3), day)
-                    if key in seen:
-                        continue
-                    seen.add(key)
-                    per_day[day] = per_day.get(day, 0) + 1
-                except Exception:  # noqa: BLE001 — skip malformed rows
-                    continue
-
-    return [
-        ((earliest + datetime.timedelta(days=i)).isoformat(),
-         per_day.get((earliest + datetime.timedelta(days=i)).isoformat(), 0))
-        for i in range(span)
-    ]
-
+    """Counts only for dates whose FIRMS requests succeeded for all sensors."""
+    from app.providers.verified_history import daily_counts, fetch_verified_firms
+    return daily_counts(fetch_verified_firms(map_key, max(1, min(days, 180))))
 
 def fetch_hotspot_history_detections(map_key: str, days: int = 31) -> list[dict[str, object]]:
     """Raw in-province NASA FIRMS detections for archive jobs.
@@ -557,7 +501,7 @@ def fetch_hotspot_history_detections(map_key: str, days: int = 31) -> list[dict[
     into daily totals, district totals, and 24-hour histograms.
     """
     ring = _province_ring()
-    bbox = "97.25,17.35,99.68,20.28"
+    bbox = province_bbox()
     span = max(1, min(days, 180))
     today = datetime.datetime.now(BANGKOK_TZ).date()
     earliest = today - datetime.timedelta(days=span - 1)
@@ -577,11 +521,11 @@ def fetch_hotspot_history_detections(map_key: str, days: int = 31) -> list[dict[
             response.raise_for_status()
             return response.content.decode("utf-8")
         except Exception as ex:  # noqa: BLE001
-            logger.warning("NASA FIRMS archive fetch failed (%s): %s", url[-40:], ex)
+            logger.warning("NASA FIRMS archive request failed")
             return None
 
     detections: list[dict[str, object]] = []
-    seen: set[tuple[float, float, str]] = set()
+    seen: set[str] = set()
     with ThreadPoolExecutor(max_workers=6) as pool:
         for body in pool.map(_fetch, urls):
             if not body:
@@ -594,7 +538,7 @@ def fetch_hotspot_history_detections(map_key: str, days: int = 31) -> list[dict[
                         continue
                     detected_at = _nasa_detected_at(row.get("acq_date"), row.get("acq_time"))
                     day = detected_at[:10]
-                    key = (round(lat, 3), round(lon, 3), day)
+                    key = detection_identity(row, 'NASA FIRMS', lat, lon, detected_at)
                     if key in seen:
                         continue
                     seen.add(key)
@@ -614,23 +558,9 @@ def fetch_hotspot_history_detections(map_key: str, days: int = 31) -> list[dict[
 
 
 def merge_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
-    merged: list[Hotspot] = []
-    seen: set[tuple[float, float, str]] = set()
-    for group in groups:
-        for hotspot in group:
-            key = (round(hotspot.latitude, 4), round(hotspot.longitude, 4), hotspot.detected_at[:10])
-            if key in seen:
-                continue
-            seen.add(key)
-            merged.append(hotspot)
-    return merged
+    return reconcile_hotspots(groups)
 
-
-# A VIIRS pixel is ~375 m; different sources report the same fire at slightly
-# offset coordinates, so cluster detections within this radius (same day) as one.
-RECONCILE_RADIUS_M = 750.0
-
-# When several sources report the same fire, keep the richest record as the
+# When several sources report the same exact detection, keep the richest record as the
 # representative: RFD carries district/subdistrict/landuse, GISTDA next, NASA last.
 _SOURCE_PRIORITY = {
     FOREST_FIREMAP_SOURCE: 0,
@@ -640,42 +570,26 @@ _SOURCE_PRIORITY = {
 }
 
 
-def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    radius = 6_371_000.0
-    p1, p2 = math.radians(lat1), math.radians(lat2)
-    dphi = math.radians(lat2 - lat1)
-    dlam = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlam / 2) ** 2
-    return 2 * radius * math.asin(math.sqrt(a))
-
-
 def reconcile_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
     """Cross-reference detections from multiple sources into unique hotspots.
 
-    Detections from any source within RECONCILE_RADIUS_M on the same day are
-    treated as one real fire. Each output hotspot records every source that saw
-    it (``sources``/``source_count``) and takes the highest confidence reported.
+    Merge only an exact known satellite/position/time observation. Spatial
+    proximity alone does not establish one detection or one field incident.
     """
     clusters: list[dict] = []  # {rep: Hotspot, sources: set[str], members: list[Hotspot]}
     for group in groups:
         for hs in group:
-            day = hs.detected_at[:10]
-            # Only merge detections from *different* sources: each source already
-            # decided its own points are distinct, so we never collapse a source's
-            # own count — we only fuse the same fire seen by another source.
+            identity = detection_identity(hs.model_dump(), hs.source, hs.latitude, hs.longitude, hs.detected_at)
+            # Source fetchers remove their exact duplicates before reconciliation.
             best = None
-            best_dist = RECONCILE_RADIUS_M
             for cluster in clusters:
-                if cluster["rep"].detected_at[:10] != day:
+                rep = cluster['rep']
+                if detection_identity(rep.model_dump(), rep.source, rep.latitude, rep.longitude, rep.detected_at) != identity:
                     continue
                 if hs.source in cluster["sources"]:
                     continue
-                dist = _haversine_m(
-                    cluster["rep"].latitude, cluster["rep"].longitude, hs.latitude, hs.longitude
-                )
-                if dist <= best_dist:
-                    best = cluster
-                    best_dist = dist
+                best = cluster
+                break
             if best is None:
                 clusters.append({"rep": hs, "sources": {hs.source}, "members": [hs]})
                 continue
@@ -686,8 +600,9 @@ def reconcile_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
                 best["rep"] = hs
 
     reconciled: list[Hotspot] = []
-    for idx, cluster in enumerate(clusters, start=1):
+    for cluster in clusters:
         rep: Hotspot = cluster["rep"]
+        conf = next((m for m in cluster['members'] if m.confidence_level!='unknown'),rep)
         sources = sorted(cluster["sources"], key=lambda s: _SOURCE_PRIORITY.get(s, 99))
         # The representative may come from a source without FRP (e.g. GISTDA),
         # so carry the strongest FRP/brightness any member reported (NASA FIRMS).
@@ -696,9 +611,14 @@ def reconcile_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
         reconciled.append(
             rep.model_copy(
                 update={
-                    "id": f"HS-{idx:03d}",
+                    "id": 'HS-' + detection_identity(rep.model_dump(), rep.source, rep.latitude, rep.longitude, rep.detected_at)[:16],
                     "sources": sources,
                     "source_count": len(sources),
+                    "source_observations": [m.model_dump(exclude={'source_observations'}) for m in cluster['members']],
+                    'confidence_level': conf.confidence_level,
+                    'confidence_raw': conf.confidence_raw,
+                    'confidence_scheme': conf.confidence_scheme,
+                    'confidence_source': conf.source if conf.confidence_level!='unknown' else None,
                     "confidence": max(m.confidence for m in cluster["members"]),
                     "frp": max(member_frps) if member_frps else None,
                     "brightness": max(member_brights) if member_brights else None,
@@ -731,8 +651,9 @@ def fetch_live_hotspots(
             source_breakdown[label] = len(group)
             logger.info("Loaded %d hotspots from %s", len(group), label)
         except Exception as e:  # noqa: BLE001 — one source failing must not sink the rest
-            fetch_errors.append(f"{label}: {e}")
-            logger.error("%s fetch failed: %s", label, e)
+            # HTTP exceptions can contain credential-bearing provider URLs.
+            fetch_errors.append(f"{label}: {type(e).__name__}")
+            logger.error("%s fetch failed (%s)", label, type(e).__name__)
 
     if include_forest_firemap:
         _try(FOREST_FIREMAP_SOURCE, fetch_forest_firemap_hotspots)

@@ -11,5 +11,17 @@
       "source": "/health",
       "destination": "https://backend-mocha-tau-49.vercel.app/health"
     }
-  ]
+  ],
+  "redirects": [
+    {
+      "source": "/chiangmaieyes-dashboard(.html)?",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "codex/pre-feature-stabilization-20260929": false
+    }
+  }
 }

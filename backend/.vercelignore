@@ -1,0 +1,8 @@
+.env*
+.local
+.vercel
+.venv
+.venv-research
+__pycache__
+.pytest_cache
+tests

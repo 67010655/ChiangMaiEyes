@@ -44,6 +44,18 @@ class Settings(BaseSettings):
     copernicus_client_secret: str | None = None
     aqicn_token: str | None = None
     satellite_layers_file: Path | None = None
+    supabase_url: str | None = None
+    supabase_service_role_key: str | None = None
+    supabase_anon_key: str | None = None
+    resend_api_key: str | None = None
+    resend_from_email: str | None = None
+    resend_webhook_secret: str | None = None
+    # Real community delivery stays disabled until a sender domain is verified.
+    community_email_enabled: bool = False
+    community_email_test_recipient: str | None = None
+    community_job_secret: str | None = None
+    community_scheduler_enabled: bool = False
+    community_site_url: str = 'https://chiangmaieyes.vercel.app'
     remote_snapshot_base_url: str | None = (
         "https://raw.githubusercontent.com/67010655/ChiangMaiEyes/"
         "codex/production-wind-chip"

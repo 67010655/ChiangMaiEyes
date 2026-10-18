@@ -1,0 +1,445 @@
+{
+  "schema": "cme-optimization-v1",
+  "fire": {
+    "protocol": {
+      "initialization": "Fixed 02:00 ICT; largest past-six-hour FRP; 5 km; past24h max50; next6h labels; low-confidence points excluded",
+      "split": {
+        "train": "2026-01-01/2026-02-28",
+        "validation": "2026-03-01/2026-03-22",
+        "test": "2026-03-23/2026-04-30"
+      },
+      "candidates": [
+        {
+          "moisture": 5,
+          "wind_factor": 0.1,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 5,
+          "wind_factor": 0.1,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 5,
+          "wind_factor": 0.1,
+          "slope_factor": 1
+        },
+        {
+          "moisture": 5,
+          "wind_factor": 0.2,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 5,
+          "wind_factor": 0.2,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 5,
+          "wind_factor": 0.2,
+          "slope_factor": 1
+        },
+        {
+          "moisture": 5,
+          "wind_factor": 0.4,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 5,
+          "wind_factor": 0.4,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 5,
+          "wind_factor": 0.4,
+          "slope_factor": 1
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.1,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.1,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.1,
+          "slope_factor": 1
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.2,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.2,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.2,
+          "slope_factor": 1
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.4,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.4,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 8,
+          "wind_factor": 0.4,
+          "slope_factor": 1
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.1,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.1,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.1,
+          "slope_factor": 1
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.2,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.2,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.2,
+          "slope_factor": 1
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.4,
+          "slope_factor": 0
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.4,
+          "slope_factor": 0.5
+        },
+        {
+          "moisture": 11,
+          "wind_factor": 0.4,
+          "slope_factor": 1
+        }
+      ],
+      "objective": "Mean case coverage gain versus isotropic no-growth origins expanded to exactly the same area, at each observed time.",
+      "constraint": "Mean case envelope area <=2.2 times stationary375m area, same acquisition-time evaluation points.",
+      "selection": "Train constrained top five by objective; validation selects one once. Test scored after selection.",
+      "known_overlap": "Eight previously inspected peak cases fall in test dates; this is expanded retrospective temporal validation, not pristine unseen test.",
+      "cases": 82,
+      "cases_with_followup": 66
+    },
+    "selection": {
+      "selected_index": 4,
+      "config": {
+        "moisture": 5,
+        "wind_factor": 0.2,
+        "slope_factor": 0.5
+      },
+      "shortlist": [
+        0,
+        1,
+        4,
+        7,
+        2
+      ]
+    },
+    "test_selected": {
+      "cases": 35,
+      "points": 411,
+      "covered": 348,
+      "equal_area_covered": 350,
+      "stationary375_covered": 326,
+      "raw_covered": 16,
+      "coverage": 0.8834878777121993,
+      "gain": -0.005346724055475848,
+      "area_ratio": 1.2271062476201542
+    },
+    "test_current": {
+      "cases": 35,
+      "points": 411,
+      "covered": 354,
+      "equal_area_covered": 353,
+      "stationary375_covered": 326,
+      "raw_covered": 46,
+      "coverage": 0.8937813518800855,
+      "gain": 0.006665681587439287,
+      "area_ratio": 1.3943377561522385
+    },
+    "selected_gain_interval": [
+      -0.029284165698799845,
+      0.016465748901186485
+    ],
+    "current_gain_interval": [
+      -0.005962059620596205,
+      0.023146396543113356
+    ],
+    "decision": "retain_current_experimental_parameters_no_validated_directional_skill"
+  },
+  "pm": {
+    "by_lead": {
+      "6": {
+        "stations": [
+          {
+            "station": "35T",
+            "train_n": 147,
+            "validation_n": 114,
+            "test_n": 360,
+            "selected": "blend_now_weight_0.5",
+            "baseline_selected_on_validation": "blend_now_weight_1",
+            "validation_mae": {
+              "blend_now_weight_0": 3.435087719298245,
+              "blend_now_weight_0.25": 2.9302631578947365,
+              "blend_now_weight_0.5": 2.6228070175438596,
+              "blend_now_weight_0.75": 2.6846491228070177,
+              "blend_now_weight_1": 2.9701754385964914,
+              "ridge_alpha_0.1": 2.645930818388474,
+              "ridge_alpha_1": 2.645032755845984,
+              "ridge_alpha_10": 2.644486382127286,
+              "ridge_alpha_100": 2.737717030429318,
+              "ridge_alpha_1000": 3.5651540402934234
+            }
+          },
+          {
+            "station": "36T",
+            "train_n": 162,
+            "validation_n": 114,
+            "test_n": 360,
+            "selected": "ridge_alpha_100",
+            "baseline_selected_on_validation": "blend_now_weight_0",
+            "validation_mae": {
+              "blend_now_weight_0": 3.787719298245614,
+              "blend_now_weight_0.25": 3.5390350877192986,
+              "blend_now_weight_0.5": 3.414035087719298,
+              "blend_now_weight_0.75": 3.4837719298245613,
+              "blend_now_weight_1": 3.8631578947368426,
+              "ridge_alpha_0.1": 3.216197301710289,
+              "ridge_alpha_1": 3.207426661214264,
+              "ridge_alpha_10": 3.131821516449352,
+              "ridge_alpha_100": 2.8964080742019145,
+              "ridge_alpha_1000": 3.025303109261041
+            }
+          }
+        ],
+        "test_pairs": 720,
+        "test_mae": {
+          "selected": 3.1983711916830617,
+          "baseline": 3.8866666666666663,
+          "now": 4.465972222222222,
+          "previous_day": 3.856805555555556
+        },
+        "improvement_mae_95pct_day_block_interval": [
+          0.5003118144064829,
+          0.8812617174030003
+        ],
+        "days": 16
+      },
+      "12": {
+        "stations": [
+          {
+            "station": "35T",
+            "train_n": 144,
+            "validation_n": 108,
+            "test_n": 360,
+            "selected": "blend_now_weight_0.5",
+            "baseline_selected_on_validation": "blend_now_weight_1",
+            "validation_mae": {
+              "blend_now_weight_0": 3.2638888888888884,
+              "blend_now_weight_0.25": 2.9192129629629626,
+              "blend_now_weight_0.5": 2.798611111111111,
+              "blend_now_weight_0.75": 2.9182870370370377,
+              "blend_now_weight_1": 3.2111111111111117,
+              "ridge_alpha_0.1": 2.8291838507445646,
+              "ridge_alpha_1": 2.8275337784786223,
+              "ridge_alpha_10": 2.826526866003812,
+              "ridge_alpha_100": 2.974259558857201,
+              "ridge_alpha_1000": 3.7675548565824037
+            }
+          },
+          {
+            "station": "36T",
+            "train_n": 156,
+            "validation_n": 108,
+            "test_n": 360,
+            "selected": "ridge_alpha_100",
+            "baseline_selected_on_validation": "blend_now_weight_1",
+            "validation_mae": {
+              "blend_now_weight_0": 3.7527777777777778,
+              "blend_now_weight_0.25": 3.3215277777777783,
+              "blend_now_weight_0.5": 3.0208333333333335,
+              "blend_now_weight_0.75": 2.901157407407408,
+              "blend_now_weight_1": 2.974074074074074,
+              "ridge_alpha_0.1": 3.3793167781484303,
+              "ridge_alpha_1": 3.362456764816943,
+              "ridge_alpha_10": 3.223333784764417,
+              "ridge_alpha_100": 2.892899498298792,
+              "ridge_alpha_1000": 3.0837606955594166
+            }
+          }
+        ],
+        "test_pairs": 720,
+        "test_mae": {
+          "selected": 3.3334904516869592,
+          "baseline": 4.353333333333333,
+          "now": 4.353333333333333,
+          "previous_day": 3.9272222222222215
+        },
+        "improvement_mae_95pct_day_block_interval": [
+          0.6761483735070412,
+          1.3718914861131815
+        ],
+        "days": 16
+      },
+      "24": {
+        "stations": [
+          {
+            "station": "35T",
+            "train_n": 133,
+            "validation_n": 96,
+            "test_n": 359,
+            "selected": "blend_now_weight_0",
+            "baseline_selected_on_validation": "blend_now_weight_0",
+            "validation_mae": {
+              "blend_now_weight_0": 3.0729166666666665,
+              "blend_now_weight_0.25": 3.0729166666666665,
+              "blend_now_weight_0.5": 3.0729166666666665,
+              "blend_now_weight_0.75": 3.0729166666666665,
+              "blend_now_weight_1": 3.0729166666666665,
+              "ridge_alpha_0.1": 3.275301290419017,
+              "ridge_alpha_1": 3.270567879542091,
+              "ridge_alpha_10": 3.2492551950485296,
+              "ridge_alpha_100": 3.38414926422222,
+              "ridge_alpha_1000": 3.9953594404896773
+            }
+          },
+          {
+            "station": "36T",
+            "train_n": 144,
+            "validation_n": 96,
+            "test_n": 360,
+            "selected": "ridge_alpha_100",
+            "baseline_selected_on_validation": "blend_now_weight_0",
+            "validation_mae": {
+              "blend_now_weight_0": 3.5104166666666665,
+              "blend_now_weight_0.25": 3.5104166666666665,
+              "blend_now_weight_0.5": 3.5104166666666665,
+              "blend_now_weight_0.75": 3.5104166666666665,
+              "blend_now_weight_1": 3.5104166666666665,
+              "ridge_alpha_0.1": 3.5732705409195886,
+              "ridge_alpha_1": 3.56649116979848,
+              "ridge_alpha_10": 3.5202965447701744,
+              "ridge_alpha_100": 3.3842302493772145,
+              "ridge_alpha_1000": 3.4645342211383343
+            }
+          }
+        ],
+        "test_pairs": 719,
+        "test_mae": {
+          "selected": 3.59543510453694,
+          "baseline": 3.9381084840055633,
+          "now": 3.9381084840055633,
+          "previous_day": 3.9381084840055633
+        },
+        "improvement_mae_95pct_day_block_interval": [
+          0.18825990566950898,
+          0.49744902195632446
+        ],
+        "days": 15
+      }
+    },
+    "limits": [
+      "Recent September/October only, not burning season.",
+      "Observation-only forecast, not calibrated CAMS smoke physics.",
+      "Historical delivery latency and hour interval convention unknown.",
+      "October data previously inspected; chronological split is not a pristine new test."
+    ],
+    "decision": "experimental_station_only_forecast_separate_from_CAMS"
+  },
+  "wind": {
+    "by_lead": {
+      "24": {
+        "selected": "linear",
+        "coefficients": [
+          0.3317993230405977,
+          0.883707422964349
+        ],
+        "median_bias": 0.11777777777777798,
+        "validation_mae": {
+          "raw": 0.9569528619528619,
+          "persistence": 1.0532470538720538,
+          "median_bias": 0.9386026936026935,
+          "linear": 0.9159638292576398
+        },
+        "test_n": 934,
+        "test_mae": {
+          "raw": 1.0502498215560314,
+          "persistence": 1.1148132286462051,
+          "median_bias": 1.0069141089697833,
+          "linear": 0.9623520108364734
+        },
+        "improvement_mae_95pct_day_block_interval": [
+          0.07437103063387646,
+          0.10045178475153711
+        ],
+        "days": 39
+      },
+      "48": {
+        "selected": "linear",
+        "coefficients": [
+          0.7074660992523422,
+          0.6012672305513672
+        ],
+        "median_bias": 0.127777777777778,
+        "validation_mae": {
+          "raw": 0.9865088383838384,
+          "persistence": 1.138013468013468,
+          "median_bias": 0.9643455387205387,
+          "linear": 0.9015692022870778
+        },
+        "test_n": 934,
+        "test_mae": {
+          "raw": 1.0558267903878182,
+          "persistence": 1.134641922436355,
+          "median_bias": 1.012286462050916,
+          "linear": 0.9442454855978405
+        },
+        "improvement_mae_95pct_day_block_interval": [
+          0.06936372317183284,
+          0.15313265668344775
+        ],
+        "days": 39
+      }
+    },
+    "production_changed": false,
+    "limit": "Airport-specific speed correction; not validated for mountain wind, direction, or primary daily-max weather model."
+  },
+  "limits": [
+    "Point coverage, not burn perimeter accuracy. Equal-area comparison is a shape diagnostic, not an independently issued forecast.",
+    "Fixed daily 02:00 ICT and past-only centre selection. Low-confidence detections excluded. Cases without follow-up cannot establish absence of fire.",
+    "Previous-day GFS archive and acquisition-time availability proxy. Selected peak dates were previously inspected.",
+    "Best among these declared candidates and available observations; no claim of global optimum."
+  ]
+}

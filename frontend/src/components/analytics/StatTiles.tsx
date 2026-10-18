@@ -17,12 +17,14 @@ const pm25ToneClass: Record<Pm25Response["color"], string> = {
 };
 
 function riskToneClass(category: RiskResponse["category"]): string {
+  if (category === "ข้อมูลไม่ครบ") return "";
   if (category === "High") return "stat-tile__value--red";
   if (category === "Medium") return "stat-tile__value--amber";
   return "stat-tile__value--green";
 }
 
 function riskLabel(category: RiskResponse["category"]): string {
+  if (category === "ข้อมูลไม่ครบ") return "ยังประเมินไม่ได้";
   if (category === "High") return "ความเสี่ยงสูง";
   if (category === "Medium") return "ความเสี่ยงปานกลาง";
   return "ความเสี่ยงต่ำ";
@@ -58,8 +60,8 @@ export function StatTiles({
 
       <div className="stat-tile">
         <span className={`stat-tile__value ${riskToneClass(risk.category)}`}>
-          {risk.score}
-          <span className="stat-tile__unit">/10</span>
+          {risk.score ?? '—'}
+          {risk.score != null && <span className="stat-tile__unit">/10</span>}
         </span>
         <span className="stat-tile__label">{riskLabel(risk.category)}</span>
       </div>

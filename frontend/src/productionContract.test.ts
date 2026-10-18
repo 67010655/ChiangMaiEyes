@@ -19,8 +19,10 @@ describe('production deployment contract', () => {
       ['Polygon', 'MultiPolygon'].includes(forest.boundary.type))).toBe(true);
     expect(html).toContain("fetchJson('/api/community-forests'");
   });
-  it('keeps GitHub push deployments enabled for the frontend project', () => {
-    expect(rootVercel).not.toContain('"deploymentEnabled": false');
+  it('holds automatic deployment of the stabilization branch without disabling other branches', () => {
+    expect(JSON.parse(rootVercel).git.deploymentEnabled).toEqual({
+      'codex/pre-feature-stabilization-20260929': false,
+    });
   });
 
   it('documents that production currently boots the inline dashboard entry', () => {
@@ -32,6 +34,13 @@ describe('production deployment contract', () => {
   it('uses current provider names in visible data-source labels', () => {
     expect(html).toContain('Open-Meteo');
     expect(html).not.toContain('OpenWeather');
+  });
+
+  it('exposes the imported NASA FIRMS archive through public 90- and 180-day filters', () => {
+    expect(html).toContain('data-archive-days="90" aria-pressed="false">90 วัน</button>');
+    expect(html).toContain('data-archive-days="180" aria-pressed="false">180 วัน</button>');
+    expect(html).toContain('NASA FIRMS/VIIRS');
+    expect(html).toContain('ไม่ใช่การยืนยันเหตุภาคสนาม');
   });
 
   it('keeps critical Thai metadata readable instead of mojibake', () => {

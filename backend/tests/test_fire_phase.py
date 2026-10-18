@@ -53,7 +53,7 @@ def _weather(humidity: float, rain_today: float = 0.0) -> WeatherResponse:
         wind_direction_text="south",
         temperature_c=34,
         humidity_percent=humidity,
-        latest_update="2026-06-23T08:00:00+07:00",
+        latest_update=datetime.now(_BANGKOK_TZ).isoformat(),
         source="test",
         rain_today_mm=rain_today,
     )
@@ -169,6 +169,41 @@ def test_recent_rain_lowers_danger_below_yellow():
     dry = classify_fire_phases(_hotspots(), _weather(humidity=30, rain_today=0))
     wet = classify_fire_phases(_hotspots(), _weather(humidity=30, rain_today=10))
     assert _phase_of(wet, "ฝาง").danger_score < _phase_of(dry, "ฝาง").danger_score
+
+
+def test_missing_humidity_is_unknown_not_fifty_percent_or_low_risk():
+    response = classify_fire_phases(_hotspots(), _weather(None), community_forests=[_forest("แม่แจ่ม", 18.5, 98.4)])
+    assert all(p.danger_score is None and p.color == "grey" for p in response.phases)
+    assert response.forest_risk[0].danger_score is None
+    assert all(t.danger_score is None for t in response.tambon_warnings)
+    assert all(p.calc_breakdown["humidity_pct"] is None for p in response.phases)
+
+
+def test_shared_weather_does_not_invent_district_fuel_or_fire_history():
+    response = classify_fire_phases(_hotspots(), _weather(40))
+    assert len({p.danger_score for p in response.phases}) == 1
+    assert all(p.calc_breakdown["fuel_status"] == "unavailable" for p in response.phases)
+    assert all("เชื้อเพลิงติดไฟง่าย" not in " ".join(p.reasons) for p in response.phases)
+
+
+def test_future_detection_is_not_recent_evidence():
+    future=(datetime.now(_BANGKOK_TZ)+timedelta(hours=1)).isoformat()
+    response=classify_fire_phases(_hotspots("แม่แจ่ม", detected_at=future), _weather(40))
+    assert _phase_of(response, "แม่แจ่ม").active_hotspots == 0
+
+
+def test_missing_humidity_does_not_hide_actual_recent_detection():
+    response=classify_fire_phases(_hotspots("แม่แจ่ม"), _weather(None))
+    assert _phase_of(response,"แม่แจ่ม").phase == "during"
+    assert _phase_of(response,"แม่แจ่ม").active_hotspots == 1
+
+
+def test_old_weather_is_not_a_current_dry_air_warning_or_spread():
+    weather=_weather(10).model_copy(update={"latest_update":(datetime.now(_BANGKOK_TZ)-timedelta(hours=4)).isoformat()})
+    response=classify_fire_phases(_hotspots("แม่แจ่ม"),weather)
+    assert _phase_of(response,"เมืองเชียงใหม่").danger_score is None
+    assert _phase_of(response,"แม่แจ่ม").spread_projection is None
+    assert _phase_of(response,"แม่แจ่ม").calc_breakdown['weather_is_current'] is False
 
 
 def test_dnbr_burn_scar_marks_district_after_grey():

@@ -1,8 +1,17 @@
 from unittest.mock import MagicMock, patch
+import pytest
 
 from app.fire_spread_physics import DISTRICT_PHYSICS
 from app.models import DistrictFirePhase, FirePhaseResponse
 from app.predict import build_fire_predictions
+
+
+@pytest.fixture(autouse=True)
+def cold_forecast_cache():
+    from app.predict import _SOURCE_CACHE
+    _SOURCE_CACHE.clear()
+    yield
+    _SOURCE_CACHE.clear()
 
 
 def _phases(*during_districts: str) -> FirePhaseResponse:
@@ -96,15 +105,30 @@ def test_stable_humidity_trend_is_stable(mock_get):
 
 
 @patch("httpx.get")
-def test_spread_forecast_only_for_during_districts(mock_get):
+def test_missing_forecast_humidity_is_not_a_fabricated_risk_or_stable_trend(mock_get):
+    mock_get.side_effect=_dispatch(_weather_response([None,None,None]),_pm25_response(26))
+    response=build_fire_predictions(_phases())
+    assert all(f.trend == "unavailable" for f in response.district_forecasts)
+    assert all(d.danger_score is None for f in response.district_forecasts for d in f.daily)
+
+
+@patch("httpx.get")
+def test_missing_forecast_wind_does_not_become_zero_north_spread(mock_get):
+    mock_get.side_effect=_dispatch(_weather_response([40,40,40],wind_speed=[None,None,None]),_pm25_response(26))
+    response=build_fire_predictions(_phases("แม่แจ่ม"))
+    assert response.spread_forecast_72h == []
+    assert response.weather_forecast[0].wind_kmh is None
+
+
+@patch("httpx.get")
+def test_real_wind_without_fuel_cannot_invent_spread_distances(mock_get):
     mock_get.side_effect = _dispatch(
         _weather_response([40, 40, 40], wind_speed=[20.0, 20.0, 20.0]), _pm25_response(26)
     )
     resp = build_fire_predictions(_phases("แม่แจ่ม"))
-    assert len(resp.spread_forecast_72h) == 1
-    sf = resp.spread_forecast_72h[0]
-    assert sf.district == "แม่แจ่ม"
-    assert sf.km_72h > sf.km_48h > 0
+    assert resp.spread_forecast_72h == []
+    assert resp.weather_forecast[0].wind_kmh==20
+    assert any('ขาดข้อมูลเชื้อเพลิง' in note for note in resp.notes)
 
 
 @patch("httpx.get")
@@ -164,3 +188,46 @@ def test_pm25_forecast_down_degrades_gracefully_but_weather_still_works(mock_get
     assert resp.pm25_forecast_districts == []
     assert len(resp.district_forecasts) == len(DISTRICT_PHYSICS)  # weather-based forecast unaffected
     assert any("PM2.5" in n and "ไม่สำเร็จ" in n for n in resp.notes)
+
+
+def test_forecast_providers_run_concurrently_and_reuse_retrieval_time():
+    from threading import Barrier
+    gate=Barrier(2)
+    def respond(url,**kwargs):
+        gate.wait(timeout=2)
+        return _pm25_response(26) if 'air-quality' in url else _weather_response([50,50,50])
+    with patch('httpx.get',side_effect=respond) as get:
+        first=build_fire_predictions();second=build_fire_predictions()
+    assert get.call_count==2
+    assert first.source_retrieved_at==second.source_retrieved_at
+    assert set(first.provider_status.values())=={'available'}
+
+
+def test_malformed_provider_can_fail_without_breaking_other_forecast():
+    broken=MagicMock();broken.json.return_value=['unexpected schema']
+    with patch('httpx.get',side_effect=_dispatch(broken,_pm25_response(26))):
+        response=build_fire_predictions()
+    assert response.provider_status['weather']=='unavailable'
+    assert response.pm25_forecast_province is not None
+
+
+def test_prediction_service_does_not_fetch_history_or_phase_dependencies():
+    from app.services import get_fire_predictions
+    with (patch('app.services.get_fire_phases',side_effect=AssertionError('expensive dependency')),
+          patch('app.predict.build_fire_predictions',return_value='forecast') as build):
+        assert get_fire_predictions(None)=='forecast'
+    build.assert_called_once_with()
+
+
+def test_failed_source_has_no_data_retrieval_timestamp_and_invalid_numbers_are_missing():
+    weather=_weather_response([50,50,50],wind_speed=[float('nan'),0,10],wind_dir=[-90,360,400],rain=[-1,0,2])
+    def respond(url,**kwargs):
+        if 'air-quality' in url:raise Exception('offline')
+        return weather
+    with patch('httpx.get',side_effect=respond):r=build_fire_predictions()
+    assert 'pm25_model' not in r.source_retrieved_at
+    assert r.weather_forecast[0].wind_kmh is None
+    assert r.weather_forecast[0].rain_mm is None
+    assert r.weather_forecast[0].wind_dir_deg is None
+    assert r.weather_forecast[1].wind_kmh==0 and r.weather_forecast[1].wind_dir_deg==0
+    assert r.weather_forecast[2].wind_dir_deg is None

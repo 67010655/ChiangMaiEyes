@@ -1,27 +1,16 @@
-"""Fire prediction (Phase 2): forward-looking ignition risk, extended spread,
-full weather forecast, and PM2.5 forecast.
+"""Real forward weather and CAMS PM2.5, with an experimental air-dryness proxy.
 
-Deliberately NOT a trained ML model — ignition risk reuses the exact
-district-danger formula from fire_phase.py (fuel + history + dryness) but
-feeds it *forecast* humidity/rain from Open-Meteo instead of *current*
-conditions, so a district's projected score is directly comparable to its
-live one. Spread is likewise the same Rothermel-simplified projection
-already used for "during" districts, just fed forecast wind for 48h/72h
-instead of only the live 6/12/24h.
-
-PM2.5 forecast uses Open-Meteo's Air Quality API, a real CAMS-based
-atmospheric model (not fabricated) — verified to support forward
-forecast_days and batched multi-location requests. No hotspot-count
-forecast is produced: there is no real, freely available source for
-predicting satellite-detected fire counts, and fabricating one would
-violate this project's data-provenance rules. The ignition-risk score
-above is the closest honest proxy and is labelled as such, not as a
-hotspot-count prediction.
+There is no validated fire-spread model or measured fuel dataset. Do not use
+former district fuel/slope constants to invent rates, distances or fire counts.
 """
 
 from __future__ import annotations
 
 import logging
+import math
+import time
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from datetime import datetime, timedelta, timezone
 
 import httpx
@@ -44,6 +33,40 @@ logger = logging.getLogger(__name__)
 _CM_LAT, _CM_LON = 18.79, 98.99
 _FORECAST_DAYS = 3
 _TREND_EPSILON = 0.05
+_SOURCE_CACHE: dict[str, tuple[float, object, str]] = {}
+_SOURCE_LOCKS = {name: Lock() for name in ('weather', 'pm25')}
+
+
+def _finite(value, *, nonnegative=False):
+    if value is None or isinstance(value,bool):
+        return None
+    value = float(value)
+    return value if math.isfinite(value) and (not nonnegative or value >= 0) else None
+
+
+def _direction(value):
+    value = _finite(value)
+    return value % 360 if value is not None and 0 <= value <= 360 else None
+
+
+def _cached_source(name, fetch):
+    """Coalesce concurrent callers; cache successes 5 min, failures only 30 s.
+
+    The retrieval timestamp belongs to the cached data, not to each page load.
+    No previous successful forecast is silently substituted after expiry.
+    """
+    with _SOURCE_LOCKS[name]:
+        cached = _SOURCE_CACHE.get(name)
+        if cached and time.monotonic() < cached[0]:
+            return cached[1], cached[2]
+        try:
+            data = fetch()
+        except (ValueError, TypeError, KeyError, AttributeError, OverflowError) as exc:
+            logger.warning('%s forecast response invalid: %s', name, exc)
+            data = [] if name == 'weather' else {}
+        retrieved = datetime.now(timezone.utc).isoformat()
+        _SOURCE_CACHE[name] = (time.monotonic() + (300 if data else 30), data, retrieved)
+        return data, retrieved
 
 
 def _fetch_weather_forecast_days() -> list[dict]:
@@ -63,7 +86,7 @@ def _fetch_weather_forecast_days() -> list[dict]:
                 "forecast_days": _FORECAST_DAYS,
                 "timezone": "Asia/Bangkok",
             },
-            timeout=15.0,
+            timeout=httpx.Timeout(8.0, connect=3.0),
         )
         response.raise_for_status()
     except Exception as ex:  # noqa: BLE001 — a down forecast provider must not crash the endpoint
@@ -76,7 +99,7 @@ def _fetch_weather_forecast_days() -> list[dict]:
 
     humidity_by_day: dict[str, list[float]] = {}
     for ts, rh in zip(hourly.get("time", []), hourly.get("relative_humidity_2m", [])):
-        if rh is None:
+        if rh is None or not math.isfinite(float(rh)) or not 0 <= float(rh) <= 100:
             continue
         humidity_by_day.setdefault(ts[:10], []).append(float(rh))
 
@@ -92,12 +115,12 @@ def _fetch_weather_forecast_days() -> list[dict]:
         hum_values = humidity_by_day.get(day, [])
         out.append({
             "date": day,
-            "temp_max_c": tmax_list[i] if i < len(tmax_list) else None,
-            "temp_min_c": tmin_list[i] if i < len(tmin_list) else None,
+            "temp_max_c": _finite(tmax_list[i]) if i < len(tmax_list) else None,
+            "temp_min_c": _finite(tmin_list[i]) if i < len(tmin_list) else None,
             "humidity_pct": (sum(hum_values) / len(hum_values)) if hum_values else None,
-            "rain_mm": rain_list[i] if i < len(rain_list) else None,
-            "wind_kmh": wind_list[i] if i < len(wind_list) else None,
-            "wind_dir_deg": wdir_list[i] if i < len(wdir_list) else None,
+            "rain_mm": _finite(rain_list[i],nonnegative=True) if i < len(rain_list) else None,
+            "wind_kmh": _finite(wind_list[i],nonnegative=True) if i < len(wind_list) else None,
+            "wind_dir_deg": _direction(wdir_list[i]) if i < len(wdir_list) else None,
         })
     return out
 
@@ -119,7 +142,7 @@ def _fetch_pm25_forecast_batch(locations: list[tuple[str, float, float]]) -> dic
                 "forecast_days": _FORECAST_DAYS,
                 "timezone": "Asia/Bangkok",
             },
-            timeout=20.0,
+            timeout=httpx.Timeout(10.0, connect=3.0),
         )
         response.raise_for_status()
     except Exception as ex:  # noqa: BLE001 — a down provider must not crash the endpoint
@@ -135,7 +158,7 @@ def _fetch_pm25_forecast_batch(locations: list[tuple[str, float, float]]) -> dic
         hourly = (result or {}).get("hourly", {})
         by_day: dict[str, list[float]] = {}
         for ts, val in zip(hourly.get("time", []), hourly.get("pm2_5", [])):
-            if val is None:
+            if val is None or not math.isfinite(float(val)) or float(val) < 0:
                 continue
             by_day.setdefault(ts[:10], []).append(float(val))
         out[name] = [
@@ -145,9 +168,18 @@ def _fetch_pm25_forecast_batch(locations: list[tuple[str, float, float]]) -> dic
     return out
 
 
-def build_fire_predictions(current_phases: FirePhaseResponse) -> FirePredictionResponse:
-    forecast_days = _fetch_weather_forecast_days()
-    danger_by_district_now = {p.district: p.danger_score for p in current_phases.phases}
+def build_fire_predictions(current_phases: FirePhaseResponse | None = None) -> FirePredictionResponse:
+    # Forecasts do not depend on downloading historical incidents, polygons or
+    # district winds. Fetch the two independent providers concurrently.
+    pm25_locations = [('จังหวัดเชียงใหม่', _CM_LAT, _CM_LON)] + [
+        (name, *_DISTRICT_CENTROIDS[name]) for name in DISTRICT_PHYSICS if name in _DISTRICT_CENTROIDS
+    ]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        weather_job = pool.submit(_cached_source, 'weather', _fetch_weather_forecast_days)
+        pm_job = pool.submit(_cached_source, 'pm25', lambda: _fetch_pm25_forecast_batch(pm25_locations))
+        forecast_days, weather_retrieved = weather_job.result()
+        pm25_by_location, pm_retrieved = pm_job.result()
+    danger_by_district_now = {p.district: p.danger_score for p in current_phases.phases} if current_phases else {}
 
     district_forecasts: list[DistrictIgnitionForecast] = []
     for district in DISTRICT_PHYSICS:
@@ -161,29 +193,31 @@ def build_fire_predictions(current_phases: FirePhaseResponse) -> FirePredictionR
                 humidity_pct=round(day["humidity_pct"], 1) if day["humidity_pct"] is not None else None,
                 rain_mm=round(day["rain_mm"], 1) if day["rain_mm"] is not None else None,
             ))
-        trend = "stable"
-        if len(daily_scores) >= 2:
+        trend = "unavailable"
+        if len(daily_scores) >= 2 and all(d.danger_score is not None for d in daily_scores):
             delta = daily_scores[-1].danger_score - daily_scores[0].danger_score
             trend = "rising" if delta > _TREND_EPSILON else "falling" if delta < -_TREND_EPSILON else "stable"
         district_forecasts.append(DistrictIgnitionForecast(
             district=district,
-            current_danger_score=danger_by_district_now.get(district, 0.0),
+            current_danger_score=danger_by_district_now.get(district),
             daily=daily_scores,
             trend=trend,
         ))
-    district_forecasts.sort(key=lambda d: -(d.daily[-1].danger_score if d.daily else 0.0))
+    district_forecasts.sort(key=lambda d: -(d.daily[-1].danger_score or 0) if d.daily else 0)
 
     # Extended spread for districts CURRENTLY "during" — same province-level
     # wind-forecast simplification the live spread projection already falls
     # back to when a district has no per-district live reading.
     spread_forecast: list[SpreadForecastExtended] = []
-    during_districts = [p for p in current_phases.phases if p.phase == "during"]
+    during_districts = [p for p in current_phases.phases if p.phase == "during"] if current_phases else []
     if during_districts and forecast_days:
         tomorrow = forecast_days[0]
-        wind_speed = tomorrow["wind_kmh"] or 0.0
-        wind_dir = tomorrow["wind_dir_deg"] or 0.0
-        for p in during_districts:
+        wind_speed = tomorrow["wind_kmh"]
+        wind_dir = tomorrow["wind_dir_deg"]
+        for p in during_districts if wind_speed is not None and wind_dir is not None else []:
             proj = _build_spread_projection(p.district, wind_speed, wind_dir)
+            if proj is None:
+                continue
             spread_forecast.append(SpreadForecastExtended(
                 district=p.district,
                 km_48h=round(proj.rate_kmh * 48, 1),
@@ -209,12 +243,6 @@ def build_fire_predictions(current_phases: FirePhaseResponse) -> FirePredictionR
     # request. Districts share DISTRICT_PHYSICS' keys; centroids come from
     # fire_phase's existing _DISTRICT_CENTROIDS (already used for forest
     # proximity) rather than duplicating a second coordinate table.
-    pm25_locations: list[tuple[str, float, float]] = [("จังหวัดเชียงใหม่", _CM_LAT, _CM_LON)]
-    for district in DISTRICT_PHYSICS:
-        centroid = _DISTRICT_CENTROIDS.get(district)
-        if centroid:
-            pm25_locations.append((district, centroid[0], centroid[1]))
-    pm25_by_location = _fetch_pm25_forecast_batch(pm25_locations)
 
     # A total provider failure returns {} — leave province as None and the
     # district list empty rather than a shell of empty-daily objects, so the
@@ -237,11 +265,10 @@ def build_fire_predictions(current_phases: FirePhaseResponse) -> FirePredictionR
     notes: list[str] = []
     if forecast_days:
         notes.append(
-            "พยากรณ์ความเสี่ยงจุดติดไฟใช้พยากรณ์อากาศจริงจาก Open-Meteo (ความชื้น/ฝน "
-            f"{_FORECAST_DAYS} วันข้างหน้า) ผ่านสูตรเดียวกับคะแนนความเสี่ยงปัจจุบัน "
-            "ไม่ใช่แบบจำลอง machine learning"
+            f"ดัชนีอากาศแห้งทดลอง {_FORECAST_DAYS} วันใช้ความชื้น/ฝนพยากรณ์จากจุดอ้างอิงเชียงใหม่ร่วมกันทุกอำเภอ "
+            "ไม่ใช่โอกาสเกิดไฟ และไม่มีข้อมูลเชื้อเพลิงรายแปลง"
         )
-        notes.append("การลามไฟ 48/72 ชม. ใช้ทิศ/ความเร็วลมพยากรณ์ระดับจังหวัด (ไม่แยกรายอำเภอ) เป็นค่าประมาณเท่านั้น")
+        notes.append("ยังไม่คำนวณอัตราหรือระยะไฟลาม 48/72 ชม.: ขาดข้อมูลเชื้อเพลิงภาคสนามและแบบจำลองที่ตรวจสอบแล้ว ลมอย่างเดียวไม่ให้ระยะลาม")
     else:
         notes.append("ดึงพยากรณ์อากาศไม่สำเร็จในขณะนี้ ลองใหม่อีกครั้ง")
     if pm25_by_location:
@@ -253,12 +280,16 @@ def build_fire_predictions(current_phases: FirePhaseResponse) -> FirePredictionR
         notes.append("ดึงพยากรณ์ PM2.5 ไม่สำเร็จในขณะนี้ ลองใหม่อีกครั้ง")
     notes.append(
         "ยังไม่มีแบบจำลองพยากรณ์จำนวนจุดความร้อนล่วงหน้าที่น่าเชื่อถือ (ไม่มีแหล่งข้อมูลจริงรองรับ) "
-        "จึงไม่แสดงเป็นตัวเลขจำนวนจุด — ใช้คะแนนความเสี่ยงจุดติดไฟด้านบนเป็นตัวช่วยประเมินแทน"
+        "จึงไม่แสดงเป็นตัวเลขจำนวนจุด ดัชนีอากาศแห้งเป็นข้อมูลอากาศ ไม่ใช่ผลพยากรณ์ไฟ"
     )
 
     return FirePredictionResponse(
         generated_at=datetime.now(timezone(timedelta(hours=7))).isoformat(),
         source_mode="DERIVED",
+        source_retrieved_at={name:stamp for name,stamp,data in (
+            ('weather',weather_retrieved,forecast_days),('pm25_model',pm_retrieved,pm25_by_location)) if data},
+        provider_status={'weather': 'available' if forecast_days else 'unavailable',
+                         'pm25_model': 'available' if pm25_by_location else 'unavailable'},
         district_forecasts=district_forecasts,
         spread_forecast_72h=spread_forecast,
         weather_forecast=weather_forecast,

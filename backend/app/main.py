@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Query, Request, Response
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.advisor import (
@@ -44,6 +44,43 @@ from app.services import (
 )
 
 app = FastAPI(title="ChiangMaiEyes API", version="0.1.0")
+from app.spread_scenario import router as spread_router
+app.include_router(spread_router)
+from app.season_hindcast import router as hindcast_router
+app.include_router(hindcast_router)
+from app.forecast_archive import router as forecast_archive_router
+app.include_router(forecast_archive_router)
+from app.pm25_station_forecast import router as station_forecast_router
+app.include_router(station_forecast_router)
+from app.grid_spread import router as grid_spread_router
+app.include_router(grid_spread_router)
+from app.live_spread import router as live_spread_router
+app.include_router(live_spread_router)
+
+@app.get('/api/ventilation')
+def read_ventilation(response:Response,background_tasks:BackgroundTasks,lead_hours:int=Query(default=0,ge=0,le=48),settings:Settings=Depends(get_settings)):
+    if lead_hours not in (0,24,48):raise HTTPException(422,'เลือกได้เฉพาะปัจจุบัน / 24 / 48 ชั่วโมง')
+    from app.providers.gfs_ventilation import ventilation
+    result=ventilation(lead_hours)
+    from app.ventilation_archive import collect_frame, public_frame
+    background_tasks.add_task(collect_frame,settings,result)
+    response.headers['Cache-Control']='public, max-age=0, s-maxage=600, stale-while-revalidate=60' if result['status']!='unavailable' else 'public, max-age=0, s-maxage=60'
+    return public_frame(result)
+
+from app.community import router as community_router
+app.include_router(community_router)
+from app.community_field import router as field_router
+from app.community_practice import router as practice_router
+app.include_router(field_router)
+app.include_router(practice_router)
+from app.environment_archive import router as archive_router
+app.include_router(archive_router)
+from app.ventilation_archive import router as ventilation_archive_router
+app.include_router(ventilation_archive_router)
+from app.forest_terrain import router as forest_terrain_router
+app.include_router(forest_terrain_router)
+from app.public_cameras import router as public_cameras_router
+app.include_router(public_cameras_router)
 
 settings = get_settings()
 app.add_middleware(
@@ -65,7 +102,9 @@ async def no_store_api_responses(request: Request, call_next) -> Response:
     # the browser cache it is a real speed + resource win with no honesty
     # cost, since it sets its own Cache-Control below instead of this
     # blanket no-store.
-    if request.url.path.startswith("/api/") and request.url.path != "/api/osm-structures":
+    # NOAA model frames are also public and include model run/valid timestamps;
+    # their short cache does not include any user, incident or photo data.
+    if request.url.path.startswith("/api/") and request.url.path not in ("/api/osm-structures","/api/ventilation","/api/forest-terrain"):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
@@ -94,9 +133,12 @@ def hotspots_history(settings: Settings = Depends(get_settings)) -> HotspotHisto
 @app.get("/api/history", response_model=HistoryResponse)
 def history(
     days: Annotated[int, Query(ge=1, le=180)] = 30,
+    end: Annotated[str | None, Query(max_length=40)] = None,
+    as_of: Annotated[str | None, Query(max_length=40)] = None,
+    forest_id: Annotated[str | None, Query(max_length=100)] = None,
     settings: Settings = Depends(get_settings),
 ) -> HistoryResponse:
-    return get_history(settings, days=days)
+    return get_history(settings, days=days,end=end,as_of=as_of,forest_id=forest_id)
 
 
 @app.get("/api/pm25", response_model=Pm25Response)
@@ -121,8 +163,14 @@ def summary(settings: Settings = Depends(get_settings)) -> SummaryResponse:
 
 
 @app.get("/api/dashboard", response_model=DashboardResponse)
-def dashboard(settings: Settings = Depends(get_settings)) -> DashboardResponse:
-    return get_dashboard(settings)
+def dashboard(background_tasks: BackgroundTasks, settings: Settings = Depends(get_settings)) -> DashboardResponse:
+    data = get_dashboard(settings)
+    from app.environment_archive import collect_dashboard
+    background_tasks.add_task(collect_dashboard, settings, data)
+    if settings.community_email_enabled or settings.community_email_test_recipient:
+        from app.community_mail import background_jobs
+        background_tasks.add_task(background_jobs, settings, data)
+    return data
 
 
 @app.get("/api/fire-phases", response_model=FirePhaseResponse)
@@ -131,8 +179,11 @@ def fire_phases(settings: Settings = Depends(get_settings)) -> FirePhaseResponse
 
 
 @app.get("/api/fire-predictions", response_model=FirePredictionResponse)
-def fire_predictions(settings: Settings = Depends(get_settings)) -> FirePredictionResponse:
-    return get_fire_predictions(settings)
+def fire_predictions(background_tasks: BackgroundTasks, settings: Settings = Depends(get_settings)) -> FirePredictionResponse:
+    result = get_fire_predictions(settings)
+    from app.forecast_archive import collect_background
+    background_tasks.add_task(collect_background, settings, result)
+    return result
 
 
 @app.get("/api/community-forests", response_model=CommunityForestsResponse)

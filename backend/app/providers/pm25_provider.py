@@ -2,14 +2,33 @@ import datetime
 import json
 import logging
 import math
+import ssl
+from functools import lru_cache
 from pathlib import Path
 
 import httpx
 
-from app.models import Pm25Response, Pm25Station
+from app.models import AqiStation, Pm25Response, Pm25Station
 from app.text import repair_thai_mojibake
 
 logger = logging.getLogger(__name__)
+
+
+@lru_cache(maxsize=1)
+def _air4thai_tls_context() -> ssl.SSLContext:
+    """Complete the public issuer chain, retaining root and hostname validation.
+
+    Air4Thai currently serves a Let's Encrypt YR1 chain. Some OpenSSL clients
+    cannot build it without the cross-signed Root YR certificate. The bundled
+    issuers are published by Let's Encrypt, not a leaf certificate or new root.
+    Partial-chain trust is disabled so verification still reaches a trusted root.
+    """
+    import certifi
+    context = ssl.create_default_context(cafile=certifi.where())
+    context.load_verify_locations(cafile=str(
+        Path(__file__).resolve().parent.parent / 'data' / 'tls' / 'air4thai-issuer-chain.pem'))
+    context.verify_flags &= ~ssl.VERIFY_X509_PARTIAL_CHAIN
+    return context
 
 _DISTRICTS_GEOJSON = Path(__file__).resolve().parent.parent / "data" / "chiangmai-districts.json"
 _cached_districts = None
@@ -115,24 +134,8 @@ def find_district_for_point(lat: float, lon: float) -> str:
 
 
 
-def _aqi_to_pm25(aqi: float) -> float:
-    """Convert US AQI to approximate PM2.5 µg/m³ (EPA breakpoints)."""
-    breakpoints = [
-        (0, 50, 0.0, 12.0),
-        (51, 100, 12.1, 35.4),
-        (101, 150, 35.5, 55.4),
-        (151, 200, 55.5, 150.4),
-        (201, 300, 150.5, 250.4),
-        (301, 500, 250.5, 500.4),
-    ]
-    for aqi_lo, aqi_hi, pm_lo, pm_hi in breakpoints:
-        if aqi_lo <= aqi <= aqi_hi:
-            return pm_lo + (aqi - aqi_lo) / (aqi_hi - aqi_lo) * (pm_hi - pm_lo)
-    return min(500.0, aqi * 0.5)
-
-
-def fetch_aqicn_stations(token: str) -> list[Pm25Station]:
-    """Fetch all WAQI/AQICN stations in CM bounding box (17.5–20.5°N, 97.5–100.5°E)."""
+def fetch_aqicn_stations(token: str) -> list[AqiStation]:
+    """Read composite AQI. A map AQI is not a measured PM2.5 concentration."""
     if not token:
         return []
     url = (
@@ -145,7 +148,8 @@ def fetch_aqicn_stations(token: str) -> list[Pm25Station]:
         data = r.json()
         if data.get("status") != "ok":
             return []
-        stations: list[Pm25Station] = []
+        stations: list[AqiStation] = []
+        retrieved = datetime.datetime.now(datetime.timezone.utc).isoformat()
         for s in data.get("data") or []:
             aqi_raw = s.get("aqi")
             if aqi_raw in (None, "-", ""):
@@ -154,30 +158,40 @@ def fetch_aqicn_stations(token: str) -> list[Pm25Station]:
                 aqi = float(aqi_raw)
             except (ValueError, TypeError):
                 continue
-            if aqi < 0:
+            if not math.isfinite(aqi) or aqi < 0:
                 continue
-            lat = float(s.get("lat", 0))
-            lon = float(s.get("lon", 0))
+            try:
+                lat = float(s.get("lat", 0))
+                lon = float(s.get("lon", 0))
+            except (TypeError,ValueError):
+                continue
             if not (17.0 < lat < 21.0 and 97.0 < lon < 101.0):
                 continue
             if not _is_in_cm(lat, lon):
                 continue
-            pm25 = round(_aqi_to_pm25(aqi), 1)
             station_info = s.get("station", {})
             district = find_district_for_point(lat, lon)
-            stations.append(Pm25Station(
+            upstream_time = None
+            try:
+                parsed = datetime.datetime.fromisoformat(str(station_info.get('time', '')).replace('Z', '+00:00'))
+                if parsed.tzinfo is not None:
+                    upstream_time = parsed.isoformat()
+            except ValueError:
+                pass
+            stations.append(AqiStation(
                 id=f"AQICN-{s.get('uid', 'x')}",
                 name=station_info.get("name", "AQICN"),
                 district=district,
                 latitude=lat,
                 longitude=lon,
-                pm25=pm25,
-                trend="stable",
-                updated_at=station_info.get("time", datetime.datetime.now().isoformat()),
+                aqi=aqi,
+                updated_at=upstream_time,
+                retrieved_at=retrieved,
+                upstream_time_text=str(station_info['time']) if station_info.get('time') else None,
             ))
         return stations
-    except Exception as exc:
-        logger.warning("AQICN fetch failed: %s", exc)
+    except Exception:
+        logger.warning("AQICN request or data format failed")
         return []
 
 
@@ -195,6 +209,22 @@ def get_pm25_category_and_color(pm25: float) -> tuple[str, str]:
     return "อันตราย", "purple"
 
 
+def normalize_cached_pm25(data):
+    """Quarantine legacy AQI conversions, retaining independently measured stations."""
+    result = Pm25Response(**data)
+    if any(s.id.startswith('AQICN-') for s in result.stations) or (
+        'AQICN' in result.source and not result.stations and result.current_pm25 is not None):
+        measured = [s for s in result.stations if not s.id.startswith('AQICN-')]
+        if not measured:
+            missing = _build_pm25_response_from_aqicn([])
+            return missing.model_copy(update={'latest_update':result.latest_update,
+                'source':result.source,'note':'ข้อมูลสำรองเดิมมีค่าแปลงจาก AQI จึงไม่ใช้เป็นความเข้มข้น PM2.5'})
+        value = round(sum(s.pm25 for s in measured)/len(measured),1)
+        category,color = get_pm25_category_and_color(value)
+        return result.model_copy(update={'stations':measured,'current_pm25':value,'category':category,'color':color})
+    return result
+
+
 import math as _math
 
 
@@ -205,21 +235,19 @@ def _dist_km(s1: Pm25Station, s2: Pm25Station) -> float:
     return 2 * 6371 * _math.asin(_math.sqrt(a))
 
 
-def _build_pm25_response_from_aqicn(stations: list[Pm25Station]) -> Pm25Response:
-    """Build a complete Pm25Response from AQICN-only stations (Air4Thai fallback)."""
-    if not stations:
-        raise Exception("No AQICN stations available for Chiang Mai")
+def _build_pm25_response_from_aqicn(stations: list[AqiStation]) -> Pm25Response:
+    """Explicitly missing concentration, with AQI kept in a separate collection."""
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
-    avg_pm25 = round(sum(s.pm25 for s in stations) / len(stations), 1)
-    category, color = get_pm25_category_and_color(avg_pm25)
     return Pm25Response(
-        current_pm25=avg_pm25,
-        category=category,
-        color=color,
-        trend="stable",
+        current_pm25=None,
+        category='ยังไม่มีค่า PM2.5 ที่วัดได้',
+        color='gray',
+        trend='unknown',
         latest_update=now.isoformat(),
         source=f"AQICN ({len(stations)} สถานี — Air4Thai ไม่พร้อมใช้งาน)",
-        stations=stations,
+        stations=[], aqi_stations=stations,
+        retrieved_at=now.isoformat(), measurement_kind='unavailable',
+        note='ต้นทางสำรองมีดัชนี AQI รวม ไม่ใช่ความเข้มข้น PM2.5; ไม่แปลงดัชนีเป็น µg/m³ และไม่เก็บ AQI ในคลังย้อนหลัง',
     )
 
 
@@ -231,7 +259,7 @@ def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
     air4thai_ok = False
 
     try:
-        response = httpx.get(url, timeout=10.0)
+        response = httpx.get(url, timeout=10.0, verify=_air4thai_tls_context())
         response.raise_for_status()
 
         data = response.json()
@@ -259,12 +287,15 @@ def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
             except ValueError:
                 continue
 
-            if pm25_val < 0:
+            if not math.isfinite(pm25_val) or pm25_val < 0:
                 continue
 
             date_str = aqi_last.get("date", "")
             time_str = aqi_last.get("time", "")
-            iso_time = f"{date_str}T{time_str}:00+07:00" if date_str and time_str else datetime.datetime.now().isoformat()
+            if not date_str or not time_str:
+                continue
+            iso_time = datetime.datetime.fromisoformat(f'{date_str}T{time_str}').replace(
+                tzinfo=datetime.timezone(datetime.timedelta(hours=7))).isoformat()
 
             if latest_time is None or iso_time > latest_time:
                 latest_time = iso_time
@@ -274,7 +305,7 @@ def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
                 district = district.replace("District", "").strip()
 
             station = Pm25Station(
-                id=f"CM-{station_data.get('stationID').upper()}",
+                id=f"CM-{str(station_data.get('stationID', 'unknown')).upper()}",
                 name=repair_thai_mojibake(station_data.get("nameTH", station_data.get("nameEN", "สถานีวัดคุณภาพอากาศ"))),
                 district=district,
                 latitude=float(station_data.get("lat", 0.0)),
@@ -282,6 +313,7 @@ def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
                 pm25=pm25_val,
                 trend="stable",
                 updated_at=iso_time,
+                retrieved_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
             )
             air4thai_stations.append(station)
             total_pm25 += pm25_val
@@ -289,8 +321,8 @@ def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
 
         if valid_station_count > 0:
             air4thai_ok = True
-    except Exception as exc:
-        logger.warning("Air4Thai fetch failed, will try AQICN fallback: %s", exc)
+    except Exception:
+        logger.warning("Air4Thai request or data format failed; checking AQICN separately")
 
     # Fetch AQICN stations (works from any IP globally)
     aqicn_stations = fetch_aqicn_stations(aqicn_token or "") if aqicn_token else []
@@ -299,19 +331,12 @@ def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
         # Air4Thai unreachable (e.g. blocked from non-Thai IPs) — use AQICN alone
         return _build_pm25_response_from_aqicn(aqicn_stations)
 
-    # Air4Thai succeeded — merge unique AQICN stations (dedup within 3 km)
-    merged_extra: list[Pm25Station] = [
-        aq for aq in aqicn_stations
-        if all(_dist_km(aq, st) > 3.0 for st in air4thai_stations)
-    ]
-    all_stations = air4thai_stations + merged_extra
+    # Concentration and composite indices have different meanings and units.
     avg_pm25 = round(sum(s.pm25 for s in air4thai_stations) / len(air4thai_stations), 1)
     category, color = get_pm25_category_and_color(avg_pm25)
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7)))
     latest_update = latest_time if latest_time else now.isoformat()
     source_label = "Air4Thai PCD"
-    if merged_extra:
-        source_label += f" + AQICN ({len(merged_extra)} สถานีเพิ่มเติม)"
 
     return Pm25Response(
         current_pm25=avg_pm25,
@@ -320,5 +345,6 @@ def fetch_live_pm25(aqicn_token: str | None = None) -> Pm25Response:
         trend="stable",
         latest_update=latest_update,
         source=source_label,
-        stations=all_stations,
+        stations=air4thai_stations, aqi_stations=aqicn_stations,
+        retrieved_at=now.isoformat(),
     )

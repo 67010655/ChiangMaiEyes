@@ -1,0 +1,12 @@
+{
+  "repo": "K-Dense-AI/scientific-agent-skills",
+  "commit": "a1043ef544e3a100c28e70a736b6cf32554d0677",
+  "installed_files": [
+    "SKILL.md",
+    "references/remote-sensing.md",
+    "references/coordinate-systems.md",
+    "references/data-sources.md",
+    "references/review.md",
+    "scripts/raster_workflows.py"
+  ]
+}

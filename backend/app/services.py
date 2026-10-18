@@ -8,7 +8,6 @@ from typing import Any, TypeVar
 
 import httpx
 import math
-from app.fire_spread_physics import get_district_physics
 from app.config import Settings, get_settings
 from app.models import (
     HotspotTrendStats,
@@ -37,7 +36,8 @@ from app.models import (
 )
 from app.providers.weather_provider import fetch_live_weather
 from app.providers.community_forest_provider import official_community_forest_count
-from app.providers.pm25_provider import fetch_live_pm25
+from app.providers.pm25_provider import fetch_live_pm25, normalize_cached_pm25
+from app.evidence import pm_brief, wind_to_text
 from app.providers.history_provider import fetch_pm25_history, fetch_weather_history
 from app.providers.hotspot_provider import (
     FOREST_FIREMAP_SOURCE,
@@ -380,14 +380,14 @@ def _build_data_quality(
         "pm25": _data_quality(
             label="PM2.5",
             source=pm25.source,
-            source_mode="LIVE" if not pm25_age > _AIR_QUALITY_STALE_AFTER_MINUTES else "UNAVAILABLE",
-            latest_update=pm25.latest_update,
+            source_mode="LIVE" if pm25.current_pm25 is not None and not pm25_age > _AIR_QUALITY_STALE_AFTER_MINUTES else "UNAVAILABLE",
+            latest_update=pm25.latest_update if pm25.current_pm25 is not None else None,
             checked_at=checked_at,
-            age_minutes=pm25_age,
-            confidence=0.92 if not pm25_age > _AIR_QUALITY_STALE_AFTER_MINUTES else 0.4,
+            age_minutes=pm25_age if pm25.current_pm25 is not None else None,
+            confidence=(0.92 if not pm25_age > _AIR_QUALITY_STALE_AFTER_MINUTES else 0.4) if pm25.current_pm25 is not None else 0.0,
             stale_after_minutes=_AIR_QUALITY_STALE_AFTER_MINUTES,
             update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
-            note="Station reading from configured air-quality provider.",
+            note=pm25.note,
             decision_use="Use for current smoke/health situation and trend monitoring.",
         ),
         "weather": _data_quality(
@@ -410,15 +410,15 @@ def _build_data_quality(
         "risk": _data_quality(
             label="Risk score",
             source="ChiangMaiEyes deterministic formula",
-            source_mode="DERIVED",
+            source_mode="UNAVAILABLE",
             latest_update=derived_latest_update,
             checked_at=checked_at,
             age_minutes=derived_age,
-            confidence=0.72,
+            confidence=0.0,
             stale_after_minutes=_SATELLITE_HOTSPOT_STALE_AFTER_MINUTES,
             update_cadence_minutes=_HOURLY_DECISION_CADENCE_MINUTES,
-            note="Calculated from PM2.5, hotspot count, wind, and fire-spread factors. It is not an official warning.",
-            decision_use="Use to prioritize review areas; confirm with field/local context before operational action.",
+            note="No combined risk score: measured fuel and fire-model validation are not available. Public DSM terrain is a separate input, not a calibrated spread rate.",
+            decision_use="Read satellite, station, model and terrain signals separately; confirm field conditions.",
         ),
         "summary": _data_quality(
             label="Situation summary",
@@ -527,8 +527,8 @@ def get_data_status(settings: Settings, now: str | None = None) -> DataStatusRes
         refresh_status=refresh_status.get("status") if refresh_status else None,
         hotspot_latest_update=hotspots.latest_update,
         hotspot_age_minutes=_age_minutes(current_time, hotspots.latest_update),
-        pm25_latest_update=pm25.latest_update,
-        pm25_age_minutes=_age_minutes(current_time, pm25.latest_update),
+        pm25_latest_update=pm25.latest_update if pm25.current_pm25 is not None else None,
+        pm25_age_minutes=_age_minutes(current_time, pm25.latest_update) if pm25.current_pm25 is not None else None,
         weather_latest_update=weather.latest_update,
         weather_age_minutes=_age_minutes(current_time, weather.latest_update),
         hotspot_count=hotspots.count,
@@ -582,119 +582,24 @@ def get_hotspots(settings: Settings) -> HotspotResponse:
 
 
 def get_hotspot_history(settings: Settings) -> HotspotHistoryResponse:
-    """7-day in-province hotspot trend from NASA VIIRS for the authority view.
-    Best-effort: returns an empty series rather than erroring if NASA is
-    unreachable or no key is configured."""
-    cached = _get_cached("hotspot_history")
-    if cached is not None:
-        return cached
-
-    days: list[HotspotHistoryDay] = []
-    if settings.nasa_firms_map_key:
-        try:
-            raw = fetch_hotspot_history(settings.nasa_firms_map_key, 5)
-            days = [HotspotHistoryDay(date=d, count=c) for d, c in raw]
-        except Exception as e:  # noqa: BLE001 — history is non-critical
-            logger.warning("Failed to fetch hotspot history: %s", e)
-
-    response = HotspotHistoryResponse(
-        days=days,
-        source="NASA VIIRS (SNPP/NOAA-20/NOAA-21)",
-        latest_update=datetime.now().isoformat(),
-    )
-    # Only cache a real series, so a transient NASA failure is retried next call.
-    if days:
-        _set_cached("hotspot_history", response)
-    return response
+    h=get_history(settings,days=7)
+    return HotspotHistoryResponse(days=h.hotspots,source=h.sources.get('hotspots','คลังย้อนหลัง'),latest_update=h.latest_update)
 
 
-def get_history(settings: Settings, days: int = 30) -> HistoryResponse:
-    """Combined backward trends (hotspots · PM2.5 · weather) for the authority
-    view. Every series is best-effort, so one failing provider never sinks the
-    others or errors the request."""
-    cache_key = f"history:{days}"
-    cached = _get_cached(cache_key, ttl=_HISTORY_TTL_SECONDS)
-    if cached is not None:
-        return cached
-
-    hotspots: list[HotspotHistoryDay] = []
-    if settings.nasa_firms_map_key:
-        try:
-            hotspots = [HotspotHistoryDay(date=d, count=c) for d, c in fetch_hotspot_history(settings.nasa_firms_map_key, days)]
-        except Exception as e:  # noqa: BLE001
-            logger.warning("Hotspot history failed: %s", e)
-
+def get_history(settings: Settings, days: int = 30, *, end=None, as_of=None, forest_id=None) -> HistoryResponse:
+    from app.archive_history import read_history
+    from fastapi import HTTPException
+    cache_key=f"archive-history:{settings.supabase_url}:{days}:{end}:{as_of}:{forest_id}"
+    cached=_get_cached(cache_key,ttl=30)
+    if cached is not None: return cached
     try:
-        pm25 = [DailyMetric(date=d, value=v) for d, v in fetch_pm25_history(days)]
-    except Exception as e:  # noqa: BLE001
-        logger.warning("PM2.5 history failed: %s", e)
-        pm25 = []
-
-    try:
-        weather = [
-            WeatherHistoryDay(date=d, temp_max=hi, temp_min=lo, wind_max=wind, humidity=hum)
-            for d, hi, lo, wind, hum in fetch_weather_history(days)
-        ]
-    except Exception as e:  # noqa: BLE001
-        logger.warning("Weather history failed: %s", e)
-        weather = []
-
-    archive_rows, archive_meta = _history_archive_rows(settings)
-    archive_window = archive_rows[-days:] if archive_rows else []
-    archive_covers_window = len(archive_window) >= days
-    if not hotspots and archive_covers_window:
-        hotspots = [
-            HotspotHistoryDay(date=str(row.get("date")), count=int(row.get("count") or 0))
-            for row in archive_window
-            if row.get("date")
-        ]
-
-    by_district = [
-        DistrictHistoryDay(
-            date=str(row.get("date")),
-            count=int(row.get("count") or 0),
-            districts={str(k): int(v or 0) for k, v in (row.get("districts") or {}).items()},
-        )
-        for row in archive_window
-        if archive_covers_window and row.get("date") and isinstance(row.get("districts"), dict)
-    ]
-
-    hour_histogram = [0] * 24
-    has_hour_histogram = False
-    for row in archive_window if archive_covers_window else []:
-        buckets = row.get("hour_histogram")
-        if not isinstance(buckets, list) or len(buckets) != 24:
-            continue
-        has_hour_histogram = True
-        for hour, count in enumerate(buckets):
-            hour_histogram[hour] += int(count or 0)
-
-    checked_at = datetime.now(timezone(timedelta(hours=7))).isoformat()
-    response = HistoryResponse(
-        days=days,
-        hotspots=hotspots,
-        pm25=pm25,
-        weather=weather,
-        by_district=by_district,
-        hour_histogram=hour_histogram if has_hour_histogram else [],
-        sources={
-            "hotspots": "NASA VIIRS (SNPP/NOAA-20/NOAA-21)",
-            "pm25": "Open-Meteo Air Quality",
-            "weather": "Open-Meteo (ECMWF/GFS)",
-            "history_archive": archive_meta.get("source") or "season_history.json",
-        },
-        data_quality={
-            "history_archive": _history_archive_quality(
-                checked_at=checked_at,
-                archive_rows=archive_rows,
-                archive_meta=archive_meta,
-            )
-        },
-        latest_update=checked_at,
-    )
-    # Cache only when we actually got something, so transient failures retry.
-    if hotspots or pm25 or weather:
-        _set_cached(cache_key, response)
+        response=read_history(settings,days,end=end,as_of=as_of,forest_id=forest_id)
+    except HTTPException as exc:
+        if exc.status_code<500: raise
+        logger.warning('Durable history is unavailable')
+        response=HistoryResponse(days=days,status='unavailable',latest_update=datetime.now(timezone.utc).isoformat(),
+            notes=['คลังข้อมูลย้อนหลังยังไม่พร้อม ไม่ใช้ค่าปัจจุบันแทนข้อมูลย้อนหลัง'])
+    _set_cached(cache_key,response)
     return response
 
 
@@ -705,13 +610,14 @@ def get_pm25(settings: Settings) -> Pm25Response:
     try:
         response = fetch_live_pm25(aqicn_token=settings.aqicn_token)
         response = Pm25Response(**repair_thai_mojibake_tree(response.model_dump()))
-        write_json(settings.cache_dir, "pm25.json", response.model_dump())
+        # Do not persist AQICN's composite indices in snapshots/history.
+        write_json(settings.cache_dir, "pm25.json", response.model_dump(exclude={'aqi_stations'}))
         _set_cached("pm25", response)
         return response
     except Exception as e:
         logger.warning("Failed to fetch live PM2.5, falling back to cached file: %s", e)
         data = _read_snapshot_json(settings, "pm25.json")
-        return Pm25Response(**data)
+        return normalize_cached_pm25(data)
 
 
 def get_weather(settings: Settings) -> WeatherResponse:
@@ -735,81 +641,15 @@ def wind_pushes_smoke_to_city(wind_direction_deg: float) -> bool:
 
 
 def calculate_risk(pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse) -> RiskResponse:
-    # 1. Base PM2.5 points (max 3 points)
-    pm25_points = min(pm25.current_pm25 / 20.0, 3.0)
-    
-    # 2. Hotspot points (max 3 points)
-    hotspot_points = min(hotspots.count / 40.0, 3.0)
-    
-    # 3. Wind and physical spread factor (max 4 points)
-    wind_speed = weather.wind_speed_kmh
-    wind_direction = weather.wind_direction_deg
-    
-    total_flammability = 0.0
-    total_slope_factor = 0.0
-    total_history_factor = 0.0
-    
-    if hotspots.items:
-        for h in hotspots.items:
-            phys = get_district_physics(h.district)
-            total_flammability += phys["fuel_flammability"]
-            # Slope factor increases Rate of Spread exponentially
-            # ROS_slope = e^(0.0693 * slope) -> normalized slope multiplier
-            slope = phys["slope_deg"]
-            slope_factor = math.exp(0.0693 * slope) / 4.0 # normalized around 20 deg slope (~1.0)
-            total_slope_factor += slope_factor
-            total_history_factor += phys["history_multiplier"]
-            
-        avg_flammability = total_flammability / len(hotspots.items)
-        avg_slope_factor = total_slope_factor / len(hotspots.items)
-        avg_history_factor = total_history_factor / len(hotspots.items)
-    else:
-        avg_flammability = 1.2
-        avg_slope_factor = 1.0
-        avg_history_factor = 1.2
-        
-    # Rate of Spread (ROS) index based on wind speed, slope, flammability, history
-    # Let's normalize wind_speed (5 kmh -> multiplier of 1.0)
-    wind_multiplier = 1.0 + (wind_speed / 15.0)
-    
-    # Wind direction risk
-    pushes = wind_pushes_smoke_to_city(wind_direction)
-    wind_direction_mult = 1.4 if pushes else 0.8
-    
-    # Combined Spread Danger Index (SDI)
-    spread_danger = avg_flammability * avg_slope_factor * avg_history_factor * wind_multiplier * wind_direction_mult
-    
-    # Map to spread points (0 to 4)
-    spread_points = min(spread_danger * 1.25, 4.0)
-    
-    # Calculate score (out of 10)
-    score = round(pm25_points + hotspot_points + spread_points)
-    score = max(0, min(score, 10))
-    
-    if score <= 3:
-        category = "Low"
-    elif score <= 6:
-        category = "Medium"
-    else:
-        category = "High"
-        
-    formula = "min(10, round(PM2.5_pts(3) + Hotspot_pts(3) + Spread_pts(4))) where Spread = Flammability * Slope * History * Wind"
-    
+    # Measured signals are available separately; no calibrated fuel/spread model.
+    # Missing model inputs must never become a low/zero synthetic risk score.
     return RiskResponse(
-        score=score,
-        category=category,
-        formula=formula,
-        factors={
-            "pm25_points": round(pm25_points, 2),
-            "hotspot_points": round(hotspot_points, 2),
-            "spread_points": round(spread_points, 2),
-            "avg_flammability": round(avg_flammability, 2),
-            "avg_slope_factor": round(avg_slope_factor, 2),
-            "avg_history_factor": round(avg_history_factor, 2),
-            "wind_speed_kmh": wind_speed,
-            "wind_pushes_smoke_to_city": "yes" if pushes else "no",
-        }
-    )
+        score=None, category='ข้อมูลไม่ครบ',
+        formula='ยังไม่คำนวณคะแนนรวม: ขาดข้อมูลเชื้อเพลิงและผลตรวจสอบแบบจำลอง',
+        factors={'model_status':'unavailable_missing_fuel_and_validation',
+                 'fuel_status':'unavailable', 'pm25_ug_m3':pm25.current_pm25,
+                 'hotspot_count':hotspots.count, 'wind_speed_kmh':weather.wind_speed_kmh,
+                 'wind_from_deg':weather.wind_direction_deg})
 
 
 def fallback_summary(pm25: Pm25Response, hotspots: HotspotResponse, weather: WeatherResponse, risk: RiskResponse) -> SummaryResponse:
@@ -817,17 +657,19 @@ def fallback_summary(pm25: Pm25Response, hotspots: HotspotResponse, weather: Wea
 
 
 def _risk_action(risk: RiskResponse, hotspots: HotspotResponse, pm25: Pm25Response) -> str:
+    if risk.score is None:
+        return 'ข้อเสนอแนะ: ตรวจเวลาและแหล่งข้อมูลดาวเทียม ฝุ่น และลมแยกกัน แล้วประสานผู้รับผิดชอบพื้นที่เพื่อยืนยันเหตุ ยังไม่ใช้ค่าขาดหรือสูตรสมมติสั่งการ'
     if risk.category == "High":
         return (
-            "ข้อเสนอแนะ: ให้ศูนย์สั่งการตรวจสอบพื้นที่จุดความร้อนกับหน่วยพื้นที่ทันที "
-            "เตรียมชุดลาดตระเวน/ดับไฟ และสื่อสารเตือนกลุ่มเสี่ยงเรื่องฝุ่น"
+            "ข้อเสนอแนะ: ตรวจเวลาจุดดาวเทียมและประสานผู้รับผิดชอบพื้นที่เพื่อยืนยันสถานการณ์ "
+            "คะแนนนี้เป็นสูตรทดลอง ผู้รับผิดชอบต้องพิจารณาสภาพจริงก่อนจัดการเหตุ"
         )
     if risk.category == "Medium":
         return (
             "ข้อเสนอแนะ: ให้เจ้าหน้าที่ติดตามจุดความร้อนซ้ำในรอบถัดไป "
             "ตรวจแนวลมที่อาจพาควันเข้าพื้นที่ชุมชน และเตรียมมาตรการลดการเผา"
         )
-    if hotspots.count > 0 or pm25.current_pm25 >= 25:
+    if hotspots.count > 0 or (pm25.current_pm25 is not None and pm25.current_pm25 >= 25):
         return (
             "ข้อเสนอแนะ: ยังควรเฝ้าระวังเชิงพื้นที่ โดยเฉพาะอำเภอที่มีจุดความร้อน "
             "และตรวจแนวโน้ม PM2.5 ก่อนตัดสินใจกิจกรรมกลางแจ้ง"
@@ -836,8 +678,12 @@ def _risk_action(risk: RiskResponse, hotspots: HotspotResponse, pm25: Pm25Respon
 
 
 def _risk_meaning(risk: RiskResponse) -> str:
+    if risk.score is None:
+        return 'ยังไม่ประเมินคะแนนรวม ขาดหลักฐานเชื้อเพลิงและผลตรวจสอบแบบจำลอง'
+    if risk.category == 'ข้อมูลไม่ครบ':
+        return 'ข้อมูลไม่ครบ ยังใช้คะแนนนี้สรุประดับความเสี่ยงไม่ได้'
     if risk.category == "High":
-        return "ระดับสูง ต้องให้ความสำคัญกับการสั่งการภาคสนาม"
+        return "คะแนนสูตรทดลองสูง ควรตรวจสอบข้อมูลและสถานการณ์พื้นที่"
     if risk.category == "Medium":
         return "ระดับปานกลาง ต้องติดตามการเปลี่ยนแปลงของลม จุดความร้อน และฝุ่น"
     return "ระดับต่ำถึงเฝ้าระวัง เหมาะกับการติดตามสถานการณ์ตามรอบ"
@@ -869,7 +715,9 @@ def deterministic_hourly_summary(
 
     # ── PM2.5 paragraph ──────────────────────────────────────────────────────
     pm_val = pm25.current_pm25
-    if pm_val <= 15:
+    if pm_val is None:
+        pm_desc = pm25.note
+    elif pm_val <= 15:
         pm_desc = "คุณภาพอากาศอยู่ในเกณฑ์ดีมาก สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ"
     elif pm_val <= 25:
         pm_desc = "คุณภาพอากาศดี ยังเหมาะสำหรับกิจกรรมกลางแจ้งทั่วไป"
@@ -883,22 +731,22 @@ def deterministic_hourly_summary(
         pm_desc = "ฝุ่นอยู่ในระดับอันตราย ควรหลีกเลี่ยงการออกนอกอาคารโดยเด็ดขาด และพิจารณาอพยพกลุ่มเสี่ยงออกจากพื้นที่"
 
     pm_para = (
-        f"🌫️ ฝุ่น PM2.5: ค่าเฉลี่ยรอบนี้ {pm_val:.0f} µg/m³ ({pm25.category})\n"
+        f"🌫️ ฝุ่น PM2.5: {pm_brief(pm25)}\n"
         f"{pm_desc}"
     )
 
     # ── Hotspot paragraph ─────────────────────────────────────────────────────
     hs_count = hotspots.count
     if hs_count == 0:
-        hs_desc = "ไม่พบจุดความร้อนในเขตจังหวัดเชียงใหม่ช่วงนี้"
+        hs_desc = "ไม่พบจุดดาวเทียมในข้อมูลที่ได้รับ การไม่พบจุดไม่ได้ยืนยันว่าไม่มีไฟ"
     elif hs_count <= 3:
-        hs_desc = f"พบ {hs_count} จุด — อยู่ในระดับต่ำ เจ้าหน้าที่ควรลาดตระเวนยืนยันพื้นที่"
+        hs_desc = f"พบ {hs_count} จุด ควรตรวจเวลาตรวจพบและยืนยันกับผู้รับผิดชอบพื้นที่"
     elif hs_count <= 10:
         hs_desc = f"พบ {hs_count} จุด — อยู่ในระดับปานกลาง ควรติดตามแนวลมและพื้นที่ใกล้เคียงชุมชน"
     elif hs_count <= 25:
-        hs_desc = f"พบ {hs_count} จุด — อยู่ในระดับสูง ให้ศูนย์สั่งการตรวจสอบจุดสำคัญและประสานหน่วยพื้นที่ทันที"
+        hs_desc = f"พบ {hs_count} จุด ควรตรวจจุดใกล้ชุมชนและประสานผู้รับผิดชอบเพื่อยืนยันเหตุ"
     else:
-        hs_desc = f"พบ {hs_count} จุด — วิกฤต ต้องเปิดห้องปฏิบัติการฉุกเฉินและระดมกำลังดับไฟทุกหน่วย"
+        hs_desc = f"พบ {hs_count} จุด จำนวนจุดดาวเทียมไม่ใช่จำนวนเหตุไฟจริง ต้องตรวจตำแหน่ง เวลา และหลักฐานพื้นที่"
 
     hs_para = (
         f"🔥 จุดความร้อน: {hs_desc}\n"
@@ -911,20 +759,20 @@ def deterministic_hourly_summary(
     temp = weather.temperature_c
     hum = weather.humidity_percent
     if wind_spd >= 30:
-        wind_risk = "ลมแรง — ไฟจะลุกลามเร็ว ควรเตรียมแนวกันไฟล่วงหน้า"
+        wind_risk = "ค่าลมสูงในแหล่งอ้างอิง ควรตรวจลมในพื้นที่ร่วมกับสถานการณ์จริง"
     elif wind_spd >= 15:
         wind_risk = "ลมปานกลาง — ควรระวังการลุกลามตามทิศทางลม"
     else:
-        wind_risk = "ลมเบา — ความเสี่ยงลุกลามต่ำ แต่ควันอาจสะสมในหุบเขาได้"
+        wind_risk = "ค่าลมต่ำในแหล่งอ้างอิง ยังใช้ยืนยันว่าปลอดภัยหรือไฟไม่ลามไม่ได้"
 
     weather_para = (
-        f"🌬️ สภาพอากาศ: อุณหภูมิ {temp:.0f}°C ความชื้นสัมพัทธ์ {hum:.0f}%\n"
-        f"ลมมาจากทิศ{wind_dir} {wind_spd:.0f} กม./ชม. — {wind_risk}"
+        f"🌬️ สภาพอากาศ: อุณหภูมิ {temp:.0f}°C ความชื้นสัมพัทธ์ {f'{hum:.0f}%' if hum is not None else 'ยังไม่มีข้อมูล'}\n"
+        f"ลมมาจากทิศ{wind_dir} พัดไป{wind_to_text(weather.wind_direction_deg)} {wind_spd:.0f} กม./ชม. — {wind_risk}"
     )
 
     # ── Risk + recommendation paragraph ──────────────────────────────────────
     risk_para = (
-        f"⚠️ ระดับความเสี่ยง: {risk.score}/10 ({_risk_meaning(risk)})\n"
+        f"⚠️ การประเมินรวม: {str(risk.score)+'/10' if risk.score is not None else 'ยังประเมินไม่ได้'} ({_risk_meaning(risk)})\n"
         f"{_risk_action(risk, hotspots, pm25)}"
     )
 
@@ -1051,18 +899,10 @@ def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
 
     community_forests = fetch_community_forests()
 
-    hotspot_hist: list[tuple[str, int]] = []
-    if settings.nasa_firms_map_key:
-        try:
-            hotspot_hist = fetch_hotspot_history(settings.nasa_firms_map_key, 30)
-        except Exception as e:  # noqa: BLE001
-            logger.warning("Hotspot history for correlation failed: %s", e)
-
-    pm25_hist: list[tuple[str, float]] = []
-    try:
-        pm25_hist = fetch_pm25_history(30)
-    except Exception as e:  # noqa: BLE001
-        logger.warning("PM2.5 history for correlation failed: %s", e)
+    history=get_history(settings,days=30)
+    hotspot_hist=[(d.date,d.count) for d in history.hotspots
+                  if d.count is not None and d.source_requests_complete and not d.partial_day]
+    pm25_hist=[(d.date,d.value) for d in history.pm25_model]
 
     district_winds: dict[str, tuple[float, float]] = {}
     try:
@@ -1093,8 +933,10 @@ def get_fire_phases(settings: Settings) -> "FirePhaseResponse":
 def get_fire_predictions(settings: Settings) -> "FirePredictionResponse":
     from app.predict import build_fire_predictions
 
-    current_phases = get_fire_phases(settings)
-    return build_fire_predictions(current_phases)
+    # Loading phases here used to block on history, satellite layers and winds.
+    # The forecast uses independent forward providers; current conditions are
+    # already exposed by /fire-phases and must not gate this request.
+    return build_fire_predictions()
 
 
 def _localized_predictions(
@@ -1109,8 +951,8 @@ def _localized_predictions(
     if 180 <= weather.wind_direction_deg <= 330:
         wind_to = "หุบเขาเชียงใหม่"
 
-    base_pm = round(pm25.current_pm25)
-    smoke_severity = "critical" if base_pm >= 75 or risk.score >= 8 else "high" if base_pm >= 37 or risk.score >= 6 else "watch"
+    base_pm = round(pm25.current_pm25) if pm25.current_pm25 is not None else 0
+    smoke_severity = "critical" if base_pm >= 75 or (risk.score or 0) >= 8 else "high" if base_pm >= 37 or (risk.score or 0) >= 6 else "watch"
     fire_severity = "critical" if hotspots.count >= 50 else "high" if hotspots.count >= 10 else "watch"
 
     return [
@@ -1167,22 +1009,28 @@ def _hotspot_trend(settings: Settings, hotspots: HotspotResponse, window_days: i
     except Exception as exc:  # noqa: BLE001 — trend is non-critical
         logger.warning("Hotspot trend history unavailable: %s", exc)
 
-    if series:
-        counts = [day.count for day in series]
+    complete=[d for d in series if d.count is not None and d.source_requests_complete and not d.partial_day]
+    continuous=bool(complete) and all(datetime.fromisoformat(d.date).date()==datetime.fromisoformat(complete[0].date).date()+timedelta(days=i)
+                                     for i,d in enumerate(complete))
+    if continuous and len(complete)>=4:
+        # Compare equally long groups of full calendar days. Rolling windows
+        # normally intersect two partial edge days, which are excluded explicitly.
+        complete=complete[-(len(complete)//2*2):]
+        counts = [day.count for day in complete]
         half = len(counts) // 2
         previous_count = sum(counts[:half])
         recent_count = sum(counts[half:])
         change = (
             round(((recent_count - previous_count) / previous_count) * 100, 1)
             if previous_count
-            else 0.0
+            else None
         )
         return HotspotTrendStats(
             window_days=len(counts),
             recent_count=recent_count,
             previous_count=previous_count,
             change_percent=change,
-            source="NASA VIIRS (SNPP/NOAA-20/NOAA-21) จุดความร้อนรายวันในจังหวัด",
+            source=f"คลังจุดดาวเทียม · {len(counts)} วันเต็มต่อเนื่อง {complete[0].date} ถึง {complete[-1].date} · เว้นวันต้น/ท้ายที่ไม่เต็ม",
         )
 
     # No history (no NASA key / unreachable): show only the current snapshot count.
@@ -1190,8 +1038,8 @@ def _hotspot_trend(settings: Settings, hotspots: HotspotResponse, window_days: i
         window_days=0,
         recent_count=hotspots.count,
         previous_count=0,
-        change_percent=0.0,
-        source="จำนวนปัจจุบันจาก snapshot (ยังไม่มีประวัติย้อนหลังจาก NASA VIIRS)",
+        change_percent=None,
+        source="จำนวนปัจจุบันจาก snapshot · ช่วงย้อนหลังยังไม่มีวันเต็มต่อเนื่องที่คำขอครบพอสำหรับเปรียบเทียบ",
     )
 
 

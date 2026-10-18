@@ -2,11 +2,17 @@
 .codex
 .agents
 .git
+.local
+output
+tmp
 **/.env
 **/.env.*
 **/.pytest_cache
 **/__pycache__
 **/node_modules
+**/.venv
+**/.venv-research
+**/.playwright-cli
 /data
 docs
 scripts/*.log

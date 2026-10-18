@@ -7,7 +7,7 @@ def test_wind_from_west_or_northwest_pushes_smoke_toward_city():
     assert wind_pushes_smoke_to_city(90) is False
 
 
-def test_calculate_risk_caps_score_at_ten():
+def test_missing_fuel_and_validation_do_not_become_a_synthetic_score():
     pm25 = Pm25Response(
         current_pm25=90,
         category="อันตราย",
@@ -36,5 +36,7 @@ def test_calculate_risk_caps_score_at_ten():
 
     risk = calculate_risk(pm25, hotspots, weather)
 
-    assert risk.score == 10
-    assert risk.category == "High"
+    assert risk.score is None
+    assert risk.category == 'ข้อมูลไม่ครบ'
+    assert risk.factors['fuel_status']=='unavailable'
+    assert 'avg_flammability' not in risk.factors

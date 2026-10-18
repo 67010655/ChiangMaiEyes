@@ -15,7 +15,8 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
 from app.config import get_settings
-from app.providers.hotspot_provider import BANGKOK_TZ, fetch_hotspot_history_detections
+from app.providers.hotspot_provider import BANGKOK_TZ
+from app.providers.verified_history import fetch_verified_firms, daily_counts
 from app.services import read_json, write_json
 
 
@@ -44,16 +45,17 @@ def build_archive(days: int, season_label: str | None = None) -> dict:
 
     today = dt.datetime.now(BANGKOK_TZ).date()
     label = season_label or _season_label(today)
-    rows_by_date = _empty_rows(days, today)
-
-    detections = fetch_hotspot_history_detections(settings.nasa_firms_map_key, days=days)
+    report = fetch_verified_firms(settings.nasa_firms_map_key, days=days)
+    complete_days = dict(daily_counts(report))
+    rows_by_date = {d:r for d,r in _empty_rows(days, today).items() if d in complete_days}
+    detections = report['items']
     for item in detections:
-        day = str(item["date"])
+        day = str(item['detected_at'])[:10]
         if day not in rows_by_date:
             continue
         row = rows_by_date[day]
         district = str(item.get("district") or "ไม่ทราบอำเภอ")
-        hour = int(item.get("hour") or 0)
+        hour = int(str(item['detected_at'])[11:13])
         if 0 <= hour <= 23:
             row["hour_histogram"][hour] += 1
         row["districts"][district] = row["districts"].get(district, 0) + 1
@@ -66,6 +68,9 @@ def build_archive(days: int, season_label: str | None = None) -> dict:
             "build_date": now,
             "source": "NASA FIRMS VIIRS Area API archive",
             "days": days,
+            "received_days": len(rows_by_date),
+            "coverage": report['coverage'],
+            "status": report['status'],
             "note": "Rows are grouped from real in-province FIRMS detections; no district/hour values are fabricated.",
         },
         "seasons": {
@@ -77,7 +82,9 @@ def build_archive(days: int, season_label: str | None = None) -> dict:
     try:
         existing = read_json(settings.cache_dir, "season_history.json")
         existing_seasons = existing.get("seasons") if isinstance(existing.get("seasons"), dict) else {}
-        output["seasons"] = {**existing_seasons, **output["seasons"]}
+        merged = {r['date']: r for r in existing_seasons.get(label, [])}
+        merged.update(rows_by_date)
+        output['seasons'] = {**existing_seasons, label: [merged[d] for d in sorted(merged)]}
     except Exception:
         pass
 

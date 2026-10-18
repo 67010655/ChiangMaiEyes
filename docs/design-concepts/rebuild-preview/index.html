@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ChiangMaiEyes · ตัวอย่างดีไซน์ใหม่</title>
+  <meta name="description" content="ต้นแบบ UX/UI ChiangMaiEyes สีขาวเขียว สำหรับประชาชน ชุมชน เจ้าหน้าที่ กล้อง CCTV และอีเมล">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"><script src="public-cameras.js" defer></script><script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+  <div class="prototype-bar"><span><i></i> ตัวอย่างดีไซน์ • ค่าฝุ่น จุดความร้อนและเหตุเป็นข้อมูลสาธิต • หน้า CCTV ใช้ภาพสาธารณะจริง</span><button id="motion-toggle" aria-pressed="false">หยุดภาพเคลื่อนไหว</button></div>
+  <header class="site-header">
+    <a href="#home" class="brand"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 22c12 0 16-10 16-16C12 6 6 12 8 22Z"/><path d="M7 26 20 13"/></svg></span><span>ChiangMai<span class="brand-accent">Eyes</span><small>มองเห็น เข้าใจ ดูแลป่า</small></span></a>
+    <nav aria-label="เมนูหลัก"><a href="#home">สถานการณ์วันนี้</a><a href="#map">พื้นที่ของฉัน</a><a href="#cameras">กล้อง CCTV</a><a href="#learn">เข้าใจไฟและควัน</a></nav>
+    <div class="header-actions"><a class="workspace-link" href="#community">สำหรับชุมชนและเจ้าหน้าที่ <span>↗</span></a><a class="icon-button" href="#account" aria-label="สมัครและตั้งค่าอีเมล"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></a></div>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <footer><a href="#home" class="footer-brand">ChiangMaiEyes <span>เพื่อป่าของเรา</span></a><p>ขอบเขตป่าชุมชนเชียงใหม่ 677 แห่ง จาก RECOFTC<br>ภาพภูเขาและป่าเป็นภาพประกอบ • ข้อมูลสถานการณ์ในต้นแบบใช้เพื่อทบทวน UX/UI</p><a href="#sources">ที่มาและสถานะข้อมูล ↗</a></footer>
+  <div class="design-dock" aria-label="เลือกหน้าตัวอย่าง"><span>ดูทุกหน้า</span><a href="#home">ประชาชน</a><a href="#map">แผนที่</a><a href="#terrain">ภูมิประเทศ</a><a href="#cameras">CCTV</a><a href="#community">ชุมชน</a><a href="#officer">เจ้าหน้าที่</a><a href="#account">อีเมล</a><a href="#learn">เรียนรู้</a></div>
+  <dialog id="detail-dialog"><div id="dialog-content"></div></dialog>
+  <div id="toast" role="status"></div>
+</body>
+</html>

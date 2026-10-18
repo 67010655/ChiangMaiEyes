@@ -10,7 +10,7 @@ ChiangMaiEyes is for people in Chiang Mai and nearby local teams who need to und
 
 ## Product Purpose
 
-ChiangMaiEyes is a public environmental intelligence dashboard for Chiang Mai. It does not predict wildfires; it helps people see the current relationship between hotspots, PM2.5, wind, weather, and community risk in one readable view. Success means users can understand the current situation, source freshness, and practical public-health advice without needing technical GIS or air-quality expertise.
+ChiangMaiEyes is a public environmental intelligence dashboard and a planned coordination tool for Chiang Mai community forests. It helps people see hotspots, PM2.5, wind, weather, source freshness, and the communities needing verification in one readable view. Primary navigation follows four public tasks: current situation, analysis, community work, and an instructional guide. Maps in 2D/3D and cameras belong to the situation; history, terrain, ventilation and exports belong to analysis; incidents, forest membership, alerts and practice share the community workspace. Following community feedback on 2026-10-09, the roadmap includes verified representative accounts, incident records, coordination, email alerts, and experimentally validated fire spread modelling. Current heuristic projections must be labelled experimental; they are not measured fire perimeters or validated dispatch instructions. Success means users understand what is observed, what is modelled, how old it is, and whom to contact without needing technical GIS expertise.
 
 ## Brand Personality
 
@@ -22,7 +22,7 @@ Do not make the interface feel like a stiff government portal, a crypto trading 
 
 ## Design Principles
 
-Make the current situation obvious first: the map, PM2.5, hotspots, wind direction, and risk score should answer "what is happening now?" at a glance.
+Make the current situation obvious first: the map, measured PM2.5, hotspots, and wind direction should answer "what is happening now?" at a glance. Show unavailable combined risk honestly until fuel inputs and model validation exist.
 
 Trust comes from traceability: show sources, update times, fallback states, and formula logic clearly enough that users know what they are seeing.
 
