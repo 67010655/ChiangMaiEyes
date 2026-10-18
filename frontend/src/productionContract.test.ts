@@ -19,10 +19,11 @@ describe('production deployment contract', () => {
       ['Polygon', 'MultiPolygon'].includes(forest.boundary.type))).toBe(true);
     expect(html).toContain("fetchJson('/api/community-forests'");
   });
-  it('holds automatic deployment of the stabilization branch without disabling other branches', () => {
-    expect(JSON.parse(rootVercel).git.deploymentEnabled).toEqual({
-      'codex/pre-feature-stabilization-20260929': false,
-    });
+  it('requires an explicit release instead of deploying any Git push', () => {
+    for (const file of ['vercel.json', 'frontend/vercel.json', 'backend/vercel.json']) {
+      const config = JSON.parse(readFileSync(resolve(__dirname, '../..', file), 'utf8'));
+      expect(config.git.deploymentEnabled).toBe(false);
+    }
   });
 
   it('documents that production currently boots the inline dashboard entry', () => {

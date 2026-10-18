@@ -1308,6 +1308,7 @@
   <div class="cme-modal" role="dialog" aria-modal="true" aria-labelledby="authHeading">
     <button class="close-x" aria-label="ปิดหน้าบัญชี" onclick="closeAuthModal()">&times;</button>
     <h3 id="authHeading">เข้าสู่ระบบ</h3>
+    <p class="fire-help">พบไฟป่าหรือควัน? <a href="tel:1362">โทร 1362 ได้โดยไม่ต้องสมัครสมาชิก</a> · <a href="https://news.dnp.go.th/news/36837" target="_blank" rel="noopener">กรมอุทยานฯ</a></p>
     <p class="hint">เข้าสู่ระบบเพื่อขอสิทธิ์ตัวแทนป่าชุมชน ผู้ดูแลจะตรวจสอบพื้นที่ก่อนเปิดให้บันทึกและร่วมประสานเหตุ</p>
     <div class="tabs">
       <button id="authTabSignin" class="active" onclick="switchAuthTab('signin')">เข้าสู่ระบบ</button>
@@ -1418,7 +1419,7 @@
       <div class="stat"><span class="k">AQI</span><span class="v" id="kpiAqi">—</span></div>
     </div>
     <div class="auth-wrap" style="margin-left:auto">
-      <button id="authBtn" class="auth-btn" title="เข้าสู่ระบบ" onclick="onAuthBtnClick()">
+      <button id="authBtn" class="auth-btn" title="เข้าสู่ระบบหรือสมัครสมาชิก" aria-label="เข้าสู่ระบบหรือสมัครสมาชิก" onclick="onAuthBtnClick()">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </button>
       <div class="auth-dropdown" id="authDropdown">
@@ -1581,6 +1582,7 @@
 
     <!-- MAP -->
     <main class="mapwrap">
+      <div id="mapRenderStatus" class="map-render-status" role="status" aria-live="polite" hidden>รับข้อมูลได้ แต่แผนที่แสดงผลไม่ครบ<button type="button" onclick="goLive(true)">ลองอีกครั้ง</button></div>
 <div class="map-view-actions" aria-label="มุมมองสถานการณ์"><span>แผนที่ 2D</span><button type="button" data-open-view="threed">ดูภูเขา 3D</button><button type="button" data-open-view="cameras">ดูกล้องสาธารณะ</button></div>
       <div id="map" role="application" aria-label="แผนที่จุดความร้อน คุณภาพอากาศ และทิศทางลมจังหวัดเชียงใหม่ (โต้ตอบได้)"></div>
       <div class="map-time-note">จุดจาง: ตรวจพบเกิน 24 ชม.<br>กดหมุดเพื่อดูเวลา ยังไม่ยืนยันว่าไฟกำลังไหม้</div>
@@ -2440,7 +2442,7 @@ function hotspotPopupHtml(h){
     (h.confSource ? `<small>แหล่งระดับความเชื่อมั่น: ${CmeEvidence.escapeHtml(h.confSource)}</small><br>` : '')+
     `${h.sat} · ${formatAge(h.detected)} ที่แล้ว<br>`+
     `${gMapsLink(h.lat,h.lon)}<br>`+
-    nearestForestsPopupHtml(h.lat, h.lon);
+    nearestForestsPopupHtml(h.lat, h.lon)+CmeEvidence.fireHelpHtml();
 }
 function manualReportPopupHtml(r){
   const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
@@ -2500,7 +2502,7 @@ function renderHotspots(){
     );
     m.on('popupopen',()=>showForestProximity(h.lat, h.lon));
     m.on('popupclose', clearForestProximity);
-    m.on('click',()=>selectHotspot(h));
+    m.on('click',()=>selectHotspot(h,{fromMarker:true}));
     layers.hotspots.addLayer(m);
   });
   document.getElementById('lcHot').textContent=hotspots.length;
@@ -2718,12 +2720,14 @@ function updateAuthUI(){
     const name = currentUser.user_metadata?.full_name || currentUser.email;
     btn.classList.add('logged-in');
     btn.title = name;
+    btn.setAttribute('aria-label','บัญชีของ '+name);
     btn.innerHTML = (name||'?').trim().charAt(0).toUpperCase();
     who.textContent = name;
     const accountEmail=document.createElement('small');accountEmail.textContent=currentUser.email;who.append(accountEmail);
   } else {
     btn.classList.remove('logged-in');
-    btn.title = 'เข้าสู่ระบบ';
+    btn.title = 'เข้าสู่ระบบหรือสมัครสมาชิก';
+    btn.setAttribute('aria-label',btn.title);
     btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
     document.getElementById('authDropdown').classList.remove('open');
   }
@@ -2740,7 +2744,7 @@ document.addEventListener('click', (e)=>{
   if(wrap && !wrap.contains(e.target)) document.getElementById('authDropdown').classList.remove('open');
 });
 CmeAuth.init({client:sb,openCommunity:target=>{const match=target?.match(/^#community\/incident\/([a-f0-9-]{36})$/i);return CmeCommunity.open(match?'incidents':'forest',match?.[1]||null);}});
-function openAuthModal(){CmeAuth.open();}
+function openAuthModal(){if(!document.getElementById('publicBriefDetails').hidden)toggleBriefDetails();CmeAuth.open();}
 function closeAuthModal(){CmeAuth.close();}
 function switchAuthTab(tab){CmeAuth.switchTab(tab);}
 function handleSignIn(event){return CmeAuth.signIn(event);}
@@ -3018,7 +3022,7 @@ document.querySelector('.layer[data-layer="wind"]').onclick=(function(){
 })();
 
 // ---- Selection / detail ----
-function selectHotspot(h){
+function selectHotspot(h,{fromMarker=false}={}){
   selected=h;
   const s=spreadCone(h);
   const body=document.getElementById('detailBody');
@@ -3044,6 +3048,13 @@ function selectHotspot(h){
     <details class="phase-method"><summary>ภาพประกอบปลายลมบนแผนที่</summary>
     <p class="evidence-note">รูปกรวยยาว ${s.km.toFixed(1)} กม. ใช้สูตรภาพประกอบจากลมและ FRP ไม่ใช่ระยะที่ไฟจะลามหรือเขตอันตรายที่ยืนยันแล้ว</p></details>`;
   animateDetail();
+  // A marker already opens a Leaflet popup. A second drawer/backdrop would
+  // cover its close button, and flyTo would override popup auto-pan.
+  if(fromMarker){
+    closeMobileDrawers();
+    if(!document.getElementById('publicBriefDetails').hidden)toggleBriefDetails();
+    return;
+  }
   map.flyTo([h.lat,h.lon],12,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
   // Mobile: the right panel is an off-canvas drawer — open it and scroll
   // straight to the detail block (it's the last of several stacked charts).
@@ -5246,6 +5257,19 @@ function renderFreshness(){
 }
 
 // ---- fetch with timeout + spinner + error fallback ----
+let lastDashboardReceivedAt=null;
+let dashboardRenderFailed=false;
+function renderDashboard(dash, history, phases){
+  try{
+    applyLive(dash, history, phases);
+    dashboardRenderFailed=false;
+  }catch(error){
+    dashboardRenderFailed=true;
+    console.error('Dashboard rendering failed',error);
+  }
+  document.getElementById('mapRenderStatus').hidden=!dashboardRenderFailed;
+  return !dashboardRenderFailed;
+}
 function fetchJson(path, ms){
   const ctl=new AbortController(); const id=setTimeout(()=>ctl.abort(), ms||15000);
   return fetch(API_BASE+path,{cache:'no-store',headers:{'Cache-Control':'no-cache'},signal:ctl.signal})
@@ -5263,14 +5287,16 @@ async function fetchLiveData(){
   }catch(e){
     setLoading(true, 'กำลังอุ่นเซิร์ฟเวอร์ แล้วลองใหม่อีกครั้ง…');
     await new Promise(r=>setTimeout(r,1200));
-    dash = await fetchJson('/api/dashboard', 25000);
+    try{dash = await fetchJson('/api/dashboard', 25000);}
+    catch(cause){const error=new Error('Dashboard request failed',{cause});error.name='DashboardConnectionError';throw error;}
   }
+  lastDashboardReceivedAt=new Date().toISOString();
   // Progressive render: paint the core dashboard (hotspots, PM2.5, wind, risk,
   // alerts, freshness — all carried by /api/dashboard) immediately, instead of
   // blocking first paint on the best-effort history + fire-phases calls (history
   // alone allows 60s). Those enrich the trend charts and district phase ranking
   // in the background and are patched in when they arrive.
-  applyLive(dash, null, null);
+  renderDashboard(dash, null, null);
   livePhasesPending = true;
   Promise.all([
     fetchJson('/api/history?days=30', 25000).then(h=>h).catch(()=>null),
@@ -5280,7 +5306,7 @@ async function fetchLiveData(){
     if(requestId!==liveRequestId) return;
     livePhasesPending = false;
     const history=(h30||h7)?{h30,h7}:null;
-    if(history||phases) applyLive(dash, history, phases);
+    if(history||phases) renderDashboard(dash, history, phases);
     if(document.getElementById('phaseview')?.classList.contains('open')) renderPhasePanel();
   });
   const n = (dash.hotspots && dash.hotspots.count)||0;
@@ -5315,7 +5341,12 @@ function setMode(m){
   connectionStatus.style.color=m==='live'&&!degraded?'var(--good)':'var(--warn)';
   connectionStatus.classList.remove('is-loading','is-live','is-degraded','is-offline');
   connectionStatus.classList.add(m==='live'?(degraded?'is-degraded':'is-live'):'is-offline');
-  if(m==='offline') document.getElementById('publicBriefFreshness').textContent='เชื่อมต่อข้อมูลล่าสุดไม่ได้ · กรุณาลองใหม่';
+  if(m==='offline'){
+    document.getElementById('publicBriefFreshness').textContent=lastDashboardReceivedAt
+      ?'เชื่อมต่อข้อมูลล่าสุดไม่ได้ · ข้อมูลบนหน้าจอรับเมื่อ '+CmeEvidence.stamp(lastDashboardReceivedAt)
+      :'เชื่อมต่อไม่ได้ · ยังไม่ได้รับข้อมูลจากเซิร์ฟเวอร์';
+    document.getElementById('connectionStatus').title=document.getElementById('publicBriefFreshness').textContent;
+  }else document.getElementById('connectionStatus').title='สถานะการเชื่อมต่อเซิร์ฟเวอร์ · เวลาแต่ละแหล่งอยู่ในรายละเอียดที่มา';
 }
 
 let liveRequestId=0;
@@ -5327,10 +5358,16 @@ async function goLive(userInitiated){
   try{
     const n=await fetchLiveData();
     setMode('live');
-    if(userInitiated) toast(n>0 ? `เชื่อมต่อข้อมูลสดสำเร็จ · ${n} จุดความร้อน` : 'เชื่อมต่อสำเร็จ · ไม่มีจุดความร้อนในขณะนี้ (นอกฤดู)');
+    if(userInitiated && !dashboardRenderFailed) toast(n>0 ? `เชื่อมต่อข้อมูลสดสำเร็จ · ${n} จุดความร้อน` : 'เชื่อมต่อสำเร็จ · รอบนี้แหล่งข้อมูลไม่พบจุดความร้อน');
   }catch(e){
-    setMode('offline');
-    toast('ไม่สามารถเชื่อมต่อ backend ('+(e&&e.message||'error')+') — แสดงข้อมูลล่าสุดที่มี');
+    if(e?.name==='DashboardConnectionError'){
+      setMode('offline');
+      toast(lastDashboardReceivedAt?'เชื่อมต่อข้อมูลล่าสุดไม่ได้ · คงข้อมูลที่รับไว้ก่อนหน้า ดูเวลาในรายละเอียดที่มา':'เชื่อมต่อข้อมูลไม่ได้ · ยังไม่มีข้อมูลจากเซิร์ฟเวอร์');
+    }else{
+      dashboardRenderFailed=true;
+      document.getElementById('mapRenderStatus').hidden=false;
+      console.error('Dashboard update failed',e);
+    }
   }finally{ liveRefreshPending=false; setLoading(false); hideSplash(); }
 }
 

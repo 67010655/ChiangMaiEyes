@@ -20,8 +20,6 @@
     }
   ],
   "git": {
-    "deploymentEnabled": {
-      "codex/pre-feature-stabilization-20260929": false
-    }
+    "deploymentEnabled": false
   }
 }

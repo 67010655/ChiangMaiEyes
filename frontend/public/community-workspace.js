@@ -75,7 +75,7 @@
     if(state.me?.is_admin)entries.push(['review','ตรวจคำขอ']);
     return `<div class="cw-tabs" role="tablist" aria-label="พื้นที่ชุมชน">${entries.map(([id,label])=>`<button role="tab" aria-selected="${state.tab===id}" data-cw="tab" data-tab="${id}">${label}</button>`).join('')}</div>`;
   }
-  function loginView(){return `<div class="cw-empty"><h2>พื้นที่สำหรับตัวแทนป่าชุมชน</h2><p>เข้าสู่ระบบเพื่อขอสิทธิ์พื้นที่ เมื่อผู้ดูแลยืนยันแล้ว คุณจะบันทึกเหตุ ร่วมประสานงาน และตั้งค่าอีเมลของป่าที่รับผิดชอบได้</p>${button('เข้าสู่ระบบ / ขอสิทธิ์','signin','',true)} ${button('ดูเหตุที่เผยแพร่','public')}</div>`;}
+  function loginView(){return `<div class="cw-empty"><h2>พื้นที่สำหรับตัวแทนป่าชุมชน</h2><p>เข้าสู่ระบบเพื่อขอสิทธิ์พื้นที่ เมื่อผู้ดูแลยืนยันแล้ว คุณจะบันทึกเหตุ ร่วมประสานงาน และตั้งค่าอีเมลของป่าที่รับผิดชอบได้</p><p>ยังไม่มีบัญชี? เลือกสมัครสมาชิกในหน้าบัญชี แล้วจึงขอสิทธิ์พื้นที่</p>${button('เข้าสู่ระบบ / สมัครสมาชิก','signin','',true)} ${button('ดูเหตุที่เผยแพร่','public')}${E().fireHelpHtml()}</div>`;}
   function membershipView(){
     const requests=state.me?.memberships||[];
     return `<section class="cw-section"><h2>ขอสิทธิ์ตัวแทนป่าชุมชน</h2><p class="cw-help">เลือกป่าจากขอบเขตที่ได้รับจาก RECOFTC และระบุหน้าที่หรือช่องทางให้ผู้ดูแลตรวจสอบ การเลือกชื่อป่ายังไม่ถือว่าได้รับสิทธิ์</p>

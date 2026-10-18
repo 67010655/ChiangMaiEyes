@@ -69,5 +69,8 @@
     {name:'NOAA GFS',mark:'NOAA',url:'https://www.nco.ncep.noaa.gov/pmb/products/gfs/gfs.t00z.pgrb2.0p25.f000.shtml',kind:'แบบจำลองที่เชื่อมแล้ว',note:'ดูในส่วนการระบายอากาศ: HPBL ลมในชั้น PBL และ VRATE จาก GRIB ของ NOAA กริด 0.25° ระบุรอบแบบจำลองและเวลาที่ข้อมูลแทนแยกกัน'},
     {name:'US Forest Service · Behave',mark:'USFS',url:'https://github.com/firelab/behave/tree/d4acc8a074646c754673b6725234fdf3a1e9c053/src/behave',kind:'สมการจำลองไฟผิวดิน',note:'เครื่องมือในหน้าวิเคราะห์ใช้ Rothermel–Albini เชื้อเพลิงแห้งชนิดเดียว ลมระดับใกล้เปลวไฟและทางลาดคงที่ วาดวงรีตามเวลา ไม่ใช่ผลพยากรณ์ไฟจริงที่สอบเทียบกับเชียงใหม่'}
   ];
-  root.CmeEvidence = {escapeHtml,distanceKm,inBoundary,filterHotspots,stamp,windTo,confidenceLevel,confidenceLabel,dailyStats,contacts,sources};
+  function fireHelpHtml(){
+    return '<p class="fire-help">พบไฟป่าหรือควัน: <a href="tel:1362">โทร 1362 สายด่วนพิทักษ์ป่า</a><br><small>การบันทึกบนเว็บไม่ใช่การเรียกรถหรือเจ้าหน้าที่ฉุกเฉิน · <a href="https://news.dnp.go.th/news/36837" target="_blank" rel="noopener">ข้อมูลกรมอุทยานฯ</a></small></p>';
+  }
+  root.CmeEvidence = {fireHelpHtml,escapeHtml,distanceKm,inBoundary,filterHotspots,stamp,windTo,confidenceLevel,confidenceLabel,dailyStats,contacts,sources};
 })(typeof window!=='undefined' ? window : globalThis);
