@@ -6,6 +6,7 @@ matching polygon, but never adds another forest. The converted GeoJSON is
 loaded on startup; thaicfnet is cached for 24 hours.
 """
 import json
+import hashlib
 import logging
 import math
 import pathlib
@@ -25,6 +26,18 @@ _CACHE_TTL = 86_400.0  # 24 hours
 _thaicfnet_cache: tuple[float, list[dict[str, Any]]] | None = None
 
 _OFFICIAL_GEOJSON = pathlib.Path(__file__).parent.parent / "data" / "community-forests-chiangmai.geojson"
+
+
+def _landcover_summaries():
+    try:
+        path = _OFFICIAL_GEOJSON.parent / 'community-forest-landcover.json'
+        doc = json.loads(path.read_text(encoding='utf-8'))
+        if doc['boundary_sha256'] != hashlib.sha256(_OFFICIAL_GEOJSON.read_bytes()).hexdigest():
+            raise ValueError('Forest land-cover boundary checksum mismatch')
+        return doc
+    except (OSError, ValueError, KeyError):
+        logger.warning('Forest land-cover summary unavailable; preserving all boundary records without inferred types')
+        return {}
 
 
 def boundary_quality(geometry):
@@ -55,6 +68,8 @@ def _load_official() -> list[CommunityForest]:
         raw = json.loads(_OFFICIAL_GEOJSON.read_text(encoding="utf-8"))
         features = raw.get("features", [])
         forests: list[CommunityForest] = []
+        summary_doc = _landcover_summaries()
+        summaries = summary_doc.get('forests', {})
         for feat in features:
             props = feat.get("properties", {})
             lat, lng = props.get("lat"), props.get("lng")
@@ -62,15 +77,19 @@ def _load_official() -> list[CommunityForest]:
             if lat is None or lng is None or not amphoe:
                 continue
             quality,note = boundary_quality(feat.get('geometry') or {})
+            forest_id = str(props.get('id') or f'cmf-{amphoe}-{len(forests)}')
+            summary = summaries.get(forest_id)
             forests.append(CommunityForest(
-                forest_id=str(props.get("id") or f"cmf-{amphoe}-{len(forests)}"),
+                forest_id=forest_id,
                 name=str(props.get("name") or props.get("village") or "ป่าชุมชน").strip(),
                 village=str(props.get("village") or "").strip(),
                 tambon=str(props.get("tambon") or "").strip(),
                 amphoe=amphoe,
                 latitude=float(lat),
                 longitude=float(lng),
-                forest_types=[],
+                forest_types=summary.get('forest_types', []) if summary else [],
+                landcover_summary={**summary, 'reference_year':summary_doc.get('reference_year'),
+                    'source_url':summary_doc.get('source_url'), 'method':summary_doc.get('method')} if summary else None,
                 fire_management_active=False,
                 fire_activities=[],
                 area_rai=props.get("areaRai"),

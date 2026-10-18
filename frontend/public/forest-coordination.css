@@ -5,6 +5,12 @@
 .coordination-forest{border-top:1px solid #557c6c44;padding:6px 0}
 .coordination-office{border-top:1px solid #557c6c44;margin-top:6px;padding-top:6px}
 .hotspot-detected-time{font:600 12px/1.5 var(--disp,sans-serif);margin:0 0 8px;overflow-wrap:anywhere}
+.land-context-summary{font:13px/1.6 var(--disp,sans-serif);border-left:3px solid #7fb18b;margin:0 0 10px;padding-left:8px;overflow-wrap:anywhere}
+.land-context-summary p{margin:0;font-weight:600}.land-context-summary small,.land-context-reference small{display:block;font-size:11px;line-height:1.6;opacity:.9}
+.land-context-summary a,.land-context-reference a{color:var(--wind,#57cfc4);text-decoration:underline}
+.land-context-details{margin:8px 0;font:12px/1.6 var(--disp,sans-serif)}.land-context-details>summary{cursor:pointer;min-height:44px;padding:10px 0;box-sizing:border-box}
+.land-context-fact{border-top:1px solid #557c6c44;padding:8px 0}.land-context-fact p{margin:3px 0}
+.land-context-note{font-size:11px;opacity:.9}
 .coordination-card a{color:var(--wind,#57cfc4);text-decoration:underline;text-underline-offset:2px}
 .coordination-card a[href^="tel:"],.coordination-contact{display:inline-block;min-height:44px;padding:10px 0;box-sizing:border-box}
 .coordination-card .coordination-cross{padding:7px;border-left:3px solid #e99c42;background:#c7801515;font-weight:600}

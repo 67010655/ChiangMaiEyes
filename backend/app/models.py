@@ -279,6 +279,7 @@ class CommunityForest(BaseModel):
     latitude: float
     longitude: float
     forest_types: list[str] = Field(default_factory=list)
+    landcover_summary: dict | None = None
     fire_management_active: bool = False
     fire_activities: list[str] = Field(default_factory=list)
     area_rai: float | None = None

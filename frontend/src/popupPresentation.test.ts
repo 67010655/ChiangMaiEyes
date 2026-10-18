@@ -6,7 +6,7 @@ import { expect, it } from 'vitest';
 const html=readFileSync(resolve(__dirname,'../index.html'),'utf8');
 function setup(){
   const dom=new JSDOM('<main id="host"></main>',{runScripts:'outside-only'}),w=dom.window as any;
-  for(const file of ['decision-support.js','forest-coordination.js'])w.eval(readFileSync(resolve(__dirname,'../public',file),'utf8'));
+  for(const file of ['decision-support.js','forest-coordination.js','land-context.js'])w.eval(readFileSync(resolve(__dirname,'../public',file),'utf8'));
   w.CmeCoordination.init({agencies:()=>[],forests:()=>[],tambons:()=>[],districts:()=>[]});
   w.Date.now=()=>Date.parse('2026-10-18T06:05:00Z');
   w.fmtFrp=()=>'';w.gMapsLink=()=>'';
@@ -19,7 +19,9 @@ it('satellite popup leads with age and Bangkok detection time before the card, w
   const first=host.firstElementChild;
   expect(first.className).toBe('hotspot-detected-time');
   expect(first.textContent).toMatch(/ตรวจพบ 3 วันที่แล้ว \(15 ต\.ค\.\s*13:05\) · ดาวเทียม/);
-  expect(first.nextElementSibling.className).toBe('coordination-card');
+  expect(first.nextElementSibling.className).toBe('land-context-summary');
+  expect(first.nextElementSibling.nextElementSibling.className).toBe('coordination-card');
+  expect(host.querySelector('.land-context-details summary').textContent).toBe('รายละเอียดเพิ่มเติม');
   expect(host.querySelectorAll('a[href="tel:1362"]')).toHaveLength(1);dom.window.close();
 });
 it('manual-report popup also leads with the observation age and retains exactly one emergency link',()=>{

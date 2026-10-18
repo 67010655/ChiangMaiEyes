@@ -69,6 +69,8 @@ def read_ventilation(response:Response,background_tasks:BackgroundTasks,lead_hou
 
 from app.community import router as community_router
 app.include_router(community_router)
+from app.land_context import router as land_context_router
+app.include_router(land_context_router)
 from app.community_field import router as field_router
 from app.community_practice import router as practice_router
 app.include_router(field_router)
