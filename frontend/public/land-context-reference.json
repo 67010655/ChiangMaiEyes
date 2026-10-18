@@ -1,9 +1,9 @@
 {
-  "version": "land-context-reference-v2-esa-only",
+  "version": "land-context-reference-v3-measured-fuel",
   "checked_on": "2026-10-19",
   "qualifier": "ประเมินจากแผนที่ ไม่ใช่การสำรวจในพื้นที่",
   "meaning": "Static literature context, not a fuel model, measured fuel load, current fire-type detection or dispatch recommendation.",
-  "fuel_level_policy": "No cited source assigns low/medium/high fuel load from these map classes alone. Do not substitute fire intensity, carbon loss, EVI or tree cover for measured fuel load. Keep unknown.",
+  "fuel_level_policy": "Show only published field measurements of pre-burn fuel load, labelled with site and year, never as a value at the hotspot. No low/medium/high threshold is cited, so none is assigned. Kinds without a verified measurement stay unknown. Do not substitute fire intensity, carbon loss, EVI or tree cover.",
   "sources": {
     "ecology": {
       "title": "นิเวศไฟป่าภาคเหนือ · กอบศักดิ์ วันธงไชย · คณะวนศาสตร์ มหาวิทยาลัยเกษตรศาสตร์",
@@ -33,6 +33,16 @@
       "title": "กรมป่าไม้ ตารางที่ 1 เนื้อที่ป่าไม้แยกรายจังหวัด พ.ศ. 2543",
       "url": "https://data.forest.go.th/dataset/231795fd-9355-47d1-bb6e-512054eec9ca/resource/70cedf55-68d7-4edf-884c-b13b15d17713/download/rfd-stat2545il.pdf",
       "page": 2
+    },
+    "akkhaak_1992": {
+      "title": "ศิริ อัคคะอัคร และสนิท กิตติสัทโธ (2535) Fuel characteristics in dry dipterocarp forest at Doi Suthep-Pui National Park · กรมป่าไม้",
+      "url": "https://agris.fao.org/search/en/records/64722bc9f762bd4124ec948e",
+      "note": "780 แปลง 1×1 ม. พ.ย. 2534–พ.ค. 2535; ค่าในบทคัดย่อ"
+    },
+    "wanthongchai_2021": {
+      "title": "Wanthongchai และคณะ (2021) APN Science Bulletin 11(1): 133–143 · ตารางที่ 1",
+      "url": "https://doi.org/10.30852/sb.2021.1704",
+      "note": "พื้นที่สูง จ.น่าน; เชื้อเพลิงก่อนเผา ไม่รวมต้นไม้"
     }
   },
   "profiles": {
@@ -68,18 +78,18 @@
         ]
       },
       "fuel_level": {
-        "text": "ยังจัดระดับต่ำ/กลาง/สูงไม่ได้จากแผนที่เพียงอย่างเดียว ต้องทราบปริมาณและความชื้นเชื้อเพลิง",
+        "text": "ค่าที่เคยวัดก่อนเผาในแปลงพื้นที่สูง จ.น่าน: ไร่ข้าวโพด 3.9 ตัน/เฮกตาร์ (ราว 0.62 ตัน/ไร่), ข้าวไร่ 2.7 ตัน/เฮกตาร์ (ราว 0.43 ตัน/ไร่) · นาข้าวพื้นราบยังไม่มีค่าวัดที่ตรวจสอบได้ · ค่าที่วัดในพื้นที่ศึกษา ไม่ใช่ค่าที่วัด ณ จุดนี้",
         "refs": [
           {
-            "id": "rfd",
-            "page": 7
-          },
-          {
-            "id": "ecology",
-            "page": 51
+            "id": "wanthongchai_2021",
+            "page": 5
           }
         ],
-        "status": "unknown"
+        "status": "measured_reference",
+        "measurements": [
+          "corn_nan",
+          "upland_rice_nan"
+        ]
       }
     },
     "deciduous": {
@@ -118,18 +128,22 @@
         ]
       },
       "fuel_level": {
-        "text": "ยังจัดระดับต่ำ/กลาง/สูงไม่ได้จากแผนที่เพียงอย่างเดียว ต้องทราบปริมาณและความชื้นเชื้อเพลิง",
+        "text": "ค่าที่เคยวัดในป่าผลัดใบภาคเหนือ: เบญจพรรณ (น่าน) 3.6 และเต็งรัง (ดอยสุเทพ-ปุย) 5.2 ตัน/เฮกตาร์ (ราว 0.57–0.83 ตัน/ไร่) · ป่าเต็งรังสะสมสูงสุดช่วง มี.ค.–เม.ย. · ค่าที่วัดในพื้นที่ศึกษา ไม่ใช่ค่าที่วัด ณ จุดนี้",
+        "brief": "เชื้อเพลิงที่เคยวัดในป่าผลัดใบ ราว 0.57–0.83 ตัน/ไร่",
         "refs": [
           {
-            "id": "rfd",
-            "page": 7
+            "id": "wanthongchai_2021",
+            "page": 5
           },
           {
-            "id": "ecology",
-            "page": 51
+            "id": "akkhaak_1992"
           }
         ],
-        "status": "unknown"
+        "status": "measured_reference",
+        "measurements": [
+          "mixed_deciduous_nan",
+          "dipterocarp_doisuthep"
+        ]
       }
     },
     "dipterocarp": {
@@ -168,18 +182,17 @@
         ]
       },
       "fuel_level": {
-        "text": "ยังจัดระดับต่ำ/กลาง/สูงไม่ได้จากแผนที่เพียงอย่างเดียว ต้องทราบปริมาณและความชื้นเชื้อเพลิง",
+        "text": "ค่าที่เคยวัดในป่าเต็งรัง อุทยานแห่งชาติดอยสุเทพ-ปุย เชียงใหม่: เฉลี่ย 5.2 ตัน/เฮกตาร์ (ราว 0.83 ตัน/ไร่) ฤดูไฟ พ.ย. 2534–พ.ค. 2535 · สะสมสูงสุดช่วง มี.ค.–เม.ย. · ค่าที่วัดในพื้นที่ศึกษา ไม่ใช่ค่าที่วัด ณ จุดนี้",
+        "brief": "เชื้อเพลิงที่เคยวัดในป่าเต็งรัง ราว 0.83 ตัน/ไร่",
         "refs": [
           {
-            "id": "rfd",
-            "page": 7
-          },
-          {
-            "id": "ecology",
-            "page": 51
+            "id": "akkhaak_1992"
           }
         ],
-        "status": "unknown"
+        "status": "measured_reference",
+        "measurements": [
+          "dipterocarp_doisuthep"
+        ]
       }
     },
     "mixed_deciduous": {
@@ -214,18 +227,18 @@
         ]
       },
       "fuel_level": {
-        "text": "ยังจัดระดับต่ำ/กลาง/สูงไม่ได้จากแผนที่เพียงอย่างเดียว ต้องทราบปริมาณและความชื้นเชื้อเพลิง",
+        "text": "ค่าที่เคยวัดในป่าเบญจพรรณพื้นที่สูง จ.น่าน: 3.6 ตัน/เฮกตาร์ (ราว 0.57 ตัน/ไร่) ก่อนเผา (Wanthongchai และคณะ 2021) · ค่าที่วัดในพื้นที่ศึกษา ไม่ใช่ค่าที่วัด ณ จุดนี้",
+        "brief": "เชื้อเพลิงที่เคยวัดในป่าเบญจพรรณ ราว 0.57 ตัน/ไร่",
         "refs": [
           {
-            "id": "rfd",
-            "page": 7
-          },
-          {
-            "id": "ecology",
-            "page": 51
+            "id": "wanthongchai_2021",
+            "page": 5
           }
         ],
-        "status": "unknown"
+        "status": "measured_reference",
+        "measurements": [
+          "mixed_deciduous_nan"
+        ]
       }
     },
     "evergreen": {
@@ -306,18 +319,26 @@
         ]
       },
       "fuel_level": {
-        "text": "ยังจัดระดับต่ำ/กลาง/สูงไม่ได้จากแผนที่เพียงอย่างเดียว ต้องทราบปริมาณและความชื้นเชื้อเพลิง",
+        "text": "จุดนี้ยังไม่รู้ชนิดป่า · ป่าเชียงใหม่ราว 68% เป็นป่าผลัดใบ (กรมป่าไม้ 2543) ซึ่งเคยวัดได้ เบญจพรรณ (น่าน) 3.6 และเต็งรัง (ดอยสุเทพ-ปุย) 5.2 ตัน/เฮกตาร์ (ราว 0.57–0.83 ตัน/ไร่) · ป่าดิบยังไม่มีค่าวัดที่ตรวจสอบได้ · ค่าที่วัดในพื้นที่ศึกษา ไม่ใช่ค่าที่วัด ณ จุดนี้",
+        "brief": "ถ้าเป็นป่าผลัดใบ เชื้อเพลิงที่เคยวัด ราว 0.57–0.83 ตัน/ไร่",
         "refs": [
           {
-            "id": "rfd",
-            "page": 7
+            "id": "wanthongchai_2021",
+            "page": 5
           },
           {
-            "id": "ecology",
-            "page": 51
+            "id": "akkhaak_1992"
+          },
+          {
+            "id": "rfd_2000",
+            "page": 2
           }
         ],
-        "status": "unknown"
+        "status": "measured_reference",
+        "measurements": [
+          "mixed_deciduous_nan",
+          "dipterocarp_doisuthep"
+        ]
       }
     },
     "plantation": {
@@ -767,5 +788,68 @@
     "reference_year_be": 2543,
     "source_pdf_sha256": "8b4d3bdc0223aa99fc9361f964eac0fd59cbcdfe22850bb9ddf7d7926d27fd5d",
     "source_pdf_bytes": 1091751
+  },
+  "fuel_measurements": {
+    "dipterocarp_doisuthep": {
+      "kind": "dipterocarp",
+      "site": "ป่าเต็งรัง อุทยานแห่งชาติดอยสุเทพ-ปุย เชียงใหม่",
+      "period": "ฤดูไฟ พ.ย. 2534–พ.ค. 2535",
+      "t_ha": "5.19",
+      "components_t_ha": {
+        "ใบไม้แห้ง": "1.98",
+        "หญ้า": "1.48",
+        "ไม้พื้นล่าง": "1.07",
+        "กิ่งไม้": "0.66"
+      },
+      "peak": "สะสมสูงสุดช่วง มี.ค.–เม.ย.",
+      "ref": {
+        "id": "akkhaak_1992"
+      },
+      "t_rai": "0.83"
+    },
+    "mixed_deciduous_nan": {
+      "kind": "mixed_deciduous",
+      "site": "ป่าเบญจพรรณพื้นที่สูง จ.น่าน",
+      "period": "ก่อนเผา (Wanthongchai และคณะ 2021)",
+      "t_ha": "3.57",
+      "components_t_ha": {
+        "ใบไม้แห้ง": "3.34",
+        "ไม้พื้นล่าง": "0.23"
+      },
+      "ref": {
+        "id": "wanthongchai_2021",
+        "page": 5
+      },
+      "t_rai": "0.57"
+    },
+    "corn_nan": {
+      "kind": "crop",
+      "site": "ไร่ข้าวโพดพื้นที่สูง จ.น่าน",
+      "period": "ก่อนเผา (Wanthongchai และคณะ 2021)",
+      "t_ha": "3.86",
+      "components_t_ha": {
+        "ตอซัง/เศษพืช": "3.59",
+        "วัชพืช": "0.27"
+      },
+      "ref": {
+        "id": "wanthongchai_2021",
+        "page": 5
+      },
+      "t_rai": "0.62"
+    },
+    "upland_rice_nan": {
+      "kind": "crop",
+      "site": "ข้าวไร่พื้นที่สูง จ.น่าน",
+      "period": "ก่อนเผา (Wanthongchai และคณะ 2021)",
+      "t_ha": "2.665",
+      "components_t_ha": {
+        "ตอซัง/เศษพืช": "2.665"
+      },
+      "ref": {
+        "id": "wanthongchai_2021",
+        "page": 5
+      },
+      "t_rai": "0.43"
+    }
   }
 }

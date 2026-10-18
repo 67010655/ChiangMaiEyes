@@ -40,14 +40,17 @@
   }
   function paint(node,p,result){
     const d=result||quick(p)||{kind:'unknown',headline:'ยังระบุชนิดพื้นที่ไม่ได้',sources:[],note:'ยังอ่านแผนที่ของจุดนี้ไม่ได้'};
+    const profile=d.reference||reference?.profiles?.[d.kind]||reference?.profiles?.unknown;
     if(node.classList.contains('land-context-summary')){
-      node.innerHTML=`<p>${esc(d.headline)}</p><small>${qualifier}</small>${d.sources.length?`<small class="land-context-source">${sourceLinks(d.sources)}</small>`:''}${provinceHtml(d)}`;
+      // Published site measurement, never a value at this hotspot.
+      const fuel=profile?.fuel_level?.status==='measured_reference'&&profile.fuel_level.brief?`<small class="land-context-fuel">${esc(profile.fuel_level.brief)} · ค่าจากพื้นที่ศึกษา ไม่ใช่ ณ จุดนี้</small>`:'';
+      node.innerHTML=`<p>${esc(d.headline)}</p><small>${qualifier}</small>${fuel}${d.sources.length?`<small class="land-context-source">${sourceLinks(d.sources)}</small>`:''}${provinceHtml(d)}`;
     }else{
-      const profile=d.reference||reference?.profiles?.[d.kind]||reference?.profiles?.unknown;
       const refs=d.reference_sources||reference?.sources||{};
-      const fields=[['fire_type','ชนิดไฟที่พบบ่อยในเอกสาร'],['season','ช่วงที่มักเกิดไฟ'],['fuel','เชื้อเพลิงหลักตามเอกสาร'],['fuel_level','ระดับเชื้อเพลิง']];
-      const rows=profile?fields.map(([key,label])=>{
+      const fields=[['fire_type','ชนิดไฟที่พบบ่อยในเอกสาร'],['season','ช่วงที่มักเกิดไฟ'],['fuel','เชื้อเพลิงหลักตามเอกสาร'],['fuel_level','ปริมาณเชื้อเพลิง']];
+      const rows=profile?fields.map(([key,base])=>{
         const f=profile[key];if(!f)return '';
+        const label=key==='fuel_level'&&f.status==='measured_reference'?'ปริมาณเชื้อเพลิงที่เคยวัด (ข้อมูลอ้างอิง)':base;
         const links=(f.refs||[]).map(r=>{const s=refs[r.id];return s?`<a href="${esc(safeUrl(s.url)+(r.page?'#page='+r.page:''))}" target="_blank" rel="noopener">${esc(s.title)}${r.page?' · หน้า '+r.page:''}</a>`:'';}).filter(Boolean).join(' · ');
         return `<div class="land-context-fact"><b>${label}</b><p>${esc(f.text)}</p><small>${qualifier}</small><small>${links}</small></div>`;
       }).join(''):'<p>ยังไม่มีข้อมูลอ้างอิงที่ตรวจสอบได้</p>';

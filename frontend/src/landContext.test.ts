@@ -34,7 +34,9 @@ it('shows rice immediately without exposing the code and keeps cited details whe
   host.querySelectorAll('.land-context-fact').forEach((row:any)=>{
     expect(row.textContent).toContain('ประเมินจากแผนที่ ไม่ใช่การสำรวจในพื้นที่');expect(row.querySelector('a[href^="https://"]')).not.toBeNull();
   });
-  expect(host.textContent).toContain('ยังจัดระดับต่ำ/กลาง/สูงไม่ได้');
+  expect(host.textContent).toContain('ปริมาณเชื้อเพลิงที่เคยวัด (ข้อมูลอ้างอิง)');
+  expect(host.textContent).toContain('ไม่ใช่ค่าที่วัด ณ จุดนี้');
+  expect(host.textContent).not.toContain('ต่ำ/กลาง/สูง');
   expect(w.fetch.mock.calls.filter(([url]:any)=>url.startsWith('/api/land-context?'))).toHaveLength(1);
   expect(w.fetch.mock.calls.every(([,options]:any)=>!options?.headers?.Authorization)).toBe(true);dom.window.close();
 });
@@ -44,6 +46,7 @@ it('uses a generic forest profile and cited historical provincial context withou
   const text=host.querySelector('.land-context-summary').textContent;
   expect(text).toContain('ปี 2021');expect(text).toContain(reference.province_context.context_text);
   expect(text).toContain('สถิติระดับจังหวัดในอดีต');expect(text).not.toContain('ป่าไม่ผลัดใบ');
+  expect(text).toContain(reference.profiles.unknown_forest.fuel_level.brief);expect(text).toContain('ค่าจากพื้นที่ศึกษา ไม่ใช่ ณ จุดนี้');
   expect(host.querySelector('a[href$="#page=2"]')).not.toBeNull();dom.window.close();
 });
 it('rejects a stale CGLS response from an older backend during a staged release',async()=>{

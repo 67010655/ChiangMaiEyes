@@ -34,3 +34,15 @@ def test_parser_reads_the_pdf_row_instead_of_using_typed_percentages():
 @pytest.mark.parametrize('text',['Table 1 2000\nNo row','Table 1 2000\nเชียงใหม่ 1 2 Chiang Mai','Table 1 2025\n'+STATS['source_row']])
 def test_unexpected_pdf_structure_or_year_requires_review(text):
     with pytest.raises(ValueError):builder.parse_table(text)
+
+
+def test_fuel_measurements_are_converted_not_typed_and_never_describe_the_hotspot():
+    measurements,levels=builder.fuel_profiles(STATS)
+    assert measurements['dipterocarp_doisuthep']['t_rai']=='0.83'
+    assert measurements['mixed_deciduous_nan']['t_rai']=='0.57'
+    assert set(levels)=={'dipterocarp','mixed_deciduous','deciduous','unknown_forest','crop'}
+    for level in levels.values():
+        assert level['status']=='measured_reference' and builder.NOT_AT_POINT in level['text']
+        assert all(mid in measurements for mid in level['measurements'])
+    assert '68%' in levels['unknown_forest']['text'] and 'ป่าดิบยังไม่มีค่าวัด' in levels['unknown_forest']['text']
+    assert 'นาข้าวพื้นราบยังไม่มีค่าวัด' in levels['crop']['text']

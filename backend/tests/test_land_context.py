@@ -67,15 +67,31 @@ def test_native_raster_is_valid_and_sampling_never_wraps_outside_the_grid():
         land.raster('forest-landcover')
 
 
-def test_no_reference_profile_invents_a_fuel_level_or_uses_intensity_carbon_or_evi_as_load():
+def test_fuel_amounts_come_only_from_cited_site_measurements_never_invented_levels():
+    from decimal import Decimal
     doc = land.reference()
-    for p in doc['profiles'].values():
-        assert p['fuel_level']['status'] == 'unknown'
+    measured_sources = {'akkhaak_1992', 'wanthongchai_2021'}
+    for kind, p in doc['profiles'].items():
         for field in ('fire_type','season','fuel','fuel_level'):
             assert p[field]['refs']
             for ref in p[field]['refs']:
                 assert doc['sources'][ref['id']]['url'].startswith('https://')
-        assert not any('ตัน/ไร่' in p[field]['text'] for field in p)
+        level = p['fuel_level']
+        assert not any(word in level['text'] for word in ('ต่ำ/','กลาง/','/สูง')) or level['status'] == 'unknown'
+        if level['status'] == 'measured_reference':
+            assert 'ไม่ใช่ค่าที่วัด ณ จุดนี้' in level['text']
+            assert measured_sources & {r['id'] for r in level['refs']}
+            for mid in level['measurements']:
+                m = doc['fuel_measurements'][mid]
+                assert m['t_rai'] == str((Decimal(m['t_ha']) / Decimal('6.25')).quantize(Decimal('.01')))
+                assert m['t_rai'] in level['text']
+        else:
+            assert level['status'] == 'unknown' and 'ตัน/ไร่' not in level['text']
+        assert not any('ตัน/ไร่' in p[field]['text'] for field in ('fire_type','season','fuel'))
+    # Evergreen has no verified northern measurement; it must stay unknown.
+    assert doc['profiles']['evergreen']['fuel_level']['status'] == 'unknown'
+    assert doc['fuel_measurements']['dipterocarp_doisuthep']['t_ha'] == '5.19'
+    assert doc['fuel_measurements']['mixed_deciduous_nan']['t_ha'] == '3.57'
 
 
 def test_community_forests_keep_all_677_records_and_distinguish_missing_or_unresolved_types():
