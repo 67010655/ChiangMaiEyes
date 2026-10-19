@@ -1287,6 +1287,7 @@
   @media print{.export-options{display:none!important}.paper .forest-contact a{color:inherit}.paper .evidence-action{display:none!important}}
 </style>
 <link rel="stylesheet" href="/ux-clarity.css" />
+<link rel="stylesheet" href="/home-simple.css">
 <link rel="stylesheet" href="/community-workspace.css">
 </head>
 <body class="public-mode">
@@ -1444,6 +1445,7 @@
     <div class="public-brief-intro">
       <strong>เชียงใหม่ตอนนี้</strong>
       <span id="publicBriefFreshness">กำลังรับข้อมูลล่าสุด…</span>
+      <button class="near-me-btn" id="nearMeBtn" type="button" onclick="document.getElementById('mobileLocateBtn').click()">📍 ดูไฟรอบตัวฉัน</button>
       <button class="public-detail-toggle" id="publicDetailToggle" type="button" aria-pressed="false" onclick="togglePublicMode()">ดูข้อมูลละเอียด</button>
       <button class="public-brief-toggle" id="publicBriefToggle" type="button" aria-label="ดูแหล่งข้อมูลและเวลาอัปเดต" aria-expanded="false" aria-controls="publicBriefDetails" onclick="toggleBriefDetails()"><span>ที่มา</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button>
     </div>
@@ -1475,7 +1477,7 @@
     <nav class="navrail">
       <div class="nav-item active" data-view="home" role="button" tabindex="0" aria-current="page">
         <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
-        <span>สถานการณ์</span>
+        <span>แผนที่</span>
       </div>
       <div class="nav-item" data-view="analytics" role="button" tabindex="0">
         <svg viewBox="0 0 24 24"><path d="M4 20V4"/><path d="M4 20h16"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
@@ -1483,12 +1485,12 @@
       </div>
       <div class="nav-item" data-view="community" role="button" tabindex="0" title="ป่าของฉัน ติดตามเหตุ การแจ้งเตือน และซ้อมใช้งาน">
         <svg viewBox="0 0 24 24"><path d="M12 3l6 8h-3l4 6h-6v4h-2v-4H5l4-6H6z"/></svg>
-        <span>ชุมชน</span>
+        <span>ป่าชุมชน</span>
       </div>
 
       <div class="nav-item" data-view="guide" role="button" tabindex="0" title="เริ่มใช้งาน วิธีอ่านข้อมูล และเอกสารอ้างอิง">
         <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-        <span>คู่มือ</span>
+        <span>วิธีใช้</span>
       </div>
       <div class="nav-spacer"></div>
     </nav>
@@ -1505,6 +1507,7 @@
         <button data-base="osm">ถนน</button>
         <button data-base="sat">ดาวเทียม</button>
         <button data-base="terrain">ภูมิประเทศ</button>
+        <button type="button" class="basemap-3d" data-open-view="threed">ภูเขา 3D</button>
       </div>
       <div class="block" id="situationCard" style="display:none">
         <h2 class="wind">สถานการณ์ตอนนี้</h2>
@@ -1584,14 +1587,15 @@
     <!-- MAP -->
     <main class="mapwrap">
       <div id="mapRenderStatus" class="map-render-status" role="status" aria-live="polite" hidden>รับข้อมูลได้ แต่แผนที่แสดงผลไม่ครบ<button type="button" onclick="goLive(true)">ลองอีกครั้ง</button></div>
-<div class="map-view-actions" aria-label="มุมมองสถานการณ์"><span>แผนที่ 2D</span><button type="button" data-open-view="threed">ดูภูเขา 3D</button><button type="button" data-open-view="cameras">ดูกล้องสาธารณะ</button></div>
+<div class="map-view-actions" aria-label="มุมมองสถานการณ์" hidden><span>แผนที่ 2D</span></div>
       <div id="map" role="application" aria-label="แผนที่จุดความร้อน คุณภาพอากาศ และทิศทางลมจังหวัดเชียงใหม่ (โต้ตอบได้)"></div>
-      <div class="map-time-note">จุดจาง: ตรวจพบเกิน 24 ชม.<br>กดหมุดเพื่อดูเวลา ยังไม่ยืนยันว่าไฟกำลังไหม้</div>
+      <div class="map-time-note" title="กดหมุดเพื่อดูเวลา จุดความร้อนยังไม่ยืนยันว่าไฟกำลังไหม้"><span class="legend-item"><span class="legend-dot fresh"></span>สว่าง = ภายใน 24 ชม.</span><span class="legend-item"><span class="legend-dot old"></span>จาง = เก่ากว่า</span></div>
       <div class="map-overlay basemap-toggle">
         <button class="active" data-base="dark">สีเข้ม</button>
         <button data-base="osm">ถนน</button>
         <button data-base="sat">ดาวเทียม</button>
         <button data-base="terrain">ภูมิประเทศ</button>
+        <button type="button" class="basemap-3d" data-open-view="threed">ภูเขา 3D</button>
       </div>
       <div class="map-overlay wind-badge">
         <div class="arrow" id="windArrow">
@@ -1622,10 +1626,10 @@
           <span>ตำแหน่งฉัน</span>
         </button>
         <a class="map-fab call-fab" id="callFireHotlineBtn" href="tel:1362" aria-label="เห็นไฟป่า โทรสายด่วนพิทักษ์ป่า 1362 ได้โดยไม่ต้องสมัครสมาชิก" title="สายด่วนพิทักษ์ป่า กรมอุทยานฯ">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span>โทร 1362</span>
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span>เห็นไฟ โทร 1362</span>
         </a>
         <button class="map-fab report-fab" id="reportHotspotBtn" aria-label="รายงานจุดความร้อน" title="รายงานจุดความร้อนด้วยตนเอง (ต้องเข้าสู่ระบบ)">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>แจ้งจุดร้อน</span>
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>แจ้งไฟ</span>
         </button>
       </div>
 
@@ -3270,6 +3274,21 @@ function setKpis(){
   updatePmTrendMean();
   updatePublicBrief({hotspotReady,pmReady,activeCount:activeNow.length,pmAvg});
 }
+// Short plain-language line under each status tile (PM advice from PCD 2566, wind from RFD p.9).
+function setBriefMeaning(signalId,text){
+  const signal=document.getElementById(signalId);
+  let el=signal.querySelector('.brief-meaning');
+  if(!el){el=document.createElement('span');el.className='brief-meaning';signal.querySelector('.copy').appendChild(el);}
+  el.textContent=text;el.hidden=!text;
+}
+// "อัปเดต 12 นาทีที่แล้ว" instead of a ticking clock.
+function receivedAt(){ try{ return lastDashboardReceivedAt; }catch{ return null; } } // declared later in this script
+function freshnessText(){
+  const at=receivedAt();
+  if(!at) return 'กำลังรับข้อมูลล่าสุด…';
+  const min=Math.max(0,Math.floor((Date.now()-Date.parse(at))/60000));
+  return 'อัปเดต '+(min<1?'เมื่อสักครู่':min<60?min+' นาทีที่แล้ว':Math.floor(min/60)+' ชม.ที่แล้ว');
+}
 function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   const updateValue=(id,value,format)=>{
     const el=document.getElementById(id);
@@ -3300,13 +3319,16 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   const recent=CmeEvidence.filterHotspots(hotspots,{hours:24});
   const newest=recent.map(h=>h.detected_at).sort().at(-1);
   document.getElementById('publicFireMeta').textContent=newest?'24 ชม. · ตรวจพบล่าสุด '+CmeEvidence.stamp(newest):'24 ชม. · ต้องตรวจสอบภาคสนาม';
+  setBriefMeaning('publicFireSignal',!hotspotReady?'':activeCount?'ล่าสุด '+new Intl.DateTimeFormat('th-TH',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(Date.parse(newest))+' น.':'ไม่พบใน 24 ชม.');
+  setBriefMeaning('publicPmSignal',pmLv?pmLv.short:'');
+  setBriefMeaning('publicWindSignal',!windReady?'':PREVAILING.kmh<CmeSpreadHint.CALM_KMH?'ลมเบามาก':'ไฟลามตามลมได้');
   document.getElementById('publicPmMeta').textContent=pmReady?`Air4Thai ${pmStations.length} สถานี · ${CmeEvidence.stamp(liveDataQ?.pm25?.latest_update)}`:
     currentDashboard?.pm25?.aqi_stations?.length?`มี AQI ${currentDashboard.pm25.aqi_stations.length} สถานี · ดูในวิเคราะห์`:'ตรวจแหล่งและเวลาใน วิเคราะห์ → ข้อมูลในพื้นที่';
   const modelWind=/Open-Meteo/i.test(sourceLabel('weather'));
   document.querySelector('#publicWindSignal .brief-label-full').textContent=modelWind?'ลมแบบจำลอง พัดไป':'ลมสถานี พัดไป';
   document.getElementById('publicWindMeta').textContent=windReady?(modelWind?'เหนือพื้นดิน 10 ม. · ':'สถานี ไม่ระบุความสูง · ')+CmeEvidence.stamp(liveDataQ?.weather?.latest_update):'รอข้อมูลลมที่ใช้ได้';
   document.getElementById('publicWindSignal').title=sourceLabel('weather')+' · ลูกศรชี้ทิศที่ลมพัดไป · '+(modelWind?'แบบจำลองเหนือพื้นดิน 10 เมตร':'ระดับความสูงของสถานี: feed ยังไม่ระบุ');
-  document.getElementById('publicBriefFreshness').textContent='อัปเดตเป็นรอบ · ดูเวลารายชุด';
+  document.getElementById('publicBriefFreshness').textContent=freshnessText();
   document.getElementById('publicFireSourceDetail').textContent=sourceLabel('hotspots')+' · '+document.getElementById('publicFireMeta').textContent;
   document.getElementById('publicPmSourceDetail').textContent=document.getElementById('publicPmMeta').textContent+(pmReady?' · ค่าเฉลี่ยจากสถานีที่มีข้อมูล ไม่ใช่ค่าที่วัดได้ทุกพื้นที่':'')+
     (pmLv?` · ระดับ${pmLv.label}: ${pmLv.advice} · เทียบ${pmLv.source} ค่าที่แสดงเป็นค่าล่าสุด ไม่ใช่ค่าเฉลี่ย 24 ชม.`:'');
@@ -3347,6 +3369,8 @@ function tick(){
   const d=new Date();
   const z=n=>String(n).padStart(2,'0');
   document.getElementById('clockTime').textContent=`${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
+  const fresh=document.getElementById('publicBriefFreshness');
+  if(receivedAt()&&document.getElementById('connectionStatus')?.classList.contains('is-live')&&d.getSeconds()===0) fresh.textContent=freshnessText();
 }
 function stamp(){
   const d=new Date();const z=n=>String(n).padStart(2,'0');

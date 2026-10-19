@@ -5,13 +5,14 @@
 (function(root){
   'use strict';
   const PCD_AQI_URL='https://www.pcd.go.th/pcd_news/30028/';
-  // Upper bounds (µg/m³, 24-h average) and general-public advice, paraphrased from the announcement.
+  // Upper bounds (µg/m³, 24-h average) and general-public advice, paraphrased from the announcement;
+  // `short` is the first-screen form of the same advice.
   const PM_LEVELS=[
-    {max:15,label:'ดีมาก',tone:'good',advice:'ทำกิจกรรมกลางแจ้งได้ตามปกติ'},
-    {max:25,label:'ดี',tone:'good',advice:'ทำกิจกรรมกลางแจ้งได้ กลุ่มเสี่ยงสังเกตอาการผิดปกติ'},
-    {max:37.5,label:'ปานกลาง',tone:'warn',advice:'ลดกิจกรรมกลางแจ้งที่ใช้แรงมาก กลุ่มเสี่ยงใส่หน้ากากเมื่ออยู่นอกอาคาร'},
-    {max:75,label:'เริ่มมีผลต่อสุขภาพ',tone:'bad',advice:'ใส่หน้ากากกันฝุ่นเมื่ออยู่นอกอาคาร ลดกิจกรรมกลางแจ้ง'},
-    {max:Infinity,label:'มีผลต่อสุขภาพ',tone:'bad',advice:'งดกิจกรรมกลางแจ้ง ถ้ามีอาการให้พบแพทย์'},
+    {max:15,label:'ดีมาก',tone:'good',short:'ออกนอกบ้านได้',advice:'ทำกิจกรรมกลางแจ้งได้ตามปกติ'},
+    {max:25,label:'ดี',tone:'good',short:'ออกนอกบ้านได้',advice:'ทำกิจกรรมกลางแจ้งได้ กลุ่มเสี่ยงสังเกตอาการผิดปกติ'},
+    {max:37.5,label:'ปานกลาง',tone:'warn',short:'ลดกิจกรรมหนักกลางแจ้ง',advice:'ลดกิจกรรมกลางแจ้งที่ใช้แรงมาก กลุ่มเสี่ยงใส่หน้ากากเมื่ออยู่นอกอาคาร'},
+    {max:75,label:'เริ่มมีผลต่อสุขภาพ',tone:'bad',short:'ใส่หน้ากากกันฝุ่น',advice:'ใส่หน้ากากกันฝุ่นเมื่ออยู่นอกอาคาร ลดกิจกรรมกลางแจ้ง'},
+    {max:Infinity,label:'มีผลต่อสุขภาพ',tone:'bad',short:'งดกิจกรรมกลางแจ้ง',advice:'งดกิจกรรมกลางแจ้ง ถ้ามีอาการให้พบแพทย์'},
   ];
   function pmLevel(value){
     const v=Number(value);
