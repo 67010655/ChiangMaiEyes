@@ -2058,6 +2058,7 @@
 <script src="/auth-ui.js"></script>
 <script src="/navigation-ui.js"></script>
 <script src="/ux-foundation.js"></script>
+<script src="/hotspot-sheet.js"></script>
 <script>
 /* ============================================================
    ChiangMaiEyes — live data rendering
@@ -2527,6 +2528,21 @@ function pmAqiLabel(p){ return CmePublicGuidance.pmLevel(p)?.label||'—'; }
 
 // ---- Render hotspots ----
 let selected=null;
+// Phone bottom sheet for a hotspot: same content as the popup, the point kept
+// visible above the sheet, forest proximity lines while it is open.
+function openHotspotSheet(h){
+  map.closePopup();
+  CmeHotspotSheet.open(h,hotspotPopupHtml(h),{onClose:clearForestProximity});
+  showForestProximity(h.lat,h.lon);
+  // Centre the pin in the map area that is still visible above the sheet.
+  setTimeout(()=>{
+    const mapBox=document.getElementById('map').getBoundingClientRect();
+    const sheetTop=document.getElementById('hotspotSheet')?.getBoundingClientRect().top||mapBox.bottom;
+    const visibleMid=((Math.max(mapBox.top,0)+Math.min(sheetTop,mapBox.bottom))/2)-mapBox.top;
+    const now=map.latLngToContainerPoint([h.lat,h.lon]);
+    map.panBy([now.x-mapBox.width/2,now.y-visibleMid],{animate:motionDuration(300)>0});
+  },30);
+}
 // Hotspot age class (H7): one meaning per colour, the same as the legend.
 // <6 h = new, 6-24 h = recent, older = faded. FRP and confidence stay in the popup.
 function hotspotAgeClass(h,now=Date.now()){
@@ -2558,7 +2574,14 @@ function renderHotspots(){
     ,{maxWidth:320,maxHeight:Math.max(160,Math.min(560,window.innerHeight*.62))});
     m.on('popupopen',()=>showForestProximity(h.lat, h.lon));
     m.on('popupclose', clearForestProximity);
-    m.on('click',()=>selectHotspot(h,{fromMarker:true}));
+    // Phones get a bottom sheet (easier to read and scroll); desktop keeps the popup.
+    m.off('click', m._openPopup, m);
+    m.on('click',()=>{
+      // Selection first (it may move the map), then the view the user sees.
+      selectHotspot(h,{fromMarker:true});
+      if(isMobileViewport()&&window.CmeHotspotSheet) openHotspotSheet(h);
+      else m.openPopup();
+    });
     layers.hotspots.addLayer(m);
   });
   document.getElementById('lcHot').textContent=hotspots.length;

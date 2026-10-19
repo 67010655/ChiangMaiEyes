@@ -37,7 +37,7 @@ describe('evidence selection for public summaries and export',()=>{
       frpColor:()=> '#ff8a3d',clearForestProximity:()=>{},
       document:{getElementById:()=>({textContent:''})},
       layers:{hotspots:{clearLayers:()=>{},addLayer:(m:any)=>markers.push(m)}},
-      L:{divIcon:(o:any)=>({options:{...o}}),marker:(_:any,opts:any)=>({opts,bindPopup(){return this;},on(){return this;}})}
+      L:{divIcon:(o:any)=>({options:{...o}}),marker:(_:any,opts:any)=>({opts,bindPopup(){return this;},on(){return this;},off(){return this;}})}
     };
     runtime.window=runtime;
     runInNewContext(readFileSync(resolve(__dirname,'../public/decision-support.js'),'utf8')+'\n'+render+'\nrenderHotspots();',runtime);
