@@ -58,13 +58,12 @@
 
 ### F — พื้นฐาน (ทำก่อน เพราะทุกหน้าใช้ร่วมกัน)
 
-**F1 ฟอนต์: Poppins + Aktiv Grotesk Thai** ✅ เลือก Adobe Fonts (web project) แล้ว · รอ embed code ของ kit จากเจ้าของงาน
-- **ตอนสร้าง kit ต้องเพิ่มโดเมน** `chiangmaieyes.vercel.app` กับ `localhost` และเลือกเฉพาะน้ำหนักที่ใช้ (400 / 500 / 600 / 700)
-- **ชื่อ family จาก kit:** `aktiv-grotesk-thai` (ยืนยันแล้ว 19 ต.ค.) ดังนั้น stack คือ `'Poppins', aktiv-grotesk-thai, sans-serif` · ยังรอ URL `use.typekit.net/….css` และน้ำหนัก 400/500/600/700 ใน kit
-- **เว็บไม่มี CSP** จึงโหลด `use.typekit.net` ได้โดยไม่ต้องแก้ header
+**F1 ฟอนต์: Poppins + IBM Plex Sans Thai** ✅ ตัดสินใจแล้ว 20 ต.ค. · ไม่ต้องรออะไร ทำได้เลย
+- **ทำไมไม่ใช้ Aktiv Grotesk Thai:** บัญชี Adobe แบบฟรีใช้ได้แค่น้ำหนัก Thin (100) ถ้าจะใช้น้ำหนักอื่นต้องจ่าย Creative Cloud รายเดือน และถ้าหยุดจ่าย ฟอนต์บนเว็บจะหายทันที จึงเลือก IBM Plex Sans Thai (ฟรี ใช้ได้ถาวร ตัวไทยไม่มีหัวเหมือนกัน)
+- **โหลดจาก Google Fonts ลิงก์เดียว:** `https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap` (แทนลิงก์ Space Grotesk / JetBrains Mono เดิม)
 - **ปัญหา:** ฟอนต์ปน 9 ชุด, `font-family` 135 จุด, ภาษาไทยไม่ได้กำหนดฟอนต์
 - **แก้:**
-  - ใช้ stack `--font: 'Poppins', aktiv-grotesk-thai, sans-serif` Poppins ไม่มีตัวไทย อักษรอังกฤษกับตัวเลขจึงมาจาก Poppins และภาษาไทยตกไปที่ Aktiv Grotesk Thai
+  - ใช้ stack `--font: 'Poppins', 'IBM Plex Sans Thai', sans-serif` Poppins ไม่มีตัวไทย อักษรอังกฤษกับตัวเลขจึงมาจาก Poppins และภาษาไทยตกไปที่ IBM Plex Sans Thai
   - ตัวเลขใช้ `font-variant-numeric: tabular-nums` แทน JetBrains Mono
   - โหลดเฉพาะน้ำหนัก 400 / 500 / 600 / 700 และใช้ `font-display: swap`
 - **ต้องไล่เปลี่ยนให้ครบ:**
@@ -74,7 +73,7 @@
   - กราฟ SVG ที่มี `font-family="JetBrains Mono"` (บรรทัด 3680–3733)
   - wrapper ของ popup 3D ที่ใส่ mono แบบ inline
   - Arial, Helvetica, Tahoma, Lucida ที่ฝังอยู่ใน style
-- **ห้าม:** โหลดไฟล์ฟอนต์จากเว็บแจกฟรีที่ไม่มีที่มา ใช้ได้เฉพาะ `<link>` ของ Adobe Fonts kit ห้ามดาวน์โหลดไฟล์ฟอนต์มาเก็บไว้เอง
+- **ห้าม:** โหลดฟอนต์จากแหล่งอื่นนอกจาก Google Fonts และห้ามใช้ Aktiv Grotesk Thai ตัว Thin ที่อยู่ในบัญชี Adobe ฟรี
 - **ตรวจรับ:**
   - `grep -E "Space Grotesk|JetBrains|Arial|Helvetica|Tahoma|Lucida"` ใน frontend ต้องไม่เจอ
   - `CmeUxAudit` ต้องได้ `mono = 0` ทุกหน้า
@@ -364,8 +363,8 @@
 ## ลำดับทำงานที่เสนอ
 | เฟส | งาน | เหตุผล |
 | --- | --- | --- |
-| 3 | F2, F3, F4, H1, H2, H5, H8, H9 | พื้นฐานกับหน้าแรก กระทบคนทุกคน |
-| 4 | F1 (เมื่อได้ฟอนต์), H3, H4, H6, H7, H10 | ฟอนต์ทั้งเว็บกับแผนที่ |
+| 3 | F1, F2, F3, F4, H1, H2, H5, H8, H9 | ฟอนต์ พื้นฐาน และหน้าแรก กระทบคนทุกคน |
+| 4 | H3, H4, H6, H7, H10 | แผนที่ |
 | 5 | M1–M7, L1–L3 | popup และแผงข้อมูลทุกชนิด |
 | 6 | A1–A5 | ลดหน้าวิเคราะห์ ย้ายงานวิจัย |
 | 7 | C1–C5, G1–G2 | เส้นทางตัวแทนป่า และวิธีใช้ |
@@ -378,7 +377,7 @@
 | D1 | หน้ากล้องสาธารณะ | ✅ ลบออก (19 ต.ค.) |
 | D2 | คะแนนทดลอง 22/100 | ✅ เอาออก (19 ต.ค.) |
 | D3 | แท็บป่าชุมชนตอนยังไม่ login | ✅ คงแท็บไว้ เนื้อหาเบลอเป็นตัวอย่าง เปิดให้เฉพาะตัวแทนที่อนุมัติ (19 ต.ค.) |
-| D4 | ฟอนต์ Aktiv Grotesk Thai | ✅ Adobe Fonts web project (19 ต.ค.) · รอ embed code |
+| D4 | ฟอนต์ภาษาไทย | ✅ IBM Plex Sans Thai จาก Google Fonts คู่กับ Poppins (20 ต.ค.) แทน Aktiv Grotesk Thai ซึ่งต้องเสียค่า Creative Cloud รายเดือน |
 | D5 | คนทั่วไปแจ้งไฟโดยไม่ login | ✅ แจ้งได้ ส่งเข้า LINE ของตัวแทนก่อน ขึ้นแผนที่เมื่อยืนยันหรือแจ้ง 2 คนขึ้นไป (19 ต.ค.) · ดู C5 |
 
 ## ยังไม่ได้ตรวจ
