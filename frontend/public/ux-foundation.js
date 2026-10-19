@@ -135,7 +135,7 @@
   function offlineAge(at,now=Date.now()){
     const time=Date.parse(at);if(!Number.isFinite(time))return '';
     const minutes=Math.max(0,Math.floor((now-time)/60000));
-    return 'ข้อมูลเมื่อ '+(minutes<60?minutes+' นาที':Math.floor(minutes/60)+' ชั่วโมง')+'ที่แล้ว';
+    return minutes<1?'ข้อมูลเมื่อสักครู่':'ข้อมูลเมื่อ '+(minutes<60?minutes+' นาที':Math.floor(minutes/60)+' ชั่วโมง')+'ที่แล้ว';
   }
   function setup(){
     const toast=document.getElementById('toast');if(toast){toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');}

@@ -1292,6 +1292,7 @@
 <link rel="stylesheet" href="/home-simple.css">
 <link rel="stylesheet" href="/community-workspace.css">
 <link rel="stylesheet" href="/ux-foundation.css">
+<link rel="stylesheet" href="/topbar.css">
 </head>
 <body class="public-mode">
 <div id="splashScreen" class="splash-screen">
@@ -1450,7 +1451,7 @@
       <span id="publicBriefFreshness">กำลังรับข้อมูลล่าสุด…</span>
       <button class="near-me-btn" id="nearMeBtn" type="button" onclick="document.getElementById('mobileLocateBtn').click()">📍 ดูไฟรอบตัวฉัน</button>
       <button class="public-detail-toggle" id="publicDetailToggle" type="button" aria-pressed="false" onclick="togglePublicMode()">ดูข้อมูลละเอียด</button>
-      <button class="public-brief-toggle" id="publicBriefToggle" type="button" aria-label="ดูแหล่งข้อมูลและเวลาอัปเดต" aria-expanded="false" aria-controls="publicBriefDetails" onclick="toggleBriefDetails()"><span>ⓘ ที่มา</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button>
+      <button class="public-brief-toggle" id="publicBriefToggle" type="button" aria-label="ดูแหล่งข้อมูลและเวลาอัปเดต" aria-expanded="false" aria-controls="publicBriefDetails" onclick="toggleBriefDetails()"><span>ⓘ ที่มา</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.5"/></svg></button>
     </div>
     <div class="public-signal fire" id="publicFireSignal">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2.5 1-4 3-6 0 2 1 3 2 3 1-2 1-5 0-8Z"/><path d="M10 18a2 2 0 0 0 4 0c0-1-.7-2-2-3-1.3 1-2 2-2 3Z"/></svg>
@@ -3329,21 +3330,25 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   const pmLv=pmReady?CmePublicGuidance.pmLevel(pmAvg):null;
   const pmValue=document.getElementById('publicPmValue');
   pmValue.replaceChildren();
+  const pmSignal=document.getElementById('publicPmSignal'),pmCat=pmLv?CmeUx.category(pmAvg):null;
+  pmSignal.classList.toggle('has-level',!!pmCat);
+  pmSignal.style.setProperty('--tile-level',pmCat?`var(${pmCat.token})`:'');
+  // The reading sits in the label so every tile keeps three lines (H11).
+  pmSignal.querySelector('.label').textContent=pmLv?`ฝุ่น ${pmAvg} µg/m³`:'ฝุ่น PM2.5';
   if(pmLv){
-    pmValue.appendChild(CmeUx.pmChip(pmAvg));
-    const amount=document.createElement('span');amount.className='pm-reading';
-    amount.textContent=pmAvg+' µg/m³';pmValue.appendChild(amount);
+    const word=document.createElement('span');word.className='pm-level-word';word.textContent=pmLv.label;
+    pmValue.appendChild(word);
   }else pmValue.appendChild(CmeUx.empty({title:'ไม่มีข้อมูลฝุ่น',reason:'รอค่าที่ใช้ได้จากสถานี',action:'ดูที่มา',onAction:()=>{if(document.getElementById('publicBriefDetails').hidden)toggleBriefDetails();}}));
   const windReady=!!PREVAILING && !!liveDataQ?.weather &&
     liveDataQ.weather.source_mode!=='UNAVAILABLE' && !liveDataQ.weather.is_stale;
   const blowTo=windReady?(PREVAILING.deg+180)%360:0;
   updateValue('publicWindValue',windReady?`${_degToCompass(blowTo)} · ${PREVAILING.kmh} กม./ชม.`:'ยังไม่มีข้อมูล',windReady?{prefix:_degToCompass(blowTo)+' · ',number:PREVAILING.kmh,unit:'กม./ชม.'}:null);
-  document.getElementById('publicWindArrow').style.transform=`rotate(${blowTo}deg)`;
+  document.getElementById('publicWindArrow').style.setProperty('--wind-deg',blowTo+'deg');
   document.getElementById('publicWindArrow').style.visibility=windReady?'visible':'hidden';
   const recent=CmeEvidence.filterHotspots(hotspots,{hours:24});
   const newest=recent.map(h=>h.detected_at).sort().at(-1);
   document.getElementById('publicFireMeta').textContent=newest?'24 ชม. · ตรวจพบล่าสุด '+CmeEvidence.stamp(newest):'24 ชม. · ต้องตรวจสอบภาคสนาม';
-  setBriefMeaning('publicFireSignal',!hotspotReady?'':newest&&Number.isFinite(Date.parse(newest))?'ล่าสุด '+new Intl.DateTimeFormat('th-TH',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(Date.parse(newest))+' น.':'ไม่พบใน 24 ชม.');
+  setBriefMeaning('publicFireSignal',!hotspotReady?'':newest&&Number.isFinite(Date.parse(newest))?'ล่าสุด '+new Intl.DateTimeFormat('th-TH',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(Date.parse(newest)):'ไม่พบใน 24 ชม.');
   setBriefMeaning('publicPmSignal',pmLv?pmLv.short:'');
   setBriefMeaning('publicWindSignal',!windReady?'':PREVAILING.kmh<CmeSpreadHint.CALM_KMH?'ลมเบามาก':'ไฟลามตามลมได้');
   document.getElementById('publicPmMeta').textContent=pmReady?`Air4Thai ${pmStations.length} สถานี · ${CmeEvidence.stamp(liveDataQ?.pm25?.latest_update)}`:
@@ -3393,7 +3398,9 @@ function tick(){
   const status=document.getElementById('connectionStatus');
   const fresh=document.getElementById('publicBriefFreshness');
   const online=status?.classList.contains('is-live')||status?.classList.contains('is-degraded');
-  const text=online?'':CmeUx.offlineAge(receivedAt());
+  // The header is the single place for data age (H11); offline it also says so.
+  const at=receivedAt();
+  const text=!at?'':online?freshnessText():'เชื่อมต่อไม่ได้ · '+CmeUx.offlineAge(at);
   const header=document.getElementById('headerFreshness');
   header.textContent=text;header.hidden=!text;
   if(receivedAt()&&online) fresh.textContent=freshnessText();
@@ -5510,11 +5517,7 @@ function setMode(m){
   connectionStatus.style.color=m==='live'&&!degraded?'var(--good)':'var(--warn)';
   connectionStatus.classList.remove('is-loading','is-live','is-degraded','is-offline');
   connectionStatus.classList.add(m==='live'?(degraded?'is-degraded':'is-live'):'is-offline');
-  const header=document.getElementById('headerFreshness');
-  if(header){
-    header.textContent=m==='live'?'':CmeUx.offlineAge(lastDashboardReceivedAt);
-    header.hidden=!header.textContent;
-  }
+  if(typeof tick==='function') tick(); // the header line (data age, or offline notice) is written in one place
   if(m==='offline'){
     document.getElementById('publicBriefFreshness').textContent=lastDashboardReceivedAt
       ?'เชื่อมต่อข้อมูลล่าสุดไม่ได้ · ข้อมูลบนหน้าจอรับเมื่อ '+CmeEvidence.stamp(lastDashboardReceivedAt)

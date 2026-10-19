@@ -112,15 +112,16 @@ it.each(['left','right'])('Escape closes the %s drawer and restores the outside 
   expect(dom.window.document.activeElement).toBe(opener);dom.window.close();
 });
 
-it('online header omits the repeated update; offline header gives the age of retained data',()=>{
+it('the header is the single place for data age, online and offline (H11)',()=>{
   const {dom,ux}=setup('<span id="connectionStatus" class="is-live"></span><span id="publicBriefFreshness"></span><span id="headerFreshness"></span>');
   const win=dom.window as any;const at=new Date(Date.now()-12*60000).toISOString();
   win.receivedAt=()=>at;win.freshnessText=()=>'อัปเดต 12 นาทีที่แล้ว';
   win.eval(html.slice(html.indexOf('function tick(){'),html.indexOf('\nfunction stamp()')));
-  win.tick();expect(dom.window.document.getElementById('headerFreshness')!.hidden).toBe(true);
-  expect(dom.window.document.getElementById('publicBriefFreshness')!.textContent).toBe('อัปเดต 12 นาทีที่แล้ว');
+  win.tick();expect(dom.window.document.getElementById('headerFreshness')!.hidden).toBe(false);
+  expect(dom.window.document.getElementById('headerFreshness')!.textContent).toBe('อัปเดต 12 นาทีที่แล้ว');
   dom.window.document.getElementById('connectionStatus')!.className='is-offline';win.tick();
-  expect(dom.window.document.getElementById('headerFreshness')!.textContent).toBe('ข้อมูลเมื่อ 12 นาทีที่แล้ว');
+  expect(dom.window.document.getElementById('headerFreshness')!.textContent).toBe('เชื่อมต่อไม่ได้ · ข้อมูลเมื่อ 12 นาทีที่แล้ว');
+  expect(ux.offlineAge(new Date().toISOString())).toBe('ข้อมูลเมื่อสักครู่');
   expect(dom.window.document.getElementById('headerFreshness')!.hidden).toBe(false);
   expect(ux.offlineAge(null)).toBe('');expect(ux.offlineAge('invalid')).toBe('');dom.window.close();
 });
@@ -131,4 +132,13 @@ it('foundation CSS and the anonymous font preconnection are in head exactly once
   expect(dom.window.document.head.querySelector('link[href="/ux-foundation.css"]')).not.toBeNull();
   const link=dom.window.document.head.querySelector('link[rel=preconnect][href="https://fonts.gstatic.com"]')!;
   expect(link.hasAttribute('crossorigin')).toBe(true);dom.window.close();
+});
+
+it('the card does not repeat the data age, and the dust tile takes the PCD colour (H11)',()=>{
+  const css=readFileSync(resolve(__dirname,'../public/topbar.css'),'utf8');
+  expect(css).toMatch(/#publicBriefFreshness\{display:none!important\}/);
+  expect(css).toContain(".public-signal.pm.has-level{background:var(--tile-level)!important}");
+  expect(css).toMatch(/prefers-reduced-motion:reduce\)\{\.public-signal\.air>svg\{animation:none/);
+  expect(html.indexOf('/topbar.css')).toBeGreaterThan(html.indexOf('/ux-foundation.css'));
+  expect(html.indexOf('/topbar.css')).toBeLessThan(html.indexOf('</head>'));
 });
