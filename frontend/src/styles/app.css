@@ -4,7 +4,7 @@
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
 body {
-  font-family: Inter, "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;

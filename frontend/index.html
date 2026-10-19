@@ -29,7 +29,7 @@
 <meta name="twitter:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0b0e13;
@@ -52,8 +52,9 @@
     --on-green:#06140b;
     --on-ember:#1a0e04;
     --ease-out-quint:cubic-bezier(.22,1,.36,1);
-    --mono:'JetBrains Mono',ui-monospace,monospace;
-    --disp:'Space Grotesk',system-ui,sans-serif;
+    --font:'Poppins','IBM Plex Sans Thai',sans-serif;
+    --mono:var(--font);
+    --disp:var(--font);
   }
   /* ── Light mode overrides ─────────────────── */
   body.light-mode{
@@ -339,7 +340,7 @@
   .gd-card ul{margin:10px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:9px}
   .gd-card li{font-size:12.5px;color:var(--muted);line-height:1.6}
   .gd-card li b{color:var(--txt);font-weight:600}
-  .gd-tag{display:inline-block;font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+  .gd-tag{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.04em;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;white-space:nowrap}
   .gd-tag.real{background:rgba(67,176,95,.16);color:var(--good)}
   .gd-tag.approx{background:rgba(250,204,21,.16);color:var(--warn)}
   .gd-tag.point{background:rgba(139,151,167,.18);color:var(--muted)}
@@ -350,7 +351,7 @@
     border: 1px solid #334155 !important;
     color: #f8fafc !important;
     font-family: var(--mono) !important;
-    font-size: 10px !important;
+    font-size: 12px !important;
     border-radius: 4px !important;
     padding: 4px 8px !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
@@ -368,36 +369,36 @@
   .paper{
     width:880px;max-width:calc(100% - 40px);margin:24px auto 60px;background:#f6f7f4;color:#1c2530;
     border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:46px 54px;
-    font-family:'Space Grotesk',sans-serif;line-height:1.55;
+    font-family:var(--font);line-height:1.55;
   }
   .paper .ph{display:flex;align-items:flex-start;gap:14px;border-bottom:3px solid var(--green-deep);padding-bottom:16px;margin-bottom:22px}
   .paper .ph .plogo{width:42px;height:42px;border-radius:10px;flex:none;background:linear-gradient(150deg,var(--green),var(--green-deep));display:flex;align-items:center;justify-content:center}
   .paper .ph .plogo svg{width:26px;height:26px}
   .paper .ph h1{font-size:21px;margin:0;color:#16202b}
-  .paper .ph .meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:#5a6675;margin-top:3px;letter-spacing:.02em}
-  .paper .ph .stamp{margin-left:auto;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:#5a6675}
+  .paper .ph .meta{font-family:var(--font);font-size:12px;color:#5a6675;margin-top:3px;letter-spacing:.02em}
+  .paper .ph .stamp{margin-left:auto;text-align:right;font-family:var(--font);font-size:12px;color:#5a6675}
   .paper .ph .stamp .lv{display:inline-block;margin-top:4px;padding:3px 9px;border-radius:5px;font-weight:700;font-size:12px}
   .lv.sev{background:#ffe2e2;color:#b91c1c}.lv.hi{background:#ffedd5;color:#c2410c}.lv.mod{background:#fef9c3;color:#a16207}
 
   .paper h2{font-size:13px;letter-spacing:.06em;color:var(--green-deep);text-transform:uppercase;margin:24px 0 10px;
     display:flex;align-items:center;gap:9px}
-  .paper h2 .no{font-family:'JetBrains Mono',monospace;background:var(--green-deep);color:#fff;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+  .paper h2 .no{font-family:var(--font);background:var(--green-deep);color:#fff;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
   .paper p{margin:0 0 11px;font-size:13.5px;color:#28323d}
   .paper .lead{font-size:14.5px;color:#1c2530;background:#eef1ec;border-left:4px solid var(--green);padding:13px 16px;border-radius:0 6px 6px 0}
   .paper .figs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 4px}
   .paper .fig{background:#fff;border:1px solid #e0e3dd;border-radius:8px;padding:12px 14px}
-  .paper .fig .k{font-family:'JetBrains Mono',monospace;font-size:12px;color:#7a8694;letter-spacing:.08em;text-transform:uppercase}
-  .paper .fig .v{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;margin-top:4px;color:#16202b}
+  .paper .fig .k{font-family:var(--font);font-size:12px;color:#7a8694;letter-spacing:.08em;text-transform:uppercase}
+  .paper .fig .v{font-family:var(--font);font-size:24px;font-weight:700;margin-top:4px;color:#16202b}
   .paper .fig .v small{font-size:12px;color:#7a8694;font-weight:400}
   .paper table{width:100%;border-collapse:collapse;margin:6px 0 8px;font-size:12.5px}
-  .paper th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;color:#7a8694;text-transform:uppercase;border-bottom:2px solid #d8dcd4;padding:7px 8px}
+  .paper th{text-align:left;font-family:var(--font);font-size:12px;letter-spacing:.06em;color:#7a8694;text-transform:uppercase;border-bottom:2px solid #d8dcd4;padding:7px 8px}
   .paper td{padding:8px 8px;border-bottom:1px solid #e6e9e2;color:#28323d}
-  .paper td .tag{font-family:'JetBrains Mono',monospace;font-size:12px;padding:2px 7px;border-radius:5px}
+  .paper td .tag{font-family:var(--font);font-size:12px;padding:2px 7px;border-radius:5px}
   .tag.sev{background:#ffe2e2;color:#b91c1c}.tag.hi{background:#ffedd5;color:#c2410c}.tag.mod{background:#fef9c3;color:#a16207}
   .paper ul{margin:4px 0 12px;padding-left:0;list-style:none}
   .paper li{font-size:13px;color:#28323d;padding:6px 0 6px 26px;position:relative}
   .paper li::before{content:"▸";position:absolute;left:8px;color:var(--green-deep);font-weight:700}
-  .paper .pfoot{margin-top:26px;border-top:1px solid #d8dcd4;padding-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#7a8694;line-height:1.7}
+  .paper .pfoot{margin-top:26px;border-top:1px solid #d8dcd4;padding-top:14px;font-family:var(--font);font-size:12px;color:#7a8694;line-height:1.7}
 
   /* 3D view */
   .threedview{background:#070a0e}
@@ -434,11 +435,11 @@
   .td-hud{position:absolute;z-index:5;pointer-events:none}
   .td-title{top:18px;left:26px}
   .td-title h2{font-size:16px;margin:0;font-weight:700}.td-title h2 b{color:var(--green)}
-  .td-title .s{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:.1em;margin-top:2px}
+  .td-title .s{font-family:var(--font);font-size:12px;color:var(--dim);letter-spacing:.1em;margin-top:2px}
   .td-legend{bottom:22px;left:26px;background:rgba(13,18,24,.82);border:1px solid var(--line);border-radius:10px;padding:13px 15px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-  .td-legend .lr{display:flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);padding:3px 0}
+  .td-legend .lr{display:flex;align-items:center;gap:9px;font-family:var(--font);font-size:12px;color:var(--muted);padding:3px 0}
   .td-legend .lr .d{width:11px;height:11px;border-radius:50%;flex:none}
-  .td-hint{bottom:22px;right:26px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);text-align:right;line-height:1.7}
+  .td-hint{bottom:22px;right:26px;font-family:var(--font);font-size:12px;color:var(--dim);text-align:right;line-height:1.7}
   .td-close{position:absolute;top:16px;right:24px;z-index:6;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:rgba(17,22,29,.9);color:var(--muted);font-size:18px;cursor:pointer;pointer-events:auto}
   .td-close:hover{border-color:var(--danger);color:var(--danger)}
   /* 3D basemap switcher — same look as the 2D .basemap-toggle but a separate
@@ -1196,15 +1197,15 @@
   /* Evidence controls share the existing light/dark semantic colors. */
   .public-brief{padding:6px 12px}
   .public-signal{padding:6px 10px}
-  .map-time-note{position:absolute;left:12px;bottom:22px;z-index:500;max-width:300px;padding:6px 8px;border-radius:6px;background:var(--panel);color:var(--muted);font:11px/1.5 var(--disp);pointer-events:none}
+  .map-time-note{position:absolute;left:12px;bottom:22px;z-index:500;max-width:300px;padding:6px 8px;border-radius:6px;background:var(--panel);color:var(--muted);font:12px/1.5 var(--disp);pointer-events:none}
   @media(min-width:601px){.threedview .maplibregl-ctrl-top-right{top:62px}}
-  .evidence-note{font:11px/1.6 var(--disp);color:var(--muted);margin:7px 0}
+  .evidence-note{font:12px/1.6 var(--disp);color:var(--muted);margin:7px 0}
   .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   .evidence-action{font:600 12px var(--disp);padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--wind);cursor:pointer}
   .evidence-action:hover{background:var(--panel)}
   .evidence-action:focus-visible,.export-options select:focus-visible{outline:2px solid var(--wind);outline-offset:3px}
   .evidence-action:disabled{opacity:.6;cursor:wait}
-  .forest-contact{border-top:1px solid var(--line-soft);margin-top:10px;padding-top:8px;font:11px/1.6 var(--disp)}
+  .forest-contact{border-top:1px solid var(--line-soft);margin-top:10px;padding-top:8px;font:12px/1.6 var(--disp)}
   .forest-contact p{margin:4px 0}
   .forest-contact a{color:var(--wind)}
   .source-overview>h2{font-size:22px;margin:0 0 6px}
@@ -1436,8 +1437,8 @@
       </svg>
     </button>
     <div class="clock" id="clock">
-      <span class="live is-loading" id="connectionStatus"><span class="dot"></span><span id="connectionLabel">รอข้อมูล</span></span><br>
-      <b id="clockTime">--:--:--</b> ICT
+      <span class="live is-loading" id="connectionStatus" role="status" aria-live="polite"><span class="dot"></span><span id="connectionLabel">รอข้อมูล</span></span><br>
+      <span id="headerFreshness">กำลังรับข้อมูล…</span>
     </div>
   </header>
 
@@ -1447,7 +1448,7 @@
       <span id="publicBriefFreshness">กำลังรับข้อมูลล่าสุด…</span>
       <button class="near-me-btn" id="nearMeBtn" type="button" onclick="document.getElementById('mobileLocateBtn').click()">📍 ดูไฟรอบตัวฉัน</button>
       <button class="public-detail-toggle" id="publicDetailToggle" type="button" aria-pressed="false" onclick="togglePublicMode()">ดูข้อมูลละเอียด</button>
-      <button class="public-brief-toggle" id="publicBriefToggle" type="button" aria-label="ดูแหล่งข้อมูลและเวลาอัปเดต" aria-expanded="false" aria-controls="publicBriefDetails" onclick="toggleBriefDetails()"><span>ที่มา</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button>
+      <button class="public-brief-toggle" id="publicBriefToggle" type="button" aria-label="ดูแหล่งข้อมูลและเวลาอัปเดต" aria-expanded="false" aria-controls="publicBriefDetails" onclick="toggleBriefDetails()"><span>ⓘ ที่มา</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button>
     </div>
     <div class="public-signal fire" id="publicFireSignal">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2.5 1-4 3-6 0 2 1 3 2 3 1-2 1-5 0-8Z"/><path d="M10 18a2 2 0 0 0 4 0c0-1-.7-2-2-3-1.3 1-2 2-2 3Z"/></svg>
@@ -2051,6 +2052,8 @@
 <script src="/practice-workspace.js"></script>
 <script src="/auth-ui.js"></script>
 <script src="/navigation-ui.js"></script>
+<link rel="stylesheet" href="/ux-foundation.css">
+<script src="/ux-foundation.js"></script>
 <script>
 /* ============================================================
    ChiangMaiEyes — live data rendering
@@ -2498,7 +2501,7 @@ function manualReportPopupHtml(r){
 // Sizing/intensity scalar: real FRP if present, else a confidence-based proxy so
 // markers still have a sensible radius (never shown as MW).
 function intensity(h){ return h.frp!=null ? h.frp : 22; }
-function pmColor(p){ return p>90?'#7e22ce': p>55?'#a855f7': p>37?'#c084fc':'#ddd6fe'; }
+function pmColor(p){ return CmeUx.pmColor(p); }
 // Same PCD AQI B.E. 2566 thresholds as the top card (was 37/55/90 from the pre-2023 index).
 function pmAqiLabel(p){ return CmePublicGuidance.pmLevel(p)?.label||'—'; }
 
@@ -2511,11 +2514,11 @@ function renderHotspots(){
     const isHigh = h.conf==='high';
     const big = isHigh && (h.frp||0) > 50;
     const sz = big ? 30 : isHigh ? 24 : 18;
-    const col = frpColor(h.frp);
+    const col = recent?'var(--state-fresh)':'var(--state-old)';
     const emojiSz = Math.round(sz * 0.62);
     // solid colored circle = high conf, hollow border = low conf (matches legend)
     const bgStyle = isHigh
-      ? `background:${col};box-shadow:0 0 6px ${col}99`
+      ? `background:${col};box-shadow:0 0 6px color-mix(in srgb,${col} 60%,transparent)`
       : h.conf==='nominal' ? `background:${col};opacity:.55`
       : `background:transparent;border:2px solid ${col};opacity:.6`;
     // Reuses the per-district wind pin's radar-ping ring (see .pulse-wrap,
@@ -2716,7 +2719,7 @@ function renderPm(){
     const col=pmColor(s.pm);
     L.circle(s.c,{radius:4500,color:col,weight:1,fillColor:col,fillOpacity:0.10}).addTo(layers.pm);
     L.circleMarker(s.c,{radius:7,color:'#fff',weight:1.5,fillColor:col,fillOpacity:0.95})
-      .bindPopup(`<b>${CmeEvidence.escapeHtml(s.name)}</b> · อ. ${CmeEvidence.escapeHtml(s.district || '—')}<br>PM2.5 ${s.pm} µg/m³<br>เวลาของสถานี ${CmeEvidence.stamp(s.updated_at)}<br>${CmeEvidence.escapeHtml(sourceLabel('pm25'))}<br>ชนิดเซนเซอร์และการสอบเทียบ: feed ไม่ระบุ<br>ความชื้นอาจกระทบเซนเซอร์บางชนิด<br>${gMapsLink(s.c[0],s.c[1])}`)
+      .bindPopup(`<b>${CmeEvidence.escapeHtml(s.name)}</b> · อ. ${CmeEvidence.escapeHtml(s.district || '—')}<br>${CmeUx.pmChipHtml(s.pm)}<br>PM2.5 ${s.pm} µg/m³<br>เวลาของสถานี ${CmeEvidence.stamp(s.updated_at)}<br>${CmeEvidence.escapeHtml(sourceLabel('pm25'))}<br>ชนิดเซนเซอร์และการสอบเทียบ: feed ไม่ระบุ<br>ความชื้นอาจกระทบเซนเซอร์บางชนิด<br>${gMapsLink(s.c[0],s.c[1])}`)
       .addTo(layers.pm);
   });
   document.getElementById('lcPm').textContent=pmStations.length;
@@ -3323,7 +3326,13 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   updateValue('publicFireValue',hotspotReady?`${activeCount} จุด`:'ยังไม่มีข้อมูล',hotspotReady?{number:activeCount,unit:'จุด'}:null);
   // Level words: PCD AQI B.E. 2566 thresholds (24-h average) compared with the latest station average.
   const pmLv=pmReady?CmePublicGuidance.pmLevel(pmAvg):null;
-  updateValue('publicPmValue',pmReady?`${pmAvg} µg/m³${pmLv?' · '+pmLv.label:''}`:'ไม่มีข้อมูล',pmReady?{number:pmAvg,unit:'µg/m³',suffix:pmLv?.label,tone:pmLv?.tone}:null);
+  const pmValue=document.getElementById('publicPmValue');
+  pmValue.replaceChildren();
+  if(pmLv){
+    pmValue.appendChild(CmeUx.pmChip(pmAvg));
+    const amount=document.createElement('span');amount.className='pm-reading';
+    amount.textContent=pmAvg+' µg/m³';pmValue.appendChild(amount);
+  }else pmValue.appendChild(CmeUx.empty({title:'ไม่มีข้อมูลฝุ่น',reason:'รอค่าที่ใช้ได้จากสถานี',action:'ดูที่มา',onAction:()=>{if(document.getElementById('publicBriefDetails').hidden)toggleBriefDetails();}}));
   const windReady=!!PREVAILING && !!liveDataQ?.weather &&
     liveDataQ.weather.source_mode!=='UNAVAILABLE' && !liveDataQ.weather.is_stale;
   const blowTo=windReady?(PREVAILING.deg+180)%360:0;
@@ -3363,7 +3372,7 @@ function toggleBriefDetails(){
   details.hidden=!open;
   button.setAttribute('aria-expanded',String(open));
   button.setAttribute('aria-label',open?'ซ่อนแหล่งข้อมูลและเวลาอัปเดต':'ดูแหล่งข้อมูลและเวลาอัปเดต');
-  button.querySelector('span').textContent=open?'ย่อ':'ที่มา';
+  button.querySelector('span').textContent=open?'ปิดที่มา':'ⓘ ที่มา';
   requestAnimationFrame(()=>map.invalidateSize({pan:false}));
 }
 function setWindBadge(){
@@ -3380,11 +3389,12 @@ function setWindBadge(){
   document.getElementById('windArrowG').setAttribute('transform',`rotate(${blowTo} 20 20)`);
 }
 function tick(){
-  const d=new Date();
-  const z=n=>String(n).padStart(2,'0');
-  document.getElementById('clockTime').textContent=`${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
+  const status=document.getElementById('connectionStatus');
   const fresh=document.getElementById('publicBriefFreshness');
-  if(receivedAt()&&document.getElementById('connectionStatus')?.classList.contains('is-live')&&d.getSeconds()===0) fresh.textContent=freshnessText();
+  const online=status?.classList.contains('is-live')||status?.classList.contains('is-degraded');
+  const text=online?freshnessText():(receivedAt()?'ข้อมูลที่รับไว้ · '+freshnessText():'รอเชื่อมต่อข้อมูล');
+  document.getElementById('headerFreshness').textContent=text;
+  if(receivedAt()&&online) fresh.textContent=freshnessText();
 }
 function stamp(){
   const d=new Date();const z=n=>String(n).padStart(2,'0');
@@ -3595,7 +3605,7 @@ document.getElementById('roseChart').innerHTML='<text x="150" y="50" text-anchor
 fetchWindRose();
 document.getElementById('footUpd').textContent=stamp();
 
-tick(); setInterval(tick,1000);
+tick(); setInterval(tick,30000);
 
 // ============================================================
 //  NAV RAIL + ANALYTICS (statistics view)
@@ -3648,14 +3658,7 @@ document.getElementById('anClose').onclick=()=>{
   document.querySelector('.nav-item[data-view="home"]').classList.add('active');
   setTimeout(()=>map.invalidateSize(),60);
 };
-function toast(msg){
-  let t=document.createElement('div');
-  t.textContent=msg;
-  t.style.cssText='position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:3000;background:#11161d;border:1px solid var(--green);color:#e6edf3;font-family:var(--mono);font-size:12px;padding:11px 18px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.5)';
-  document.body.appendChild(t);
-  setTimeout(()=>{t.style.transition='.4s';t.style.opacity='0';},2200);
-  setTimeout(()=>t.remove(),2700);
-}
+function toast(msg){ CmeUx.toast(msg); }
 
 // ---- stats helpers ----
 const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
@@ -3677,10 +3680,10 @@ function donut(id,segs,{cx=100,cy=58,r=44,thick=20}){
     g+=`<path d="M${cx+Math.cos(a0)*r} ${cy+Math.sin(a0)*r} A${r} ${r} 0 ${large} 1 ${cx+Math.cos(a1)*r} ${cy+Math.sin(a1)*r}" fill="none" stroke="${s.color}" stroke-width="${thick}" stroke-linecap="butt"/>`;
     a0=a1;
   });
-  g+=`<text x="${cx}" y="${cy-1}" text-anchor="middle" fill="#e6edf3" font-family="JetBrains Mono" font-size="20" font-weight="700">${total}</text>`;
-  g+=`<text x="${cx}" y="${cy+13}" text-anchor="middle" fill="#5c6675" font-family="JetBrains Mono" font-size="12">รวม</text>`;
+  g+=`<text x="${cx}" y="${cy-1}" text-anchor="middle" fill="#e6edf3" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="20" font-weight="700">${total}</text>`;
+  g+=`<text x="${cx}" y="${cy+13}" text-anchor="middle" fill="#5c6675" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12">รวม</text>`;
   let ly=cy+r+22;
-  segs.forEach((s,i)=>{g+=`<rect x="${cx-r-4}" y="${ly+i*16-9}" width="10" height="10" rx="2" fill="${s.color}"/><text x="${cx-r+12}" y="${ly+i*16}" fill="#8b97a7" font-family="JetBrains Mono" font-size="12">${s.label} · ${Math.round(s.val/total*100)}%</text>`;});
+  segs.forEach((s,i)=>{g+=`<rect x="${cx-r-4}" y="${ly+i*16-9}" width="10" height="10" rx="2" fill="${s.color}"/><text x="${cx-r+12}" y="${ly+i*16}" fill="#8b97a7" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12">${s.label} · ${Math.round(s.val/total*100)}%</text>`;});
   document.getElementById(id).innerHTML=g;
 }
 function histogram(id,bins,labels,{w=480,h=170,color='#ff8a3d',pad=22,minMax=1}){
@@ -3688,11 +3691,11 @@ function histogram(id,bins,labels,{w=480,h=170,color='#ff8a3d',pad=22,minMax=1})
   for(let t=0;t<=3;t++){const y=(h-pad)-(h-pad-6)*t/3;g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/>`;}
   bins.forEach((v,i)=>{const bh=v/max*(h-pad-6),x=i*gap+(gap-bw)/2,y=(h-pad)-bh;
     g+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="2" fill="${color}" opacity="${(0.5+0.5*v/max).toFixed(2)}"/>`;
-    if(labels[i]!==undefined)g+=`<text x="${x+bw/2}" y="${h-6}" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#5c6675">${labels[i]}</text>`;});
+    if(labels[i]!==undefined)g+=`<text x="${x+bw/2}" y="${h-6}" text-anchor="middle" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#5c6675">${labels[i]}</text>`;});
   document.getElementById(id).innerHTML=g;
 }
 function scatterReg(id,pts,{w=480,h=200,pad=30}){
-  if(!pts||pts.length<2){document.getElementById(id).innerHTML='<text x="240" y="100" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#3a4757">คู่วันที่ข้อมูลครบยังไม่พอ</text>';return 0;}
+  if(!pts||pts.length<2){document.getElementById(id).innerHTML='<text x="240" y="100" text-anchor="middle" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#3a4757">คู่วันที่ข้อมูลครบยังไม่พอ</text>';return 0;}
   const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
   const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
   const X=x=>pad+(x-xmin)/((xmax-xmin)||1)*(w-pad-8),Y=y=>(h-pad)-(y-ymin)/((ymax-ymin)||1)*(h-pad-8);
@@ -3701,8 +3704,8 @@ function scatterReg(id,pts,{w=480,h=200,pad=30}){
   g+=`<line x1="${pad}" y1="${h-pad}" x2="${w}" y2="${h-pad}" stroke="#222b36"/><line x1="${pad}" y1="6" x2="${pad}" y2="${h-pad}" stroke="#222b36"/>`;
   g+=`<line x1="${X(xmin)}" y1="${Y(slope*xmin+inter)}" x2="${X(xmax)}" y2="${Y(slope*xmax+inter)}" stroke="#43b05f" stroke-width="2" stroke-dasharray="5 4"/>`;
   pts.forEach(p=>{g+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="3.4" fill="#a855f7" opacity=".82"/>`;});
-  g+=`<text x="${(w+pad)/2}" y="${h-4}" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#5c6675">จุดความร้อน/วัน →</text>`;
-  g+=`<text x="10" y="14" font-family="JetBrains Mono" font-size="12" fill="#5c6675">PM2.5 ↑</text>`;
+  g+=`<text x="${(w+pad)/2}" y="${h-4}" text-anchor="middle" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#5c6675">จุดความร้อน/วัน →</text>`;
+  g+=`<text x="10" y="14" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#5c6675">PM2.5 ↑</text>`;
   document.getElementById(id).innerHTML=g;
   return corr(xs,ys);
 }
@@ -3714,23 +3717,23 @@ function trendChart(id,daily,{w=640,h=180,pad=22,labels=[],complete=[]}){
   const max=Math.ceil(rawMax*1.15)||4,n=daily.length||1,gap=w/n,bw=gap*0.58;
   const Y=v=>(h-pad)-v/max*(h-pad-8);let g='';
   const ticks=[0,Math.ceil(max/3),Math.ceil(max*2/3),max].filter((v,i,a)=>a.indexOf(v)===i);
-  ticks.forEach(t=>{const y=Y(t);g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/><text x="2" y="${y-2}" font-family="JetBrains Mono" font-size="12" fill="#3a4757">${t}</text>`;});
+  ticks.forEach(t=>{const y=Y(t);g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/><text x="2" y="${y-2}" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#3a4757">${t}</text>`;});
   daily.forEach((v,i)=>{if(!Number.isFinite(v))return;const bh=v/max*(h-pad-8),x=i*gap+(gap-bw)/2;g+=`<rect x="${x}" y="${(h-pad)-bh}" width="${bw}" height="${bh}" rx="1.5" fill="${i===n-1?'#43b05f':'#2c3744'}"/>`;});
   let d='',connected=false;ma.forEach((v,i)=>{if(!Number.isFinite(v)){connected=false;return;}d+=(connected?' L':' M')+(i*gap+gap/2)+' '+Y(v);connected=true;});
   g+=`<path d="${d}" fill="none" stroke="#ff8a3d" stroke-width="2"/>`;
   ma.forEach((v,i)=>{if(Number.isFinite(v)&&(i%5===0||i===n-1))g+=`<circle cx="${i*gap+gap/2}" cy="${Y(v)}" r="2.4" fill="#ff8a3d"/>`;});
   const labelIdx=n<=7?[0,Math.floor(n/2),n-1]:[0,Math.floor(n/4),Math.floor(n/2),Math.floor(n*3/4),n-1];
-  [...new Set(labelIdx)].forEach(i=>g+=`<text x="${i*gap+gap/2}" y="${h-5}" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#5c6675">${labels[i]||''}</text>`);
+  [...new Set(labelIdx)].forEach(i=>g+=`<text x="${i*gap+gap/2}" y="${h-5}" text-anchor="middle" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#5c6675">${labels[i]||''}</text>`);
   document.getElementById(id).innerHTML=g;
 }
 function hbar(id,rows,{w=480,h=200,pad=78}){
   const max=Math.max(...rows.map(r=>r.v))||1,rh=h/rows.length;let g='';
   rows.forEach((r,i)=>{const bw=r.v/max*(w-pad-30),y=i*rh+rh/2;
     const col=r.v>max*0.75?'#ff4d4d':r.v>max*0.5?'#f5640a':r.v>max*0.28?'#ff8a3d':'#facc15';
-    g+=`<text x="${pad-6}" y="${y+3}" text-anchor="end" font-family="JetBrains Mono" font-size="12" fill="#8b97a7">${r.name}</text>`;
+    g+=`<text x="${pad-6}" y="${y+3}" text-anchor="end" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#8b97a7">${r.name}</text>`;
     g+=`<rect x="${pad}" y="${y-6}" width="${w-pad-30}" height="12" rx="3" fill="#1a212b"/>`;
     g+=`<rect x="${pad}" y="${y-6}" width="${bw}" height="12" rx="3" fill="${col}"/>`;
-    g+=`<text x="${pad+bw+6}" y="${y+3}" font-family="JetBrains Mono" font-size="12" fill="#e6edf3">${r.v}</text>`;});
+    g+=`<text x="${pad+bw+6}" y="${y+3}" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#e6edf3">${r.v}</text>`;});
   document.getElementById(id).innerHTML=g;
 }
 
@@ -5492,6 +5495,8 @@ function setMode(m){
   connectionStatus.style.color=m==='live'&&!degraded?'var(--good)':'var(--warn)';
   connectionStatus.classList.remove('is-loading','is-live','is-degraded','is-offline');
   connectionStatus.classList.add(m==='live'?(degraded?'is-degraded':'is-live'):'is-offline');
+  const header=document.getElementById('headerFreshness');
+  if(header) header.textContent=m==='live'?freshnessText():(lastDashboardReceivedAt?'ข้อมูลที่รับไว้ · '+freshnessText():'รอเชื่อมต่อข้อมูล');
   if(m==='offline'){
     document.getElementById('publicBriefFreshness').textContent=lastDashboardReceivedAt
       ?'เชื่อมต่อข้อมูลล่าสุดไม่ได้ · ข้อมูลบนหน้าจอรับเมื่อ '+CmeEvidence.stamp(lastDashboardReceivedAt)
@@ -5651,6 +5656,7 @@ function initMapLibre3D(){
 
   mlMap=new maplibregl.Map({
     container:'ml-terrain-map',
+    locale:CmeUx.mapLocale,
     style,
     center:[98.9675,18.7985],
     zoom:10.3,

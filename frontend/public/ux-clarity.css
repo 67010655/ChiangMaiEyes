@@ -1,5 +1,5 @@
 /* Reading and navigation improvements for the existing dashboard. */
-:root{--disp:'Space Grotesk','Leelawadee UI',system-ui,sans-serif}
+:root{--disp:var(--font)}
 .splash-screen{background:var(--bg);color:var(--txt)}
 .splash-loading{color:var(--muted)}
 .splash-title b{color:var(--green)}
@@ -82,7 +82,7 @@
   .public-signal .brief-label-short{display:inline}
   .public-signal.air .label{padding-right:18px}
   .public-signal .value{font-size:17px;line-height:1.2;white-space:normal}
-  .public-signal .value small{font-size:11px;white-space:nowrap}
+  .public-signal .value small{font-size:12px;white-space:nowrap}
   .public-signal .meaning,.public-wind-direction{display:none}
   /* Source details overlay the map instead of consuming its remaining height. */
   .public-brief-details:not([hidden]){display:block;position:absolute;top:100%;left:0;right:0;z-index:1500;margin:0;padding:16px;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:0 8px 20px rgba(0,0,0,.25);max-height:min(45dvh,360px,calc(100dvh - 220px));overflow-y:auto}
@@ -146,7 +146,7 @@
   .brand h1{font-size:14px}
   .clock{font-size:0;width:60px;flex:none;border:0;padding-left:2px;letter-spacing:0}
   .clock br,.clock #clockTime{display:none}
-  .clock .live{display:flex;gap:4px;font-size:11px;letter-spacing:0}
+  .clock .live{display:flex;gap:4px;font-size:12px;letter-spacing:0}
   .clock #connectionLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 }
 @media(min-width:480px) and (max-width:980px) and (max-height:360px){
@@ -241,7 +241,7 @@
 .fire-help a[href^="tel:"]{display:inline-flex;align-items:center;min-height:44px;color:var(--wind);font-weight:600}
 
 /* PM2.5 level word (PCD AQI B.E. 2566) and the always-visible 1362 call button */
-.public-level{font-size:.62em;font-weight:600;white-space:nowrap}
+.public-level{font-size:14px;font-weight:600;white-space:normal}
 .public-level-good{color:#16a34a}.public-level-warn{color:#ca8a04}.public-level-bad{color:#ea580c}
 .map-fab.call-fab{color:var(--good,#43b05f);text-decoration:none}
 .my-location-popup{font:13px/1.55 var(--disp,sans-serif)}.my-location-popup p{margin:6px 0}

@@ -17,31 +17,31 @@ colors:
   severe-purple: "#7c3aed"
 typography:
   display:
-    fontFamily: "Inter, Noto Sans Thai, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, IBM Plex Sans Thai, sans-serif"
     fontSize: "1.9rem"
     fontWeight: 800
     lineHeight: 1.1
     letterSpacing: "0"
   headline:
-    fontFamily: "Inter, Noto Sans Thai, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, IBM Plex Sans Thai, sans-serif"
     fontSize: "1.35rem"
     fontWeight: 800
     lineHeight: 1.2
     letterSpacing: "0"
   title:
-    fontFamily: "Inter, Noto Sans Thai, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, IBM Plex Sans Thai, sans-serif"
     fontSize: "0.95rem"
     fontWeight: 700
     lineHeight: 1.3
     letterSpacing: "0"
   body:
-    fontFamily: "Inter, Noto Sans Thai, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, IBM Plex Sans Thai, sans-serif"
     fontSize: "0.9rem"
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: "0"
   label:
-    fontFamily: "Inter, Noto Sans Thai, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Poppins, IBM Plex Sans Thai, sans-serif"
     fontSize: "0.78rem"
     fontWeight: 700
     lineHeight: 1.2

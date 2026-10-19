@@ -1,18 +1,18 @@
 .coordination-card{font:13px/1.6 var(--disp,sans-serif);border:1px solid #557c6c66;border-radius:8px;padding:10px;margin:0 0 12px;overflow-wrap:anywhere;text-align:left}
 .coordination-card h3{font:600 14px/1.5 var(--disp,sans-serif);margin:0 0 5px;color:inherit}
 .coordination-card p{margin:5px 0}.coordination-lead{font-weight:600}
-.coordination-card .coordination-note{font-size:11px;opacity:.85}
+.coordination-card .coordination-note{font-size:12px;opacity:.85}
 .coordination-forest{border-top:1px solid #557c6c44;padding:6px 0}
 .coordination-office{border-top:1px solid #557c6c44;margin-top:6px;padding-top:6px}
 .hotspot-detected-time{font:600 12px/1.5 var(--disp,sans-serif);margin:0 0 8px;overflow-wrap:anywhere}
 .land-context-summary{font:13px/1.6 var(--disp,sans-serif);border-left:3px solid #7fb18b;margin:0 0 10px;padding-left:8px;overflow-wrap:anywhere}
-.land-context-summary p{margin:0;font-weight:600}.land-context-summary small,.land-context-reference small{display:block;font-size:11px;line-height:1.6;opacity:.9}
+.land-context-summary p{margin:0;font-weight:600}.land-context-summary small,.land-context-reference small{display:block;font-size:12px;line-height:1.6;opacity:.9}
 .land-context-summary a,.land-context-reference a{color:var(--wind,#57cfc4);text-decoration:underline}
 .land-context-summary p.spread-hint-line{font-weight:500;margin-top:2px;color:var(--txt,inherit)}
 .land-context-details{margin:8px 0;font:12px/1.6 var(--disp,sans-serif)}.land-context-details>summary{cursor:pointer;min-height:44px;padding:10px 0;box-sizing:border-box}
 .land-context-fact{border-top:1px solid #557c6c44;padding:8px 0}.land-context-fact p{margin:3px 0}
-.land-context-note{font-size:11px;opacity:.9}
-.coordination-protected{border-left:3px solid #e5a347;padding:4px 8px;margin:8px 0}.coordination-protected small{display:block;line-height:1.6;font-size:11px}.coordination-protected a[href^="tel:"]{min-height:44px;display:inline-block;padding:10px 0;box-sizing:border-box}
+.land-context-note{font-size:12px;opacity:.9}
+.coordination-protected{border-left:3px solid #e5a347;padding:4px 8px;margin:8px 0}.coordination-protected small{display:block;line-height:1.6;font-size:12px}.coordination-protected a[href^="tel:"]{min-height:44px;display:inline-block;padding:10px 0;box-sizing:border-box}
 .coordination-protected-warning{border-left:3px solid #e5a347;padding:8px;background:#e5a34718;font-weight:600}
 /* Bound popups can outlive an orientation change; follow the current viewport,
    rather than the height cached by Leaflet when the marker was created. */

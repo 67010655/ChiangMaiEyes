@@ -15,7 +15,7 @@
   border-radius: 16px;
   box-shadow: var(--shadow-sm, 0 4px 12px rgba(0, 0, 0, 0.05));
   padding: 46px 54px;
-  font-family: Inter, "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   line-height: 1.6;
   border: 1px solid var(--line, #e3ece6);
 }
