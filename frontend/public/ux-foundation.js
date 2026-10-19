@@ -90,7 +90,20 @@
   }
   function invalidMessage(input){
     const v=input.validity;
-    if(v.valueMissing)return 'กรุณากรอกข้อมูลช่องนี้';
+    if(v.valueMissing){
+      if(input.tagName==='SELECT'){
+        if(input.dataset.requiredMessage)return input.dataset.requiredMessage;
+        const labelText=node=>{
+          const copy=node.cloneNode(true);copy.querySelectorAll('input,select,textarea,[aria-hidden=true]').forEach(el=>el.remove());
+          return copy.textContent.trim();
+        };
+        const labelled=(input.getAttribute('aria-labelledby')||'').split(/\s+/).map(id=>document.getElementById(id)).filter(Boolean).map(labelText).join(' ');
+        const label=labelled||input.getAttribute('aria-label')||[...(input.labels||[])].map(labelText).join(' ')||input.querySelector('option[value=""]')?.textContent||'';
+        const subject=label.replace(/^(กรุณา)?เลือก\s*/, '').replace(/[\s*…\.]+$/g,'').replace(/ก่อน$/,'').trim();
+        return subject?'เลือก'+subject+'ก่อน':'กรุณาเลือกตัวเลือกในช่องนี้';
+      }
+      return 'กรุณากรอกข้อมูลช่องนี้';
+    }
     if(v.typeMismatch)return input.type==='email'?'กรุณากรอกอีเมลให้ครบ เช่น name@example.com':'กรุณากรอกข้อมูลให้ตรงรูปแบบ';
     if(v.rangeUnderflow)return 'กรุณากรอกค่าอย่างน้อย '+input.min;
     if(v.rangeOverflow)return 'กรุณากรอกค่าไม่เกิน '+input.max;
@@ -105,16 +118,25 @@
     note.textContent=input.validationMessage;note.setAttribute('role','alert');
     input.setAttribute('aria-describedby',[...new Set((input.getAttribute('aria-describedby')||'').split(' ').filter(Boolean).concat(id))].join(' '));
   },true);
-  document.addEventListener('input',event=>{
+  function clearFieldError(event){
     const input=event.target;if(!input.matches('input,select,textarea'))return;
     input.setCustomValidity('');input.removeAttribute('aria-invalid');
     const id=(input.id||'cme-field')+'-error';document.getElementById(id)?.remove();
     input.setAttribute('aria-describedby',(input.getAttribute('aria-describedby')||'').split(' ').filter(s=>s!==id).join(' '));
-  });
+  }
+  document.addEventListener('input',clearFieldError);
+  document.addEventListener('change',clearFieldError);
   document.addEventListener('keydown',event=>{
+    if(event.defaultPrevented||event.key!=='Escape'||document.querySelector('.cme-modal-backdrop.open'))return;
+    if(document.querySelector('.side.drawer-open')){event.preventDefault();root.closeMobileDrawers?.();return;}
     const panel=document.getElementById('publicBriefDetails');
-    if(event.key==='Escape'&&panel&&!panel.hidden){event.preventDefault();root.toggleBriefDetails?.();document.getElementById('publicBriefToggle')?.focus();}
+    if(panel&&!panel.hidden){event.preventDefault();root.toggleBriefDetails?.();document.getElementById('publicBriefToggle')?.focus();}
   });
+  function offlineAge(at,now=Date.now()){
+    const time=Date.parse(at);if(!Number.isFinite(time))return '';
+    const minutes=Math.max(0,Math.floor((now-time)/60000));
+    return 'ข้อมูลเมื่อ '+(minutes<60?minutes+' นาที':Math.floor(minutes/60)+' ชั่วโมง')+'ที่แล้ว';
+  }
   function setup(){
     const toast=document.getElementById('toast');if(toast){toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');}
     // Preserve every word/link, disclose long introductory caveats in all reading views.
@@ -147,6 +169,6 @@
     const detail=document.querySelector('.detail .empty');
     if(detail){detail.replaceChildren(empty({title:'รายละเอียดจุดบนแผนที่',reason:'เลือกจุดความร้อนเพื่อดูเวลา พื้นที่ และช่องทางติดต่อ',action:'กลับไปดูแผนที่',onAction:()=>root.closeMobileDrawers?.()}));}
   }
-  root.CmeUx={category,pmColor,pmChip,pmChipHtml,empty,toast,popupPadding,mapLocale,invalidMessage};
+  root.CmeUx={category,pmColor,pmChip,pmChipHtml,empty,toast,popupPadding,mapLocale,invalidMessage,offlineAge};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })(window);

@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
 
 const asset=(name:string)=>readFileSync(resolve(__dirname,'../public',name),'utf8');
+const html=readFileSync(resolve(__dirname,'../index.html'),'utf8');
 function setup(body=''){
   const dom=new JSDOM(body,{runScripts:'outside-only'});
   dom.window.eval(asset('public-guidance.js'));
@@ -82,4 +83,52 @@ it('an async contextual caveat remains readable in one disclosure without replac
   note.textContent='ข้อความใหม่จากแหล่งข้อมูล';
   expect(dom.window.document.querySelector('details p')!.textContent).toBe('ข้อความใหม่จากแหล่งข้อมูล');
   dom.window.close();
+});
+
+it.each([
+  ['<label>ชนิดเหตุ<select id="choice" required><option value="">เลือก</option><option value="fire">ไฟ</option></select></label>','เลือกชนิดเหตุก่อน'],
+  ['<select id="choice" required aria-label="อำเภอ"><option value="">เลือก</option><option value="a">เมือง</option></select>','เลือกอำเภอก่อน'],
+  ['<select id="choice" required data-required-message="เลือกป่าชุมชนก่อน"><option value="">เลือก</option><option value="a">ป่าทดสอบ</option></select>','เลือกป่าชุมชนก่อน'],
+])('select errors name the missing choice and clear on change: %s',(markup,message)=>{
+  const {dom}=setup(markup);const select=dom.window.document.querySelector('select')!;
+  select.checkValidity();expect(select.validationMessage).toBe(message);
+  expect(dom.window.document.getElementById('choice-error')!.textContent).toBe(message);
+  select.selectedIndex=1;select.dispatchEvent(new dom.window.Event('change',{bubbles:true}));
+  expect(select.checkValidity()).toBe(true);expect(select.hasAttribute('aria-invalid')).toBe(false);
+  dom.window.close();
+});
+
+it.each(['left','right'])('Escape closes the %s drawer and restores the outside trigger',(side)=>{
+  const {dom}=setup('<button id="mobileLayersBtn">ชั้นข้อมูล</button><button id="tabletInsightsBtn">สรุปอากาศ</button><aside class="side left"></aside><aside class="side right"></aside><div id="mobileDrawerBackdrop"></div>');
+  const win=dom.window as any;win.syncQuickLayers=()=>{};
+  win.eval(html.slice(html.indexOf('let mobileDrawerOpener='),html.indexOf('// Four plain-language switches;')));
+  const opener=dom.window.document.getElementById(side==='left'?'mobileLayersBtn':'tabletInsightsBtn')!;
+  opener.focus();win.openMobileDrawer(side,opener);
+  expect(dom.window.document.activeElement).toBe(dom.window.document.querySelector('.side.'+side));
+  // Switch inside the sheet: closing still returns to the original trigger.
+  win.openMobileDrawer(side==='left'?'right':'left');
+  dom.window.document.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+  expect(dom.window.document.querySelector('.drawer-open')).toBeNull();
+  expect(dom.window.document.activeElement).toBe(opener);dom.window.close();
+});
+
+it('online header omits the repeated update; offline header gives the age of retained data',()=>{
+  const {dom,ux}=setup('<span id="connectionStatus" class="is-live"></span><span id="publicBriefFreshness"></span><span id="headerFreshness"></span>');
+  const win=dom.window as any;const at=new Date(Date.now()-12*60000).toISOString();
+  win.receivedAt=()=>at;win.freshnessText=()=>'อัปเดต 12 นาทีที่แล้ว';
+  win.eval(html.slice(html.indexOf('function tick(){'),html.indexOf('\nfunction stamp()')));
+  win.tick();expect(dom.window.document.getElementById('headerFreshness')!.hidden).toBe(true);
+  expect(dom.window.document.getElementById('publicBriefFreshness')!.textContent).toBe('อัปเดต 12 นาทีที่แล้ว');
+  dom.window.document.getElementById('connectionStatus')!.className='is-offline';win.tick();
+  expect(dom.window.document.getElementById('headerFreshness')!.textContent).toBe('ข้อมูลเมื่อ 12 นาทีที่แล้ว');
+  expect(dom.window.document.getElementById('headerFreshness')!.hidden).toBe(false);
+  expect(ux.offlineAge(null)).toBe('');expect(ux.offlineAge('invalid')).toBe('');dom.window.close();
+});
+
+it('foundation CSS and the anonymous font preconnection are in head exactly once',()=>{
+  const dom=new JSDOM(html);
+  expect(dom.window.document.querySelectorAll('link[href="/ux-foundation.css"]')).toHaveLength(1);
+  expect(dom.window.document.head.querySelector('link[href="/ux-foundation.css"]')).not.toBeNull();
+  const link=dom.window.document.head.querySelector('link[rel=preconnect][href="https://fonts.gstatic.com"]')!;
+  expect(link.hasAttribute('crossorigin')).toBe(true);dom.window.close();
 });

@@ -29,6 +29,7 @@
 <meta name="twitter:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -1290,6 +1291,7 @@
 <link rel="stylesheet" href="/ux-clarity.css" />
 <link rel="stylesheet" href="/home-simple.css">
 <link rel="stylesheet" href="/community-workspace.css">
+<link rel="stylesheet" href="/ux-foundation.css">
 </head>
 <body class="public-mode">
 <div id="splashScreen" class="splash-screen">
@@ -1437,8 +1439,8 @@
       </svg>
     </button>
     <div class="clock" id="clock">
-      <span class="live is-loading" id="connectionStatus" role="status" aria-live="polite"><span class="dot"></span><span id="connectionLabel">รอข้อมูล</span></span><br>
-      <span id="headerFreshness">กำลังรับข้อมูล…</span>
+      <span class="live is-loading" id="connectionStatus" role="status" aria-live="polite"><span class="dot"></span><span id="connectionLabel">รอข้อมูล</span></span>
+      <span id="headerFreshness" hidden></span>
     </div>
   </header>
 
@@ -2052,7 +2054,6 @@
 <script src="/practice-workspace.js"></script>
 <script src="/auth-ui.js"></script>
 <script src="/navigation-ui.js"></script>
-<link rel="stylesheet" href="/ux-foundation.css">
 <script src="/ux-foundation.js"></script>
 <script>
 /* ============================================================
@@ -3392,8 +3393,9 @@ function tick(){
   const status=document.getElementById('connectionStatus');
   const fresh=document.getElementById('publicBriefFreshness');
   const online=status?.classList.contains('is-live')||status?.classList.contains('is-degraded');
-  const text=online?freshnessText():(receivedAt()?'ข้อมูลที่รับไว้ · '+freshnessText():'รอเชื่อมต่อข้อมูล');
-  document.getElementById('headerFreshness').textContent=text;
+  const text=online?'':CmeUx.offlineAge(receivedAt());
+  const header=document.getElementById('headerFreshness');
+  header.textContent=text;header.hidden=!text;
   if(receivedAt()&&online) fresh.textContent=freshnessText();
 }
 function stamp(){
@@ -3427,15 +3429,28 @@ function syncPublicMapLayers(){
 const MOBILE_BREAKPOINT_MQ = window.matchMedia('(max-width:820px), (max-width:980px) and (max-height:500px)');
 function isMobileViewport(){ return MOBILE_BREAKPOINT_MQ.matches; }
 
-function closeMobileDrawers(){
+let mobileDrawerOpener=null;
+function closeMobileDrawers({restoreFocus=true}={}){
+  const wasOpen=!!document.querySelector('.side.drawer-open');
   document.querySelectorAll('.side.left,.side.right').forEach(el=>el.classList.remove('drawer-open'));
   document.getElementById('mobileDrawerBackdrop').classList.remove('open');
+  ['mobileLayersBtn','tabletInsightsBtn'].forEach(id=>document.getElementById(id)?.setAttribute('aria-expanded','false'));
+  const opener=mobileDrawerOpener;mobileDrawerOpener=null;
+  if(wasOpen&&restoreFocus&&opener?.isConnected)opener.focus({preventScroll:true});
 }
-function openMobileDrawer(side){
-  closeMobileDrawers();
-  document.querySelector(`.side.${side}`).classList.add('drawer-open');
+function openMobileDrawer(side,opener=document.activeElement){
+  const panel=document.querySelector(`.side.${side}`);if(!panel)return;
+  // Switching tabs within the sheet retains the original outside trigger.
+  const previous=document.querySelector('.side.drawer-open')?mobileDrawerOpener:null;
+  closeMobileDrawers({restoreFocus:false});
+  const trigger=document.getElementById(side==='left'?'mobileLayersBtn':'tabletInsightsBtn');
+  mobileDrawerOpener=previous||(opener&&opener!==document.body?opener:trigger);
+  panel.classList.add('drawer-open');panel.tabIndex=-1;
+  panel.id=panel.id||side+'MapDrawer';panel.setAttribute('role','region');
+  panel.setAttribute('aria-label',side==='left'?'ชั้นข้อมูลและแจ้งเตือน':'สรุปอากาศและสถิติ');
+  trigger?.setAttribute('aria-controls',panel.id);trigger?.setAttribute('aria-expanded','true');
   document.getElementById('mobileDrawerBackdrop').classList.add('open');
-  syncQuickLayers();
+  syncQuickLayers();panel.focus({preventScroll:true});
 }
 // Four plain-language switches; each sets the layer rows it stands for.
 const QUICK_LAYERS={fire:['hotspots','manualReports','spread','heat'],dust:['pm'],wind:['wind'],forest:['forest','protected']};
@@ -3454,11 +3469,11 @@ document.querySelectorAll('[data-quick]').forEach(b=>{
   };
 });
 document.addEventListener('click',e=>{ if(e.target.closest?.('.layer')) requestAnimationFrame(syncQuickLayers); });
-document.getElementById('mobileLayersBtn').onclick=()=>openMobileDrawer('left');
-document.getElementById('tabletInsightsBtn').onclick=()=>{
+document.getElementById('mobileLayersBtn').onclick=event=>openMobileDrawer('left',event.currentTarget);
+document.getElementById('tabletInsightsBtn').onclick=event=>{
   const rightPanel=document.querySelector('.side.right');
   if(rightPanel.classList.contains('drawer-open')) closeMobileDrawers();
-  else openMobileDrawer('right');
+  else openMobileDrawer('right',event.currentTarget);
 };
 document.getElementById('mobileDrawerBackdrop').onclick=closeMobileDrawers;
 document.getElementById('mobileDetailClose').onclick=closeMobileDrawers;
@@ -5496,7 +5511,10 @@ function setMode(m){
   connectionStatus.classList.remove('is-loading','is-live','is-degraded','is-offline');
   connectionStatus.classList.add(m==='live'?(degraded?'is-degraded':'is-live'):'is-offline');
   const header=document.getElementById('headerFreshness');
-  if(header) header.textContent=m==='live'?freshnessText():(lastDashboardReceivedAt?'ข้อมูลที่รับไว้ · '+freshnessText():'รอเชื่อมต่อข้อมูล');
+  if(header){
+    header.textContent=m==='live'?'':CmeUx.offlineAge(lastDashboardReceivedAt);
+    header.hidden=!header.textContent;
+  }
   if(m==='offline'){
     document.getElementById('publicBriefFreshness').textContent=lastDashboardReceivedAt
       ?'เชื่อมต่อข้อมูลล่าสุดไม่ได้ · ข้อมูลบนหน้าจอรับเมื่อ '+CmeEvidence.stamp(lastDashboardReceivedAt)

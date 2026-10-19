@@ -22,9 +22,9 @@ p,li,dd{line-height:1.6}
 .cw-header h1{font-size:24px;line-height:1.6}
 .leaflet-container,.leaflet-popup-content,.maplibregl-map,.maplibregl-popup-content,.paper{font-family:var(--font);font-variant-numeric:tabular-nums}
 .leaflet-popup-content,.maplibregl-popup-content{font-size:14px;line-height:1.6}
-.hs-pop .land-context-summary p.hs-title,.hs-row b,.hs-row small{line-height:1.6}
+body .hs-pop .land-context-summary p.hs-title,body .hs-row b,body .hs-row small{line-height:1.6}
 .leaflet-popup-content{max-height:var(--cme-popup-room,40dvh)!important;overflow-y:auto}
-.leaflet-popup[style*="--cme-popup-room"] .leaflet-popup-content{max-height:var(--cme-popup-room)!important}
+html .leaflet-popup[style*="--cme-popup-room"] .leaflet-popup-content{max-height:var(--cme-popup-room)!important}
 .leaflet-popup-close-button{min-width:36px;min-height:36px}
 .leaflet-control-zoom a,.leaflet-container a.leaflet-popup-close-button,.maplibregl-ctrl button{font-family:var(--font)}
 .mapwrap:has(.leaflet-popup) .leaflet-control-zoom{visibility:hidden;pointer-events:none}
@@ -44,7 +44,13 @@ p,li,dd{line-height:1.6}
 [aria-invalid=true]{outline:2px solid var(--danger);outline-offset:2px}
 .clock{font:400 12px/1.6 var(--font);letter-spacing:0;min-width:0;max-width:240px}
 .clock #headerFreshness{display:block;overflow-wrap:anywhere}
+.clock #headerFreshness[hidden]{display:none}
 .clock .live{font-size:12px}
+.clock:has(#headerFreshness:not([hidden])){display:flex;align-items:center;gap:5px}
+.clock:has(#headerFreshness:not([hidden])) .live{flex:none}
+/* Keep the offline status available to assistive technology; the visible
+   header uses the retained-data age and status dot without a third line. */
+.clock:has(#headerFreshness:not([hidden])) #connectionLabel{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .public-brief{position:relative}
 .public-brief-toggle{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;min-width:44px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--txt);font:500 12px/1.6 var(--font);cursor:pointer}
 .public-brief-toggle svg{width:16px;height:16px}
@@ -69,6 +75,11 @@ p,li,dd{line-height:1.6}
 .mobile-sheet-close,.drawer-close,.cw-close,.an-close,.close-x{font-size:20px;min-width:44px;min-height:44px}
 .rp-toolbar,.cw-header,.an-head{line-height:1.6}
 .detail .empty{font-size:14px;text-align:left}
+@media(min-width:821px) and (max-width:1180px){
+  /* An explicitly opened tablet sheet must override public mode's hidden
+     desktop sidebars, otherwise it cannot receive keyboard focus. */
+  body.public-mode .side.right.drawer-open{display:flex}
+}
 @media(max-width:820px), (max-width:980px) and (max-height:500px){
   .public-brief{grid-template-columns:minmax(0,1fr) minmax(0,1.65fr) minmax(0,1.1fr) 44px;gap:0;align-items:start;padding:8px}
   body.light-mode .public-brief{gap:0}
