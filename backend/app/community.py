@@ -83,7 +83,8 @@ def community_status(settings: Settings = Depends(get_settings)):
     except HTTPException:
         ready = False
     mode = 'live' if settings.community_email_enabled else 'test' if settings.community_email_test_recipient else 'unavailable'
-    return {'ready': ready, 'email_mode': mode, 'private_records': True}
+    from app.community_line import enabled
+    return {'ready': ready, 'email_mode': mode, 'line_available': enabled(settings), 'private_records': True}
 
 
 @router.get('/public-incidents')
@@ -232,8 +233,9 @@ def request_alert_check(background_tasks: BackgroundTasks, ctx=Depends(session))
     store, token, _ = ctx
     if not store.rpc('me', {}, token)['is_admin']:
         raise HTTPException(403, 'สำหรับผู้ดูแลระบบ')
-    if not (store.settings.community_email_enabled or store.settings.community_email_test_recipient):
-        raise HTTPException(503, 'ยังไม่ได้กำหนดการส่งอีเมล')
+    from app.community_mail import alerts_configured
+    if not alerts_configured(store.settings):
+        raise HTTPException(503, 'ยังไม่ได้กำหนดการส่งอีเมลหรือ LINE')
     job_key = claim_job(store,'manual')
     if not job_key:
         return {'accepted':False,'already_checked':True}
@@ -288,3 +290,52 @@ async def resend_webhook(request: Request, settings: Settings = Depends(get_sett
             raise HTTPException(413, 'Payload too large')
     payload = bytes(payload)
     return handle_webhook(CommunityStore(settings), payload, dict(request.headers))
+
+
+@router.get('/line')
+def line_status(ctx=Depends(session)):
+    from app.community_line import status
+    store, _, user = ctx
+    return status(store, user)
+
+
+@router.post('/line/link-code')
+def line_link_code(ctx=Depends(session)):
+    from app.community_line import new_link_code
+    store, _, user = ctx
+    return new_link_code(store, user)
+
+
+@router.delete('/line/link')
+def line_unlink(ctx=Depends(session)):
+    from app.community_line import unlink
+    store, _, user = ctx
+    return unlink(store, user)
+
+
+@router.post('/line/test')
+def line_test(ctx=Depends(session)):
+    from app.community_line import queue_test, process_outbox
+    store, token, user = ctx
+    if not store.rpc('me', {}, token)['is_admin']:
+        raise HTTPException(403, 'สำหรับผู้ดูแลระบบ')
+    queued = queue_test(store, user)
+    return {'queued_id': queued, **process_outbox(store)}
+
+
+@router.post('/line-webhook')
+async def line_webhook(request: Request, settings: Settings = Depends(get_settings)):
+    from app.community_line import enabled, handle_webhook
+    if not enabled(settings):
+        raise HTTPException(503, 'Webhook not configured')
+    length = request.headers.get('content-length') or '0'
+    if not length.isdecimal():
+        raise HTTPException(400, 'Invalid content length')
+    if int(length) > 262144:
+        raise HTTPException(413, 'Payload too large')
+    payload = bytearray()
+    async for chunk in request.stream():
+        payload.extend(chunk)
+        if len(payload) > 262144:
+            raise HTTPException(413, 'Payload too large')
+    return handle_webhook(CommunityStore(settings), bytes(payload), request.headers.get('x-line-signature'))

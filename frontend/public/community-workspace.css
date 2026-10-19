@@ -78,3 +78,6 @@ body.light-mode .cw-form input,body.light-mode .cw-form select,body.light-mode .
 @media(max-width:820px), (max-width:980px) and (max-height:500px){.communityview{inset:52px 0 64px 0}.cw-header{gap:10px;padding:14px 16px 12px}.cw-header h1{font-size:19px}.cw-body{padding:16px}.cw-tabs{gap:5px;margin-bottom:18px}.cw-tabs button{padding:8px 9px;font-size:12px}.cw-map{height:230px}.cw-summary{gap:12px}.cw-summary>div{min-width:100px}.cw-summary strong{font-size:16px}.cw-row{gap:10px;flex-wrap:wrap}.cw-fields{grid-template-columns:1fr}.cw-form{gap:12px}}
 @media(max-width:820px), (max-width:980px) and (max-height:500px){.cw-form input,.cw-form select,.cw-form textarea{font-size:16px}.cw-form label.cw-checkbox{min-height:44px;align-items:center}.cw-form .cw-checkbox input{min-height:20px}}
 @media(prefers-reduced-motion:reduce){.cw-btn,.cw-tabs button{transition:none}.cw-btn:hover,.cw-btn:active,.cw-tabs button:hover{transform:none}.cw-loading::after{animation:none}}
+a.cw-btn{display:inline-flex;align-items:center;text-decoration:none}
+.cw-line{padding:0 0 18px;margin:0 0 18px;border-bottom:1px solid var(--line)}
+.cw-line-steps{list-style:none;padding:0;margin:12px 0;display:flex;gap:8px;flex-wrap:wrap}

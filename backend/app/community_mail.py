@@ -180,7 +180,14 @@ def process_outbox(store: CommunityStore, limit=2, only_id=None):
     return result
 
 
+def alerts_configured(settings) -> bool:
+    from app.community_line import enabled
+    return bool(settings.community_email_enabled or settings.community_email_test_recipient or enabled(settings))
+
+
 def queue_incident_events(store: CommunityStore, now: datetime):
+    from app.community_line import incident_text, linked_users
+    line_users = linked_users(store)
     since = (now-timedelta(hours=24)).isoformat()
     memberships = store.rows('cme_memberships', select='user_id,forest_id', status='eq.approved')
     preferences = {p['user_id']: p for p in store.rows('cme_notification_preferences', select='*', events_enabled='eq.true')}
@@ -197,7 +204,16 @@ def queue_incident_events(store: CommunityStore, now: datetime):
         scopes = {incident['forest_id']} | {p['forest_id'] for p in partners if p['incident_id']==incident['id'] and p['status'] in ('invited','accepted')}
         for membership in memberships:
             uid = membership['user_id']
-            if membership['forest_id'] not in scopes or uid not in preferences:
+            if membership['forest_id'] not in scopes:
+                continue
+            status_text = STATUS.get(event.get('status_to') or incident['status'], 'อัปเดตการประสานงาน')
+            if uid in line_users:
+                inserted = store.insert('cme_line_outbox', {'dedup_key': f"incident/{event['id']}/{uid}/{membership['forest_id']}",
+                    'user_id': uid, 'forest_id': membership['forest_id'], 'category': 'incident',
+                    'message': incident_text(store, forests[incident['forest_id']]['name'], status_text,
+                                             incident['observed_at'], event['created_at'], incident['id'])}, dedup=True)
+                count += len(inserted or [])
+            if uid not in preferences:
                 continue
             if uid not in users:
                 users[uid] = store.call('GET', '/auth/v1/admin/users/' + uid)
@@ -208,7 +224,7 @@ def queue_incident_events(store: CommunityStore, now: datetime):
                 continue
             title = 'อัปเดตการประสานเหตุ: ' + forests[incident['forest_id']]['name']
             body = email_body(store, title, [
-                'สถานะในระบบ: ' + STATUS.get(event.get('status_to') or incident['status'], 'อัปเดตการประสานงาน'),
+                'สถานะในระบบ: ' + status_text,
                 'เวลาที่พบเหตุ: ' + stamp(incident['observed_at']),
                 'เวลาบันทึกความเปลี่ยนแปลง: ' + stamp(event['created_at']),
                 'ข้อมูลจากรายงานชุมชน เปิดประวัติเพื่อดูผลการตรวจสอบและผู้รับประสาน',
@@ -225,7 +241,10 @@ def queue_environment(store: CommunityStore, dashboard, now: datetime):
     forests = {f.forest_id: f for f in _official_forests}
     members = store.rows('cme_memberships', select='user_id,forest_id', status='eq.approved')
     prefs = {p['user_id']: p for p in store.rows('cme_notification_preferences', select='*')}
-    by_forest = {m['forest_id'] for m in members if prefs.get(m['user_id'], {}).get('events_enabled')}
+    from app.community_line import hotspot_text, linked_users
+    line_users = linked_users(store)
+    by_forest = {m['forest_id'] for m in members if prefs.get(m['user_id'], {}).get('events_enabled') or m['user_id'] in line_users}
+    line_forests = {m['forest_id'] for m in members if m['user_id'] in line_users}
     quality = dashboard.data_quality.get('hotspots')
     source_ready = quality is not None and not quality.is_stale and quality.source_mode in ('LIVE','SNAPSHOT')
     queued = 0
@@ -251,7 +270,10 @@ def queue_environment(store: CommunityStore, dashboard, now: datetime):
                     'แหล่งข้อมูล: ' + dashboard.hotspots.source,
                     'เวลาของชุดข้อมูล: ' + stamp(dashboard.hotspots.latest_update),
                 ])
-                queued += store.call('POST','/rest/v1/rpc/cme_enqueue_hotspots',json={'p_forest':forest_id,'p_observations':observations,'p_subject':title,'p_html':body})
+                line_text = hotspot_text(store, forest.name, len(observations), max(o['observed_at'] for o in observations),
+                                         dashboard.hotspots.source, dashboard.hotspots.latest_update) if forest_id in line_forests else None
+                queued += store.call('POST','/rest/v1/rpc/cme_enqueue_hotspots',json={'p_forest':forest_id,'p_observations':observations,
+                    'p_subject':title,'p_html':body,'p_line_text':line_text})
     if now.astimezone(ICT).hour < 8:
         return queued
     users = {}
@@ -289,7 +311,7 @@ def claim_job(store: CommunityStore, source):
 
 
 def run_jobs(store: CommunityStore, dashboard=None, *, source='manual', claimed_key=None):
-    if not (store.settings.community_email_enabled or store.settings.community_email_test_recipient):
+    if not alerts_configured(store.settings):
         return {'queued':0,'provider_accepted':0,'email_mode':'unavailable'}
     now = datetime.now(timezone.utc)
     job_key = claimed_key or claim_job(store,source)
@@ -304,7 +326,8 @@ def run_jobs(store: CommunityStore, dashboard=None, *, source='manual', claimed_
             from app.services import get_dashboard
             dashboard = get_dashboard(store.settings)
         queued = queue_incident_events(store,now) + queue_environment(store,dashboard,now)
-        result = {'queued':queued,**process_outbox(store)}
+        from app.community_line import process_outbox as process_line
+        result = {'queued':queued,**process_outbox(store),**process_line(store)}
         finish({'completed_at':datetime.now(timezone.utc).isoformat(),
                 'run_status':'completed','lease_until':None,'summary':result,'last_error':None})
         return result

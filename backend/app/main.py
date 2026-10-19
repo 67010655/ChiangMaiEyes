@@ -169,7 +169,8 @@ def dashboard(background_tasks: BackgroundTasks, settings: Settings = Depends(ge
     data = get_dashboard(settings)
     from app.environment_archive import collect_dashboard
     background_tasks.add_task(collect_dashboard, settings, data)
-    if settings.community_email_enabled or settings.community_email_test_recipient:
+    from app.community_mail import alerts_configured
+    if alerts_configured(settings):
         from app.community_mail import background_jobs
         background_tasks.add_task(background_jobs, settings, data)
     return data

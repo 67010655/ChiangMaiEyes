@@ -54,6 +54,10 @@ class Settings(BaseSettings):
     community_email_enabled: bool = False
     community_email_test_recipient: str | None = None
     community_job_secret: str | None = None
+    # LINE Official Account (Messaging API). Alerts stay off until both are set.
+    line_channel_secret: str | None = None
+    line_channel_access_token: str | None = None
+    line_basic_id: str = '@241mevgs'
     community_scheduler_enabled: bool = False
     community_site_url: str = 'https://chiangmaieyes.vercel.app'
     remote_snapshot_base_url: str | None = (

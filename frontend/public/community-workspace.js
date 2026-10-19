@@ -156,10 +156,25 @@
   function mailRow(m){
     return `<article class="cw-row"><div><strong>${esc({test:'อีเมลทดสอบ',daily:'สรุปรายวัน',incident:'การประสานเหตุ',hotspot:'จุดความร้อนใหม่'}[m.category]||m.category)}</strong><p>${date(m.created_at)} · ${esc({pending:'รอส่ง',processing:'กำลังส่ง',sent:'ผู้ให้บริการรับแล้ว',failed:'ส่งไม่สำเร็จ',suppressed:'ระงับการส่ง'}[m.status]||m.status)} · ${esc({provider_accepted:'รอยืนยันการนำส่ง',delivered:'ส่งถึงระบบอีเมลผู้รับแล้ว',bounced:'อีเมลตีกลับ',complained:'ผู้รับแจ้งร้องเรียน',failed:'นำส่งไม่สำเร็จ'}[m.delivery_status]||m.delivery_status||'ยังไม่มีผลนำส่ง')}</p>${m.last_error?`<small>${esc(m.last_error)}</small>`:''}</div></article>`;
   }
+  function lineView(){
+    const l=state.line,admin=state.me.is_admin,code=state.lineCode,link=(href,label,primary)=>`<a class="cw-btn${primary?' primary':''}" href="${esc(href)}" target="_blank" rel="noopener">${label}</a>`;
+    if(!l)return '<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p class="cw-help" role="status">กำลังตรวจการเชื่อม LINE…</p></section>';
+    if(!l.available)return '<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p class="cw-help">ยังไม่ได้เปิดใช้การแจ้งเตือนทาง LINE ในระบบนี้</p></section>';
+    const scope=state.me.memberships?.some(m=>m.status==='approved')?'':'<div class="cw-alert">จะเริ่มได้รับแจ้งเตือนหลังผู้ดูแลอนุมัติคุณเป็นตัวแทนป่า</div>';
+    if(l.linked)return `<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p><strong>ผูก LINE แล้ว</strong> · ตั้งแต่ ${date(l.linked_at)}</p>${scope}
+      <p class="cw-help">ส่งเมื่อพบจุดความร้อนใหม่ในป่าที่ได้รับอนุมัติ หรือมีการอัปเดตการประสานเหตุ ช่วงพักการส่งด้านล่างใช้กับ LINE ด้วย สรุปรายวันส่งทางอีเมลเท่านั้น</p>
+      <div class="cw-actions">${admin?button('ส่ง LINE ทดสอบ','line-test'):''}${button('ยกเลิกการผูก LINE','line-unlink')}</div></section>`;
+    return `<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p class="cw-help">รับแจ้งเมื่อพบจุดความร้อนใหม่ในป่าที่คุณดูแล ผ่านบัญชี LINE ทางการ ${esc(l.basic_id)} ไม่ต้องสมัครบัญชีใหม่</p>${scope}
+      ${code?`<ol class="cw-line-steps"><li>${link(code.add_friend_url,'1. เพิ่มเพื่อน '+esc(l.basic_id))}</li><li>${link(code.chat_url,'2. เปิดแชทแล้วกดส่งรหัส',true)}</li></ol>
+        <p class="cw-help">รหัส <strong>${esc(code.code)}</strong> ใช้ได้ครั้งเดียว ถึง ${date(code.expires_at)} ถ้าเปิดลิงก์ไม่ได้ ให้พิมพ์รหัสนี้ส่งในแชทเอง</p>
+        <div class="cw-actions">${button('ส่งรหัสแล้ว ตรวจสถานะ','line-refresh',  '',true)}${button('ขอรหัสใหม่','line-link')}</div>`
+      :`<div class="cw-actions">${button('รับแจ้งเตือนทาง LINE','line-link','',true)}</div>`}</section>`;
+  }
   function preferencesView(){
     const p=state.me.preferences,admin=state.me.is_admin,mail=state.mailStatus||[];
     const hours=value=>Array.from({length:24},(_,h)=>`<option value="${h}" ${h===value?'selected':''}>${h.toString().padStart(2,'0')}:00 น.</option>`).join('');
     return `<section class="cw-section">${admin?'<div class="cw-layout cw-preferences-layout"><div>':''}
+      ${lineView()}
       <h2>อีเมลของพื้นที่ที่คุณติดตาม</h2><p class="cw-help">ส่งถึงอีเมลที่ยืนยันของบัญชีนี้ เฉพาะป่าที่ได้รับอนุมัติ เมื่อข้อมูลใหม่เข้ามาหรือมีการประสานเหตุ</p>
       ${state.emailMode!=='live'?'<div class="cw-alert">ยังไม่ส่งถึงสมาชิกทั่วไป ขณะนี้ส่งได้เฉพาะอีเมลทดสอบที่กำหนด จะเปิดรับจริงหลังยืนยันโดเมนผู้ส่ง</div>':''}
       <form class="cw-form" id="cwPreferencesForm">
@@ -227,6 +242,7 @@
           if(!state.forestId||!allowedForests().some(f=>f.forest_id===state.forestId))state.forestId=allowedForests()[0]?.forest_id||'';
           state.draft=state.draft||readDraft();
           if(state.tab==='review'&&me.is_admin)state.reviewQueue=await api('/review-queue');
+          if(state.tab==='preferences'){state.line=await api('/line').catch(()=>({available:false}));if(state.line.linked)state.lineCode=null;}
           if(state.tab==='preferences'&&me.is_admin)[state.mailStatus,state.jobsStatus]=await Promise.all([api('/mail-status'),api('/jobs-status')]);
           if(state.detail?.incident?.id){state.eventMore=true;state.detail=await api('/incidents/'+state.detail.incident.id);}
         }
@@ -271,6 +287,10 @@
       else if(['approve','reject','revoke'].includes(a)){await api('/memberships/'+b.dataset.id,{method:'PATCH',data:{status:{approve:'approved',reject:'rejected',revoke:'revoked'}[a]}});state.notice='บันทึกผลตรวจสิทธิ์แล้ว';await load();}
       else if(a==='test-email'){const result=await api('/test-email',{method:'POST'});state.notice=result.provider_accepted?'Resend รับอีเมลทดสอบแล้ว กรุณาตรวจกล่องจดหมายและจดหมายขยะ':result.failed?'ยังส่งไม่สำเร็จ ตรวจผลการส่งล่าสุด':'เก็บอีเมลเข้าคิวแล้ว';await load();}
       else if(a==='run-alerts'){const result=await api('/request-alert-check',{method:'POST'});state.notice=result.already_checked?'ตรวจในรอบนี้แล้ว หรือมีงานกำลังตรวจอยู่ จะตรวจอีกครั้งในรอบถัดไป':result.accepted?'รับคำขอตรวจแล้ว งานจะทำต่อเบื้องหลัง กดอัปเดตผลการส่งเพื่อดูผลล่าสุด':`ตรวจข้อมูลและคิวแล้ว · Resend รับ ${result.provider_accepted||0} ข้อความ`;[state.mailStatus,state.jobsStatus]=await Promise.all([api('/mail-status'),api('/jobs-status')]);}
+      else if(a==='line-link'){state.lineCode=await api('/line/link-code',{method:'POST'});state.notice='เพิ่มเพื่อนแล้วกดส่งรหัสในแชท LINE จากนั้นกลับมากดตรวจสถานะ';}
+      else if(a==='line-refresh'){state.line=await api('/line');if(state.line.linked){state.lineCode=null;state.notice='ผูก LINE สำเร็จแล้ว';}else state.notice='ยังไม่พบการผูก ตรวจว่ากดส่งรหัสในแชทแล้ว และรหัสยังไม่หมดอายุ';}
+      else if(a==='line-unlink'){if(!root.confirm('ยกเลิกการผูก LINE? จะไม่ได้รับแจ้งเตือนทาง LINE อีก'))return;await api('/line/link',{method:'DELETE'});state.line=await api('/line');state.notice='ยกเลิกการผูก LINE แล้ว';}
+      else if(a==='line-test'){const result=await api('/line/test',{method:'POST'});state.notice=result.line_accepted?'LINE รับข้อความทดสอบแล้ว ตรวจในแชท LINE ของคุณ':result.line_quota_reached?'โควตาข้อความ LINE ของเดือนนี้หมดแล้ว':'ยังส่งไม่สำเร็จ ลองอีกครั้งภายหลัง';}
       else if(a==='refresh-mail')[state.mailStatus,state.jobsStatus]=await Promise.all([api('/mail-status'),api('/jobs-status')]);
       else if(a==='load-checks')fieldChecks.set(state.detail.incident.id,await api('/incidents/'+state.detail.incident.id+'/field-checks'));
       else if(a==='export-checks')root.CmeField.download(root.CmeField.csv(fieldChecks.get(state.detail.incident.id)||[],state.detail.incident),'chiangmaieyes-field-checks-'+state.detail.incident.id+'.csv');
