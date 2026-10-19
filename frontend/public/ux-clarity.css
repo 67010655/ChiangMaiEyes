@@ -239,3 +239,9 @@
 
 .fire-help{margin:12px 0;padding-top:10px;border-top:1px solid var(--line);font:14px/1.6 var(--disp)}
 .fire-help a[href^="tel:"]{display:inline-flex;align-items:center;min-height:44px;color:var(--wind);font-weight:600}
+
+/* PM2.5 level word (PCD AQI B.E. 2566) and the always-visible 1362 call button */
+.public-level{font-size:.62em;font-weight:600;white-space:nowrap}
+.public-level-good{color:#16a34a}.public-level-warn{color:#ca8a04}.public-level-bad{color:#ea580c}
+.map-fab.call-fab{color:var(--good,#43b05f);text-decoration:none}
+.my-location-popup{font:13px/1.55 var(--disp,sans-serif)}.my-location-popup p{margin:6px 0}

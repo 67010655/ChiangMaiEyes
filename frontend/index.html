@@ -1621,6 +1621,9 @@
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
           <span>ตำแหน่งฉัน</span>
         </button>
+        <a class="map-fab call-fab" id="callFireHotlineBtn" href="tel:1362" aria-label="เห็นไฟป่า โทรสายด่วนพิทักษ์ป่า 1362 ได้โดยไม่ต้องสมัครสมาชิก" title="สายด่วนพิทักษ์ป่า กรมอุทยานฯ">
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span>โทร 1362</span>
+        </a>
         <button class="map-fab report-fab" id="reportHotspotBtn" aria-label="รายงานจุดความร้อน" title="รายงานจุดความร้อนด้วยตนเอง (ต้องเข้าสู่ระบบ)">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>แจ้งจุดร้อน</span>
         </button>
@@ -2022,6 +2025,7 @@
 <link rel="stylesheet" href="/forest-coordination.css">
 <script src="/forest-coordination.js"></script>
 <script src="/protected-areas.js"></script>
+<script src="/public-guidance.js"></script>
 <script src="/spread-hint.js"></script>
 <script src="/land-context.js"></script>
 <script src="/community-workspace.js"></script>
@@ -2464,7 +2468,8 @@ function manualReportPopupHtml(r){
 // markers still have a sensible radius (never shown as MW).
 function intensity(h){ return h.frp!=null ? h.frp : 22; }
 function pmColor(p){ return p>90?'#7e22ce': p>55?'#a855f7': p>37?'#c084fc':'#ddd6fe'; }
-function pmAqiLabel(p){ return p>90?'อันตราย': p>55?'มีผลต่อสุขภาพ': p>37?'เริ่มมีผลต่อสุขภาพ':'ปานกลาง'; }
+// Same PCD AQI B.E. 2566 thresholds as the top card (was 37/55/90 from the pre-2023 index).
+function pmAqiLabel(p){ return CmePublicGuidance.pmLevel(p)?.label||'—'; }
 
 // ---- Render hotspots ----
 let selected=null;
@@ -3261,6 +3266,7 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
       if(format.prefix){const prefix=document.createElement('span');prefix.className='public-wind-direction';prefix.textContent=format.prefix;parts.push(prefix);}
       parts.push(document.createTextNode(String(format.number)));
       const unit=document.createElement('small');unit.textContent=' '+format.unit;parts.push(unit);
+      if(format.suffix){const suffix=document.createElement('span');suffix.className='public-level public-level-'+(format.tone||'neutral');suffix.textContent=' · '+format.suffix;parts.push(suffix);}
       el.replaceChildren(...parts);
     }else el.textContent=value;
     const signal=el.closest('.public-signal');
@@ -3269,7 +3275,9 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
     signal.classList.add('updated');
   };
   updateValue('publicFireValue',hotspotReady?`${activeCount} จุด`:'ยังไม่มีข้อมูล',hotspotReady?{number:activeCount,unit:'จุด'}:null);
-  updateValue('publicPmValue',pmReady?`${pmAvg} µg/m³`:'ไม่มีข้อมูล',pmReady?{number:pmAvg,unit:'µg/m³'}:null);
+  // Level words: PCD AQI B.E. 2566 thresholds (24-h average) compared with the latest station average.
+  const pmLv=pmReady?CmePublicGuidance.pmLevel(pmAvg):null;
+  updateValue('publicPmValue',pmReady?`${pmAvg} µg/m³${pmLv?' · '+pmLv.label:''}`:'ไม่มีข้อมูล',pmReady?{number:pmAvg,unit:'µg/m³',suffix:pmLv?.label,tone:pmLv?.tone}:null);
   const windReady=!!PREVAILING && !!liveDataQ?.weather &&
     liveDataQ.weather.source_mode!=='UNAVAILABLE' && !liveDataQ.weather.is_stale;
   const blowTo=windReady?(PREVAILING.deg+180)%360:0;
@@ -3287,7 +3295,8 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   document.getElementById('publicWindSignal').title=sourceLabel('weather')+' · ลูกศรชี้ทิศที่ลมพัดไป · '+(modelWind?'แบบจำลองเหนือพื้นดิน 10 เมตร':'ระดับความสูงของสถานี: feed ยังไม่ระบุ');
   document.getElementById('publicBriefFreshness').textContent='อัปเดตเป็นรอบ · ดูเวลารายชุด';
   document.getElementById('publicFireSourceDetail').textContent=sourceLabel('hotspots')+' · '+document.getElementById('publicFireMeta').textContent;
-  document.getElementById('publicPmSourceDetail').textContent=document.getElementById('publicPmMeta').textContent+(pmReady?' · ค่าเฉลี่ยจากสถานีที่มีข้อมูล ไม่ใช่ค่าที่วัดได้ทุกพื้นที่':'');
+  document.getElementById('publicPmSourceDetail').textContent=document.getElementById('publicPmMeta').textContent+(pmReady?' · ค่าเฉลี่ยจากสถานีที่มีข้อมูล ไม่ใช่ค่าที่วัดได้ทุกพื้นที่':'')+
+    (pmLv?` · ระดับ${pmLv.label}: ${pmLv.advice} · เทียบ${pmLv.source} ค่าที่แสดงเป็นค่าล่าสุด ไม่ใช่ค่าเฉลี่ย 24 ชม.`:'');
   document.getElementById('publicWindSourceDetail').textContent=(windReady?'พัดไปทาง'+_degToCompass(blowTo)+' · ':'')+sourceLabel('weather')+' · '+document.getElementById('publicWindMeta').textContent;
 }
 // Single wind source for the popup spread hint: the same reading, direction
@@ -3393,10 +3402,32 @@ syncMapViewport();
 
 // Current-location button — flies to the device's GPS position if granted,
 // otherwise falls back to the province center with a toast explaining why.
+// "Fire near me": marker + nearest satellite detection. The position stays in
+// this browser (never sent to the backend or put in a URL).
+let myLocationLayer=null;
+function myLocationPopupHtml(lat,lon){
+  const e=CmeEvidence.escapeHtml, r=CmePublicGuidance.nearMe({lat,lon},hotspots);
+  const where=districtForPoint(lat,lon)?'':'<p class="evidence-note">ตำแหน่งของคุณอยู่นอกจังหวัดเชียงใหม่ ระบบแสดงเฉพาะจุดในเชียงใหม่</p>';
+  const row=(x,fresh)=>`<p><b>${fresh?'จุดความร้อนใน 24 ชม. ที่ใกล้ที่สุด':'จุดความร้อนที่ใกล้ที่สุด (เก่ากว่า 24 ชม.)'}</b><br>ห่างราว ${x.km.toFixed(1)} กม. ไปทาง${_degToCompass(x.deg)} · ตรวจพบ ${e(formatAge(x.ageHours*60))} ที่แล้ว</p>`;
+  const body=r.nearestFresh?row(r.nearestFresh,true)+`<p>ในรัศมี ${r.radiusKm} กม. มี ${r.freshWithin} จุดใน 24 ชม.</p>`
+    : r.nearestAny?'<p>ไม่พบจุดความร้อนใน 24 ชม. ที่ระบบมี</p>'+row(r.nearestAny,false)
+    : '<p>ระบบยังไม่มีจุดความร้อนให้เทียบ</p>';
+  return `<div class="my-location-popup"><b>คุณอยู่ที่นี่</b>${where}${body}<p class="evidence-note">ระยะเส้นตรงจากจุดดาวเทียม ไม่ยืนยันว่าไฟยังไหม้ และการไม่พบจุดไม่ได้ยืนยันว่าไม่มีไฟ</p>${CmeEvidence.fireHelpHtml()}</div>`;
+}
+function showMyLocation(lat,lon,accuracy){
+  if(myLocationLayer) map.removeLayer(myLocationLayer);
+  myLocationLayer=L.layerGroup([
+    L.circle([lat,lon],{radius:Math.min(accuracy||0,2000),color:'#3b82f6',weight:1,fillOpacity:.08,interactive:false}),
+    L.circleMarker([lat,lon],{radius:8,color:'#fff',weight:2,fillColor:'#3b82f6',fillOpacity:1})
+      .bindPopup(()=>myLocationPopupHtml(lat,lon),{maxWidth:300})
+  ]).addTo(map);
+  map.flyTo([lat,lon],12,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
+  map.once('moveend',()=>myLocationLayer?.getLayers()[1]?.openPopup());
+}
 document.getElementById('mobileLocateBtn').onclick=()=>{
   if(!navigator.geolocation){ toast('เบราว์เซอร์นี้ไม่รองรับตำแหน่งปัจจุบัน'); return; }
   navigator.geolocation.getCurrentPosition(
-    pos=>map.flyTo([pos.coords.latitude,pos.coords.longitude],13,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0}),
+    pos=>showMyLocation(pos.coords.latitude,pos.coords.longitude,pos.coords.accuracy),
     ()=>toast('ไม่สามารถเข้าถึงตำแหน่งปัจจุบันได้ — ตรวจสอบสิทธิ์ตำแหน่งของเบราว์เซอร์'),
     {timeout:8000}
   );
