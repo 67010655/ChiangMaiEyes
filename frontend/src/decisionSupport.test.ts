@@ -28,7 +28,7 @@ describe('evidence selection for public summaries and export',()=>{
   });
   it('renders real observation rows and distinguishes old markers without crashing',()=>{
     const html=readFileSync(resolve(__dirname,'../index.html'),'utf8');
-    const render=html.match(/function renderHotspots\(\)\{[\s\S]*?\n\}/)![0];
+    const render=html.match(/function hotspotAgeClass\([\s\S]*?\n\}/)![0]+'\n'+html.match(/function renderHotspots\(\)\{[\s\S]*?\n\}/)![0];
     const markers: any[]=[];
     class Clock extends Date {static now(){return now;}}
     const runtime: any={
@@ -37,12 +37,15 @@ describe('evidence selection for public summaries and export',()=>{
       frpColor:()=> '#ff8a3d',clearForestProximity:()=>{},
       document:{getElementById:()=>({textContent:''})},
       layers:{hotspots:{clearLayers:()=>{},addLayer:(m:any)=>markers.push(m)}},
-      L:{divIcon:(o:any)=>o,marker:()=>({opacity:null as number|null,setOpacity(v:number){this.opacity=v;return this;},bindPopup(){return this;},on(){return this;}})}
+      L:{divIcon:(o:any)=>({options:{...o}}),marker:(_:any,opts:any)=>({opts,bindPopup(){return this;},on(){return this;}})}
     };
     runtime.window=runtime;
     runInNewContext(readFileSync(resolve(__dirname,'../public/decision-support.js'),'utf8')+'\n'+render+'\nrenderHotspots();',runtime);
     expect(markers).toHaveLength(2);
-    expect(markers.map(m=>m.opacity)).toEqual([1,.38]);
+    // Old detections must look different from new ones (H7 age classes).
+    expect(markers.map(m=>m.opts.cmeAge)).toEqual(['new','old']);
+    expect(markers[0].opts.icon.options.html).toContain('age-new');
+    expect(markers[1].opts.icon.options.html).toContain('age-old');
   });
   it('keeps missing history distinct from observed zero counts',()=>{
     expect(e.dailyStats([]).total).toBeNull();

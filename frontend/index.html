@@ -1607,7 +1607,7 @@
       <div id="mapRenderStatus" class="map-render-status" role="status" aria-live="polite" hidden>รับข้อมูลได้ แต่แผนที่แสดงผลไม่ครบ<button type="button" onclick="goLive(true)">ลองอีกครั้ง</button></div>
 <div class="map-view-actions" aria-label="มุมมองสถานการณ์" hidden><span>แผนที่ 2D</span></div>
       <div id="map" role="application" aria-label="แผนที่จุดความร้อน คุณภาพอากาศ และทิศทางลมจังหวัดเชียงใหม่ (โต้ตอบได้)"></div>
-      <div class="map-time-note" title="กดหมุดเพื่อดูเวลา จุดความร้อนยังไม่ยืนยันว่าไฟกำลังไหม้"><span class="legend-item"><span class="legend-dot fresh"></span>สว่าง = ภายใน 24 ชม.</span><span class="legend-item"><span class="legend-dot old"></span>จาง = เก่ากว่า</span></div>
+      <div class="map-time-note" title="กดหมุดเพื่อดูเวลา จุดความร้อนยังไม่ยืนยันว่าไฟกำลังไหม้"><span class="legend-item"><span class="hs-dot-pin age-new"></span>ไม่เกิน 6 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-old"></span>เก่ากว่า</span></div>
       <div class="map-overlay basemap-toggle">
         <button class="active" data-base="dark">สีเข้ม</button>
         <button data-base="osm">ถนน</button>
@@ -2039,6 +2039,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 <script type="module" src="/src/maplibre-global.ts"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.js"></script>
@@ -2372,7 +2373,16 @@ document.querySelectorAll('[data-base]').forEach(b=>{
 
 // Layer groups
 const layers = {
-  hotspots: L.layerGroup().addTo(map),
+  // Nearby hotspots group into one count bubble when zoomed out; individual
+  // dots from zoom 11. The bubble takes the colour of its freshest member.
+  hotspots: (typeof L.markerClusterGroup==='function'?L.markerClusterGroup({
+    maxClusterRadius:20, disableClusteringAtZoom:10, showCoverageOnHover:false, spiderfyOnMaxZoom:true,
+    iconCreateFunction:c=>{
+      const ages=c.getAllChildMarkers().map(m=>m.options.cmeAge);
+      const age=ages.includes('new')?'new':ages.includes('recent')?'recent':'old';
+      return L.divIcon({html:`<span class="hs-cluster age-${age}">${c.getChildCount()}</span>`,className:'hotspot-hit-target',iconSize:[44,44],iconAnchor:[22,22]});
+    }
+  }):L.layerGroup()).addTo(map),
   // pm defaults OFF (2026-07) — detached at boot; renderPm() doesn't check
   // the toggle state itself, so NOT attaching here is what keeps it actually
   // invisible until the user clicks the layer on. wind defaults ON (2026-07)
@@ -2517,36 +2527,26 @@ function pmAqiLabel(p){ return CmePublicGuidance.pmLevel(p)?.label||'—'; }
 
 // ---- Render hotspots ----
 let selected=null;
+// Hotspot age class (H7): one meaning per colour, the same as the legend.
+// <6 h = new, 6-24 h = recent, older = faded. FRP and confidence stay in the popup.
+function hotspotAgeClass(h,now=Date.now()){
+  const t=Date.parse(h.detected_at);if(!Number.isFinite(t))return 'old';
+  const hours=(now-t)/3600000;
+  return hours<=6?'new':hours<=24?'recent':'old';
+}
 function renderHotspots(){
   layers.hotspots.clearLayers();
   hotspots.forEach(h=>{
-    const recent=CmeEvidence.filterHotspots([h],{hours:24}).length>0;
-    const isHigh = h.conf==='high';
-    const big = isHigh && (h.frp||0) > 50;
-    const sz = big ? 30 : isHigh ? 24 : 18;
-    const col = recent?'var(--state-fresh)':'var(--state-old)';
-    const emojiSz = Math.round(sz * 0.62);
-    // solid colored circle = high conf, hollow border = low conf (matches legend)
-    const bgStyle = isHigh
-      ? `background:${col};box-shadow:0 0 6px color-mix(in srgb,${col} 60%,transparent)`
-      : h.conf==='nominal' ? `background:${col};opacity:.55`
-      : `background:transparent;border:2px solid ${col};opacity:.6`;
-    // Reuses the per-district wind pin's radar-ping ring (see .pulse-wrap,
-    // shared @keyframes windRing) — ring color matches the marker's own FRP
-    // color so a critical/high-confidence hotspot reads as more urgent.
+    const age=hotspotAgeClass(h);
     const icon = L.divIcon({
-      html: `<div class="pulse-wrap" style="width:${sz}px;height:${sz}px;color:${col}">`+
-        `<div class="ring" style="animation-delay:${(Math.random()*2.4).toFixed(2)}s;${recent?'':'display:none'}"></div>`+
-        `<span style="${bgStyle};border-radius:50%;display:inline-flex;align-items:center;justify-content:center;width:${sz}px;height:${sz}px;font-size:${emojiSz}px;line-height:1">🔥</span>`+
-      `</div>`,
-      // Keep the drawn FRP circle and geographic centre unchanged while
-      // providing a finger-sized hit area around it on every viewport.
+      html:`<span class="hs-dot-pin age-${age}" aria-hidden="true"></span>`,
+      // Finger-sized hit area around a small dot, geographic centre unchanged.
       className: 'hotspot-hit-target',
       iconSize: [44, 44],
       iconAnchor: [22, 22]
     });
-    const m = L.marker([h.lat,h.lon],{icon, zIndexOffset:isHigh?100:0});
-    m.setOpacity(recent?1:.38);
+    icon.options.cmeAge=age;
+    const m = L.marker([h.lat,h.lon],{icon, zIndexOffset:age==='new'?200:age==='recent'?100:0, cmeAge:age});
     // Function form (not a static string) — regenerated on every open, so
     // the "ป่าชุมชนใกล้เคียง" section isn't permanently missing if this
     // marker got bound before allForests finished loading (nearestForests()
@@ -5961,12 +5961,11 @@ function _sync3DHotspots(){
   _3dMarkers=[];
   if(!mlMap) return;
   hotspots.forEach(h=>{
-    const isHigh=h.conf==='high';
-    const big=isHigh&&(h.frp||0)>50;
-    const sz=big?28:isHigh?22:16;
+    // Same age dots as the 2D map, inside a finger-sized hit area.
     const el=document.createElement('span');
-    el.textContent='🔥';
-    el.style.cssText=`font-size:${sz}px;line-height:1;cursor:pointer;display:block;user-select:none;${isHigh?'':'opacity:.45;filter:grayscale(.7)'}`;
+    el.className='hotspot-hit-target hs-3d-hit';
+    el.innerHTML=`<span class="hs-dot-pin age-${hotspotAgeClass(h)}" aria-hidden="true"></span>`;
+    el.setAttribute('role','button');el.setAttribute('aria-label','จุดความร้อน '+(h.district||''));
     el.addEventListener('click',(e)=>{
       // Marker elements sit inside the map canvas's container, so an
       // unstopped click bubbles to the map's own click handler — combined

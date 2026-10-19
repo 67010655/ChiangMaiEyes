@@ -32,3 +32,22 @@ body.light-mode .cm-province-line{stroke:#334155;stroke-opacity:.8}
   /* Keep attribution readable but small, clear of the action bar. */
   .leaflet-control-attribution{margin-bottom:62px!important;font-size:12px!important;opacity:.85}
 }
+
+/* Hotspot dots by age (H7): new = red with a slow ring, 6-24 h = orange, older = small grey. */
+.hotspot-hit-target{display:flex!important;align-items:center;justify-content:center;background:none!important;border:0!important}
+.hs-3d-hit{width:44px;height:44px;cursor:pointer}
+.hs-dot-pin{position:relative;display:inline-block;border-radius:50%;flex:none;box-shadow:0 0 0 2px rgba(0,0,0,.35)}
+.hs-dot-pin.age-new{width:14px;height:14px;background:#ef4444}
+.hs-dot-pin.age-recent{width:12px;height:12px;background:#f59e0b}
+.hs-dot-pin.age-old{width:8px;height:8px;background:#94a3b8;opacity:.85}
+body.light-mode .hs-dot-pin{box-shadow:0 0 0 2px rgba(255,255,255,.9)}
+.leaflet-marker-icon .hs-dot-pin.age-new::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid #ef4444;animation:hsPinRing 2s ease-out infinite}
+@keyframes hsPinRing{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+.map-time-note .hs-dot-pin{box-shadow:none}
+.map-time-note .hs-dot-pin.age-old{opacity:1}
+/* Count bubble for grouped pins; colour = freshest member. */
+.hs-cluster{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 6px;border-radius:999px;font:600 13px/1 var(--font);color:#fff;border:2px solid rgba(255,255,255,.85);box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.hs-cluster.age-new{background:#dc2626}
+.hs-cluster.age-recent{background:#d97706}
+.hs-cluster.age-old{background:#64748b}
+@media(prefers-reduced-motion:reduce){.leaflet-marker-icon .hs-dot-pin.age-new::after{animation:none;opacity:.5;transform:scale(1.3)}}
