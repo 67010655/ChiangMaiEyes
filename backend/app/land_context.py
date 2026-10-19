@@ -95,6 +95,20 @@ def reference():
     return json.loads((DATA / 'land-context-reference.json').read_text(encoding='utf-8'))
 
 
+def terrain(lat, lon):
+    """Slope/upslope from the repo DEM grid; None off-grid. Optional for clients."""
+    try:
+        from app.forecast_terrain import at
+        cell = at(lat, lon)
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    if not cell:
+        return None
+    return {'slope_deg': round(cell['slope_deg'], 1), 'upslope_to_deg': round(cell['upslope_to_deg']),
+            'elevation_m': round(cell['elevation_m']), 'grid_spacing_m': round(cell['grid_spacing_m'][1]),
+            'source': 'ChiangMaiEyes forecast-terrain grid (repo DEM)'}
+
+
 def resolve(lat, lon, code=None, name=None):
     direct = ldd_context(code, name)
     world = sample('spread-landcover', lat, lon) if not direct else None
@@ -116,7 +130,9 @@ def resolve(lat, lon, code=None, name=None):
             'note':'จุดความร้อนไม่ยืนยันชนิดไฟหรือสาเหตุ; ไฟในแปลงอาจลามเข้าป่าได้',
             'reference':reference()['profiles'].get(kind, reference()['profiles']['unknown']),
             'province_context':reference().get('province_context') if kind == 'unknown_forest' else None,
-            'reference_sources':reference()['sources'], 'map_years':[s['year'] for s in sources if s['year']]}
+            'reference_sources':reference()['sources'], 'map_years':[s['year'] for s in sources if s['year']],
+            'spread_rate':reference().get('spread_rates', {}).get(kind), 'spread_factors':reference().get('spread_factors'),
+            'terrain':terrain(lat, lon)}
 
 
 @router.get('')

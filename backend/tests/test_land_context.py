@@ -128,3 +128,16 @@ def test_context_endpoint_is_public_and_rejects_invalid_coordinates_and_oversize
         assert client.get('/api/land-context',params={'latitude':18.8,'longitude':98.9,'landuse_type':'A101'}).json()['kind']=='crop'
         for params in [{'latitude':91,'longitude':98.9},{'latitude':18.8,'longitude':181},{'latitude':'nan','longitude':98.9},{'latitude':18.8,'longitude':98.9,'landuse_type':'x'*101}]:
             assert client.get('/api/land-context',params=params).status_code==422
+
+
+def test_spread_inputs_are_optional_cited_and_follow_the_terrain_grid():
+    east_face = land.resolve(18.80, 98.93)
+    assert east_face['terrain'] and east_face['terrain']['slope_deg'] >= 5
+    # Doi Suthep summit lies west of this point: upslope must point roughly west.
+    assert 225 <= east_face['terrain']['upslope_to_deg'] <= 315
+    assert east_face['spread_rate']['refs'] == [{'id': 'rfd', 'page': 10}]
+    assert east_face['spread_factors']['refs'] == [{'id': 'rfd', 'page': 9}]
+    city = land.resolve(18.7883, 98.9853)
+    assert city['kind'] == 'built' and city['spread_rate'] is None
+    off_grid = land.resolve(25.0, 100.0)
+    assert off_grid['terrain'] is None

@@ -1,5 +1,5 @@
 {
-  "version": "land-context-reference-v3-measured-fuel",
+  "version": "land-context-reference-v4-spread-rates",
   "checked_on": "2026-10-19",
   "qualifier": "ประเมินจากแผนที่ ไม่ใช่การสำรวจในพื้นที่",
   "meaning": "Static literature context, not a fuel model, measured fuel load, current fire-type detection or dispatch recommendation.",
@@ -851,5 +851,88 @@
       },
       "t_rai": "0.43"
     }
-  }
+  },
+  "spread_rates": {
+    "mixed_deciduous": {
+      "min_m_min": "0.7",
+      "max_m_min": "5",
+      "site": "ป่าเบญจพรรณ",
+      "condition": "ช่วงที่วัดในสภาพลมสงบ ลมแรงทำให้ลามเร็วขึ้น",
+      "refs": [
+        {
+          "id": "rfd",
+          "page": 10
+        }
+      ],
+      "min_m_per_hour": "42",
+      "max_m_per_hour": "300"
+    },
+    "dipterocarp": {
+      "min_m_min": "0.5",
+      "max_m_min": "9",
+      "site": "ป่าเต็งรัง",
+      "condition": "ช่วงที่เอกสารรายงาน",
+      "refs": [
+        {
+          "id": "rfd",
+          "page": 10
+        }
+      ],
+      "min_m_per_hour": "30",
+      "max_m_per_hour": "540"
+    },
+    "deciduous": {
+      "min_m_min": "0.5",
+      "max_m_min": "9",
+      "site": "ป่าผลัดใบ (เบญจพรรณและเต็งรัง)",
+      "condition": "ช่วงรวมของสองชนิดป่า",
+      "refs": [
+        {
+          "id": "rfd",
+          "page": 10
+        }
+      ],
+      "min_m_per_hour": "30",
+      "max_m_per_hour": "540"
+    },
+    "unknown_forest": {
+      "min_m_min": "0.5",
+      "max_m_min": "9",
+      "site": "ป่าผลัดใบ (เบญจพรรณและเต็งรัง)",
+      "condition": "ใช้ได้เฉพาะถ้าจุดนี้เป็นป่าผลัดใบ ป่าดิบยังไม่มีค่าที่ตรวจสอบได้",
+      "refs": [
+        {
+          "id": "rfd",
+          "page": 10
+        }
+      ],
+      "min_m_per_hour": "30",
+      "max_m_per_hour": "540"
+    },
+    "crop": {
+      "min_m_min": "5.61",
+      "max_m_min": "5.61",
+      "site": "การทดลองเผาไร่ข้าวโพดพื้นที่สูง จ.น่าน",
+      "condition": "ค่าจากการทดลองเผา ไม่ใช่ค่าของนาข้าวพื้นราบ",
+      "refs": [
+        {
+          "id": "wanthongchai_2021",
+          "page": 5
+        }
+      ],
+      "in_summary": false,
+      "min_m_per_hour": "337",
+      "max_m_per_hour": "337"
+    }
+  },
+  "spread_factors": {
+    "text": "ลมแรงทำให้ไฟลามเร็วขึ้นและเปลี่ยนทิศได้; กลางวันไฟมักลามขึ้นเขาเพราะลมหุบเขาพัดขึ้น กลางคืนลมหุบเขาพัดลง",
+    "refs": [
+      {
+        "id": "rfd",
+        "page": 9
+      }
+    ]
+  },
+  "spread_policy": "Rates are published measured ranges for a forest type, shown only for detections up to 24 hours old and only as a 1-hour range \"if the fire is still burning\". Wind and daytime upslope are shown as separate factors; no weighting between them is cited, so they are never combined into one direction."
 }

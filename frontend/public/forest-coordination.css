@@ -8,6 +8,7 @@
 .land-context-summary{font:13px/1.6 var(--disp,sans-serif);border-left:3px solid #7fb18b;margin:0 0 10px;padding-left:8px;overflow-wrap:anywhere}
 .land-context-summary p{margin:0;font-weight:600}.land-context-summary small,.land-context-reference small{display:block;font-size:11px;line-height:1.6;opacity:.9}
 .land-context-summary a,.land-context-reference a{color:var(--wind,#57cfc4);text-decoration:underline}
+.land-context-summary p.spread-hint-line{font-weight:500;margin-top:2px;color:var(--txt,inherit)}
 .land-context-details{margin:8px 0;font:12px/1.6 var(--disp,sans-serif)}.land-context-details>summary{cursor:pointer;min-height:44px;padding:10px 0;box-sizing:border-box}
 .land-context-fact{border-top:1px solid #557c6c44;padding:8px 0}.land-context-fact p{margin:3px 0}
 .land-context-note{font-size:11px;opacity:.9}

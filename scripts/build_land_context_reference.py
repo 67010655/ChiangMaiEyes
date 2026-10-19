@@ -114,6 +114,37 @@ def fuel_profiles(stats):
     }
 
 
+# Published rates of spread (m/min) copied from the cited pages. They are
+# measured ranges for those forest types, never a forecast for a hotspot.
+SPREAD_RATES = {
+    'mixed_deciduous': {'min_m_min': '0.7', 'max_m_min': '5', 'site': 'ป่าเบญจพรรณ',
+                        'condition': 'ช่วงที่วัดในสภาพลมสงบ ลมแรงทำให้ลามเร็วขึ้น', 'refs': [{'id': 'rfd', 'page': 10}]},
+    'dipterocarp': {'min_m_min': '0.5', 'max_m_min': '9', 'site': 'ป่าเต็งรัง',
+                    'condition': 'ช่วงที่เอกสารรายงาน', 'refs': [{'id': 'rfd', 'page': 10}]},
+    'deciduous': {'min_m_min': '0.5', 'max_m_min': '9', 'site': 'ป่าผลัดใบ (เบญจพรรณและเต็งรัง)',
+                  'condition': 'ช่วงรวมของสองชนิดป่า', 'refs': [{'id': 'rfd', 'page': 10}]},
+    'unknown_forest': {'min_m_min': '0.5', 'max_m_min': '9', 'site': 'ป่าผลัดใบ (เบญจพรรณและเต็งรัง)',
+                       'condition': 'ใช้ได้เฉพาะถ้าจุดนี้เป็นป่าผลัดใบ ป่าดิบยังไม่มีค่าที่ตรวจสอบได้', 'refs': [{'id': 'rfd', 'page': 10}]},
+    'crop': {'min_m_min': '5.61', 'max_m_min': '5.61', 'site': 'การทดลองเผาไร่ข้าวโพดพื้นที่สูง จ.น่าน',
+             'condition': 'ค่าจากการทดลองเผา ไม่ใช่ค่าของนาข้าวพื้นราบ', 'refs': [{'id': 'wanthongchai_2021', 'page': 5}],
+             # One experimental corn burn: details only, never the first-screen line.
+             'in_summary': False},
+}
+SPREAD_FACTORS = {
+    'text': 'ลมแรงทำให้ไฟลามเร็วขึ้นและเปลี่ยนทิศได้; กลางวันไฟมักลามขึ้นเขาเพราะลมหุบเขาพัดขึ้น กลางคืนลมหุบเขาพัดลง',
+    'refs': [{'id': 'rfd', 'page': 9}],
+}
+
+
+def spread_rates():
+    out = {}
+    for kind, row in SPREAD_RATES.items():
+        lo, hi = Decimal(row['min_m_min']), Decimal(row['max_m_min'])
+        out[kind] = {**row, 'min_m_per_hour': str((lo * 60).quantize(Decimal('1'), rounding=ROUND_HALF_UP)),
+                     'max_m_per_hour': str((hi * 60).quantize(Decimal('1'), rounding=ROUND_HALF_UP))}
+    return out
+
+
 def apply_fuel_measurements(ref, stats):
     measurements, levels = fuel_profiles(stats)
     ref['sources'].update(FUEL_SOURCES)
@@ -123,6 +154,11 @@ def apply_fuel_measurements(ref, stats):
                                 'Kinds without a verified measurement stay unknown. Do not substitute fire intensity, carbon loss, EVI or tree cover.')
     for kind, level in levels.items():
         ref['profiles'][kind]['fuel_level'] = {k: v for k, v in level.items() if v is not None}
+    ref['spread_rates'] = spread_rates()
+    ref['spread_factors'] = SPREAD_FACTORS
+    ref['spread_policy'] = ('Rates are published measured ranges for a forest type, shown only for detections up to 24 hours old '
+                            'and only as a 1-hour range "if the fire is still burning". Wind and daytime upslope are shown as '
+                            'separate factors; no weighting between them is cited, so they are never combined into one direction.')
     return ref
 
 
@@ -143,7 +179,7 @@ def main():
     ref['profiles'].pop('mixed_forest',None)
     ref['sources']['rfd_2000']={'title':'กรมป่าไม้ ตารางที่ 1 เนื้อที่ป่าไม้แยกรายจังหวัด พ.ศ. 2543','url':SOURCE,'page':2}
     apply_fuel_measurements(ref, stats)
-    ref['version']='land-context-reference-v3-measured-fuel'
+    ref['version']='land-context-reference-v4-spread-rates'
     payload=(json.dumps(ref,ensure_ascii=False,indent=2)+'\n').encode('utf-8')
     ref_path.write_bytes(payload)
     (ROOT/'frontend/public/land-context-reference.json').write_bytes(payload)

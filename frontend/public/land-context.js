@@ -27,11 +27,12 @@
     const d=direct(p.landuse_type,p.landuse_name);
     return d?{...d,headline:headline(d),sources:[{name:'GISTDA · การใช้ที่ดินกรมพัฒนาที่ดิน',url:lddUrl,year:null,note:'ต้นทางไม่ระบุปีสำรวจการใช้ที่ดิน'}],qualifier,note:'จุดความร้อนยังไม่ยืนยันชนิดไฟหรือสาเหตุ; ไฟในแปลงอาจลามเข้าป่าได้'}:null;
   }
+  const detectedAttr=h=>{const t=h.detected_at||h.observed_at||h.reported_at;return t?` data-detected-at="${esc(t)}"`:'';};
   function summary(h){
     const p=point(h),initial=quick(p);
-    return `<section class="land-context-summary" data-land-context-point="${esc(JSON.stringify(p))}"><p>${esc(initial?initial.headline:'กำลังอ่านชนิดพื้นที่จากแผนที่…')}</p><small>${qualifier}</small></section>`;
+    return `<section class="land-context-summary" data-land-context-point="${esc(JSON.stringify(p))}"${detectedAttr(h)}><p>${esc(initial?initial.headline:'กำลังอ่านชนิดพื้นที่จากแผนที่…')}</p><small>${qualifier}</small></section>`;
   }
-  function details(h){return `<div class="land-context-reference" data-land-context-point="${esc(JSON.stringify(point(h)))}"><p>กำลังอ่านข้อมูลอ้างอิงชนิดไฟและเชื้อเพลิง…</p><small>${qualifier}</small></div>`;}
+  function details(h){return `<div class="land-context-reference" data-land-context-point="${esc(JSON.stringify(point(h)))}"${detectedAttr(h)}><p>กำลังอ่านข้อมูลอ้างอิงชนิดไฟและเชื้อเพลิง…</p><small>${qualifier}</small></div>`;}
   function safeUrl(url){return typeof url==='string'&&url.startsWith('https://')?url:'#';}
   function sourceLinks(sources){return (sources||[]).map(s=>`<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">${esc(s.name)}${s.year?' · ปี '+s.year:''}</a>${s.year?'':' · ปีสำรวจต้นทางไม่ระบุ'}`).join(' · ');}
   function provinceHtml(d){
@@ -41,10 +42,14 @@
   function paint(node,p,result){
     const d=result||quick(p)||{kind:'unknown',headline:'ยังระบุชนิดพื้นที่ไม่ได้',sources:[],note:'ยังอ่านแผนที่ของจุดนี้ไม่ได้'};
     const profile=d.reference||reference?.profiles?.[d.kind]||reference?.profiles?.unknown;
+    const H=root.CmeSpreadHint;
+    const rate=d.spread_rate!==undefined?d.spread_rate:(reference?.spread_rates?.[d.kind]||null);
+    const sp=H?H.build({wind:H.windNow(),terrain:d.terrain||null,rate,ageHours:H.ageHours(node.dataset.detectedAt)}):null;
     if(node.classList.contains('land-context-summary')){
       // Published site measurement, never a value at this hotspot.
       const fuel=profile?.fuel_level?.status==='measured_reference'&&profile.fuel_level.brief?`<small class="land-context-fuel">${esc(profile.fuel_level.brief)} · ค่าจากพื้นที่ศึกษา ไม่ใช่ ณ จุดนี้</small>`:'';
-      node.innerHTML=`<p>${esc(d.headline)}</p><small>${qualifier}</small>${fuel}${d.sources.length?`<small class="land-context-source">${sourceLinks(d.sources)}</small>`:''}${provinceHtml(d)}`;
+      const spread=sp?.line?`<p class="spread-hint-line">${esc(sp.line)}</p>`:'';
+      node.innerHTML=`<p>${esc(d.headline)}</p>${spread}<small>${qualifier}</small>${fuel}${d.sources.length?`<small class="land-context-source">${sourceLinks(d.sources)}</small>`:''}${provinceHtml(d)}`;
     }else{
       const refs=d.reference_sources||reference?.sources||{};
       const fields=[['fire_type','ชนิดไฟที่พบบ่อยในเอกสาร'],['season','ช่วงที่มักเกิดไฟ'],['fuel','เชื้อเพลิงหลักตามเอกสาร'],['fuel_level','ปริมาณเชื้อเพลิง']];
@@ -54,7 +59,10 @@
         const links=(f.refs||[]).map(r=>{const s=refs[r.id];return s?`<a href="${esc(safeUrl(s.url)+(r.page?'#page='+r.page:''))}" target="_blank" rel="noopener">${esc(s.title)}${r.page?' · หน้า '+r.page:''}</a>`:'';}).filter(Boolean).join(' · ');
         return `<div class="land-context-fact"><b>${label}</b><p>${esc(f.text)}</p><small>${qualifier}</small><small>${links}</small></div>`;
       }).join(''):'<p>ยังไม่มีข้อมูลอ้างอิงที่ตรวจสอบได้</p>';
-      node.innerHTML=`<p>${esc(d.note||'ข้อมูลชนิดพื้นที่ไม่ยืนยันชนิดไฟของเหตุนี้')}</p>${d.sources.map(s=>`<p class="land-context-note">${esc(s.note||'')} · ${qualifier}</p>`).join('')}${rows}<p class="land-context-note">ข้อมูลอ้างอิงทั่วไป ไม่ใช่ค่าที่วัด ณ จุดไฟ ไม่ใช้ EVI ความรุนแรงไฟ หรือคาร์บอนที่สูญเสียแทนน้ำหนักเชื้อเพลิง</p>`;
+      const factors=d.spread_factors||reference?.spread_factors;
+      const spreadRefs=[...(factors?.refs||[]),...(rate?.refs||[])].map(r=>{const s=refs[r.id];return s?`<a href="${esc(safeUrl(s.url)+(r.page?'#page='+r.page:''))}" target="_blank" rel="noopener">${esc(s.title)}${r.page?' · หน้า '+r.page:''}</a>`:'';}).filter(Boolean).join(' · ');
+      const spreadHtml=sp?`<div class="land-context-fact spread-hint"><b>ทิศทางที่ไฟอาจลาม (ค่าประมาณ)</b>${sp.details.map(t=>`<p>${esc(t)}</p>`).join('')}<small>${esc(factors?.text||'')}</small><small>ไม่ใช่การพยากรณ์ขอบเขตไฟ ต้องยืนยันในพื้นที่ก่อนตัดสินใจเข้าพื้นที่</small><small>${spreadRefs}</small></div>`:'';
+      node.innerHTML=`${spreadHtml}<p>${esc(d.note||'ข้อมูลชนิดพื้นที่ไม่ยืนยันชนิดไฟของเหตุนี้')}</p>${d.sources.map(s=>`<p class="land-context-note">${esc(s.note||'')} · ${qualifier}</p>`).join('')}${rows}<p class="land-context-note">ข้อมูลอ้างอิงทั่วไป ไม่ใช่ค่าที่วัด ณ จุดไฟ ไม่ใช้ EVI ความรุนแรงไฟ หรือคาร์บอนที่สูญเสียแทนน้ำหนักเชื้อเพลิง</p>`;
     }
     node.dispatchEvent(new CustomEvent('cme:coordination-updated',{bubbles:true}));
   }
@@ -88,5 +96,5 @@
       if(node.nodeType===1&&(node.matches(selector)||node.querySelector(selector)))hydrate(node);
     }))).observe(document.body,{childList:true,subtree:true});
   }
-  root.CmeLandContext={init,summary,details,hydrate,direct};
+  root.CmeLandContext={init,summary,details,hydrate,direct,spreadRate:kind=>reference?.spread_rates?.[kind]||null};
 })(window);

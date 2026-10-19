@@ -2022,6 +2022,7 @@
 <link rel="stylesheet" href="/forest-coordination.css">
 <script src="/forest-coordination.js"></script>
 <script src="/protected-areas.js"></script>
+<script src="/spread-hint.js"></script>
 <script src="/land-context.js"></script>
 <script src="/community-workspace.js"></script>
 <script src="/field-checks.js"></script>
@@ -2520,8 +2521,9 @@ function spreadCone(h){
   const W = wind();
   const blowTo = (W.deg+180)%360;
   const rad = blowTo*Math.PI/180;
-  // length scales with wind + FRP; risk by combo
-  const km = 2 + W.kmh*0.18 + intensity(h)*0.03;
+  // Length = 1-hour reach of the widest published deciduous rate (RFD p.10),
+  // the same number the popup's spread hint uses; never an FRP/wind formula.
+  const km = CmeSpreadHint.coneKm(CmeLandContext.spreadRate?.('unknown_forest'));
   const spreadDeg = SPREAD_HALF_ANGLE_DEG; // half-angle — shared with nearestForests()'s downwind flag
   const pts=[[h.lat,h.lon]];
   for(let a=-spreadDeg;a<=spreadDeg;a+=4){
@@ -2541,7 +2543,7 @@ function renderSpread(){
   hotspots.filter(h=>h.conf==='high'&&intensity(h)>25).forEach(h=>{
     const s=spreadCone(h); c++;
     L.polygon(s.pts,{color:s.col,weight:1,fillColor:s.col,fillOpacity:0.12+s.risk*0.18,
-      dashArray:'4 4'}).bindPopup('ภาพประกอบทิศปลายลมจากสถานี ขนาดกรวยใช้เพื่อแสดงทิศทาง ยังไม่ใช่ขอบเขตไฟหรือระยะลามตามเวลา').addTo(layers.spread);
+      dashArray:'4 4'}).bindPopup('ภาพประกอบทิศปลายลมจากสถานี · ความยาว = ระยะสูงสุดใน 1 ชม. ตามช่วงความเร็วที่เคยวัดในป่าผลัดใบ ไม่ใช่ขอบเขตไฟ').addTo(layers.spread);
   });
   document.getElementById('lcSpread').textContent=c;
 }
@@ -3055,7 +3057,7 @@ function selectHotspot(h,{fromMarker=false}={}){
     <div class="dl"><span class="dk">ตรวจพบเมื่อ</span><span class="dv">${formatAge(h.detected)} ก่อน</span></div>
     <div class="dl"><span class="dk">ทิศปลายลมอ้างอิง</span><span class="dv">→ ${compass[Math.round(blowTo/45)%8]} (${blowTo.toFixed(0)}°)</span></div>
     <details class="phase-method"><summary>ภาพประกอบปลายลมบนแผนที่</summary>
-    <p class="evidence-note">รูปกรวยยาว ${s.km.toFixed(1)} กม. ใช้สูตรภาพประกอบจากลมและ FRP ไม่ใช่ระยะที่ไฟจะลามหรือเขตอันตรายที่ยืนยันแล้ว</p></details>`;
+    <p class="evidence-note">รูปกรวยยาว ${s.km.toFixed(2)} กม. = ระยะสูงสุดใน 1 ชั่วโมง ถ้าความเร็วอยู่ในช่วงที่เคยวัดในป่าผลัดใบ (เอกสารกรมป่าไม้ หน้า 10) ใช้แสดงทิศตามลม ไม่ใช่ขอบเขตไฟหรือเขตอันตรายที่ยืนยันแล้ว</p></details>`;
   animateDetail();
   // A marker already opens a Leaflet popup. A second drawer/backdrop would
   // cover its close button, and flyTo would override popup auto-pan.
@@ -3287,6 +3289,15 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   document.getElementById('publicPmSourceDetail').textContent=document.getElementById('publicPmMeta').textContent+(pmReady?' · ค่าเฉลี่ยจากสถานีที่มีข้อมูล ไม่ใช่ค่าที่วัดได้ทุกพื้นที่':'');
   document.getElementById('publicWindSourceDetail').textContent=(windReady?'พัดไปทาง'+_degToCompass(blowTo)+' · ':'')+sourceLabel('weather')+' · '+document.getElementById('publicWindMeta').textContent;
 }
+// Single wind source for the popup spread hint: the same reading, direction
+// convention (+180 = blowing toward) and labels as the top wind card.
+window.CmeWindNow=function(){
+  const ready=!!PREVAILING && !!liveDataQ?.weather && liveDataQ.weather.source_mode!=='UNAVAILABLE' && !liveDataQ.weather.is_stale;
+  if(!ready) return {ready:false};
+  const modelWind=/Open-Meteo/i.test(sourceLabel('weather'));
+  return {ready:true,toDeg:(PREVAILING.deg+180)%360,kmh:PREVAILING.kmh,
+    label:(modelWind?'ลมแบบจำลองเหนือพื้นดิน 10 ม.':'ลมสถานี ไม่ระบุความสูง')+' · '+sourceLabel('weather')+' · '+CmeEvidence.stamp(liveDataQ.weather.latest_update)};
+};
 function toggleBriefDetails(){
   const details=document.getElementById('publicBriefDetails'),button=document.getElementById('publicBriefToggle');
   const open=details.hidden;
