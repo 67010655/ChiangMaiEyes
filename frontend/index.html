@@ -2455,7 +2455,10 @@ function popupWhereHtml(lat,lon,tambon,district){
   return `<ul class="hs-rows hs-where"><li class="hs-row"><span class="hs-ic where">📍</span><div><b>${km!==null?'ห่างคุณ '+km.toFixed(1)+' กม.':place}</b>${km!==null&&place?`<small>${place}</small>`:''}</div></li></ul>`;
 }
 function popupActionsHtml(lat,lon){
-  return `<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a></div>`;
+  // Safety-relevant: a park or sanctuary needs its officers before anyone goes in.
+  const pa=window.CmeProtectedAreas?.query(Number(lat),Number(lon));
+  const chip=pa&&['inside','near'].includes(pa.status)?`<p class="hs-chip">${pa.status==='inside'?'อยู่ในเขตพื้นที่อนุรักษ์':'ใกล้เขตพื้นที่อนุรักษ์'} · ประสานเจ้าหน้าที่ก่อนเข้าพื้นที่</p>`:'';
+  return chip+`<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a></div>`;
 }
 function hotspotPopupHtml(h){
   return `<div class="hs-pop">`+CmeEvidence.observationTimeHtml(h.detected_at,'ดาวเทียม')+CmeLandContext.summary(h)+popupWhereHtml(h.lat,h.lon,h.subdistrict||h.tambon,h.district)+popupActionsHtml(h.lat,h.lon)+
