@@ -1501,6 +1501,7 @@
       <div class="mobile-drawer-tabs">
         <button class="active" onclick="openMobileDrawer('left')">ชั้นข้อมูล &amp; แจ้งเตือน</button>
         <button onclick="openMobileDrawer('right')">สรุปอากาศ &amp; สถิติ</button>
+        <button type="button" class="drawer-close" onclick="closeMobileDrawers()" aria-label="ปิดแผงชั้นข้อมูล">✕</button>
       </div>
       <div class="drawer-basemap">
         <button class="active" data-base="dark">สีเข้ม</button>
@@ -1513,21 +1514,32 @@
         <h2 class="wind">สถานการณ์ตอนนี้</h2>
         <div id="situationBody" style="font-size:12px;line-height:1.65;color:var(--txt)"></div>
       </div>
+      <div class="block quick-layers-block">
+        <h2>เลือกสิ่งที่อยากเห็นบนแผนที่</h2>
+        <div class="quick-layers" role="group" aria-label="ชั้นข้อมูลหลัก">
+          <button type="button" class="quick-layer fire" data-quick="fire" aria-pressed="false"><span class="ql-ic">🔥</span><span>ไฟ</span><small>จุดความร้อน</small></button>
+          <button type="button" class="quick-layer dust" data-quick="dust" aria-pressed="false"><span class="ql-ic">😷</span><span>ฝุ่น</span><small>สถานีวัด PM2.5</small></button>
+          <button type="button" class="quick-layer wind" data-quick="wind" aria-pressed="false"><span class="ql-ic">💨</span><span>ลม</span><small>ลมเคลื่อนไหว</small></button>
+          <button type="button" class="quick-layer forest" data-quick="forest" aria-pressed="false"><span class="ql-ic">🌳</span><span>ป่าชุมชน</span><small>ขอบเขตป่า</small></button>
+        </div>
+      </div>
+      <details class="more-layers">
+      <summary>ชั้นข้อมูลเพิ่มเติมและที่มา</summary>
       <div class="block">
         <h2>ชั้นข้อมูลแผนที่</h2>
-        <div class="layer on" data-layer="hotspots"><div class="sw"></div><div class="lbl">Hotspots<small>VIIRS / MODIS · FIRMS</small></div><span class="cnt" id="lcHot">0</span></div>
-        <div class="layer on" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>manual · user-submitted, unverified</small></div><span class="cnt" id="lcManual">0</span></div>
+        <div class="layer on" data-layer="hotspots"><div class="sw"></div><div class="lbl">จุดความร้อนจากดาวเทียม<small>VIIRS / MODIS · NASA FIRMS</small></div><span class="cnt" id="lcHot">0</span></div>
+        <div class="layer on" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>ผู้ใช้แจ้ง ยังไม่ยืนยัน</small></div><span class="cnt" id="lcManual">0</span></div>
         <div class="layer on" data-layer="spread"><div class="sw"></div><div class="lbl">ภาพประกอบทิศปลายลม<small>จากลมสถานี · ยังไม่ใช่ผลจำลองไฟลาม</small></div><span class="cnt" id="lcSpread">0</span></div>
         <div class="layer wind" data-layer="wind"><div class="sw"></div><div class="lbl">ลมเคลื่อนไหว 10 เมตร<small>Open-Meteo · แบบจำลอง ไม่ใช่ลมสถานี</small></div><span class="cnt">off</span></div>
         <div class="layer" data-layer="windDistrict"><div class="sw" style="background:rgba(55,209,214,.2);border-color:var(--wind)"></div><div class="lbl">ลูกศรลม 10 เมตร<small>ข้อมูลชุดเดียวกับลมเคลื่อนไหว</small></div><span class="cnt" id="lcWindDist">0</span></div>
         <p class="evidence-note" id="windLayerNote">เลือกลมเคลื่อนไหวหรือลูกศรเพื่อดูแบบจำลองลม 10 เมตร ลูกศรชี้ทิศที่ลมพัดไป แถบบนใช้แหล่งอากาศของระบบ ดูป้ายระบุสถานีหรือแบบจำลอง</p>
-        <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">PM2.5 stations<small>PCD / sensor mesh</small></div><span class="cnt" id="lcPm">0</span></div>
-        <div class="layer on heat" data-layer="heat"><div class="sw"></div><div class="lbl">Heatmap ความหนาแน่น<small>kernel density</small></div><span class="cnt">on</span></div>
-        <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>community forest</small></div><span class="cnt" id="lcForest">0</span></div>
+        <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">สถานีวัดฝุ่น PM2.5<small>กรมควบคุมมลพิษ และเครือข่ายเซนเซอร์</small></div><span class="cnt" id="lcPm">0</span></div>
+        <div class="layer on heat" data-layer="heat"><div class="sw"></div><div class="lbl">ความหนาแน่นของจุดความร้อน<small>ยิ่งสีเข้มยิ่งมีจุดมาก</small></div><span class="cnt">on</span></div>
+        <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>RECOFTC 677 แห่ง</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer" data-layer="protected"><div class="sw" style="border-color:#e5a347;background:#e5a34722"></div><div class="lbl">พื้นที่อนุรักษ์ · แผนที่ 2D<small>ขอบเขตจาก GISTDA 2017 ใช้อ้างอิง ไม่ใช่แนวเขตทางกฎหมาย</small></div><span class="cnt" id="lcProtected">0</span></div>
-        <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>district boundaries</small></div><span class="cnt" id="lcBoundaries">25</span></div>
+        <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>25 อำเภอ</small></div><span class="cnt" id="lcBoundaries">25</span></div>
         <div class="layer on" data-layer="tambonBoundaries"><div class="sw" style="background:rgba(34,211,238,.15);border-color:#22d3ee"></div><div class="lbl">ขอบเขตตำบล<small>ซูมเข้า/กดอำเภอเพื่อดู · 204 ตำบล</small></div><span class="cnt" id="lcTambonBoundaries">0</span></div>
-        <div class="layer on" data-layer="tambonWarnings"><div class="sw"></div><div class="lbl">⚠️ เฝ้าระวังระดับตำบล<small>district danger + hotspot proximity</small></div><span class="cnt" id="lcTambonWarn">0</span></div>
+        <div class="layer on" data-layer="tambonWarnings"><div class="sw"></div><div class="lbl">⚠️ เฝ้าระวังระดับตำบล<small>อำเภอเสี่ยงและตำบลใกล้จุดความร้อน</small></div><span class="cnt" id="lcTambonWarn">0</span></div>
         <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">ความเขียวของพืชพรรณ<small>ภาพผสม 8 วัน · ยังไม่ใช่ปริมาณเชื้อเพลิง</small></div><span class="cnt">off</span></div>
         <div class="layer" data-layer="burnScar"><div class="sw"></div><div class="lbl">คะแนนเฝ้าระวังรายอำเภอ<small>ทดลอง · ไม่ใช่พื้นที่เผาไหม้จากดาวเทียม</small></div><span class="cnt" id="lcBurn">off</span></div>
       </div>
@@ -1575,13 +1587,14 @@
 
       <div class="foot">
         <div id="freshBar" style="display:none;margin-bottom:8px;line-height:2"></div>
-        DATA SOURCES<br>
+        แหล่งข้อมูล<br>
         <span class="src-pill"><span class="ok">●</span> NASA FIRMS</span>
         <span class="src-pill"><span class="ok">●</span> GISTDA</span>
         <span class="src-pill"><span class="ok">●</span> PCD</span>
         <span class="src-pill"><span class="ok">●</span> TMD/Open-Meteo</span>
-        <br>UPDATED <span id="footUpd">—</span> · <span id="footMode" style="color:var(--good)">LIVE</span>
+        <br>อัปเดต <span id="footUpd">—</span> · <span id="footMode" style="color:var(--good)">LIVE</span>
       </div>
+      </details>
     </aside>
 
     <!-- MAP -->
@@ -1656,17 +1669,18 @@
       <div class="mobile-drawer-tabs">
         <button onclick="openMobileDrawer('left')">ชั้นข้อมูล &amp; แจ้งเตือน</button>
         <button class="active" onclick="openMobileDrawer('right')">สรุปอากาศ &amp; สถิติ</button>
+        <button type="button" class="drawer-close" onclick="closeMobileDrawers()" aria-label="ปิดแผงสรุปอากาศ">✕</button>
       </div>
       <div class="block">
         <h2 class="pm">คุณภาพอากาศตอนนี้</h2>
         <div class="kpi-grid">
           <div class="kpi"><div class="k">PM2.5 สูงสุดจากสถานี</div><div class="v" id="pmPeak" style="color:var(--pm-purple)">—<small> µg/m³</small></div><div class="trend up" id="pmPeakTr">▲ —</div></div>
-          <div class="kpi"><div class="k">Visibility</div><div class="v" id="visKm">—<small> km</small></div><div class="trend down" id="visTr">▼ —</div></div>
+          <div class="kpi" id="visKpi" hidden><div class="k">ทัศนวิสัย</div><div class="v" id="visKm">—<small> km</small></div><div class="trend down" id="visTr">▼ —</div></div>
         </div>
       </div>
 
       <div class="block">
-        <h2 class="pm">PM2.5 — last 24h</h2>
+        <h2 class="pm">ฝุ่น PM2.5 ย้อนหลัง 24 ชม.</h2>
         <div class="chart-cap"><span class="now">เฉลี่ยในกราฟ <b id="pm24now">—</b> µg/m³</span><span class="now" style="color:var(--dim)">ดูแหล่งข้อมูลที่หัวกราฟ</span></div>
         <svg class="chart" id="pmChart" height="92" viewBox="0 0 300 92" preserveAspectRatio="none"></svg>
       </div>
@@ -3411,7 +3425,25 @@ function openMobileDrawer(side){
   closeMobileDrawers();
   document.querySelector(`.side.${side}`).classList.add('drawer-open');
   document.getElementById('mobileDrawerBackdrop').classList.add('open');
+  syncQuickLayers();
 }
+// Four plain-language switches; each sets the layer rows it stands for.
+const QUICK_LAYERS={fire:['hotspots','manualReports','spread','heat'],dust:['pm'],wind:['wind'],forest:['forest','protected']};
+function quickRows(group){return QUICK_LAYERS[group].map(k=>document.querySelector(`.layer[data-layer="${k}"]`)).filter(Boolean);}
+function syncQuickLayers(){
+  document.querySelectorAll('[data-quick]').forEach(b=>{
+    const on=quickRows(b.dataset.quick).some(el=>el.classList.contains('on'));
+    b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));
+  });
+}
+document.querySelectorAll('[data-quick]').forEach(b=>{
+  b.onclick=()=>{
+    const target=!b.classList.contains('on');
+    quickRows(b.dataset.quick).forEach(el=>{ if(el.classList.contains('on')!==target) el.click(); });
+    syncQuickLayers();
+  };
+});
+document.addEventListener('click',e=>{ if(e.target.closest?.('.layer')) requestAnimationFrame(syncQuickLayers); });
 document.getElementById('mobileLayersBtn').onclick=()=>openMobileDrawer('left');
 document.getElementById('tabletInsightsBtn').onclick=()=>{
   const rightPanel=document.querySelector('.side.right');
@@ -5302,6 +5334,7 @@ function renderRiskScore(){
   if(!risk){ block.style.display='none'; return; }
   block.style.display='block';
   if(risk.score==null){
+    block.style.display='none';
     document.getElementById('riskArc').setAttribute('stroke-dashoffset','163.4');
     document.getElementById('riskScore').textContent='—';
     document.getElementById('riskScore').style.color='var(--muted)';
@@ -5497,7 +5530,10 @@ goLive(false);
 setTimeout(hideSplash, 4000);
 // Background tabs can throttle timers; refresh as soon as the user returns.
 document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden && dataMode==='live') goLive(false);
+  // Only refetch when the data on screen is over a minute old, so rapid tab or app switching
+  // does not hammer the API.
+  const at=receivedAt();
+  if(!document.hidden && dataMode==='live' && (!at || Date.now()-Date.parse(at)>60000)) goLive(false);
 });
 
 // ============================================================
