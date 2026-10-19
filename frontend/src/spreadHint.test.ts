@@ -61,3 +61,21 @@ it('an experimental corn rate never reaches the first-screen line',()=>{
   const r=H.build({wind:wind(0,10),terrain:null,rate:crop,ageHours:2,now:DAY});
   expect(r.line).not.toContain('ม. ใน 1 ชม.');expect(r.details.join(' ')).toContain('การทดลองเผาไร่ข้าวโพด');dom.window.close();
 });
+
+it('unknown forest keeps the deciduous condition on the first-screen line',()=>{
+  const {dom,H}=load();const r=H.build({wind:wind(0,10),terrain:null,rate:forest,ageHours:2,kind:'unknown_forest',now:DAY});
+  expect(r.line).toContain('ถ้าเป็นป่าผลัดใบและยังไหม้อยู่');dom.window.close();
+});
+it('old detections read as monitoring, water points get no line, and wind is not claimed at the point',()=>{
+  const {dom,H}=load();
+  const old=H.build({wind:wind(0,10),terrain:null,rate:forest,ageHours:50,kind:'unknown_forest',now:DAY});
+  expect(old.line?.startsWith('ถ้ายังมีไฟ ให้เฝ้าระวัง:')).toBe(true);expect(old.line).not.toContain('ทิศที่ไฟอาจลาม');
+  expect(old.details.join(' ')).toContain('ไม่ใช่ลม ณ จุดนี้');
+  const water=H.build({wind:wind(0,10),terrain:null,rate:null,ageHours:2,kind:'water',now:DAY});
+  expect(water.line).toBeNull();dom.window.close();
+});
+it('the map cone uses the same 24-hour freshness gate as the popup',()=>{
+  const html=readFileSync(resolve(__dirname,'../index.html'),'utf8');
+  expect(html).toContain('CmeSpreadHint.ageHours(h.detected_at)<=CmeSpreadHint.FRESH_HOURS');
+  expect(html).not.toContain('2 + W.kmh*0.18');
+});

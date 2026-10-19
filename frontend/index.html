@@ -2540,7 +2540,8 @@ function renderSpread(){
   layers.spread.clearLayers();
   if(!PREVAILING || !liveDataQ?.weather || liveDataQ.weather.is_stale || liveDataQ.weather.source_mode==='UNAVAILABLE') return;
   let c=0;
-  hotspots.filter(h=>h.conf==='high'&&intensity(h)>25).forEach(h=>{
+  // Same freshness gate as the popup hint: a 1-hour cone on a days-old point means nothing.
+  hotspots.filter(h=>h.conf==='high'&&intensity(h)>25&&CmeSpreadHint.ageHours(h.detected_at)<=CmeSpreadHint.FRESH_HOURS).forEach(h=>{
     const s=spreadCone(h); c++;
     L.polygon(s.pts,{color:s.col,weight:1,fillColor:s.col,fillOpacity:0.12+s.risk*0.18,
       dashArray:'4 4'}).bindPopup('ภาพประกอบทิศปลายลมจากสถานี · ความยาว = ระยะสูงสุดใน 1 ชม. ตามช่วงความเร็วที่เคยวัดในป่าผลัดใบ ไม่ใช่ขอบเขตไฟ').addTo(layers.spread);

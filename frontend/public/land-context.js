@@ -44,7 +44,7 @@
     const profile=d.reference||reference?.profiles?.[d.kind]||reference?.profiles?.unknown;
     const H=root.CmeSpreadHint;
     const rate=d.spread_rate!==undefined?d.spread_rate:(reference?.spread_rates?.[d.kind]||null);
-    const sp=H?H.build({wind:H.windNow(),terrain:d.terrain||null,rate,ageHours:H.ageHours(node.dataset.detectedAt)}):null;
+    const sp=H?H.build({wind:H.windNow(),terrain:d.terrain||null,rate,kind:d.kind,ageHours:H.ageHours(node.dataset.detectedAt)}):null;
     if(node.classList.contains('land-context-summary')){
       // Published site measurement, never a value at this hotspot.
       const fuel=profile?.fuel_level?.status==='measured_reference'&&profile.fuel_level.brief?`<small class="land-context-fuel">${esc(profile.fuel_level.brief)} · ค่าจากพื้นที่ศึกษา ไม่ใช่ ณ จุดนี้</small>`:'';

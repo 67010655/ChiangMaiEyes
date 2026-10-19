@@ -15,8 +15,10 @@
   /** Pure: inputs are plain data so tests can pin time, wind and terrain.
    * wind = {ready, toDeg, kmh, label}; terrain = {slope_deg, upslope_to_deg} | null;
    * rate = reference spread_rates[kind] | null; ageHours = hours since detection. */
-  function build({wind,terrain,rate,ageHours,now=new Date()}){
+  function build({wind,terrain,rate,ageHours,kind=null,now=new Date()}){
     const parts=[], details=[];
+    // A water-body or aquaculture point is not evidence of a spreading fire.
+    if(kind==='water')return {line:null,details:[],day:false,fresh:false,windTo:null};
     const day=(h=>h>=DAY_START&&h<DAY_END)(bangkokHour(now));
     let windTo=null;
     if(!wind?.ready){
@@ -27,7 +29,7 @@
     }else{
       windTo=wind.toDeg;
       parts.push(`ตามลมไปทาง${compass(windTo)}`);
-      details.push(`ลมพัดไปทาง${compass(windTo)} ${wind.kmh} กม./ชม. · ${wind.label}`);
+      details.push(`ลมพัดไปทาง${compass(windTo)} ${wind.kmh} กม./ชม. · ${wind.label} · ลมจากสถานีอ้างอิงของจังหวัด ไม่ใช่ลม ณ จุดนี้`);
     }
     const sloped=terrain&&Number.isFinite(terrain.slope_deg)&&terrain.slope_deg>=FLAT_DEG;
     if(terrain&&!sloped){
@@ -42,14 +44,18 @@
     const fresh=Number.isFinite(ageHours)&&ageHours<=FRESH_HOURS;
     if(rate&&fresh){
       const one=rate.min_m_min===rate.max_m_min;
-      if(rate.in_summary!==false)parts.push(one?`ถ้ายังไหม้อยู่ ราว ${fmt(rate.max_m_per_hour)} ม. ใน 1 ชม.`:`ถ้ายังไหม้อยู่ ราว ${fmt(rate.min_m_per_hour)}–${fmt(rate.max_m_per_hour)} ม. ใน 1 ชม.`);
+      // Unknown forest may be evergreen (~30% of Chiang Mai forest): keep the
+      // deciduous condition on the line itself, not only in the details.
+      const cond=kind==='unknown_forest'?'ถ้าเป็นป่าผลัดใบและยังไหม้อยู่':'ถ้ายังไหม้อยู่';
+      if(rate.in_summary!==false)parts.push(one?`${cond} ราว ${fmt(rate.max_m_per_hour)} ม. ใน 1 ชม.`:`${cond} ราว ${fmt(rate.min_m_per_hour)}–${fmt(rate.max_m_per_hour)} ม. ใน 1 ชม.`);
       details.push(`${rate.site}: ความเร็วที่เคยวัด ${one?rate.max_m_min:rate.min_m_min+'–'+rate.max_m_min} ม./นาที · ${rate.condition} · ใช้กับ 1 ชั่วโมงข้างหน้าเท่านั้น ไม่ใช่การพยากรณ์ระยะลามของเหตุนี้`);
     }else if(Number.isFinite(ageHours)&&!fresh){
       details.push(`ตรวจพบเกิน ${FRESH_HOURS} ชม. ไฟอาจดับหรือย้ายไปแล้ว ใช้ทิศนี้เพื่อเฝ้าระวังเท่านั้น ไม่บอกระยะ`);
     }else if(!rate){
       details.push('ยังไม่มีความเร็วการลามที่ตรวจสอบได้สำหรับพื้นที่ชนิดนี้');
     }
-    const line=parts.length?'ทิศที่ไฟอาจลาม: '+parts.join(' · ')+' · ค่าประมาณ':null;
+    const old=Number.isFinite(ageHours)&&!fresh;
+    const line=parts.length?(old?'ถ้ายังมีไฟ ให้เฝ้าระวัง: ':'ทิศที่ไฟอาจลาม: ')+parts.join(' · ')+' · ค่าประมาณ':null;
     return {line,details,day,fresh,windTo};
   }
   function windNow(){
