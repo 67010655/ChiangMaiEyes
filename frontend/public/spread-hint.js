@@ -18,9 +18,9 @@
   function build({wind,terrain,rate,ageHours,kind=null,now=new Date()}){
     const parts=[], details=[];
     // A water-body or aquaculture point is not evidence of a spreading fire.
-    if(kind==='water')return {line:null,details:[],day:false,fresh:false,windTo:null};
+    if(kind==='water')return {line:null,details:[],day:false,fresh:false,windTo:null,short:null};
     const day=(h=>h>=DAY_START&&h<DAY_END)(bangkokHour(now));
-    let windTo=null;
+    let windTo=null,upTo=null,reach=null;
     if(!wind?.ready){
       details.push('ยังไม่มีข้อมูลลมที่ใช้ได้ จึงยังบอกทิศตามลมไม่ได้');
     }else if(wind.kmh<CALM_KMH){
@@ -35,7 +35,7 @@
     if(terrain&&!sloped){
       details.push(`พื้นที่ค่อนข้างราบ (ลาดราว ${terrain.slope_deg}°) ทางขึ้นเขาจึงไม่ใช่ปัจจัยหลัก`);
     }else if(sloped&&day){
-      parts.push(`ขึ้นเขาไปทาง${compass(terrain.upslope_to_deg)}`);
+      parts.push(`ขึ้นเขาไปทาง${compass(terrain.upslope_to_deg)}`);upTo=terrain.upslope_to_deg;
       details.push(`กลางวันไฟมักลามขึ้นเขา · ทางลาดขึ้นไปทาง${compass(terrain.upslope_to_deg)} (ลาดราว ${terrain.slope_deg}°)`);
       if(windTo!==null&&diff(windTo,terrain.upslope_to_deg)<=SAME_WAY_DEG)details.push('ลมและทางขึ้นเขาไปทางเดียวกัน ไฟอาจลามเร็วขึ้นทางนั้น');
     }else if(sloped){
@@ -47,7 +47,7 @@
       // Unknown forest may be evergreen (~30% of Chiang Mai forest): keep the
       // deciduous condition on the line itself, not only in the details.
       const cond=kind==='unknown_forest'?'ถ้าเป็นป่าผลัดใบและยังไหม้อยู่':'ถ้ายังไหม้อยู่';
-      if(rate.in_summary!==false)parts.push(one?`${cond} ราว ${fmt(rate.max_m_per_hour)} ม. ใน 1 ชม.`:`${cond} ราว ${fmt(rate.min_m_per_hour)}–${fmt(rate.max_m_per_hour)} ม. ใน 1 ชม.`);
+      if(rate.in_summary!==false){reach=one?`${cond} ราว ${fmt(rate.max_m_per_hour)} ม. ใน 1 ชม.`:`${cond} ราว ${fmt(rate.min_m_per_hour)}–${fmt(rate.max_m_per_hour)} ม. ใน 1 ชม.`;parts.push(reach);}
       details.push(`${rate.site}: ความเร็วที่เคยวัด ${one?rate.max_m_min:rate.min_m_min+'–'+rate.max_m_min} ม./นาที · ${rate.condition} · ใช้กับ 1 ชั่วโมงข้างหน้าเท่านั้น ไม่ใช่การพยากรณ์ระยะลามของเหตุนี้`);
     }else if(Number.isFinite(ageHours)&&!fresh){
       details.push(`ตรวจพบเกิน ${FRESH_HOURS} ชม. ไฟอาจดับหรือย้ายไปแล้ว ใช้ทิศนี้เพื่อเฝ้าระวังเท่านั้น ไม่บอกระยะ`);
@@ -56,7 +56,16 @@
     }
     const old=Number.isFinite(ageHours)&&!fresh;
     const line=parts.length?(old?'ถ้ายังมีไฟ ให้เฝ้าระวัง: ':'ทิศที่ไฟอาจลาม: ')+parts.join(' · ')+' · ค่าประมาณ':null;
-    return {line,details,day,fresh,windTo};
+    return {line,details,day,fresh,windTo,short:shortRow({wind,windTo,upTo,reach,old})};
+  }
+  /** First-screen row: one direction, one reason, the cited range only when fresh. */
+  function shortRow({wind,windTo,upTo,reach,old}){
+    const deg=windTo??upTo;
+    const via=[windTo!==null?'ตามลม':'',upTo!==null?(windTo!==null&&upTo!==windTo?'และขึ้นเขาไปทาง'+compass(upTo):'ขึ้นเขา'):''].filter(Boolean).join(' ');
+    if(old)return {deg,title:deg!==null?`ถ้ายังมีไฟ ให้เฝ้าระวังทาง${compass(deg)}`:'ถ้ายังมีไฟ ให้เฝ้าระวังรอบจุด',sub:(via?via+' · ':'')+`ตรวจพบเกิน ${FRESH_HOURS} ชม.`};
+    if(deg!==null)return {deg,title:`อาจลามไปทาง${compass(deg)}`,sub:[via,reach].filter(Boolean).join(' · ')+' · ค่าประมาณ'};
+    if(wind?.ready)return {deg:null,title:'ลมเบา ยังบอกทิศลามไม่ได้',sub:reach?reach+' · ค่าประมาณ':''};
+    return {deg:null,title:'ยังไม่มีข้อมูลลม',sub:''};
   }
   function windNow(){
     try{return typeof root.CmeWindNow==='function'?root.CmeWindNow():null;}catch{return null;}

@@ -2445,24 +2445,34 @@ function gMapsLink(lat, lng){ return `<a href="https://www.google.com/maps/dir/?
 // Shared popup content — used by BOTH the 2D Leaflet popup and the 3D
 // MapLibre popup, so the two views never drift apart. Callers append any
 // view-specific extras (2D's "ดูใน 3D" link, the owner-only delete span).
+// First screen answers three questions (what, which way, how dry) and offers
+// the call; sources, caveats and contacts sit one tap away in the details.
+function popupWhereHtml(lat,lon,tambon,district){
+  const me=window.CmeMyLocation;
+  const km=me?CmeEvidence.distanceKm({lat:me.lat,lon:me.lon},{lat:Number(lat),lon:Number(lon)}):null;
+  const place=[tambon?'ต.'+CmeEvidence.escapeHtml(tambon):'',district?'อ.'+CmeEvidence.escapeHtml(district):''].filter(Boolean).join(' ');
+  if(!place&&km===null)return '';
+  return `<ul class="hs-rows hs-where"><li class="hs-row"><span class="hs-ic where">📍</span><div><b>${km!==null?'ห่างคุณ '+km.toFixed(1)+' กม.':place}</b>${km!==null&&place?`<small>${place}</small>`:''}</div></li></ul>`;
+}
+function popupActionsHtml(lat,lon){
+  return `<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a></div>`;
+}
 function hotspotPopupHtml(h){
-  return CmeEvidence.observationTimeHtml(h.detected_at,'ดาวเทียม')+CmeLandContext.summary(h)+CmeCoordination.html(h.lat,h.lon)+
-    `<details class="land-context-details"><summary>รายละเอียดเพิ่มเติม</summary>${CmeLandContext.details(h)}<b>${h.id}</b> · ${h.district}<br>`+
+  return `<div class="hs-pop">`+CmeEvidence.observationTimeHtml(h.detected_at,'ดาวเทียม')+CmeLandContext.summary(h)+popupWhereHtml(h.lat,h.lon,h.subdistrict||h.tambon,h.district)+popupActionsHtml(h.lat,h.lon)+
+    `<details class="land-context-details"><summary>รายละเอียดและที่มาของข้อมูล</summary>${CmeCoordination.html(h.lat,h.lon)}${CmeLandContext.details(h)}<b>${h.id}</b> · ${h.district}<br>`+
     `ต.${h.subdistrict||h.tambon||'—'}<br>`+
     `${fmtFrp(h)} · ความเชื่อมั่น ${CmeEvidence.confidenceLabel(h.conf)}<br>`+
     `<small>ระดับคุณภาพการตรวจพบจากต้นทาง ไม่ใช่โอกาสเกิดไฟหรือความแม่นยำของระบบ</small><br>`+
     (h.confSource ? `<small>แหล่งระดับความเชื่อมั่น: ${CmeEvidence.escapeHtml(h.confSource)}</small><br>` : '')+
-    `${h.sat}<br>`+
-    `${gMapsLink(h.lat,h.lon)}<br></details>`;
+    `${h.sat}<br></details></div>`;
 }
 function manualReportPopupHtml(r){
   const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
-  return CmeEvidence.observationTimeHtml(r.observed_at||r.reported_at,'รายงานโดยผู้ใช้')+CmeLandContext.summary(r)+CmeCoordination.html(r.latitude,r.longitude)+
-    `<details class="land-context-details"><summary>รายละเอียดเพิ่มเติม</summary>${CmeLandContext.details(r)}<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
+  return `<div class="hs-pop">`+CmeEvidence.observationTimeHtml(r.observed_at||r.reported_at,'รายงานโดยผู้ใช้')+CmeLandContext.summary(r,{report:true})+popupWhereHtml(r.latitude,r.longitude,r.tambon,r.amphoe)+popupActionsHtml(r.latitude,r.longitude)+
+    `<details class="land-context-details"><summary>รายละเอียดและที่มาของข้อมูล</summary>${CmeCoordination.html(r.latitude,r.longitude)}${CmeLandContext.details(r)}<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
     `อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>`+
     `${(r.description||'').replace(/</g,'&lt;')}<br>`+
-    `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br>`+
-    `${gMapsLink(r.latitude,r.longitude)}<br></details>`;
+    `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br></details></div>`;
 }
 // Sizing/intensity scalar: real FRP if present, else a confidence-based proxy so
 // markers still have a sensible radius (never shown as MW).
@@ -2511,7 +2521,7 @@ function renderHotspots(){
       hotspotPopupHtml(h)+
       `<br><span style="cursor:pointer;color:var(--wind);text-decoration:underline" `+
       `onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${h.lon},${h.lat}],zoom:12,pitch:55,bearing:0,duration:motionDuration(1200)}),600)">📍 ดูใน 3D</span>`
-    ,{maxWidth:320,maxHeight:Math.max(100,Math.min(400,window.innerHeight*.4))});
+    ,{maxWidth:320,maxHeight:Math.max(160,Math.min(560,window.innerHeight*.62))});
     m.on('popupopen',()=>showForestProximity(h.lat, h.lon));
     m.on('popupclose', clearForestProximity);
     m.on('click',()=>selectHotspot(h,{fromMarker:true}));
@@ -3005,7 +3015,7 @@ function renderManualReports(){
     m.bindPopup(()=>
       manualReportPopupHtml(r)+
       (isOwner ? `<br><span style="cursor:pointer;color:var(--danger);text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>` : '')
-    ,{maxWidth:320,maxHeight:Math.max(100,Math.min(400,window.innerHeight*.4))});
+    ,{maxWidth:320,maxHeight:Math.max(160,Math.min(560,window.innerHeight*.62))});
     m.on('popupopen',()=>{
       map.flyTo([r.latitude, r.longitude], Math.max(map.getZoom(),12), {duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
       showForestProximity(Number(r.latitude), Number(r.longitude));
@@ -3415,6 +3425,8 @@ function myLocationPopupHtml(lat,lon){
   return `<div class="my-location-popup"><b>คุณอยู่ที่นี่</b>${where}${body}<p class="evidence-note">ระยะเส้นตรงจากจุดดาวเทียม ไม่ยืนยันว่าไฟยังไหม้ และการไม่พบจุดไม่ได้ยืนยันว่าไม่มีไฟ</p>${CmeEvidence.fireHelpHtml()}</div>`;
 }
 function showMyLocation(lat,lon,accuracy){
+  // Kept in the browser only, so hotspot popups can say how far away they are.
+  window.CmeMyLocation={lat,lon};
   if(myLocationLayer) map.removeLayer(myLocationLayer);
   myLocationLayer=L.layerGroup([
     L.circle([lat,lon],{radius:Math.min(accuracy||0,2000),color:'#3b82f6',weight:1,fillOpacity:.08,interactive:false}),

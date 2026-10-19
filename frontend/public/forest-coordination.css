@@ -25,3 +25,31 @@
 .cw-cross-border summary{cursor:pointer;min-height:44px;padding:8px 0}
 .cw-section .coordination-card a,.light .coordination-card a{color:#076c76}
 .coordination-popup .maplibregl-popup-content{max-height:min(55dvh,480px);overflow-y:auto}
+/* Hotspot popup: three answers on the first screen, everything else in details */
+.hs-pop{font:14px/1.5 var(--disp,sans-serif);text-align:left}
+.hs-pop .hotspot-detected-time{font-size:12px;opacity:.8;margin:0 0 6px}
+.hs-pop .land-context-summary{border-left:0;padding-left:0;margin:0}
+.hs-head{display:flex;gap:10px;align-items:center}
+.hs-head small{display:block;font-size:12px;opacity:.85}
+.hs-pop .land-context-summary p.hs-title{margin:0;font-size:16px;font-weight:700;line-height:1.35}
+.hs-dot{width:14px;height:14px;border-radius:50%;background:#ef4444;flex:none;animation:hsPulse 1.6s ease-out infinite}
+.hs-dot.old{background:#8b95a3;animation:none}
+@keyframes hsPulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}100%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}
+@media (prefers-reduced-motion:reduce){.hs-dot{animation:none}}
+.hs-rows{list-style:none;margin:8px 0 0;padding:0}
+.hs-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid #557c6c44}
+.hs-row b{display:block;font-size:14px;font-weight:600;line-height:1.4}
+.hs-row small{display:block;font-size:12px;opacity:.85;line-height:1.45}
+.hs-ic{width:32px;height:32px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:16px;background:#ffffff14}
+.hs-ic.wind{background:#57cfc426;color:#57cfc4;font-weight:700;font-size:18px}
+.hs-arrow{display:inline-block;transition:transform .3s}
+.hs-level{display:flex;gap:3px;margin:4px 0 2px;max-width:120px}
+.hs-level i{flex:1;height:7px;border-radius:4px;background:#ffffff26}
+.hs-level i.on.l1{background:#4ade80}.hs-level i.on.l2{background:#facc15}.hs-level i.on.l3{background:#f97316}
+.hs-actions{display:flex;gap:8px;margin:10px 0 2px}
+.hs-actions a{flex:1;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;font-weight:600;text-decoration:none;font-size:14px}
+.hs-actions .hs-call{background:#dc2626;color:#fff}
+.hs-actions .hs-nav{border:1px solid #557c6c88;color:inherit}
+.hs-pop .land-context-details .coordination-card{margin-top:4px}
+.leaflet-popup:has(.hs-pop) .leaflet-popup-content{max-height:min(560px,62dvh)!important}
+.leaflet-popup-content .hs-pop b{color:inherit}

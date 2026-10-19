@@ -151,7 +151,8 @@ def apply_fuel_measurements(ref, stats):
     ref['fuel_measurements'] = measurements
     ref['fuel_level_policy'] = ('Show only published field measurements of pre-burn fuel load, labelled with site and year, '
                                 'never as a value at the hotspot. No low/medium/high threshold is cited, so none is assigned. '
-                                'Kinds without a verified measurement stay unknown. Do not substitute fire intensity, carbon loss, EVI or tree cover.')
+                                'Kinds without a verified measurement stay unknown. Do not substitute fire intensity, carbon loss, EVI or tree cover.'
+                                ' A separate first-screen seasonal dryness indicator (frontend land-context.js seasonalFuel) says how dry fuel typically is by land kind and Bangkok month, from RFD p.8 (driest in the dry season, wettest in the rainy season), ecology p.15, Akkhaak 1992 and the DNP Jan-Apr season; it is not a fuel-load level.')
     for kind, level in levels.items():
         ref['profiles'][kind]['fuel_level'] = {k: v for k, v in level.items() if v is not None}
     ref['spread_rates'] = spread_rates()

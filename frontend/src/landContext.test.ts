@@ -28,10 +28,13 @@ it('does not infer subtype from jurisdiction codes or ambiguous mixed map-unit c
 it('shows rice immediately without exposing the code and keeps cited details when the API fails',async()=>{
   const {dom,w,c,host}=setup({fail:true});const h={lat:18.8,lon:98.9,landuse_type:'A101',landuse_name:'นาข้าว'};
   host.innerHTML=c.summary(h)+c.details(h);await tick();await c.hydrate(host);
-  expect(host.querySelector('.land-context-summary').textContent).toContain('พื้นที่เกษตร (นาข้าว) · น่าจะเป็นการเผาในแปลง ไม่ใช่ไฟป่า');
+  const first=host.querySelector('.land-context-summary').textContent;
+  expect(first).toContain('น่าจะเป็นการเผาในไร่');expect(first).toContain('พื้นที่เกษตร (นาข้าว)');expect(first).toContain('ไม่ใช่ไฟป่า');
+  expect(host.querySelector('.land-kind').textContent).toContain('พื้นที่เกษตร (นาข้าว) · น่าจะเป็นการเผาในแปลง ไม่ใช่ไฟป่า');
   expect(host.textContent).not.toContain('A101');
-  expect(host.querySelectorAll('.land-context-fact')).toHaveLength(4);
-  host.querySelectorAll('.land-context-fact').forEach((row:any)=>{
+  const facts=host.querySelectorAll('.land-context-fact:not(.land-kind):not(.seasonal-fuel):not(.spread-hint)');
+  expect(facts).toHaveLength(4);
+  facts.forEach((row:any)=>{
     expect(row.textContent).toContain('ประเมินจากแผนที่ ไม่ใช่การสำรวจในพื้นที่');expect(row.querySelector('a[href^="https://"]')).not.toBeNull();
   });
   expect(host.textContent).toContain('ปริมาณเชื้อเพลิงที่เคยวัด (ข้อมูลอ้างอิง)');
@@ -43,7 +46,7 @@ it('shows rice immediately without exposing the code and keeps cited details whe
 it('uses a generic forest profile and cited historical provincial context without assigning a point subtype',async()=>{
   const result={kind:'unknown_forest',headline:'พื้นที่ป่า/ต้นไม้ (จุดนี้ยังระบุชนิดป่าไม่ได้)',sources:[{name:'ESA WorldCover',year:2021,url:'https://esa-worldcover.org/en/data-access'}],reference:reference.profiles.unknown_forest,reference_sources:reference.sources,province_context:reference.province_context};
   const {dom,c,host}=setup({result});const h={lat:18.8,lon:98.9};host.innerHTML=c.summary(h)+c.details(h);await c.hydrate(host);
-  const text=host.querySelector('.land-context-summary').textContent;
+  const text=host.querySelector('.land-kind').textContent;
   expect(text).toContain('ปี 2021');expect(text).toContain(reference.province_context.context_text);
   expect(text).toContain('สถิติระดับจังหวัดในอดีต');expect(text).not.toContain('ป่าไม่ผลัดใบ');
   expect(text).toContain(reference.profiles.unknown_forest.fuel_level.brief);expect(text).toContain('ค่าจากพื้นที่ศึกษา ไม่ใช่ ณ จุดนี้');
@@ -67,4 +70,37 @@ it('ships exactly the backend reference table with source links for every value'
   for(const profile of Object.values(reference.profiles) as any[])for(const field of Object.values(profile) as any[]){
     expect(field.refs.length).toBeGreaterThan(0);field.refs.forEach((r:any)=>expect(reference.sources[r.id].url).toMatch(/^https:\/\//));
   }
+});
+
+it('first screen shows a seasonal dryness level only where a source covers the kind, with its Bangkok month',()=>{
+  const {dom,c}=setup();
+  const at=(iso:string)=>new Date(iso);
+  expect(c.seasonalFuel('dipterocarp',at('2026-03-10T03:00:00Z'))).toMatchObject({level:3,label:'มาก'});
+  expect(c.seasonalFuel('mixed_deciduous',at('2026-07-10T03:00:00Z'))).toMatchObject({level:1,label:'น้อย'});
+  expect(c.seasonalFuel('deciduous',at('2026-11-10T03:00:00Z'))).toMatchObject({level:2,label:'เริ่มแห้ง'});
+  // 30 April 20:00 UTC is already 1 May in Bangkok: the rainy-season row.
+  expect(c.seasonalFuel('deciduous',at('2026-04-30T20:00:00Z')).label).toBe('น้อย');
+  expect(c.seasonalFuel('unknown_forest',at('2026-02-01T03:00:00Z')).condition).toBe('ถ้าเป็นป่าผลัดใบ');
+  expect(c.seasonalFuel('crop',at('2026-02-01T03:00:00Z')).label).toBe('มาก');
+  expect(c.seasonalFuel('crop',at('2026-08-01T03:00:00Z'))).toBeNull();
+  for(const kind of ['evergreen','plantation','built','water','bare','unknown'])expect(c.seasonalFuel(kind,at('2026-03-01T03:00:00Z'))).toBeNull();
+  for(const kind of ['dipterocarp','crop','grass'])for(const r of c.seasonalFuel(kind,at('2026-03-01T03:00:00Z')).refs){
+    expect(reference.sources[r.id].url).toMatch(/^https:\/\//);
+  }
+  dom.window.close();
+});
+it('the first screen never calls a hotspot a confirmed forest fire and drops the bar where no source covers the kind',async()=>{
+  const result={kind:'evergreen',headline:'ป่าไม่ผลัดใบ',label:'ป่าไม่ผลัดใบ',sources:[{name:'ESA WorldCover',year:2021,url:'https://esa-worldcover.org/en/data-access'}],reference:reference.profiles.evergreen,reference_sources:reference.sources};
+  const {dom,c,host}=setup({result});host.innerHTML=c.summary({lat:18.8,lon:98.9})+c.details({lat:18.8,lon:98.9});await c.hydrate(host);
+  const first=host.querySelector('.land-context-summary');
+  expect(first.textContent).toContain('จุดความร้อนในป่า');expect(first.textContent).not.toContain('น่าจะเป็นไฟป่า');
+  expect(first.querySelector('.hs-level')).toBeNull();expect(first.textContent).not.toContain('เชื้อเพลิงแห้ง');
+  expect(host.querySelector('.land-context-reference').textContent).toContain(reference.profiles.evergreen.fuel_level.text);
+  dom.window.close();
+});
+it('a report popup is labelled as an unconfirmed user report, and an old point is drawn without the live pulse',()=>{
+  const {dom,c,host}=setup();
+  host.innerHTML=c.summary({latitude:18.8,longitude:98.9,reported_at:'2020-01-01T00:00:00Z'},{report:true});
+  expect(host.textContent).toContain('รายงานไฟจากผู้ใช้ (ยังไม่ยืนยัน)');
+  expect(host.querySelector('.hs-dot').classList.contains('old')).toBe(true);dom.window.close();
 });

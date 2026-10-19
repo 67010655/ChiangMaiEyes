@@ -134,8 +134,10 @@
     const mine=(context.forests?.()||[]).find(f=>f.forest_id===myForestId),area=administrativeArea(lat,lon);
     return !!(mine&&rows[0]?.forest.forest_id===myForestId&&area.district&&districtName(area.district)!==districtName(forestDistrict(mine)));
   }
+  // Two registrations can share a name and district; list that forest once, at its nearer distance.
+  function distinctByName(rows){const seen=new Set();return rows.filter(r=>{const key=(r.forest.name||'')+'|'+forestDistrict(r.forest);if(seen.has(key))return false;seen.add(key);return true;});}
   function content(lat,lon,myForestId){
-    const rows=nearest(lat,lon),area=administrativeArea(lat,lon);
+    const rows=distinctByName(nearest(lat,lon,context.forests?.()||[],6)).slice(0,3),area=administrativeArea(lat,lon);
     const names=rows.map(r=>`${esc(r.forest.name||'ป่าชุมชน')} (${kmText(r.km)})`).join(', ');
     const protectedResult=root.CmeProtectedAreas?.query(lat,lon),protectedLead=protectedResult&&root.CmeProtectedAreas.leadHtml(protectedResult,areaText(area));
     return `<h3>ใครควรดูแลจุดนี้</h3><p class="coordination-lead">${protectedLead||areaText(area)+( ' · ป่าชุมชนที่ใกล้ที่สุด: '+(names||'กำลังรอข้อมูลป่าชุมชน'))}</p>`+

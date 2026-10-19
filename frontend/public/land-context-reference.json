@@ -3,7 +3,7 @@
   "checked_on": "2026-10-19",
   "qualifier": "ประเมินจากแผนที่ ไม่ใช่การสำรวจในพื้นที่",
   "meaning": "Static literature context, not a fuel model, measured fuel load, current fire-type detection or dispatch recommendation.",
-  "fuel_level_policy": "Show only published field measurements of pre-burn fuel load, labelled with site and year, never as a value at the hotspot. No low/medium/high threshold is cited, so none is assigned. Kinds without a verified measurement stay unknown. Do not substitute fire intensity, carbon loss, EVI or tree cover.",
+  "fuel_level_policy": "Show only published field measurements of pre-burn fuel load, labelled with site and year, never as a value at the hotspot. No low/medium/high threshold is cited, so none is assigned. Kinds without a verified measurement stay unknown. Do not substitute fire intensity, carbon loss, EVI or tree cover. A separate first-screen seasonal dryness indicator (frontend land-context.js seasonalFuel) says how dry fuel typically is by land kind and Bangkok month, from RFD p.8 (driest in the dry season, wettest in the rainy season), ecology p.15, Akkhaak 1992 and the DNP Jan-Apr season; it is not a fuel-load level.",
   "sources": {
     "ecology": {
       "title": "นิเวศไฟป่าภาคเหนือ · กอบศักดิ์ วันธงไชย · คณะวนศาสตร์ มหาวิทยาลัยเกษตรศาสตร์",
