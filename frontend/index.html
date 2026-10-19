@@ -1293,6 +1293,7 @@
 <link rel="stylesheet" href="/community-workspace.css">
 <link rel="stylesheet" href="/ux-foundation.css">
 <link rel="stylesheet" href="/topbar.css">
+<link rel="stylesheet" href="/map-ui.css">
 </head>
 <body class="public-mode">
 <div id="splashScreen" class="splash-screen">
@@ -1534,7 +1535,7 @@
         <div class="layer on" data-layer="hotspots"><div class="sw"></div><div class="lbl">จุดความร้อนจากดาวเทียม<small>VIIRS / MODIS · NASA FIRMS</small></div><span class="cnt" id="lcHot">0</span></div>
         <div class="layer on" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>ผู้ใช้แจ้ง ยังไม่ยืนยัน</small></div><span class="cnt" id="lcManual">0</span></div>
         <div class="layer on" data-layer="spread"><div class="sw"></div><div class="lbl">ภาพประกอบทิศปลายลม<small>จากลมสถานี · ยังไม่ใช่ผลจำลองไฟลาม</small></div><span class="cnt" id="lcSpread">0</span></div>
-        <div class="layer wind" data-layer="wind"><div class="sw"></div><div class="lbl">ลมเคลื่อนไหว 10 เมตร<small>Open-Meteo · แบบจำลอง ไม่ใช่ลมสถานี</small></div><span class="cnt">off</span></div>
+        <div class="layer wind on" data-layer="wind"><div class="sw"></div><div class="lbl">ลมเคลื่อนไหว 10 เมตร<small>Open-Meteo · แบบจำลอง ไม่ใช่ลมสถานี</small></div><span class="cnt">off</span></div>
         <div class="layer" data-layer="windDistrict"><div class="sw" style="background:rgba(55,209,214,.2);border-color:var(--wind)"></div><div class="lbl">ลูกศรลม 10 เมตร<small>ข้อมูลชุดเดียวกับลมเคลื่อนไหว</small></div><span class="cnt" id="lcWindDist">0</span></div>
         <p class="evidence-note" id="windLayerNote">เลือกลมเคลื่อนไหวหรือลูกศรเพื่อดูแบบจำลองลม 10 เมตร ลูกศรชี้ทิศที่ลมพัดไป แถบบนใช้แหล่งอากาศของระบบ ดูป้ายระบุสถานีหรือแบบจำลอง</p>
         <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">สถานีวัดฝุ่น PM2.5<small>กรมควบคุมมลพิษ และเครือข่ายเซนเซอร์</small></div><span class="cnt" id="lcPm">0</span></div>
@@ -2108,8 +2109,10 @@ function toggleTheme(){
   // under an otherwise-white UI looked inconsistent (same complaint that
   // drove the light-mode contrast fixes). OSM's a light basemap; 'dark' is
   // the obvious match going back the other way.
-  setBasemap(isLight ? 'osm' : 'dark');
+  setBasemap(isLight ? 'light' : 'dark');
   if(mlMap) setTdBasemap(isLight ? 'osm' : 'dark');
+  // Streamline ink follows the theme.
+  if(typeof velLayer!=='undefined' && velLayer && _windCacheField) _applyVelocityLayer(_windCacheField);
   // Wind rose is a hand-built SVG string (not CSS-styled), so it doesn't
   // pick up the theme automatically — re-render with the last real data.
   if(_lastWindRoseBins) windRose('roseChart', _lastWindRoseBins);
@@ -2314,7 +2317,9 @@ let historyArchiveQuality = null;
 let firePm25Correlation = [];
 
 // ---- Map init ----
-const map = L.map('map',{zoomControl:true,attributionControl:true}).setView([18.85,98.85],10);
+// zoomSnap 0.25 lets fitBounds fill the screen with the province instead of
+// snapping a whole level smaller (the tall province looked tiny on phones).
+const map = L.map('map',{zoomControl:true,attributionControl:true,zoomSnap:0.25,zoomDelta:0.5}).setView([18.85,98.85],10);
 map.zoomControl.setPosition('topleft');
 
 // Dedicated pane for the satellite "hybrid" label tiles: above base imagery
@@ -2326,6 +2331,9 @@ map.getPane('labels').style.pointerEvents = 'none';
 
 const bases = {
   dark: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:16,attribution:'Tiles © Esri'}),
+  // Quiet light basemap for the light theme (H10): few labels, so data stands out.
+  light: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
     {maxZoom:16,attribution:'Tiles © Esri'}),
   osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     {maxZoom:19,attribution:'© OpenStreetMap contributors'}),
@@ -2346,7 +2354,7 @@ const satLabels = L.layerGroup([
     {maxZoom:19,pane:'labels'})
 ]);
 
-let currentBase = bases.dark.addTo(map);
+let currentBase = bases[document.body.classList.contains('light-mode')?'light':'dark'].addTo(map);
 // Shared by the map-overlay basemap-toggle (desktop/tablet) AND the
 // drawer-basemap buttons (mobile, where the overlay one is hidden because
 // it was getting covered by the search bar) — both sets carry [data-base].
@@ -2614,14 +2622,15 @@ function fetchWindGrid(){
 }
 async function fetchWindGridUncached(){
   if(_windCacheField && Date.now()-_windCacheMs<600000) return _windCacheField;
-  const SL=[17.5,19.0,20.5], SN=[97.5,99.0,100.5];
+  // 5×5 model points around the province give smooth, believable streamlines.
+  const SL=[17.2,18.1,19.0,19.9,20.8], SN=[97.4,98.3,99.2,100.1,101.0];
   const latList=SL.flatMap(la=>SN.map(()=>la)).join(',');
   const lonList=SL.flatMap(()=>SN).join(',');
   const url=`https://api.open-meteo.com/v1/forecast?latitude=${latList}&longitude=${lonList}&hourly=windspeed_10m,winddirection_10m&forecast_days=1&timezone=Asia%2FBangkok`;
   const res=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(10000)});
   if(!res.ok) throw new Error('Open-Meteo '+res.status);
   const results=await res.json();
-  if(!Array.isArray(results)||results.length!==9) throw new Error('Unexpected Open-Meteo shape');
+  if(!Array.isArray(results)||results.length!==SL.length*SN.length) throw new Error('Unexpected Open-Meteo shape');
   const nowMs=Date.now(), times=results[0].hourly.time;
   _windGridSamples=[];
   let hi=0,minD=Infinity;
@@ -2647,7 +2656,7 @@ async function fetchWindGridUncached(){
     uD[row*NX+col]=blerp(uG); vD[row*NX+col]=blerp(vG);
   }
   const hdr={parameterCategory:2,parameterUnit:'m.s-1',nx:NX,ny:NY,lo1:WEST,la1:NORTH,lo2:EAST,la2:SOUTH,dx:STEP,dy:STEP,refTime:times[hi]+'+07:00',scanMode:0};
-  document.getElementById('windLayerNote').textContent='Open-Meteo · ลมเหนือพื้นดิน 10 เมตร · '+CmeEvidence.stamp(times[hi]+'+07:00')+' · กริดตัวอย่าง 9 จุด ลมเคลื่อนไหวและลูกศรใช้ข้อมูลชุดเดียวกัน';
+  document.getElementById('windLayerNote').textContent='Open-Meteo · ลมเหนือพื้นดิน 10 เมตร · '+CmeEvidence.stamp(times[hi]+'+07:00')+' · กริดตัวอย่าง 25 จุด ลมเคลื่อนไหวและลูกศรใช้ข้อมูลชุดเดียวกัน';
   _windCacheField=[{header:{...hdr,parameterNumber:2},data:uD},{header:{...hdr,parameterNumber:3},data:vD}];
   _windCacheMs=Date.now();
   return _windCacheField;
@@ -2656,22 +2665,24 @@ async function fetchWindGridUncached(){
 function _applyVelocityLayer(field){
   if(!document.querySelector('.layer[data-layer="wind"]')?.classList.contains('on')) return;
   if(velLayer){try{velLayer.remove();}catch(_){} velLayer=null;}
-  if((document.body.classList.contains('public-mode') && !isMobileViewport())) return;
   if(document.getElementById('threedview').classList.contains('open')) return;
+  // Thin, pale streamlines that sit behind the hotspots: visible at load,
+  // never louder than the fire markers. Darker ink on the light basemap.
+  const light=document.body.classList.contains('light-mode');
   velLayer=L.velocityLayer({
-    // The library's own bottom-left text readout is redundant with the
-    // dedicated .wind-badge widget and was overlapping the SPREAD RISK
-    // INDEX legend once the mobile map became full-height — turned off.
     displayValues:false,
-    data:field, maxVelocity:20,
-    colorScale:['#37d1d6','#2cb8bc','#56c5c8','#7ecfd1','#a7dfe0'],
-    velocityScale:0.006, opacity:0.82, particleAge:64, lineWidth:1.5
+    data:field, maxVelocity:15,
+    // Light winds (often 0–5 km/h in Chiang Mai) still draw readable streaks:
+    // the trail length shows direction, the top card gives the speed.
+    colorScale:light?['rgba(51,65,85,.35)','rgba(51,65,85,.5)','rgba(30,41,59,.6)']:['rgba(226,232,240,.38)','rgba(241,245,249,.52)','rgba(255,255,255,.65)'],
+    velocityScale:0.018, opacity:0.92, particleAge:120, lineWidth:1.1,
+    particleMultiplier:isMobileViewport()?1/700:1/400, frameRate:24
   }).addTo(map);
 }
 
 async function renderWind(){
   const on=document.querySelector('.layer[data-layer="wind"]')?.classList.contains('on');
-  if(!on || (document.body.classList.contains('public-mode') && !isMobileViewport()) || document.getElementById('threedview').classList.contains('open')){
+  if(!on || document.getElementById('threedview').classList.contains('open')){
     if(velLayer){velLayer.remove();velLayer=null;} layers.wind.clearLayers();return;
   }
   if(velLayer && _windCacheField && Date.now()-_windCacheMs<600000) return;
@@ -2708,7 +2719,7 @@ async function renderWindDistrictPins(){
     _windGridSamples.forEach(p=>{
       const to=CmeEvidence.windTo(p.fromDeg);
       const icon=L.divIcon({className:'',html:windArrowSvg(to),iconSize:[22,22]});
-      L.marker([p.lat,p.lon],{icon}).bindPopup(`<b>ลมแบบจำลอง 10 เมตร</b><br>พัดไปทาง${DIR_COMPASS[Math.round(to/45)%8]} ${p.kmh.toFixed(1)} กม./ชม.<br>Open-Meteo · ${CmeEvidence.stamp(p.time)}<br>เหนือพื้นดิน 10 เมตร · กริดตัวอย่าง 9 จุด<br>ไม่ใช่ผลพยากรณ์ทิศไฟลาม`).addTo(layers.windDistrict);
+      L.marker([p.lat,p.lon],{icon}).bindPopup(`<b>ลมแบบจำลอง 10 เมตร</b><br>พัดไปทาง${DIR_COMPASS[Math.round(to/45)%8]} ${p.kmh.toFixed(1)} กม./ชม.<br>Open-Meteo · ${CmeEvidence.stamp(p.time)}<br>เหนือพื้นดิน 10 เมตร · กริดตัวอย่าง 25 จุด<br>ไม่ใช่ผลพยากรณ์ทิศไฟลาม`).addTo(layers.windDistrict);
     });
     document.getElementById('lcWindDist').textContent=_windGridSamples.length;
   }catch(_){document.getElementById('windLayerNote').textContent='โหลดลมแบบจำลองไม่สำเร็จ ไม่มีการใช้ลมสถานีแทนแบบจำลอง';}
@@ -3601,7 +3612,7 @@ function hideSplash(){
     el.classList.add('hide');
     runMapRenderTask('boundary-fit',()=>{
       map.invalidateSize();
-      if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, {padding:[24,24], animate:false});
+      if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, {padding:[12,12], animate:false});
     });
   }, Math.max(0,500-elapsed));
 }
@@ -4286,13 +4297,12 @@ async function loadBoundaries() {
   runMapRenderTask('boundary-province',()=>{
     layers.boundaries.clearLayers();
 
-    // 1. Draw Chiang Mai Province boundary (Dashed, bright, no fill)
+    // 1. Chiang Mai Province boundary: one thin solid line.
     const provinceLayer = L.geoJSON(resProvince, {
       style: {
-        color: '#e2e8f0',
-        weight: 3.0,
-        fillOpacity: 0,
-        dashArray: '8 5'
+        className: 'cm-province-line',
+        weight: 1.6,
+        fillOpacity: 0
       }
     }).addTo(layers.boundaries);
 
@@ -4308,8 +4318,16 @@ async function loadBoundaries() {
     // visible is what makes it reliably match the container.
     _provinceBoundsForFit = provinceLayer.getBounds();
   });
+  // Dim everything outside the province so Chiang Mai is the subject. Its own
+  // task: an unexpected geometry shape must never take the outline down with it.
+  runMapRenderTask('boundary-mask',()=>{
+    const geom=resProvince.type==='Feature'?resProvince.geometry:resProvince.type==='FeatureCollection'?resProvince.features[0].geometry:resProvince;
+    if(!geom||!/Polygon/.test(geom.type||''))return;
+    const rings=(geom.type==='Polygon'?[geom.coordinates]:geom.coordinates).map(poly=>poly[0].map(([x,y])=>[y,x]));
+    L.polygon([[[-85,-180],[-85,180],[85,180],[85,-180]],...rings],{className:'cm-outside-mask',stroke:false,fillOpacity:1,interactive:false}).addTo(layers.boundaries);
+  });
   runMapRenderTask('boundary-fit',()=>{
-    if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, { padding: [24, 24], animate: false });
+    if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, { padding: [12, 12], animate: false });
   });
   runMapRenderTask('boundary-districts',()=>{
     // 2. Draw Chiang Mai District boundaries (Interactive hovers, Tooltips, thin borders)
