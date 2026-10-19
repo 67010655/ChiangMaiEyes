@@ -60,11 +60,11 @@
 
 **F1 ฟอนต์: Poppins + Aktiv Grotesk Thai** ✅ เลือก Adobe Fonts (web project) แล้ว · รอ embed code ของ kit จากเจ้าของงาน
 - **ตอนสร้าง kit ต้องเพิ่มโดเมน** `chiangmaieyes.vercel.app` กับ `localhost` และเลือกเฉพาะน้ำหนักที่ใช้ (400 / 500 / 600 / 700)
-- **ชื่อ family ต้องใช้ตามที่ kit ระบุ** (Adobe มักตั้งเป็นตัวพิมพ์เล็กมีขีด) ห้ามเดา
+- **ชื่อ family จาก kit:** `aktiv-grotesk-thai` (ยืนยันแล้ว 19 ต.ค.) ดังนั้น stack คือ `'Poppins', aktiv-grotesk-thai, sans-serif` · ยังรอ URL `use.typekit.net/….css` และน้ำหนัก 400/500/600/700 ใน kit
 - **เว็บไม่มี CSP** จึงโหลด `use.typekit.net` ได้โดยไม่ต้องแก้ header
 - **ปัญหา:** ฟอนต์ปน 9 ชุด, `font-family` 135 จุด, ภาษาไทยไม่ได้กำหนดฟอนต์
 - **แก้:**
-  - ใช้ stack `--font: 'Poppins','Aktiv Grotesk Thai',sans-serif` Poppins ไม่มีตัวไทย อักษรอังกฤษกับตัวเลขจึงมาจาก Poppins และภาษาไทยตกไปที่ Aktiv Grotesk Thai
+  - ใช้ stack `--font: 'Poppins', aktiv-grotesk-thai, sans-serif` Poppins ไม่มีตัวไทย อักษรอังกฤษกับตัวเลขจึงมาจาก Poppins และภาษาไทยตกไปที่ Aktiv Grotesk Thai
   - ตัวเลขใช้ `font-variant-numeric: tabular-nums` แทน JetBrains Mono
   - โหลดเฉพาะน้ำหนัก 400 / 500 / 600 / 700 และใช้ `font-display: swap`
 - **ต้องไล่เปลี่ยนให้ครบ:**
