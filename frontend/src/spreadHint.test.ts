@@ -79,3 +79,17 @@ it('the map cone uses the same 24-hour freshness gate as the popup',()=>{
   expect(html).toContain('CmeSpreadHint.ageHours(h.detected_at)<=CmeSpreadHint.FRESH_HOURS');
   expect(html).not.toContain('2 + W.kmh*0.18');
 });
+it('the compact first-screen row keeps the cited range, the monitoring wording and the calm and water rules',()=>{
+  const {dom,H}=load();
+  const fresh=H.build({wind:wind(0,10),terrain:null,rate:forest,ageHours:3,kind:'unknown_forest',now:DAY}).short;
+  expect(fresh.title).toBe('อาจลามไปทางใต้');expect(fresh.deg).toBe(180);
+  expect(fresh.sub).toContain(`ถ้าเป็นป่าผลัดใบและยังไหม้อยู่ ราว ${forest.min_m_per_hour}–${forest.max_m_per_hour} ม. ใน 1 ชม.`);
+  const old=H.build({wind:wind(0,10),terrain:null,rate:forest,ageHours:40,now:DAY}).short;
+  expect(old.title).toBe('ถ้ายังมีไฟ ให้เฝ้าระวังทางใต้');expect(old.sub).not.toContain('ม. ใน 1 ชม.');
+  const calm=H.build({wind:wind(0,1),terrain:null,rate:null,ageHours:2,now:DAY}).short;
+  expect(calm.deg).toBeNull();expect(calm.title).toContain('ยังบอกทิศลามไม่ได้');
+  const crop=H.build({wind:wind(0,10),terrain:null,rate:reference.spread_rates.crop,ageHours:2,now:DAY}).short;
+  expect(crop.sub).not.toContain('ม. ใน 1 ชม.');
+  expect(H.build({wind:wind(0,10),terrain:null,rate:null,ageHours:2,kind:'water',now:DAY}).short).toBeNull();
+  dom.window.close();
+});
