@@ -84,6 +84,26 @@ def read_dust_alert_coverage(response:Response,settings:Settings=Depends(get_set
     response.headers['Cache-Control']='public, max-age=0, s-maxage=600, stale-while-revalidate=60'
     return out
 
+_dust_live:dict={}
+@app.get('/api/dust-sensors')
+def read_dust_sensors(response:Response,settings:Settings=Depends(get_settings)):
+    """Live WAQI sensors (PM2.5 AQI sub-index) for the map layer; held 10 min, never stored."""
+    from app import line_dust
+    import time
+    if not settings.aqicn_token:
+        response.headers['Cache-Control']='public, max-age=0, s-maxage=60'
+        return {'status':'unavailable','sensors':[],'districts':{},'min_sensors':line_dust.MIN_SENSORS}
+    hit=_dust_live.get('v')
+    if hit and time.time()-hit[0]<600:out=hit[1]
+    else:
+        try:
+            out=line_dust.live_sensors(settings.aqicn_token);_dust_live['v']=(time.time(),out)
+        except Exception:
+            response.headers['Cache-Control']='public, max-age=0, s-maxage=60'
+            return {'status':'unavailable','sensors':[],'districts':{},'min_sensors':line_dust.MIN_SENSORS}
+    response.headers['Cache-Control']='public, max-age=0, s-maxage=600, stale-while-revalidate=60'
+    return out
+
 from app.community import router as community_router
 app.include_router(community_router)
 from app.land_context import router as land_context_router

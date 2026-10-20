@@ -130,3 +130,15 @@ def test_coverage_endpoint_sends_counts_only(monkeypatch):
     finally:
         main.app.dependency_overrides.clear()
     assert body == {'enabled': True, 'min_sensors': 2, 'districts': {'ฝาง': 3}}
+
+
+def test_live_sensors_median_needs_two_fresh_and_lists_stale_apart():
+    out = d.live_sensors('k', now=NOW, get=waqi([60, 80, 120]))
+    assert out['districts']['ฝาง'] == {'n': 3, 'median': 80, 'level': 2}
+    assert [s['aqi_pm25'] for s in out['sensors']] == [60, 80, 120]
+    assert all(s['fresh'] and s['district'] == 'ฝาง' for s in out['sensors'])
+    assert out['credit'] == d.CREDIT
+    one = d.live_sensors('k', now=NOW, get=waqi([150]))
+    assert one['districts']['ฝาง'] == {'n': 1, 'median': None, 'level': None}
+    old = d.live_sensors('k', now=NOW, get=waqi([150, 150], age_min=240))
+    assert old['districts'] == {} and not any(s['fresh'] for s in old['sensors'])

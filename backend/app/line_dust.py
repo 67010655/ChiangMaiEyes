@@ -149,7 +149,9 @@ def sensors(token: str, *, get=httpx.get) -> list[dict]:
             continue
         d = district_of(lat, lon)
         if d:
-            out.append({'uid': uid, 'district': d, 'time': _parse_time((s.get('station') or {}).get('time'))})
+            st = s.get('station') or {}
+            out.append({'uid': uid, 'district': d, 'time': _parse_time(st.get('time')),
+                        'name': str(st.get('name') or 'WAQI ' + str(uid))[:120], 'lat': lat, 'lon': lon})
     return out
 
 
@@ -196,6 +198,41 @@ def district_readings(token: str, wanted: set[str] | None = None, *, now=None, g
     for d, v in got:
         by.setdefault(d, []).append(v)
     return {d: {'n': len(v), 'median': statistics.median(v)} for d, v in by.items() if len(v) >= MIN_SENSORS}
+
+
+def live_sensors(token: str, *, now=None, get=httpx.get) -> dict:
+    """Live PM2.5 sub-index per sensor and the district median for the map.
+
+    Shown live only (WAQI terms: no archive). Stale sensors are listed but
+    never counted in a district median."""
+    now = now or datetime.now(timezone.utc)
+    pool = sensors(token, get=get)
+    def one(s):
+        try:
+            v, t = pm25_sub_index(token, s['uid'], get=get)
+        except Exception:
+            return None
+        if v is None or t is None:
+            return None
+        fresh = now - FRESH <= t <= now + timedelta(minutes=30)
+        return {'uid': s['uid'], 'name': s['name'], 'lat': s['lat'], 'lon': s['lon'], 'district': s['district'],
+                'aqi_pm25': round(v), 'time': t.isoformat(), 'fresh': fresh}
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        rows = [r for r in ex.map(one, pool) if r]
+    by: dict[str, list[float]] = {}
+    for r in rows:
+        if r['fresh']:
+            by.setdefault(r['district'], []).append(r['aqi_pm25'])
+    districts = {}
+    for d, v in by.items():
+        if len(v) >= MIN_SENSORS:
+            m = statistics.median(v)
+            districts[d] = {'n': len(v), 'median': round(m), 'level': category(m)[0]}
+        else:
+            districts[d] = {'n': len(v), 'median': None, 'level': None}
+    return {'status': 'ok', 'retrieved_at': now.isoformat(), 'min_sensors': MIN_SENSORS,
+            'fresh_hours': int(FRESH.total_seconds() // 3600), 'scale': 'US EPA AQI (PM2.5 sub-index)',
+            'credit': CREDIT, 'sensors': rows, 'districts': districts}
 
 
 def coverage(token: str, *, now=None, get=httpx.get) -> dict[str, int]:

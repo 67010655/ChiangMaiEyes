@@ -1533,7 +1533,9 @@
         <div class="layer wind on" data-layer="wind"><div class="sw"></div><div class="lbl">ลมเคลื่อนไหว 10 เมตร<small>Open-Meteo · แบบจำลอง ไม่ใช่ลมสถานี</small></div><span class="cnt">off</span></div>
         <div class="layer" data-layer="windDistrict"><div class="sw" style="background:rgba(55,209,214,.2);border-color:var(--wind)"></div><div class="lbl">ลูกศรลม 10 เมตร<small>ข้อมูลชุดเดียวกับลมเคลื่อนไหว</small></div><span class="cnt" id="lcWindDist">0</span></div>
         <p class="evidence-note" id="windLayerNote">เลือกลมเคลื่อนไหวหรือลูกศรเพื่อดูแบบจำลองลม 10 เมตร ลูกศรชี้ทิศที่ลมพัดไป แถบบนใช้แหล่งอากาศของระบบ ดูป้ายระบุสถานีหรือแบบจำลอง</p>
-        <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">สถานีวัดฝุ่น PM2.5<small>กรมควบคุมมลพิษ และเครือข่ายเซนเซอร์</small></div><span class="cnt" id="lcPm">0</span></div>
+        <div class="layer pm" data-layer="pm"><div class="sw"></div><div class="lbl">สถานีวัดฝุ่น PM2.5<small>กรมควบคุมมลพิษ (Air4Thai) · µg/m³</small></div><span class="cnt" id="lcPm">0</span></div>
+        <div class="layer aqi" data-layer="sensors"><div class="sw"></div><div class="lbl">เซนเซอร์วัดฝุ่น (AQI)<small>WAQI · ดัชนี US EPA ไม่ใช่ µg/m³ · ยังไม่ตรวจสอบ</small></div><span class="cnt" id="lcSensors">off</span></div>
+        <div id="aqiLegendRow" class="aqi-legend-row" hidden></div>
         <div class="layer on heat" data-layer="heat"><div class="sw"></div><div class="lbl">ความหนาแน่นของจุดความร้อน<small>ยิ่งสีเข้มยิ่งมีจุดมาก</small></div><span class="cnt">on</span></div>
         <div class="layer green" data-layer="forest"><div class="sw"></div><div class="lbl">ขอบเขตป่าชุมชน<small>RECOFTC 677 แห่ง</small></div><span class="cnt" id="lcForest">0</span></div>
         <div class="layer" data-layer="protected"><div class="sw" style="border-color:#e5a347;background:#e5a34722"></div><div class="lbl">พื้นที่อนุรักษ์ · แผนที่ 2D<small>ขอบเขตจาก GISTDA 2017 ใช้อ้างอิง ไม่ใช่แนวเขตทางกฎหมาย</small></div><span class="cnt" id="lcProtected">0</span></div>
@@ -1943,6 +1945,7 @@
 <script src="/hotspot-spread.js"></script>
 <script src="/fire-weather.js"></script>
 <script src="/analytics-summary.js"></script>
+<script src="/dust-sensors.js"></script>
 <script src="/forest-picker.js"></script>
 <script src="/three-d-extras.js"></script>
 <script>
@@ -2279,6 +2282,7 @@ const layers = {
   wind:     L.layerGroup(),
   windDistrict: L.layerGroup(),
   pm:       L.layerGroup(),
+  sensors:  L.layerGroup(),
   forest:   L.layerGroup(),
   protected: L.layerGroup(),
   manualReports: L.layerGroup().addTo(map),
@@ -2742,6 +2746,43 @@ function renderPm(){
   document.getElementById('lcPm').textContent=pmStations.length;
 }
 
+// ---- Live dust sensors (WAQI, US AQI) ----
+// Separate from Air4Thai: a different scale (AQI, not µg/m³) and colours, and
+// fetched only when someone turns the layer on or opens a district.
+let dustSensors=null;
+function sensorsLayerOn(){return !!document.querySelector('.layer[data-layer="sensors"]')?.classList.contains('on');}
+function openDustSensor(s){
+  if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();CmeHotspotSheet.openPanel({kicker:'เซนเซอร์วัดฝุ่น (AQI)',title:s.name,html:CmeDustSensors.popupHtml(s,{withTitle:false})});return;}
+  L.popup({maxWidth:300,className:'pm-popup'}).setLatLng([s.lat,s.lon]).setContent(CmeDustSensors.popupHtml(s)).openOn(map);
+}
+function renderSensors(){
+  layers.sensors.clearLayers();
+  const cnt=document.getElementById('lcSensors');
+  if(!dustSensors){if(cnt)cnt.textContent=sensorsLayerOn()?'…':'off';return;}
+  dustSensors.sensors.forEach(s=>{
+    const icon=L.divIcon({html:CmeDustSensors.badgeHtml(s),className:'aqi-hit',iconSize:[36,28],iconAnchor:[18,14]});
+    L.marker([s.lat,s.lon],{icon,keyboard:true,title:'เซนเซอร์วัดฝุ่น AQI '+s.aqi_pm25,zIndexOffset:-200})
+      .on('click',e=>{L.DomEvent.stopPropagation(e);openDustSensor(s);})
+      .addTo(layers.sensors);
+  });
+  if(cnt)cnt.textContent=dustSensors.sensors.filter(s=>s.fresh).length;
+  const legend=document.getElementById('aqiLegendRow');
+  if(legend){if(!legend.innerHTML)legend.innerHTML=CmeDustSensors.legendHtml();legend.hidden=!sensorsLayerOn();}
+}
+function loadSensorsLayer(){
+  renderSensors();
+  if(mlMap)_sync3DSensors();
+  if(!sensorsLayerOn())return;
+  CmeDustSensors.load(f=>fetch(API_BASE+f)).then(d=>{dustSensors=d;renderSensors();if(mlMap)_sync3DSensors();})
+    .catch(()=>{const c=document.getElementById('lcSensors');if(c)c.textContent='—';toast('โหลดเซนเซอร์วัดฝุ่นไม่สำเร็จ ลองใหม่อีกครั้ง');});
+}
+function fillDistrictAqi(distNorm){
+  CmeDustSensors.load(f=>fetch(API_BASE+f)).then(d=>{
+    dustSensors=d;
+    document.querySelectorAll(`[data-ds-aqi="${CSS.escape(distNorm)}"]`).forEach(el=>{el.innerHTML=CmeDustSensors.districtHtml(d,distNorm);el.classList.remove('loading');});
+  }).catch(()=>{document.querySelectorAll(`[data-ds-aqi="${CSS.escape(distNorm)}"]`).forEach(el=>el.remove());});
+}
+
 // ---- Layer toggles ----
 document.querySelectorAll('.layer').forEach(el=>{
   el.onclick=()=>{
@@ -2764,6 +2805,7 @@ document.querySelectorAll('.layer').forEach(el=>{
     if(el.classList.contains('on')) map.addLayer(layers[key]);
     else map.removeLayer(layers[key]);
     if(key==='forest' && el.classList.contains('on')) renderForestMarkers();
+    if(key==='sensors') loadSensorsLayer();
     if(key==='windDistrict' && el.classList.contains('on')){
       const other=document.querySelector('.layer[data-layer="wind"]');
       other.classList.remove('on');other.querySelector('.cnt').textContent='off';
@@ -3458,7 +3500,7 @@ function openMobileDrawer(side,opener=document.activeElement){
   syncQuickLayers();panel.focus({preventScroll:true});
 }
 // Four plain-language switches; each sets the layer rows it stands for.
-const QUICK_LAYERS={fire:['hotspots','manualReports','spread','heat'],dust:['pm'],wind:['wind'],forest:['forest','protected']};
+const QUICK_LAYERS={fire:['hotspots','manualReports','spread','heat'],dust:['pm','sensors'],wind:['wind'],forest:['forest','protected']};
 function quickRows(group){return QUICK_LAYERS[group].map(k=>document.querySelector(`.layer[data-layer="${k}"]`)).filter(Boolean);}
 function syncQuickLayers(){
   document.querySelectorAll('[data-quick]').forEach(b=>{
@@ -4077,8 +4119,9 @@ function districtSummaryHtml(distNorm,{withTitle=false}={}){
     <div class="ds-stats">
       <div><b>${recent}</b><span>จุดความร้อน 24 ชม.</span>${distHs.length>recent?`<small>รวม ${distHs.length} จุด${days?` ใน ${days} วัน`:''}</small>`:''}</div>
       <div><b>${distFs.length}</b><span>ป่าชุมชน</span></div>
-      <div>${pm!==null?`<b>${pm.toFixed(0)}</b><span>ฝุ่น µg/m³</span>${CmeUx.pmChipHtml(pm)}`:`<b class="ds-none">—</b><span>ฝุ่น</span><small>ไม่มีสถานีวัดในอำเภอ</small>`}</div>
+      <div>${pm!==null?`<b>${pm.toFixed(0)}</b><span>ฝุ่น µg/m³</span>${CmeUx.pmChipHtml(pm)}`:`<b class="ds-none">—</b><span>ฝุ่น µg/m³</span><small>ไม่มีสถานีกรมควบคุมมลพิษในอำเภอ</small>`}</div>
     </div>
+    <div class="ds-aqi-slot loading" data-ds-aqi="${esc(distNorm)}"><span class="ds-aqi-t">กำลังดูเซนเซอร์วัดฝุ่นในอำเภอ…</span></div>
     ${tambons.length?`<p class="ds-sub">ตำบลที่มีจุดมาก</p><ol class="ds-tambon">${tambons.map(([t,n])=>`<li><span>ต.${esc(t)}</span><b>${n} จุด</b></li>`).join('')}</ol>`:`<p class="ds-note">ไม่พบจุดความร้อนในอำเภอนี้ช่วงที่แสดง ไม่ได้แปลว่าไม่มีไฟ</p>`}
     ${distHs.length&&pm!==null&&pm>37.5?'<p class="ds-note">พบทั้งจุดความร้อนและฝุ่นสูง ยังไม่ยืนยันว่าเป็นเหตุเดียวกัน</p>':''}
     <div class="ds-actions"><button type="button" class="ds-btn" data-open-view="threed">⛰ ดูภูเขา 3D</button><a class="ds-btn ghost" href="tel:1362">📞 1362</a></div>
@@ -4110,9 +4153,11 @@ function selectDistrict(nameTh, layer){
   if(isMobileViewport()&&window.CmeHotspotSheet){
     map.closePopup();
     CmeHotspotSheet.openPanel({kicker:'อำเภอ',title:'อ.'+distNorm,html:districtSummaryHtml(distNorm),onClose:()=>{}});
+    fillDistrictAqi(distNorm);
     return;
   }
   _locationPopup(center, districtSummaryHtml(distNorm,{withTitle:true}));
+  fillDistrictAqi(distNorm);
 }
 
 // Search matched a tambon: shows its real warning data if it's currently
@@ -5514,7 +5559,7 @@ async function open3D(){
     }
     catch(e){ toast('ไม่สามารถเปิด 3D ได้ในเบราว์เซอร์นี้'); console.error(e); }
   } else if(mlMap){
-    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); start3DExtras(); },80);
+    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); _sync3DSensors(); start3DExtras(); },80);
   }
 }
 
@@ -5630,6 +5675,7 @@ function initMapLibre3D(){
     _sync3DHotspots();
     _sync3DForests();
     _sync3DManualReports();
+    _sync3DSensors();
     start3DExtras();
 
     // 3D hotspot clicks are handled inline in _sync3DHotspots() Marker elements
@@ -5900,6 +5946,28 @@ function _sync3DManualReports(){
       manualPopup.on('close', clear3DForestProximity);
     });
     _3dManualMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([r.longitude,r.latitude]).addTo(mlMap));
+  });
+}
+
+// Live dust sensors in 3D: same dots, colours and popup as the 2D layer.
+let _3dSensorMarkers=[];
+function _sync3DSensors(){
+  _3dSensorMarkers.forEach(m=>m.remove());
+  _3dSensorMarkers=[];
+  if(!mlMap||!dustSensors||!sensorsLayerOn()) return;
+  dustSensors.sensors.forEach(s=>{
+    const el=document.createElement('span');
+    el.className='aqi-hit aqi-3d';
+    el.innerHTML=CmeDustSensors.badgeHtml(s);
+    el.setAttribute('role','button');el.setAttribute('aria-label','เซนเซอร์วัดฝุ่น AQI '+s.aqi_pm25);
+    el.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(isMobileViewport()&&window.CmeHotspotSheet){CmeHotspotSheet.openPanel({kicker:'เซนเซอร์วัดฝุ่น (AQI)',title:s.name,html:CmeDustSensors.popupHtml(s,{withTitle:false})});return;}
+      _3dPopup?.remove();
+      _3dPopup=new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'300px',className:'coordination-popup'})
+        .setLngLat([s.lon,s.lat]).setHTML(CmeDustSensors.popupHtml(s)).addTo(mlMap);
+    });
+    _3dSensorMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([s.lon,s.lat]).addTo(mlMap));
   });
 }
 
