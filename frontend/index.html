@@ -1935,13 +1935,22 @@
     <div class="gd-body reader-guide">
       <h1>เริ่มดูไฟและฝุ่นในเชียงใหม่</h1>
       <p class="guide-lead">ChiangMaiEyes รวบรวมจุดความร้อน ฝุ่น ลม และขอบเขตป่าชุมชน 677 แห่ง เพื่อช่วยดูสถานการณ์และประสานผู้ดูแลพื้นที่ เปิดอ่านแผนที่ได้โดยไม่ต้องสมัคร</p>
-      <ol class="guide-steps">
+      <ul class="guide-cards" aria-label="ลองใช้ทีละอย่าง">
+        <li class="guide-card"><span class="gc-icon" aria-hidden="true">📍</span><h2>ดูไฟรอบตัว</h2><p>แผนที่ซูมไปที่ตำแหน่งของคุณ พร้อมจุดความร้อนใกล้ ๆ</p><button type="button" class="gc-try" data-guide-try="near">ลองใช้เลย</button></li>
+        <li class="guide-card"><span class="gc-icon" aria-hidden="true"><span class="hs-dot-pin age-new"></span></span><h2>อ่านจุดความร้อน</h2><p>แดง ไม่เกิน 6 ชม. · ส้ม 6–24 ชม. · เทา เก่ากว่า กดจุดเพื่อดูเวลาและพิกัด จุดความร้อนยังไม่ใช่ไฟที่ยืนยันแล้ว</p><button type="button" class="gc-try" data-guide-try="hotspot">ลองใช้เลย</button></li>
+        <li class="guide-card"><span class="gc-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h16a3 3 0 1 1-3 3"/><path d="M3 16h7"/></svg></span><h2>ดูทิศลม</h2><p>เส้นที่วิ่งบนแผนที่คือทางที่ลมพัดไป เส้นยาวแปลว่าลมแรงกว่า</p><button type="button" class="gc-try" data-guide-try="wind">ลองใช้เลย</button></li>
+        <li class="guide-card"><span class="gc-icon" aria-hidden="true">▶</span><h2>ย้อนดูหลายวัน</h2><p>เล่นจุดความร้อนตามเวลา เห็นว่าเกิดที่ไหนก่อนหลัง</p><button type="button" class="gc-try" data-guide-try="replay">ลองใช้เลย</button></li>
+        <li class="guide-card"><span class="gc-icon" aria-hidden="true">⛰️</span><h2>ภูเขา 3D</h2><p>ดูว่าจุดความร้อนอยู่บนสันเขาหรือในหุบ</p><button type="button" class="gc-try" data-open-view="threed">ลองใช้เลย</button></li>
+        <li class="guide-card"><span class="gc-icon" aria-hidden="true">💬</span><h2>แจ้งเตือนทาง LINE</h2><p>สำหรับตัวแทนป่าชุมชน รับแจ้งเมื่อมีจุดความร้อนในป่าที่ดูแล</p><button type="button" class="gc-try" data-open-view="community">ลองใช้เลย</button></li>
+      </ul>
+      <details class="guide-topic guide-more"><summary>อ่านละเอียด: ใช้แผนที่ทีละขั้น</summary>
+        <ol class="guide-steps">
         <li><h2>เลือกพื้นที่ที่อยากดู</h2><p>เปิดหน้า “แผนที่” แล้วกด “ดูไฟรอบตัวฉัน” หรือค้นหาอำเภอ ตำบล หรือพิกัด เปลี่ยนเป็นภูเขา 3D ได้จากปุ่มชั้นข้อมูล</p></li>
         <li><h2>กดจุดความร้อนและอ่านเวลา</h2><p>หมุดคือสิ่งที่ดาวเทียมตรวจพบ กดเพื่อดูเวลาตรวจพบและรายละเอียด จุดจางเป็นข้อมูลเกิน 24 ชั่วโมง ต้องสอบถามคนในพื้นที่ก่อนยืนยันว่าไฟยังไหม้ การไม่พบหมุดก็ยังสรุปว่าไม่มีไฟไม่ได้</p></li>
         <li><h2>ดูฝุ่นและลมประกอบ</h2><p>ฝุ่นหน้าแรกใช้ค่าจากสถานีที่มีข้อมูล หน่วย µg/m³ ลูกศรลมชี้ไปทางที่ลมพัดไป อ่านแหล่งและเวลาด้วย แบบจำลองลมเคลื่อนไหว 10 เมตรกับลมสถานีเป็นคนละชุด</p></li>
         <li><h2>ตรวจสอบและติดตามเรื่อง</h2><p>ผู้ดูแลชุมชนเข้าสู่ระบบ แล้วเปิด “ป่าชุมชน → ป่าของฉัน” เพื่อขออนุมัติพื้นที่ จึงบันทึกหรือประสานเหตุได้ ใช้แท็บ “ติดตามเหตุ” ในหน้านี้ดูงานที่เกี่ยวข้อง หากต้องดูแนวโน้มหรือทำเอกสาร ให้เปิด “วิเคราะห์” แล้วเลือกย้อนหลังหรือสร้างรายงาน</p></li>
       </ol>
-      <button class="evidence-action" type="button" data-open-view="home">เริ่มดูแผนที่</button>
+      </details>
       <details class="guide-topic"><summary>สมัครและรับแจ้งเตือนอย่างไร</summary><p>สมัครและยืนยันอีเมล ขอเป็นตัวแทนป่าที่ดูแล รอผู้ดูแลอนุมัติ แล้วกด “รับแจ้งเตือนทาง LINE” ใน “ป่าชุมชน → การแจ้งเตือน” ระบบส่งตามพื้นที่ที่ได้รับอนุมัติ ไม่ต้องเปิดเว็บค้างไว้ อีเมลยังส่งถึงสมาชิกทั่วไปไม่ได้จนกว่าจะยืนยันโดเมนผู้ส่ง</p></details>
       <details class="guide-topic"><summary>ถ้าขึ้นว่าไม่มีข้อมูลหรือข้อมูลเก่า</summary><p>หมายถึงระบบยังไม่ได้ค่าที่ใช้ได้ในรอบนั้น ไม่ได้แปลว่าฝุ่นเป็นศูนย์หรือพื้นที่ปลอดภัย เปิด “วิเคราะห์ → ข้อมูลในพื้นที่” เพื่อดูแหล่งและเวลา หากมีเพียง AQI จะระบุว่าเป็นดัชนี ไม่แปลงเป็น PM2.5</p></details>
       <details class="guide-topic" id="guideMethods"><summary>ตัวเลขคำนวณและคาดการณ์อย่างไร</summary>
@@ -3724,6 +3733,31 @@ CmeNavigation.init({
   }
 });
 document.getElementById('guideClose').onclick=()=>CmeNavigation.open('home');
+// Guide cards: "ลองใช้เลย" closes the guide and does the thing on the map.
+document.getElementById('guideview').addEventListener('click',e=>{
+  const kind=e.target.closest?.('[data-guide-try]')?.dataset.guideTry;if(!kind)return;
+  CmeNavigation.open('home');
+  setTimeout(()=>{
+    if(kind==='near')document.getElementById('nearMeBtn')?.click();
+    else if(kind==='wind'){
+      const row=document.querySelector('.layer[data-layer="wind"]');
+      if(row&&!row.classList.contains('on'))row.click();
+      if(_provinceBoundsForFit)map.fitBounds(_provinceBoundsForFit,{padding:[12,12]});
+    }
+    else if(kind==='replay')document.querySelector('.hs-replay-start:not([hidden])')?.click();
+    else if(kind==='hotspot')openLatestHotspot();
+  },120);
+});
+// Opens the most recent hotspot the same way a tap on its dot does.
+function openLatestHotspot(){
+  const h=[...hotspots].sort((a,b)=>Date.parse(b.detected_at)-Date.parse(a.detected_at))[0];
+  if(!h)return;
+  map.setView([h.lat,h.lon],11,{animate:false});
+  setTimeout(()=>{
+    let m;layers.hotspots.eachLayer(l=>{const p=l.getLatLng();if(Math.abs(p.lat-h.lat)<1e-9&&Math.abs(p.lng-h.lon)<1e-9)m=l;});
+    m?.fire('click');
+  },80);
+}
 document.getElementById('anClose').onclick=()=>{
   analyticsEl.classList.remove('open');
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));

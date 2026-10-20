@@ -94,7 +94,23 @@ body.light-mode .hs-replay-note{color:#b45309}
 /* The live legend says "6 hours ago" relative to now; hide it while replaying. */
 body.hs-replaying .map-time-note{opacity:.35}
 @media(max-width:820px), (max-width:980px) and (max-height:500px){
+  .guide-cards{margin:20px 0;gap:10px}
   .hs-replay{left:8px;bottom:100px}
   .hs-replay-bar{width:calc(100vw - 16px)}
   body.hs-sheet-open .hs-replay{visibility:hidden}
 }
+
+/* Guide as cards (phase 4): one idea per card, a button that does it. */
+.guide-cards{list-style:none;margin:28px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.guide-card{display:grid;grid-template-columns:40px minmax(0,1fr);grid-template-rows:auto 1fr auto;column-gap:12px;row-gap:6px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.guide-card h2{margin:0;font:600 17px/1.4 var(--font);color:var(--txt)}
+.guide-card p,.guide-card .gc-try{grid-column:1/-1}
+.guide-card p{margin:0;align-self:start;font-size:14px;line-height:1.6;color:var(--muted)}
+.gc-icon{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--panel-2);font-size:20px}
+.gc-icon .hs-dot-pin{box-shadow:none}
+.gc-icon svg{width:22px;height:22px;stroke:var(--wind,#38bdf8);fill:none;stroke-width:2;stroke-linecap:round}
+.gc-try{justify-self:start;min-height:44px;padding:0 18px;border:0;border-radius:10px;background:var(--green,#43b05f);color:#fff;font:600 14px/1 var(--font);cursor:pointer}
+.gc-try:hover{filter:brightness(1.08)}
+.gc-try:focus-visible{outline:3px solid var(--wind,#38bdf8);outline-offset:2px}
+.guide-more .guide-steps{margin:16px 0 0}
+.guide-more + .guide-topic{margin-top:0}
