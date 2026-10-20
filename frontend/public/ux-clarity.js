@@ -1,7 +1,7 @@
 /* Hidden view panels must not receive keyboard focus. Full-page views keep
    the header and navigation reachable; they are not modal dialogs. */
 (() => {
-  const panels=[...document.querySelectorAll('#analytics,#guideview,#dataview,#cameraview,#reportview,#phaseview,#threedview,#communityview')];
+  const panels=[...document.querySelectorAll('#analytics,#guideview,#dataview,#reportview,#phaseview,#threedview,#communityview')];
   const home=[...document.querySelectorAll('.mapwrap,.side,.public-brief')];
   let current=null;
   for(const panel of panels){

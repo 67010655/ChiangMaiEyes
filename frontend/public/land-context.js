@@ -43,7 +43,7 @@
   function titleFor(kind,report){
     if(report)return 'รายงานไฟจากผู้ใช้ (ยังไม่ยืนยัน)';
     return kind==='crop'?'น่าจะเป็นการเผาในไร่':DECIDUOUS.includes(kind)||['evergreen','plantation'].includes(kind)?'จุดความร้อนในป่า'
-      :kind==='built'?'จุดความร้อนในเขตชุมชน':kind==='water'?'จุดความร้อนบนแหล่งน้ำ':['grass','shrub'].includes(kind)?'จุดความร้อนในทุ่งหญ้า/พุ่มไม้':'จุดความร้อน';
+      :kind==='built'?'จุดความร้อนในเขตชุมชน':kind==='water'?'จุดความร้อน · แผนที่ระบุว่าเป็นแหล่งน้ำ':['grass','shrub'].includes(kind)?'จุดความร้อนในทุ่งหญ้า/พุ่มไม้':'จุดความร้อน';
   }
   function point(h){return {latitude:h.lat??h.latitude,longitude:h.lon??h.longitude,landuse_type:h.landuse_type||'',landuse_name:h.landuse_name||''};}
   const headline=d=>d.label+(d.kind==='crop'?' · น่าจะเป็นการเผาในแปลง ไม่ใช่ไฟป่า':'');

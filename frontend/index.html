@@ -1226,15 +1226,7 @@
   .archive-table th,.archive-table td{padding:9px 10px;border-bottom:1px solid var(--line-soft);text-align:left;white-space:nowrap}
   .archive-table th{color:var(--muted);font-weight:600}.archive-gap-list{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0}
   .archive-gap-list span{font-size:12px;padding:4px 7px;background:var(--panel-2);border-radius:5px;color:var(--muted)}
-  .camera-catalog{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(240px,.7fr);gap:14px;margin:14px 0}
-  .camera-viewer{min-height:210px;border:1px solid var(--line-soft);background:var(--panel-2);border-radius:9px;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
-  .camera-viewer img{display:block;width:100%;max-height:440px;object-fit:contain;background:#10161b}
-  .camera-viewer-info{padding:10px 12px;font-size:12px;line-height:1.6}.camera-viewer-info b{display:block}
-  .camera-select-list{display:flex;flex-direction:column;gap:6px;max-height:390px;overflow:auto}
-  .camera-select-list button{text-align:left;font:12px/1.45 var(--disp);color:var(--txt);background:var(--panel-2);border:1px solid var(--line-soft);border-radius:7px;padding:9px;cursor:pointer}
-  .camera-select-list button[aria-pressed="true"]{border-color:var(--green)}.camera-select-list small{display:block;color:var(--muted);margin-top:2px}
   .camera-notice{font-size:12px;line-height:1.6;color:var(--muted);background:var(--panel-2);border-radius:7px;padding:10px 12px;margin-top:10px}
-  .camera-source-link{color:var(--wind)}
   .evaluation-stats{display:grid;grid-template-columns:repeat(5,minmax(100px,1fr));gap:8px;margin:12px 0}
   .evaluation-stats>div{background:var(--panel-2);border-radius:7px;padding:10px}
   .evaluation-stats small{display:block;color:var(--muted);font-size:12px;line-height:1.4}.evaluation-stats b{display:block;font:700 20px var(--mono);margin-top:5px}
@@ -1281,7 +1273,7 @@
     .public-brief{padding:5px 8px;gap:4px}.public-signal{min-height:40px;padding:4px 8px}.public-signal .value{font-size:13px}
     .map-time-note{max-width:calc(100% - 160px);font-size:12px;left:8px}
     .public-brief-intro span{max-width:48%;font-size:12px}
-    .source-grid,.evidence-freshness,.timeline-halves,.camera-catalog{grid-template-columns:1fr}
+    .source-grid,.evidence-freshness,.timeline-halves{grid-template-columns:1fr}
     .evaluation-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
     .source-grid{gap:0}.source-item{gap:10px}.source-mark{min-width:68px}
     .timeline-key{font-size:12px;gap:4px}.export-options{margin:10px;padding:12px}
@@ -1547,7 +1539,6 @@
         <div class="layer on" data-layer="tambonBoundaries"><div class="sw" style="background:rgba(34,211,238,.15);border-color:#22d3ee"></div><div class="lbl">ขอบเขตตำบล<small>ซูมเข้า/กดอำเภอเพื่อดู · 204 ตำบล</small></div><span class="cnt" id="lcTambonBoundaries">0</span></div>
         <div class="layer on" data-layer="tambonWarnings"><div class="sw"></div><div class="lbl">⚠️ เฝ้าระวังระดับตำบล<small>อำเภอเสี่ยงและตำบลใกล้จุดความร้อน</small></div><span class="cnt" id="lcTambonWarn">0</span></div>
         <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">ความเขียวของพืชพรรณ<small>ภาพผสม 8 วัน · ยังไม่ใช่ปริมาณเชื้อเพลิง</small></div><span class="cnt">off</span></div>
-        <div class="layer" data-layer="burnScar"><div class="sw"></div><div class="lbl">คะแนนเฝ้าระวังรายอำเภอ<small>ทดลอง · ไม่ใช่พื้นที่เผาไหม้จากดาวเทียม</small></div><span class="cnt" id="lcBurn">off</span></div>
       </div>
 
       <div class="block">
@@ -1949,19 +1940,6 @@
       </section></details>
     </div>
   </div>
-  <div class="guideview" id="cameraview">
-    <div class="rp-toolbar"><div class="ttl">กล้องสาธารณะ</div><button type="button" class="an-close" data-open-view="home" aria-label="กลับแผนที่">✕</button></div>
-    <div class="gd-body"><p class="workspace-intro">ภาพประกอบการสังเกตพื้นที่ ดูชื่อสถานที่และเวลาบนภาพก่อนใช้</p>      <section class="data-review" aria-labelledby="camerasHeading">
-        <h2 id="camerasHeading">ภาพจากกล้องสาธารณะในเชียงใหม่</h2>
-        <p>ดูภาพจากต้นทางโดยตรงและเช็กเวลาชื่อไฟล์ก่อนใช้ประกอบการตรวจสอบ กล้องที่ไม่มีพิกัดยืนยันจะแสดงเป็นรายชื่อ ไม่ปักตำแหน่งลงแผนที่</p>
-        <div class="data-review-controls"><button type="button" id="cameraRefresh">ตรวจรายการภาพอีกครั้ง</button><span id="cameraSummary" class="review-status" role="status" aria-live="polite">กำลังตรวจรายการกล้อง…</span></div>
-        <div class="camera-catalog">
-          <div id="cameraViewer" class="camera-viewer" aria-live="polite"><div class="camera-viewer-info">กำลังตรวจแหล่งภาพสาธารณะ…</div></div>
-          <div id="cameraList" class="camera-select-list" role="group" aria-label="เลือกกล้องหรือแหล่งข้อมูลกล้อง"></div>
-        </div>
-        <div class="camera-notice">กล้องที่พบเป็นภาพนิ่งหรือหน้ารายการแหล่งข้อมูล ไม่ได้หมายถึงวิดีโอสดต่อเนื่อง และกล้องริมแม่น้ำไม่ครอบคลุมป่าชุมชนทุกแห่ง ภาพช่วยสังเกตสภาพพื้นที่ได้ แต่ไม่ใช้ภาพเมืองยืนยันว่าเกิดไฟในป่า</div>
-      </section></div>
-  </div>
 
 </div>
 
@@ -1990,6 +1968,7 @@
 <script src="/hotspot-spread.js"></script>
 <script src="/analytics-summary.js"></script>
 <script src="/forest-picker.js"></script>
+<script src="/three-d-extras.js"></script>
 <script>
 /* ============================================================
    ChiangMaiEyes — live data rendering
@@ -2746,13 +2725,42 @@ async function renderWindDistrictPins(){
 }
 
 // ---- PM stations ----
+// Dust station popup (M3): Thai district from the station's position (the
+// feed sometimes sends English names), level chip, reading age; sensor notes
+// behind the disclosure.
+function pmStationHtml(st,{withTitle=true}={}){
+  const e=CmeEvidence, esc=e.escapeHtml;
+  // The feed's own district wins when we can read it (stations sit on borders);
+  // its romanised "Meuang/Muang" is Mueang Chiang Mai. Position only fills a gap.
+  const raw=String(st.district||'').trim();
+  const fromFeed=/[\u0E00-\u0E7F]/.test(raw)?normalizeDistrictName(raw):/^m(e|u|ue|eu)a?ng\b/i.test(raw)?'เมืองเชียงใหม่':'';
+  const fromPoint=!fromFeed&&typeof districtForPoint==='function'&&_districtFeatures?.length?normalizeDistrictName(districtForPoint(st.c[0],st.c[1])||''):'';
+  const district=fromFeed||fromPoint;
+  const lv=CmePublicGuidance.pmLevel(st.pm);
+  const ageMin=(Date.now()-Date.parse(st.updated_at))/6e4;
+  const ago=!Number.isFinite(ageMin)?'ไม่ทราบเวลา':ageMin<60?Math.max(1,Math.round(ageMin))+' นาทีที่แล้ว':ageMin<2880?Math.round(ageMin/60)+' ชม.ที่แล้ว':Math.round(ageMin/1440)+' วันที่แล้ว';
+  const old=Number.isFinite(ageMin)&&ageMin>180;
+  return `<div class="hs-pop pm-pop">${withTitle?`<p class="ds-kicker">สถานีวัดฝุ่น</p><h3 class="ds-title">${esc(st.name)}</h3>`:''}
+    <p class="pm-pop-v"><b>${esc(st.pm)}</b> µg/m³ ${CmeUx.pmChipHtml(st.pm)}</p>
+    ${lv?`<p class="pm-pop-advice">${esc(lv.advice)}</p>`:''}
+    <p class="fp-sub">${district?'อ.'+esc(district)+' · ':''}วัดเมื่อ ${esc(ago)}${old?' <span class="pm-old">ข้อมูลเก่า</span>':''}</p>
+    <div class="hs-actions"><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${st.c[0]},${st.c[1]}" target="_blank" rel="noopener">นำทาง</a></div>
+    <details class="land-context-details"><summary>ที่มาและข้อจำกัดของเซนเซอร์</summary>
+      <p>เวลาของสถานี ${esc(e.stamp(st.updated_at))} · ${esc(sourceLabel('pm25'))}</p>
+      <p>แหล่งข้อมูลไม่ได้ระบุชนิดเซนเซอร์และการสอบเทียบ ความชื้นสูงอาจทำให้เซนเซอร์บางชนิดอ่านค่าสูงเกินจริง ระดับสีใช้เกณฑ์ค่าเฉลี่ย 24 ชม. ของกรมควบคุมมลพิษ ค่านี้เป็นค่ารายชั่วโมง</p>
+    </details></div>`;
+}
+function openPmStation(st){
+  if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();CmeHotspotSheet.openPanel({kicker:'สถานีวัดฝุ่น',title:st.name,html:pmStationHtml(st,{withTitle:false})});return;}
+  L.popup({maxWidth:300,className:'pm-popup'}).setLatLng(st.c).setContent(pmStationHtml(st)).openOn(map);
+}
 function renderPm(){
   layers.pm.clearLayers();
   pmStations.forEach(s=>{
     const col=pmColor(s.pm);
     L.circle(s.c,{radius:4500,color:col,weight:1,fillColor:col,fillOpacity:0.10}).addTo(layers.pm);
     L.circleMarker(s.c,{radius:7,color:'#fff',weight:1.5,fillColor:col,fillOpacity:0.95})
-      .bindPopup(`<b>${CmeEvidence.escapeHtml(s.name)}</b> · อ. ${CmeEvidence.escapeHtml(s.district || '—')}<br>${CmeUx.pmChipHtml(s.pm)}<br>PM2.5 ${s.pm} µg/m³<br>เวลาของสถานี ${CmeEvidence.stamp(s.updated_at)}<br>${CmeEvidence.escapeHtml(sourceLabel('pm25'))}<br>ชนิดเซนเซอร์และการสอบเทียบ: feed ไม่ระบุ<br>ความชื้นอาจกระทบเซนเซอร์บางชนิด<br>${gMapsLink(s.c[0],s.c[1])}`)
+      .on('click',e=>{L.DomEvent.stopPropagation(e);openPmStation(s);})
       .addTo(layers.pm);
   });
   document.getElementById('lcPm').textContent=pmStations.length;
@@ -2776,7 +2784,6 @@ document.querySelectorAll('.layer').forEach(el=>{
       }
       return;
     }
-    if(key==='burnScar') return; // handled by its own dedicated onclick below
     el.classList.toggle('on');
     if(el.classList.contains('on')) map.addLayer(layers[key]);
     else map.removeLayer(layers[key]);
@@ -3701,7 +3708,6 @@ CmeNavigation.init({
     phase:()=>CmeCommunity.open('incidents'),community:()=>CmeCommunity.open('forest'),
     guide:()=>document.getElementById('guideview').classList.add('open'),
     data:()=>{document.getElementById('dataview').classList.add('open');renderAqiStations();loadArchive();loadFieldEvaluation();},
-    cameras:()=>{document.getElementById('cameraview').classList.add('open');loadPublicCameraDirectory();startCameraDirectoryRefresh();}
   }
 });
 document.getElementById('guideClose').onclick=()=>CmeNavigation.open('home');
@@ -4102,18 +4108,16 @@ function selectTambonSearch(tambonName, centroid, amphoeHint){
 
   const phaseLabel = w ? (w.phase==='during'?'ระหว่างไฟ (ใกล้จุดความร้อน)':w.phase==='before'?'เฝ้าระวังก่อนไฟ':'ปกติ') : null;
   const phaseCol = w ? (w.phase==='during'?'var(--danger)':w.phase==='before'?'#facc15':'var(--good)') : null;
-  _locationPopup(centroid, `<div style="font-family:var(--mono);font-size:12px;color:#e6edf3;line-height:1.6">
-    <b style="font-size:13px;color:#22d3ee">ตำบล${tambonName}</b><br>
+  _locationPopup(centroid, `<div class="ds-pop search-pop">
+    <h3 class="ds-title">ต.${tambonName}</h3>
     <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${amphoe||'—'}</span></div>
     ${w ? `
       <div class="dl"><span class="dk">สถานะ</span><span class="dv" style="color:${phaseCol}">${phaseLabel}</span></div>
-      <div class="dl"><span class="dk">คะแนนความเสี่ยง</span><span class="dv">${experimentalScore(w.danger_score)}/100 คะแนนทดลอง (ประมาณ)</span></div>
       ${w.nearest_hotspot_km!=null?`<div class="dl"><span class="dk">จุดดาวเทียมใกล้สุด (จากจุดอ้างอิงป่า)</span><span class="dv">${w.nearest_hotspot_km} กม.</span></div>`:''}
     ` : `<div style="font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.5">ไม่มีการเฝ้าระวังเป็นพิเศษสำหรับตำบลนี้ตอนนี้ (ไม่เข้าเกณฑ์ก่อนไฟ/ระหว่างไฟ)</div>`}
     ${phase?`<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px">
       <div style="font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.12em;margin-bottom:4px">บริบทระดับอำเภอ (${distNorm})</div>
       <div class="dl"><span class="dk">เฟส</span><span class="dv" style="color:${PHASE_COLOR[phase.color]}">${PHASE_LABEL_TH[phase.phase]}</span></div>
-      <div class="dl"><span class="dk">คะแนน</span><span class="dv">${experimentalScore(phase.danger_score)}/100 คะแนนทดลอง</span></div>
     </div>`:''}
   </div>`);
 }
@@ -4129,12 +4133,12 @@ function selectCoordinateSearch(lat,lon){
   const tb = _tambonFeatures.length ? tambonForPoint(lat,lon) : null;
   const phase = distNorm ? (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm) : null;
 
-  _locationPopup([lat,lon], `<div style="font-family:var(--mono);font-size:12px;color:#e6edf3;line-height:1.6">
-    <b style="font-size:13px;color:#22d3ee">พิกัดที่ค้นหา</b><br>
+  _locationPopup([lat,lon], `<div class="ds-pop search-pop">
+    <h3 class="ds-title">พิกัดที่ค้นหา</h3>
     <div class="dl"><span class="dk">พิกัด</span><span class="dv">${lat.toFixed(5)}, ${lon.toFixed(5)}</span></div>
     <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${distNorm||(_districtFeatures.length?'อยู่นอกจังหวัดเชียงใหม่':'กำลังโหลดขอบเขต...')}</span></div>
     ${tb?`<div class="dl"><span class="dk">ตำบล</span><span class="dv">${tb.tambon}</span></div>`:''}
-    ${phase?`<div class="dl"><span class="dk">เฟสไฟ (อำเภอนี้)</span><span class="dv" style="color:${PHASE_COLOR[phase.color]}">${PHASE_LABEL_TH[phase.phase]} · ${experimentalScore(phase.danger_score)}/100 คะแนนทดลอง</span></div>`:''}
+    ${phase?`<div class="dl"><span class="dk">เฟสไฟ (อำเภอนี้)</span><span class="dv" style="color:${PHASE_COLOR[phase.color]}">${PHASE_LABEL_TH[phase.phase]}</span></div>`:''}
     <div style="margin-top:8px">${gMapsLink(lat,lon)}</div>
   </div>`);
 }
@@ -4309,13 +4313,13 @@ setInterval(()=>goLive(false), 10*60*1000);
 
 function closeAllOverlays(){
   CmeCommunity.hide();
-  stopCameraDirectoryRefresh();
   const was3D=document.getElementById('threedview').classList.contains('open');
   document.getElementById('analytics').classList.remove('open');
   document.getElementById('reportview').classList.remove('open');
   document.getElementById('threedview').classList.remove('open');
+  window.CmeThreeDExtras?.stopWind();
   document.getElementById('phaseview').classList.remove('open');
-  ['guideview','dataview','cameraview'].forEach(id=>document.getElementById(id).classList.remove('open'));
+  ['guideview','dataview'].forEach(id=>document.getElementById(id).classList.remove('open'));
   if(was3D) setTimeout(()=>{if(!document.getElementById('threedview').classList.contains('open')) renderWind();},0);
 }
 
@@ -4359,7 +4363,6 @@ function renderTambonWarnings(warnings){
       .bindPopup(
         `<b>ต.${t.tambon}</b> อ.${t.amphoe}<br>`+
         `สถานะ: <b>${isDuring?'ระหว่างไฟ (ใกล้จุดความร้อน)':'เฝ้าระวังก่อนไฟ'}</b><br>`+
-        `คะแนนความเสี่ยง (ประมาณ): ${experimentalScore(t.danger_score)}/100 คะแนนทดลอง`+
         (t.nearest_hotspot_km!=null?` · จุดดาวเทียมใกล้สุด (จากจุดอ้างอิงป่า) ${t.nearest_hotspot_km} กม.`:'')
       )
       .addTo(layers.tambonWarnings);
@@ -4378,6 +4381,29 @@ function _forestRiskColor(score){
   return '#43b05f';
 }
 
+const NEAR_FOREST_KM=15;
+function forestPopupHtml(f,{withTitle=true,extra=''}={}){
+  const e=CmeEvidence, esc=e.escapeHtml, lat=Number(f.latitude), lon=Number(f.longitude);
+  let near=null;
+  if(Number.isFinite(lat)&&Number.isFinite(lon))hotspots.forEach(h=>{const km=e.distanceKm({lat,lon},{lat:h.lat,lon:h.lon});if(!near||km<near.km)near={h,km};});
+  const ago=h=>{const hr=(Date.now()-Date.parse(h.detected_at))/36e5;return !Number.isFinite(hr)?'ไม่ทราบเวลา':hr<1?'ไม่ถึง 1 ชม.ที่แล้ว':hr<48?Math.round(hr)+' ชม.ที่แล้ว':Math.round(hr/24)+' วันที่แล้ว';};
+  const nearRow=near&&near.km<=NEAR_FOREST_KM
+    ?`<li class="hs-row"><span class="hs-ic"><span class="hs-dot-pin age-${hotspotAgeClass(near.h)}"></span></span><div><b>จุดความร้อนใกล้สุด ${near.km<1?'ไม่ถึง 1':near.km.toFixed(1)} กม.</b><small>ตรวจพบ ${ago(near.h)} · วัดจากจุดอ้างอิงของป่า</small></div></li>`
+    :`<li class="hs-row"><span class="hs-ic">✓</span><div><b>ไม่พบจุดความร้อนในรัศมี ${NEAR_FOREST_KM} กม.</b><small>ช่วงที่แสดงบนแผนที่ · ไม่ได้แปลว่าไม่มีไฟ</small></div></li>`;
+  const area=f.area_rai?Number(f.area_rai).toLocaleString('th-TH')+' ไร่':'';
+  const place=[f.amphoe?'อ.'+esc(f.amphoe):'',f.tambon?'ต.'+esc(f.tambon):'',area].filter(Boolean).join(' · ');
+  return `<div class="hs-pop fp-pop">${withTitle?`<p class="ds-kicker">ป่าชุมชน</p><h3 class="ds-title">${esc(f.name||'ป่าชุมชน')}</h3>`:''}
+    ${place?`<p class="fp-sub">${place}</p>`:''}
+    <ul class="hs-rows">${nearRow}
+      <li class="hs-row"><span class="hs-ic">🌿</span><div><b>${f.fire_management_active?'มีการจัดการไฟในทะเบียน':'ไม่ระบุการจัดการไฟ'}</b><small>จากทะเบียนป่าชุมชน</small></div></li>${extra}</ul>
+    <div class="hs-actions"><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}" target="_blank" rel="noopener">นำทาง</a><button type="button" class="hs-nav terrain-popup-trigger" data-terrain-forest="${esc(f.forest_id||'')}">ความสูงและความชัน</button></div>
+    <details class="land-context-details"><summary>ติดต่อและที่มาของข้อมูล</summary>${forestContactHtml(f)}<p class="fp-src">ขอบเขตและข้อมูลป่า: ${esc(f.source||'—')}</p></details>
+  </div>`;
+}
+function openForestDetails(f,latlng){
+  if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();CmeHotspotSheet.openPanel({kicker:'ป่าชุมชน',title:f.name||'ป่าชุมชน',html:forestPopupHtml(f,{withTitle:false})});return;}
+  L.popup({maxWidth:320,className:'forest-popup'}).setLatLng(latlng).setContent(forestPopupHtml(f)).openOn(map);
+}
 function renderForestMarkers(){
   layers.forest.clearLayers();
   document.getElementById('lcForest').textContent=allForests.length;
@@ -4389,8 +4415,7 @@ function renderForestMarkers(){
     const lat=f.latitude, lng=f.longitude;
     if(!lat||!lng) return;
     const active=f.fire_management_active;
-    const risk=forestRiskById[f.forest_id];
-    const color=risk?_forestRiskColor(risk.danger_score):(active?'#43b05f':'#4ade80');
+    const color=active?'#43b05f':'#4ade80';
     // Real surveyed polygon (agency shapefile, 677 CM plots) when present —
     // only falls back to the old estimated circle for a forest that
     // somehow has none, which shouldn't happen for any official-source
@@ -4404,17 +4429,7 @@ function renderForestMarkers(){
         .addTo(layers.forest);
     }
     L.circleMarker([lat,lng],{radius:4,color,weight:1.5,fillColor:'#fff',fillOpacity:0.9})
-      .bindPopup(
-        `<b>${CmeEvidence.escapeHtml(f.name||'ป่าชุมชน')}</b><br>`+
-        `อ.${f.amphoe||'—'} ต.${f.tambon||'—'}<br>`+
-        `พื้นที่: ${f.area_rai?f.area_rai.toLocaleString()+' ไร่':'ไม่ระบุ'}<br>`+
-        (risk
-          ? `คะแนนเฝ้าระวัง (ทดลอง ไม่ใช่ปริมาณเชื้อเพลิง): <b style="color:${color}">${experimentalScore(risk.danger_score)}/100 คะแนนทดลอง</b>`
-            +(risk.nearest_hotspot_km!=null?` · จุดดาวเทียมใกล้สุด (จากจุดอ้างอิงป่า) ${risk.nearest_hotspot_km} กม.`:'')+'<br>'
-          : '')+
-        `จัดการไฟ: <span style="color:${active?'#43b05f':'var(--dim)'}">${active?'● ใช้งานอยู่':'○ ไม่ระบุ'}</span><br>`+
-        `แหล่ง: ${CmeEvidence.escapeHtml(f.source||'—')}<br>${gMapsLink(lat,lng)}<br><button type="button" class="terrain-popup-trigger" data-terrain-forest="${CmeEvidence.escapeHtml(f.forest_id)}">ดูความสูงและความชัน</button>${forestContactHtml(f)}`
-      )
+      .on('click',e=>{L.DomEvent.stopPropagation(e);openForestDetails(f,[lat,lng]);})
       .addTo(layers.forest);
   });
   document.getElementById('lcForest').textContent=allForests.length;
@@ -4679,66 +4694,6 @@ function renderConditions(){
     lblEl.style.color=lvl.color;
   }
 }
-
-// ============================================================
-//  BURN SCAR LAYER — district accumulation from livePhases
-// ============================================================
-function buildBurnScarLayer(){
-  if(layers.burnScar){ try{map.removeLayer(layers.burnScar);}catch(_){} }
-  layers.burnScar = L.layerGroup().addTo(map); // add now; GeoJSON fills in async
-
-  if(!livePhases||!livePhases.length){
-    document.getElementById('lcBurn').textContent='ไม่มีข้อมูล';
-    return;
-  }
-  const byDistrict=Object.fromEntries(livePhases.map(p=>[p.district,p]));
-  let count=0;
-
-  fetch('/chiangmai-districts.json')
-    .then(r=>r.json())
-    .then(gj=>{
-      if(!document.querySelector('.layer[data-layer="burnScar"]').classList.contains('on')) return;
-      L.geoJSON(gj,{
-        style(feat){
-          const p=feat.properties||{};
-          // use amp_th (Thai name) for matching with livePhases which also uses Thai
-          const nameTh=p.amp_th||p.nameTh||'';
-          const ph=byDistrict[nameTh]||byDistrict[Object.keys(byDistrict).find(k=>nameTh&&(k.includes(nameTh)||nameTh.includes(k)))||'']||null;
-          const score=ph?(ph.danger_score||0):0;
-          if(score>0) count++;
-          // always show all districts; opacity conveys risk level (green=safe, red=danger)
-          const col=ph?.danger_score==null?'#8b97a7':score>0.6?'#ff4d4d':score>0.35?'#ff8a3d':score>0.15?'#facc15':'#43b05f';
-          const opacity=score>0.05?0.38:0.10;
-          return {fillColor:col,fillOpacity:opacity,color:col,weight:score>0.05?1.5:0.5,opacity:score>0.05?0.7:0.2};
-        },
-        onEachFeature(feat,layer){
-          const p=feat.properties||{};
-          const nameTh=p.amp_th||p.nameTh||'';
-          const ph=byDistrict[nameTh]||byDistrict[Object.keys(byDistrict).find(k=>nameTh&&(k.includes(nameTh)||nameTh.includes(k)))||'']||null;
-          const score=experimentalScore(ph?.danger_score);
-          const hotspots=ph?ph.active_hotspots||0:0;
-          layer.bindPopup(`<b>${nameTh||p.amp_en||'—'}</b><br>ดัชนีอากาศแห้งทดลอง: ${score}/100 · ยังไม่มีข้อมูลเชื้อเพลิง<br>เฟส: ${PHASE_LABEL_TH[ph&&ph.phase]||ph&&ph.phase||'ปกติ'}<br>จุดความร้อน: ${hotspots} จุด`);
-        }
-      }).addTo(layers.burnScar);
-      const lbl=count>0?String(count):'ไม่มีคะแนน';
-      document.getElementById('lcBurn').textContent=lbl;
-    })
-    .catch(()=>{document.getElementById('lcBurn').textContent='error';});
-}
-
-// ---- Layer toggle: burn scar (dedicated, replaces generic onclick) ----
-document.querySelector('.layer[data-layer="burnScar"]').onclick=(function(){
-  const el=document.querySelector('.layer[data-layer="burnScar"]');
-  return function(){
-    el.classList.toggle('on');
-    if(el.classList.contains('on')){
-      buildBurnScarLayer(); // also calls addTo(map) internally
-    } else {
-      if(layers.burnScar){ map.removeLayer(layers.burnScar); }
-      document.getElementById('lcBurn').textContent='off';
-    }
-  };
-})();
 
 // Open-Meteo Air Quality — optional hourly PM2.5 supplement for Chiang Mai centroid.
 async function fetchAirQualityHourly(){
@@ -5536,6 +5491,19 @@ document.getElementById('tdClose').onclick=()=>{
   setTimeout(()=>map.invalidateSize(),60);
 };
 
+// District names and wind in 3D, matching the 2D map (wind only when its layer is on).
+let _tdBasemapKey='dark';
+async function start3DExtras(){
+  if(!mlMap||!window.CmeThreeDExtras||!document.getElementById('threedview').classList.contains('open'))return;
+  const districts=Object.entries(districtLayerRef||{}).map(([name,layer])=>({name,geometry:layer.toGeoJSON?.().geometry})).filter(d=>d.geometry);
+  if(districts.length)CmeThreeDExtras.setDistrictLabels(mlMap,districts);
+  const windOn=document.querySelector('.layer[data-layer="wind"]')?.classList.contains('on');
+  if(!windOn){CmeThreeDExtras.stopWind();return;}
+  let field=_windCacheField;
+  if(!field){try{field=await fetchWindGrid();}catch(_){field=null;}}
+  if(!field||!document.getElementById('threedview').classList.contains('open'))return;
+  CmeThreeDExtras.startWind(mlMap,field,{bounds:CM_SOURCE_BOUNDS,light:_tdBasemapKey==='osm',mobile:isMobileViewport()});
+}
 async function open3D(){
   // Replay and a 2D outline are 2D-only; stop them so both views show the same thing.
   window.CmeHotspotReplay?.stop();clearSpreadSim();map.closePopup();window.CmeHotspotSheet?.close();
@@ -5548,7 +5516,7 @@ async function open3D(){
     }
     catch(e){ toast('ไม่สามารถเปิด 3D ได้ในเบราว์เซอร์นี้'); console.error(e); }
   } else if(mlMap){
-    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); },80);
+    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); start3DExtras(); },80);
   }
 }
 
@@ -5664,6 +5632,7 @@ function initMapLibre3D(){
     _sync3DHotspots();
     _sync3DForests();
     _sync3DManualReports();
+    start3DExtras();
 
     // 3D hotspot clicks are handled inline in _sync3DHotspots() Marker elements
 
@@ -5783,6 +5752,7 @@ const _TD_BASEMAP_SOURCES={
 };
 function setTdBasemap(key){
   if(!mlMap) return;
+  _tdBasemapKey=key;setTimeout(start3DExtras,0); // wind ink follows the basemap
   const apply=()=>{
     // Lazily create the osm/sat source+layer on first switch to it, so a
     // session that only ever uses DARK never fetches those tiles at all.
@@ -6086,9 +6056,12 @@ async function getRealElevationMsl(lat, lng){
 function _showForestPopup(f){
   const [lng,lat]=f.geometry.coordinates;
   const elevSlotId = 'elev-'+Math.random().toString(36).slice(2);
-  new maplibregl.Popup({closeButton:true,maxWidth:'220px'})
+  const reg=allForests.find(x=>String(x.forest_id)===String(f.properties.forest_id||f.properties.id))||{...f.properties,latitude:lat,longitude:lng,fire_management_active:f.properties.active};
+  const extra=`<li class="hs-row"><span class="hs-ic">⛰</span><div><b>ความสูง <span id="${elevSlotId}">กำลังโหลด…</span></b><small>จากแบบจำลองความสูง ณ จุดอ้างอิงของป่า</small></div></li>`;
+  if(isMobileViewport()&&window.CmeHotspotSheet){CmeHotspotSheet.openPanel({kicker:'ป่าชุมชน',title:reg.name||'ป่าชุมชน',html:forestPopupHtml(reg,{withTitle:false,extra})});}
+  else new maplibregl.Popup({closeButton:true,maxWidth:'320px',className:'coordination-popup'})
     .setLngLat([lng,lat])
-    .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3"><b style="color:#43b05f">${CmeEvidence.escapeHtml(f.properties.name||'ป่าชุมชน')}</b><br>อ.${f.properties.amphoe||'—'}<br>ความสูง: <span id="${elevSlotId}">กำลังโหลด…</span><br>จัดการไฟ: ${f.properties.active?'● ใช้งาน':'○ ไม่ระบุ'}<hr style="border-color:#2c3744;margin:6px 0"><a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener" style="color:#4ade80;font-weight:600;text-decoration:none">🗺 นำทาง Google Maps</a><br><button type="button" class="terrain-popup-trigger" data-terrain-forest="${CmeEvidence.escapeHtml(f.properties.forest_id||f.properties.id||'')}">ดูความสูงและความชัน</button>${forestContactHtml(f.properties)}</div>`)
+    .setHTML(forestPopupHtml(reg,{extra}))
     .addTo(mlMap);
   getRealElevationMsl(lat, lng).then(elev=>{
     const el = document.getElementById(elevSlotId);
@@ -6328,60 +6301,6 @@ document.getElementById('archiveBackfill').addEventListener('click',runArchiveBa
 
 // A public feed directory. Browser requests images directly from the verified
 // publisher; there is no backend proxy or assumption that a snapshot is live.
-let publicCameraRows=[], selectedPublicCamera='', cameraRequest=0, cameraPollTimer=null;
-function publicCameraTime(value){return value?CmeEvidence.stamp(value):'ไม่ระบุเวลา';}
-function renderCameraList(){
-  const e=CmeEvidence, list=document.getElementById('cameraList'), viewer=document.getElementById('cameraViewer');
-  if(!publicCameraRows.length){list.innerHTML='<p class="review-status">ยังไม่มีรายชื่อที่อ่านได้</p>';viewer.innerHTML='<div class="camera-viewer-info">ไม่พบรายการกล้องที่เปิดเผยภาพได้</div>';return;}
-  if(!publicCameraRows.some(camera=>camera.id===selectedPublicCamera))selectedPublicCamera=publicCameraRows[0].id;
-  list.innerHTML=publicCameraRows.map(camera=>`<button type="button" data-camera-id="${e.escapeHtml(camera.id)}" aria-pressed="${camera.id===selectedPublicCamera}"><b>${e.escapeHtml(camera.name)}</b><small>${e.escapeHtml(camera.district)} · ${camera.status==='source_only'?'มีหน้าแหล่งข้อมูล แต่ยังไม่มีภาพ/วิดีโอให้เปิด':camera.status==='unavailable'?'ขณะนี้อ่านภาพไม่ได้':camera.status==='stale'?'ภาพอาจเก่า':'ภาพนิ่งจากต้นทาง'}</small></button>`).join('');
-  const camera=publicCameraRows.find(item=>item.id===selectedPublicCamera);
-  const imageUrl=camera?.imageUrl;
-  const statusText={snapshot:'ภาพนิ่งจากต้นทาง',stale:'ภาพนิ่งเก่า · ตรวจเวลาบนภาพก่อนใช้',clock_mismatch:'เวลาในชื่อไฟล์ไม่สอดคล้องกับเวลาปัจจุบัน',unavailable:'ต้นทางยังส่งภาพให้ไม่ได้',source_only:'หน้าเว็บต้นทางยังไม่เปิดภาพหรือวิดีโอให้ดึง'}[camera?.status]||'ไม่ทราบสถานะ';
-  const safeSource=(()=>{try{const u=new URL(camera?.sourcePage);return u.protocol==='https:'&&['appserv.net','chiangmaipao.go.th','www.highwaytraffic.go.th'].includes(u.hostname)?u.href:null;}catch{return null;}})();
-  viewer.innerHTML=`${imageUrl?`<img src="${e.escapeHtml(imageUrl)}" alt="ภาพนิ่งจาก ${e.escapeHtml(camera.name)}" referrerpolicy="no-referrer" loading="lazy" data-camera-image>`:`<div class="camera-viewer-info" role="status"><b>${e.escapeHtml(statusText)}</b><span>${e.escapeHtml(camera?.locationNote||'')}</span></div>`}<div class="camera-viewer-info"><b>${e.escapeHtml(camera?.name||'')}</b>${e.escapeHtml(camera?.district||'')}<br>${e.escapeHtml(statusText)} · เวลาในชื่อไฟล์ ${e.escapeHtml(publicCameraTime(camera?.filenameTimestamp))}<br>ตรวจแหล่งข้อมูล ${e.escapeHtml(publicCameraTime(camera?.checkedAt))}${camera?.reviewedAt?'<br>หน้ารายการตรวจเมื่อ '+e.escapeHtml(camera.reviewedAt):''}<br>${safeSource?`<a class="camera-source-link" href="${e.escapeHtml(safeSource)}" target="_blank" rel="noopener noreferrer">เปิดเว็บต้นทาง ↗</a>`:''}</div>`;
-}
-async function loadPublicCameraDirectory(manual=false){
-  const id=++cameraRequest, button=document.getElementById('cameraRefresh'), status=document.getElementById('cameraSummary');
-  if(button){button.disabled=true;button.textContent='กำลังตรวจ…';}
-  status.textContent='กำลังอ่านแหล่งกล้อง…';status.setAttribute('role','status');
-  try{
-    const result=await fetchJson('/api/public-cameras',20000);
-    if(id!==cameraRequest)return;
-    if(!Array.isArray(result.cameras))throw new Error('invalid camera list');
-    publicCameraRows=result.cameras;
-    const links=publicCameraRows.filter(camera=>camera.imageUrl).length;
-    const old=publicCameraRows.filter(camera=>camera.status==='stale').length;
-    const directory=publicCameraRows.filter(camera=>camera.status==='source_only').length;
-    status.textContent=`พบลิงก์ภาพต้นทาง ${links} รายการ · เก่า ${old} · หน้ารายการที่ยังไม่มีภาพ ${directory} · ตรวจ ${publicCameraTime(result.checkedAt)}`;
-    renderCameraList();
-  }catch(_){
-    if(id!==cameraRequest)return;
-    status.setAttribute('role','alert');status.textContent='อ่านรายการกล้องจากต้นทางไม่ได้ ตรวจใหม่ภายหลังหรือเปิดเว็บเจ้าของกล้องโดยตรง';
-    if(!publicCameraRows.length){document.getElementById('cameraViewer').innerHTML='<div class="camera-viewer-info">ไม่สามารถยืนยันภาพล่าสุดได้ · อย่าใช้ภาพเก่าตัดสินสถานการณ์</div>';document.getElementById('cameraList').replaceChildren();}
-    if(manual)toast('อ่านรายการกล้องไม่ได้');
-  }finally{
-    if(id===cameraRequest&&button){button.disabled=false;button.textContent='ตรวจรายการภาพอีกครั้ง';}
-  }
-}
-document.getElementById('cameraList').addEventListener('click',event=>{
-  const button=event.target.closest('[data-camera-id]');if(!button)return;
-  selectedPublicCamera=button.dataset.cameraId;renderCameraList();
-});
-document.getElementById('cameraRefresh').addEventListener('click',()=>loadPublicCameraDirectory(true));
-document.getElementById('cameraViewer').addEventListener('error',event=>{
-  if(!event.target.matches('[data-camera-image]'))return;
-  event.target.remove();const note=document.createElement('div');note.className='camera-viewer-info';
-  note.textContent='เบราว์เซอร์โหลดภาพจากผู้เผยแพร่ไม่ได้ · เปิดเว็บต้นทางและตรวจเวลาโดยตรง';
-  document.getElementById('cameraViewer').prepend(note);
-},{capture:true});
-function stopCameraDirectoryRefresh(){if(cameraPollTimer){clearInterval(cameraPollTimer);cameraPollTimer=null;}}
-function startCameraDirectoryRefresh(){
-  stopCameraDirectoryRefresh();
-  if(!document.hidden&&document.getElementById('cameraview').classList.contains('open'))cameraPollTimer=setInterval(()=>loadPublicCameraDirectory(),180000);
-}
-document.addEventListener('visibilitychange',startCameraDirectoryRefresh);
-
 function syncExportForests(){
   const select=document.getElementById('exportForest'), previous=select.value;
   select.innerHTML='<option value="">เลือกป่าชุมชน</option>'+allForests.map(f=>`<option value="${CmeEvidence.escapeHtml(f.forest_id)}">${CmeEvidence.escapeHtml(f.name)} · ${CmeEvidence.escapeHtml(f.amphoe)}</option>`).join('');
@@ -6447,7 +6366,15 @@ CmeProtectedAreas.init({onReady:()=>{
   layers.protected.clearLayers();
   const features=CmeProtectedAreas.features();
   document.getElementById('lcProtected').textContent=CmeProtectedAreas.status()==='ready'?features.length:'—';
-  if(features.length)L.geoJSON({type:'FeatureCollection',features},{interactive:false,style:{color:'#e5a347',weight:1.5,dashArray:'5 4',fillOpacity:.06}}).addTo(layers.protected);
+  // M6: the layer is opt-in; once on, a tap names the area and says to call its officers first.
+  if(features.length)L.geoJSON({type:'FeatureCollection',features},{style:{color:'#e5a347',weight:1.5,dashArray:'5 4',fillOpacity:.06},
+    onEachFeature:(feat,layer)=>layer.on('click',e=>{
+      L.DomEvent.stopPropagation(e);
+      const nm=CmeProtectedAreas.name(feat), esc=CmeEvidence.escapeHtml;
+      const html=`<div class="hs-pop pa-pop"><ul class="hs-rows"><li class="hs-row"><span class="hs-ic">⚠</span><div><b>ประสานเจ้าหน้าที่ก่อนเข้าพื้นที่</b><small>พื้นที่อนุรักษ์มีผู้รับผิดชอบตามกฎหมาย</small></div></li></ul><p class="fp-src">${esc(CmeProtectedAreas.disclaimer)}</p></div>`;
+      if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();CmeHotspotSheet.openPanel({kicker:'พื้นที่อนุรักษ์',title:nm,html});}
+      else L.popup({maxWidth:300}).setLatLng(e.latlng).setContent(`<p class="ds-kicker">พื้นที่อนุรักษ์</p><h3 class="ds-title">${esc(nm)}</h3>`+html).openOn(map);
+    })}).addTo(layers.protected);
 }});
 
 CmeCommunity.init({

@@ -1,6 +1,6 @@
 /* Navigation follows people's tasks; secondary views share a primary menu. */
 (() => {
-  const parents={threed:'home',cameras:'home',data:'analytics',report:'analytics',phase:'community'};
+  const parents={threed:'home',data:'analytics',report:'analytics',phase:'community'};
   let config;
   function open(view,target){
     if(!config?.views[view])return;
