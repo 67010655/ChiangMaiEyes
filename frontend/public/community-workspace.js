@@ -86,7 +86,7 @@
   function publicView(){
     const P=root.CmeForestPublic;if(!P)return loginView();
     const id=state.publicForest??P.recall();state.publicForest=id;
-    return P.html({forests:state.catalog,dashboard:context.dashboard(),selectedId:id,incidentsHtml:incidentRows(state.publicIncidents||[],true)});
+    return P.html({forests:state.catalog,dashboard:context.dashboard(),selectedId:id,hasIncidents:!!state.publicIncidents?.length,incidentsHtml:state.publicIncidents?.length?incidentRows(state.publicIncidents,true):''});
   }
   function loginView(){return `<div class="cw-empty"><h2>พื้นที่สำหรับตัวแทนป่าชุมชน</h2><p>เข้าสู่ระบบเพื่อขอสิทธิ์พื้นที่ เมื่อผู้ดูแลยืนยันแล้ว คุณจะบันทึกเหตุ ร่วมประสานงาน และตั้งค่าอีเมลของป่าที่รับผิดชอบได้</p><p>ยังไม่มีบัญชี? เลือกสมัครสมาชิกในหน้าบัญชี แล้วจึงขอสิทธิ์พื้นที่</p>${button('เข้าสู่ระบบ / สมัครสมาชิก','signin','',true)} ${button('ดูเหตุที่เผยแพร่','public')}${E().fireHelpHtml()}</div>`;}
   function membershipView(){
@@ -152,11 +152,12 @@
         <p class="fp-meta">${esc(meta)}</p></section>
       ${selected.boundary_quality==='needs_review'?`<p class="cw-help" role="status"><b>ขอบเขตนี้ต้องตรวจทบทวน</b><br>${esc(selected.boundary_note)} · ระยะใช้จุดอ้างอิงป่าแทน</p>`:''}
       <section class="rp-now" data-rp-now>${html}</section>
-      <div class="rp-cta">${button('📝 บันทึกเหตุ','create','',true)}${c?`${button('ดูบนแผนที่หลัก','locate',`data-lat="${c.lat}" data-lon="${c.lon}"`)}`:''}${button('ส่งออกรายงาน','export')}</div>
+      <div class="rp-cta">${button('📝 บันทึกเหตุ','create','',true)}${c?`${button('ดูบนแผนที่หลัก','locate',`data-lat="${c.lat}" data-lon="${c.lon}"`)}`:''}${button('ประวัติเหตุ','all-incidents')}</div>
       ${todoHtml(sit)}
-      <section class="rp-section"><h2>เหตุที่ยังไม่ปิด${open.length?` <span class="rp-count">${open.length}</span>`:''}</h2>${incidentRows(open)}<div class="cw-actions">${button('ดูเหตุทั้งหมด','all-incidents')}</div></section>
-      <section class="rp-section"><h2>แผนที่ป่า</h2><div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">กดจุดบนแผนที่เพื่อดูว่าใครควรดูแล · ขอบเขตจาก RECOFTC · ดาวเทียมยังไม่ยืนยันเหตุภาคสนาม</p>${protectedNearbyView(selected)}${crossDistrictView(selected)}</section>
-      <details class="rp-section rp-who"><summary>ใครดูแลพื้นที่นี้ · เบอร์หน่วยงาน · ป่าข้างเคียง</summary>${c&&root.CmeCoordination?root.CmeCoordination.html(c.lat,c.lon,{myForestId:selected.forest_id}):''}<p class="cw-help"><a href="tel:052081758">052-081758</a> สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่) · <a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a> · ตรวจ 9 ต.ค. 2026</p></details>
+      ${open.length?`<section class="rp-section"><h2>เหตุที่ยังไม่ปิด <span class="rp-count">${open.length}</span></h2>${incidentRows(open)}</section>`:''}
+      <section class="rp-section"><h2>แผนที่ป่า</h2><div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">กดจุดบนแผนที่เพื่อดูว่าใครควรดูแล</p>${protectedNearbyView(selected)}${crossDistrictView(selected)}<div class="cw-actions">${button('ส่งออกรายงานพื้นที่นี้','export')}</div></section>
+      <details class="rp-section rp-who fp-who"><summary>📞 ติดต่อใคร · หน่วยงานในพื้นที่ · ป่าข้างเคียง</summary>${c&&root.CmeCoordination?root.CmeCoordination.html(c.lat,c.lon,{myForestId:selected.forest_id}):''}<p class="cw-help"><a href="tel:052081758">052-081758</a> สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่) · <a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a> · ตรวจ 9 ต.ค. 2026</p></details>
+      ${root.CmeForestPublic.limitsHtml()}
       ${state.me.is_admin?'':`<details class="rp-section"><summary>ขอสิทธิ์ป่าอื่นเพิ่ม</summary>${membershipView()}</details>`}
     </div>`;
   }
@@ -255,13 +256,15 @@
     else if(state.tab==='preferences')content=preferencesView();
     else if(state.tab==='incidents')content=`<section class="cw-section"><h2>ติดตามและประสานเหตุ</h2><div class="cw-actions">${button(state.scope==='active'?'ดูทุกสถานะ':'ดูเฉพาะเหตุที่ยังไม่ปิด','scope')}${allowedForests().length?button('แจ้งสิ่งที่พบ','create','',true):''}${button('การวิเคราะห์รายอำเภอ (ทดลอง)','legacy-phase')}</div>${incidentRows(state.incidents.filter(i=>state.scope==='all'||!['closed','cancelled'].includes(i.status)))}${state.incidentMore?button('โหลดเหตุเก่ากว่านี้','older-incidents'):''}</section>`;
     else content=forestView();
+    const head=container.querySelector('.cw-header');
+    if(head){const signedIn=!!state.session;head.querySelector('h1').textContent=signedIn?'พื้นที่ป่าชุมชน':'ป่าชุมชน';head.querySelector('p').textContent=signedIn?'สถานการณ์ · บันทึกเหตุ · ประสานงาน':'ดูไฟ ลม และฝุ่นรอบป่า ไม่ต้องสมัคร';}
     body.innerHTML=tabs()+notices+content;
     body.dataset.viewKey=state.tab+'/'+(state.detail?.incident?.id||'')+'/'+state.create;
     body.querySelectorAll('details').forEach((d,n)=>{const open=detailsOpen.get(body.dataset.viewKey+'/'+n);if(open!==undefined)d.open=open;});
     restoreForms();
     if(!state.session&&state.ready&&root.CmeForestPublic&&body.querySelector('.fp')){
       body.dataset.fpDash=context.dashboard()?'1':'';
-      root.CmeForestPublic.attach(body,{forests:()=>state.catalog,dashboard:()=>context.dashboard(),locate:(lat,lon)=>context.locate(lat,lon),fetcher:path=>root.fetch((context.apiBase||'')+path),onPick:id=>{state.publicForest=id;}});
+      root.CmeForestPublic.attach(body,{forests:()=>state.catalog,dashboard:()=>context.dashboard(),locate:(lat,lon)=>context.locate(lat,lon),fetcher:path=>root.fetch((context.apiBase||'')+path),onPick:id=>{state.publicForest=id;},rerender:()=>render()});
     }
     if(state.tab==='practice'&&state.session&&state.me&&root.CmePractice)root.CmePractice.attach(document.getElementById('cwPractice'),{api});
     if(state.tab==='forest'&&state.me&&!state.detail&&!state.create){renderMap(forest());const now=body.querySelector('[data-rp-now]');if(now&&root.CmeForestPublic){root.CmeForestPublic.fillAsync(now,forest(),path=>root.fetch((context.apiBase||'')+path));root.CmeCoordination?.hydrate?.(body);}}

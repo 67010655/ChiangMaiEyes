@@ -54,7 +54,7 @@ describe('representative workspace interaction and evidence boundaries', () => {
     const { dom, calls } = await setup({ publicView: true });
     const doc = dom.window.document;
     expect(doc.querySelector('.cw-tabs')).toBeNull();
-    expect(doc.getElementById('fpForest')).not.toBeNull();
+    expect(doc.getElementById('fpSearch')).not.toBeNull();
     expect(doc.body.textContent).toContain('เป็นตัวแทนป่าชุมชน?');
     expect(doc.querySelector('[data-cw="signin"]')).not.toBeNull();
     expect(doc.querySelector('script')).toBeNull();

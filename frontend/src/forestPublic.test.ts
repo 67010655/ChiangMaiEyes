@@ -47,7 +47,7 @@ it('lists forests near hotspots by latest detection, never as a ranking', () => 
   const html = P.listHtml(rows, 'A');
   expect(html).toContain('ไม่ใช่การจัดอันดับ');
   expect(html).toContain('ป่า &lt;b&gt;A&lt;/b&gt;');
-  expect(P.listHtml([], '')).toContain('การไม่พบจุดไม่ได้ยืนยันว่าไม่มีไฟ');
+  expect(P.listHtml([], '')).toContain('ไม่ได้แปลว่าไม่มีไฟ');
   dom.window.close();
 });
 
@@ -56,6 +56,7 @@ it('forest card escapes names, labels sources and draws the map', () => {
   const html = P.forestCard(A, dash([hs(19.91, 99.25, 30)]), NOW);
   expect(html).not.toContain('<b>A</b>');
   expect(html).toContain('ลมอ้างอิงระดับจังหวัด ไม่ใช่ลมที่วัดในป่านี้');
+  expect(html.match(/tel:1362/g)?.length).toBe(1);
   expect(html).toContain('RECOFTC');
   expect(html).toContain('tel:1362');
   expect(html).toMatch(/<circle[^>]*class="near"/);
@@ -80,6 +81,21 @@ it('fire weather line is today at the forest point, with the not-a-fire-forecast
   const html = w.CmeForestPublic.fwiHtml(days, '2026-10-21');
   expect(html).toContain('ต่ำมาก');
   expect(html).toContain('7 วันข้างหน้ามี 2 วันระดับสูงขึ้นไป');
-  expect(html).toContain('ไม่ใช่การพยากรณ์ว่าไฟจะเกิดที่ไหน');
+  expect(w.CmeForestPublic.limitsHtml()).toContain('ไม่ใช่การพยากรณ์ว่าไฟจะเกิดที่ไหน');
+  dom.window.close();
+});
+
+it('search finds a forest by village or district and tells same-name forests apart', () => {
+  const { dom, w } = setup(); const P = w.CmeForestPublic;
+  const twin = (id: string, tambon: string, rai: number) => ({ forest_id: id, name: 'ป่าชุมชนบ้านน้ำรู', amphoe: 'เชียงดาว', tambon, area_rai: rai });
+  const all = [twin('a', 'เมืองนะ', 500), twin('b', 'เมืองนะ', 900), twin('c', 'ปิงโค้ง', 300), A];
+  const label = P.labeller(all);
+  expect(label(all[0])).toBe('ป่าชุมชนบ้านน้ำรู · ต.เมืองนะ · 500 ไร่');
+  expect(label(all[2])).toBe('ป่าชุมชนบ้านน้ำรู · ต.ปิงโค้ง');
+  expect(label(A)).toBe(A.name);
+  const html = P.searchHtml(all, 'น้ำรู');
+  expect((html.match(/data-fp="pick"/g) || []).length).toBe(3);
+  expect(P.searchHtml(all, 'ฝาง')).toContain('data-id="A"');
+  expect(P.searchHtml(all, 'zzz')).toContain('ไม่พบป่า');
   dom.window.close();
 });

@@ -66,15 +66,6 @@
 .fp-li-time{white-space:nowrap}
 .fp-empty{margin:0;color:var(--txt);font-size:14px;line-height:1.6}
 .fp-empty small{color:var(--muted)}
-.fp-rep{padding:18px;border-radius:16px;border:1px solid rgba(67,176,95,.45);background:linear-gradient(180deg,rgba(67,176,95,.1),transparent),var(--panel)}
-.fp-rep>p{margin:6px 0 12px;color:var(--muted);font-size:14px}
-.fp-perks{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.fp-perks li{display:flex;flex-direction:column;gap:3px;padding:12px;border-radius:12px;background:var(--panel-2)}
-.fp-perks span{font-size:22px}
-.fp-perks b{font-size:14px;color:var(--txt)}
-.fp-perks small{font-size:12px;color:var(--muted);line-height:1.5}
-.fp-rep .cw-btn{min-height:44px}
-@media(max-width:560px){.fp-perks{grid-template-columns:1fr}.fp-perks li{flex-direction:row;align-items:center;flex-wrap:wrap;column-gap:10px}.fp-perks small{flex-basis:100%;padding-left:32px}}
 @media(max-width:340px){.fp-facts{grid-template-columns:1fr}}
 body.light-mode .fp-map-wind circle{fill:rgba(255,255,255,.85)}
 @media(prefers-reduced-motion:reduce){.fp-status.alert .fp-status-ic{animation:none}}
@@ -109,3 +100,29 @@ body.light-mode .fp-map .band{stroke:rgba(161,98,7,.75);fill:rgba(250,204,21,.08
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .cw-map .leaflet-control-attribution{position:static!important;max-width:none!important;margin:0!important;white-space:normal!important}
 .cw-map .leaflet-bottom.leaflet-right{margin-bottom:0!important}
+
+/* Set A: one search box, slim rep banner, single caveats block. */
+.fp-search{width:100%;min-height:46px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--txt);font:500 16px var(--font);box-sizing:border-box}
+.fp-search:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(67,176,95,.25)}
+.fp-hero h2{margin-bottom:12px}
+#fpResults:not(:empty){margin-top:10px}
+.fp-current{margin:12px 0 0;font-size:14px;color:var(--muted)}
+.fp-current b{color:var(--txt)}
+.fp-link{margin-left:6px;padding:4px 2px;border:0;background:none;color:var(--green);font:600 14px var(--font);text-decoration:underline;cursor:pointer;min-height:32px}
+.fp-line{margin:0;font-size:14px;line-height:1.55;color:var(--txt)}
+.fp-section:has(> .fp-line:only-of-type){padding:12px 16px}
+.fp-rep{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;border:1px solid rgba(67,176,95,.45);background:linear-gradient(90deg,rgba(67,176,95,.12),transparent),var(--panel)}
+.fp-rep>span{font-size:24px}
+.fp-rep p{flex:1;margin:0;min-width:0}
+.fp-rep p b{display:block;font-size:14px;color:var(--txt)}
+.fp-rep p small{display:block;font-size:12px;line-height:1.45;color:var(--muted)}
+.fp-rep .cw-btn{flex:none;min-height:44px}
+.fp-call-line{text-align:center;padding:4px 0}
+.fp-call-line a,.fp-call{font-weight:700}
+.fp-limits{border-top:1px solid var(--line-soft);padding-top:8px}
+.fp-limits summary{cursor:pointer;min-height:36px;display:flex;align-items:center;font-size:13px;color:var(--muted)}
+.fp-limits ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px;font-size:12px;line-height:1.55;color:var(--muted)}
+/* Contacts: office phone first, then nearby forests and protected-area notes. */
+.fp-who .coordination-card{display:flex;flex-direction:column}
+.fp-who .coordination-card>h3{display:none}
+.fp-who .coordination-agency{order:-1;margin-bottom:8px}
