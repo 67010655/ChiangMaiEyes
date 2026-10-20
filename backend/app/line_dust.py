@@ -6,7 +6,7 @@ Readings come live from the World Air Quality Index Project (WAQI) sensors in
 each district - most are low-cost sensors, unvalidated at publication. We use
 each sensor's PM2.5 sub-index (US EPA AQI scale, iaqi.pm25), never the
 composite AQI and never converted to µg/m³. A district needs at least two
-sensors that reported within the last two hours; its value is their median.
+sensors that reported within the last three hours; its value is their median.
 
 WAQI terms forbid redistributing cached or archived data, so no reading is
 stored: only our own state (the district's level and when it was first seen)
@@ -39,7 +39,7 @@ QUOTA_URL = 'https://api.line.me/v2/bot/message/quota'
 USED_URL = 'https://api.line.me/v2/bot/message/quota/consumption'
 CREDIT = 'ข้อมูล: World Air Quality Index Project และหน่วยงานเจ้าของสถานี'
 MIN_SENSORS = 2
-FRESH = timedelta(hours=2)
+FRESH = timedelta(hours=3)   # WAQI often publishes low-cost sensors 2-3 h late
 PERSIST = timedelta(minutes=60)
 ALERT_FROM = 3             # US AQI category 3 = 101-150
 QUOTA_RESERVE = 50
@@ -166,20 +166,32 @@ def pm25_sub_index(token: str, uid: int, *, get=httpx.get):
     return (float(v), t) if isinstance(v, (int, float)) and v >= 0 else (None, t)
 
 
-def district_readings(token: str, wanted: set[str] | None = None, *, now=None, get=httpx.get) -> dict:
-    """{district: {'n': fresh sensors, 'median': sub-index}} for districts with enough fresh sensors."""
+def district_readings(token: str, wanted: set[str] | None = None, *, now=None, get=httpx.get, diag: dict | None = None) -> dict:
+    """{district: {'n': fresh sensors, 'median': sub-index}} for districts with enough fresh sensors.
+
+    `diag`, if given, receives counts only (never readings) of where stations drop out."""
     now = now or datetime.now(timezone.utc)
     pool = [s for s in sensors(token, get=get) if wanted is None or s['district'] in wanted]
     def one(s):
         try:
             v, t = pm25_sub_index(token, s['uid'], get=get)
         except Exception:
-            return None
-        if v is None or t is None or not (now - FRESH <= t <= now + timedelta(minutes=30)):
-            return None
+            return 'feed_error'
+        if t is None:
+            return 'no_time'
+        if v is None:
+            return 'no_pm25'
+        if not (now - FRESH <= t <= now + timedelta(minutes=30)):
+            return 'stale'
         return s['district'], v
     with ThreadPoolExecutor(max_workers=8) as ex:
-        got = [x for x in ex.map(one, pool) if x]
+        results = list(ex.map(one, pool))
+    got = [x for x in results if isinstance(x, tuple)]
+    if diag is not None:
+        diag.update({'stations': len(pool), 'fresh': len(got)})
+        for x in results:
+            if isinstance(x, str):
+                diag[x] = diag.get(x, 0) + 1
     by: dict[str, list[float]] = {}
     for d, v in got:
         by.setdefault(d, []).append(v)
@@ -286,10 +298,12 @@ def run_dust_alerts(store, now=None, *, get=httpx.get, post=httpx.post) -> dict:
     if not s.line_dust_alerts_enabled:
         # Dry run: verify the feed parses. Only counts and category numbers are kept, no readings.
         try:
-            r = district_readings(s.aqicn_token, now=now, get=get)
+            diag: dict = {}
+            r = district_readings(s.aqicn_token, now=now, get=get, diag=diag)
         except Exception:
             return {**out, 'dust_mode': 'dry_run_failed'}
         return {**out, 'dust_mode': 'dry_run', 'dust_districts': len(r),
+                'dust_diag': diag,
                 'dust_coverage': {d: [v['n'], category(v['median'])[0]] for d, v in sorted(r.items())}}
     if not (s.line_channel_access_token and s.line_channel_secret):
         return {**out, 'dust_mode': 'unavailable'}

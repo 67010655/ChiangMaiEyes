@@ -98,6 +98,9 @@ def test_dry_run_keeps_only_counts_and_categories():
     store = Store(subs=[{'line_user_id': UID, 'district': 'ฝาง'}], enabled=False)
     out, pushed = run(store, [130, 120])
     assert out['dust_mode'] == 'dry_run' and out['dust_coverage'] == {'ฝาง': [2, 3]} and not pushed
+    assert out['dust_diag'] == {'stations': 2, 'fresh': 2}
+    out, _ = run(store, [130, 120], age_min=200)
+    assert out['dust_diag'] == {'stations': 2, 'fresh': 0, 'stale': 2} and out['dust_coverage'] == {}
     assert not [c for c in store.calls if c[0] != 'GET']    # nothing written while dry
 
 
