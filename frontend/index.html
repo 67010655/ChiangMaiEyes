@@ -2722,8 +2722,8 @@ function _applyVelocityLayer(field){
     data:field, maxVelocity:15,
     // Light winds (often 0–5 km/h in Chiang Mai) still draw readable streaks:
     // the trail length shows direction, the top card gives the speed.
-    colorScale:light?['rgba(51,65,85,.35)','rgba(51,65,85,.5)','rgba(30,41,59,.6)']:['rgba(226,232,240,.38)','rgba(241,245,249,.52)','rgba(255,255,255,.65)'],
-    velocityScale:0.018, opacity:0.92, particleAge:120, lineWidth:1.1,
+    colorScale:light?['rgba(30,64,140,.55)','rgba(30,58,138,.7)','rgba(23,37,84,.85)']:['rgba(226,232,240,.38)','rgba(241,245,249,.52)','rgba(255,255,255,.65)'],
+    velocityScale:0.018, opacity:0.92, particleAge:120, lineWidth:light?1.4:1.1,
     particleMultiplier:isMobileViewport()?1/700:1/400, frameRate:24
   }).addTo(map);
 }
