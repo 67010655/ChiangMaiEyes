@@ -3,7 +3,7 @@
  * required rule and every existing script that reads or sets its value. */
 (function(root){
   'use strict';
-  const SELECTORS=['#exportForest','#forestTerrainSelect','#spreadWorkspace select[name="forest_id"]'];
+  const SELECTORS=['#anForest','#exportForest','#forestTerrainSelect','#spreadWorkspace select[name="forest_id"]'];
   const MIN_OPTIONS=30;
   // Thai text: case-insensitive, ignore spaces and the อ./อำเภอ prefix people may or may not type.
   const norm=s=>String(s||'').toLowerCase().replace(/อำเภอ|อ\./g,'').replace(/\s+/g,'');

@@ -116,3 +116,47 @@ it('filters a long forest list by name or district and keeps the select', () => 
   expect(sel.options.length).toBe(41); expect(sel.value).toBe('f7');
   dom.window.close();
 });
+
+it('compares with the previous period only when that period was actually received', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const day = (date: string, count: number | null, ok = true) => ({ date, count, source_requests_complete: ok, partial_day: false });
+  const cur = { days: 2, start: '2026-10-18T00:00:00+07:00', analytics: { total: 12, hotspots: [day('2026-10-18', 6), day('2026-10-19', 6)], pm25: [], districts: [], forests: [] } };
+  w.CmeAnalyticsSummary.render(el, cur, {});
+  // Before the archive began the API says 0 with incomplete requests: never "0" or a percentage.
+  const before = { analytics: { total: 0, hotspots: [day('2026-10-16', null, false), day('2026-10-17', null, false)], pm25: [] } };
+  w.CmeAnalyticsSummary.renderCompare(el, cur, before);
+  const hot = el.querySelector('[data-compare="hot"]').textContent;
+  expect(hot).toContain('ยังเทียบไม่ได้'); expect(hot).not.toMatch(/\d+%/);
+  const got = { analytics: { total: 8, hotspots: [day('2026-10-16', 4), day('2026-10-17', 4)], pm25: [] } };
+  w.CmeAnalyticsSummary.renderCompare(el, cur, got);
+  expect(el.querySelector('[data-compare="hot"]').textContent).toContain('มากกว่า 2 วันก่อนหน้า 4 จุด (+50%)');
+  dom.window.close();
+});
+
+it('shades only the official burn-control days and cites the announcement', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const S = w.CmeAnalyticsSummary;
+  expect(S.inBan('2026-05-31')).not.toBeNull(); expect(S.inBan('2026-06-01')).toBeNull(); expect(S.inBan('2026-12-31')).toBeNull();
+  const h = { days: 3, analytics: { total: 1, pm25: [], districts: [], forests: [], hotspots: [
+    { date: '2026-05-30', count: 1, source_requests_complete: true, partial_day: false },
+    { date: '2026-05-31', count: 0, source_requests_complete: true, partial_day: false },
+    { date: '2026-06-01', count: 0, source_requests_complete: true, partial_day: false }] } };
+  S.render(el, h, {});
+  expect(el.querySelectorAll('.as-hot .as-band').length).toBe(2);
+  const note = el.querySelector('.as-ban-note');
+  expect(note.textContent).toContain('ไม่ได้แปลว่าฝ่าฝืนทุกจุด');
+  expect(note.querySelector('a[href*="pamiang.go.th"]')).not.toBeNull();
+  dom.window.close();
+});
+
+it('a chosen forest narrows hotspots and labels dust and wind as province-wide', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const h = { days: 7, analytics: { total: 0, hotspots: [], pm25: [], districts: [{ name: 'ฝาง', count: 9 }], forests: [] } };
+  w.CmeAnalyticsSummary.render(el, h, { forest: { forest_id: 'cmf-1', name: 'ป่าชุมชนบ้านทดสอบ', amphoe: 'ฝาง' } });
+  expect(el.querySelector('.as-hero').textContent).toContain('ป่าชุมชนบ้านทดสอบ');
+  expect(el.querySelector('.as-hero').textContent).toContain('ในขอบเขตป่านี้');
+  expect(el.querySelector('.as-hero').textContent).not.toContain('อ.ฝาง'); // no province ranking inside one forest
+  expect(el.querySelector('.as-dist')).toBeNull();
+  expect([...el.querySelectorAll('.as-scope')].map((x: any) => x.textContent)).toEqual(['ภาพรวมจังหวัด', 'ภาพรวมจังหวัด']);
+  dom.window.close();
+});

@@ -13,13 +13,33 @@
   const todayBkk=()=>new Intl.DateTimeFormat('sv-SE',tz).format(new Date());
   const reduced=()=>!!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const U=()=>root.CmeUx;
+  // Chiang Mai open-burning control period, from the province announcement
+  // "กำหนดเขตการบริหารจัดการเชื้อเพลิงและเขตควบคุมการเผา ประจำปีงบประมาณ 2569".
+  // Add the next year only when the province publishes it.
+  const BURN_BANS=[{start:'2026-01-01',end:'2026-05-31',label:'ช่วงควบคุมการเผา 1 ม.ค.–31 พ.ค. 2569',
+    sources:[{name:'เทศบาลตำบลป่าเมี่ยง (อ้างประกาศจังหวัด)',url:'https://www.pamiang.go.th/catalog/activity/1304'},
+             {name:'เชียงใหม่นิวส์',url:'https://www.chiangmainews.co.th/news/chiangmai/3855620/'}]}];
+  const inBan=d=>BURN_BANS.find(b=>d>=b.start&&d<=b.end)||null;
+  function banNote(dates){
+    const hit=BURN_BANS.filter(b=>dates.some(d=>d>=b.start&&d<=b.end));
+    if(!hit.length)return '';
+    return `<p class="as-note as-ban-note"><i aria-hidden="true"></i>แถบสีส้มจาง = ${hit.map(b=>esc(b.label)).join(', ')} จังหวัดเชียงใหม่ · มีการอนุญาตเผาบางพื้นที่ผ่านระบบ Fire-D/Burn Check จุดในช่วงนี้จึงไม่ได้แปลว่าฝ่าฝืนทุกจุด · ที่มา ${hit[0].sources.map(x=>`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join(', ')}</p>`;
+  }
+  function banStatus(){
+    const today=todayBkk(), now=inBan(today);
+    if(now)return `<p class="as-ban-status on">ตอนนี้อยู่ใน${esc(now.label)}</p>`;
+    const next=BURN_BANS.find(b=>b.start>today);
+    return `<p class="as-ban-status">ตอนนี้ไม่อยู่ในช่วงควบคุมการเผา · ${next?esc(next.label):'ช่วงปี 2570 รอประกาศจังหวัด'}</p>`;
+  }
   const pmToken=v=>U()?.category(v)?.token||'--state-old';
 
+  let focusArea=null; // the forest the page is narrowed to, if any
   // ---------- small pieces ----------
   // Bars that grow in; each bar carries its own readout for tap/hover.
   function bars(items,{label='',color=()=> 'var(--as-bar)',unit=''}={}){
     const finite=items.map(i=>i.v).filter(Number.isFinite), max=Math.max(1,...finite), n=items.length||1, w=100/n, gap=n>40?0.08:0.18;
-    return `<svg class="as-bars" viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="${esc(label)}">`+
+    const bands=items.map((it,i)=>it.ban?`<rect class="as-band" x="${i*w}" y="0" width="${w+0.02}" height="44"/>`:'').join('');
+    return `<svg class="as-bars" viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="${esc(label)}">`+bands+
       items.map((it,i)=>{
         const read=`${it.label} · ${Number.isFinite(it.v)?fmt1(it.v)+(unit?' '+unit:''):'ไม่มีข้อมูล'}`;
         if(!Number.isFinite(it.v))return `<rect class="as-gap" x="${i*w+w*gap}" y="42" width="${w*(1-2*gap)}" height="2" data-read="${esc(read)}"><title>${esc(read)}</title></rect>`;
@@ -57,10 +77,11 @@
       kind:stationDays?'measured':'model',pms:(a.pm25||[]).filter(p=>p.measurement_kind===(Object.keys(st).length?'measured':'model'))};
   }
   function headline(h,a,pm){
-    const top=(a.districts||[]).find(d=>d.count>0);
+    const top=focusArea?null:(a.districts||[]).find(d=>d.count>0);
     const parts=[];
-    if(!a.total)parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา ดาวเทียมไม่พบจุดความร้อนในเชียงใหม่`);
-    else parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา พบจุดความร้อน <b>${esc(Number(a.total).toLocaleString('th-TH'))}</b> จุด${top?` มากที่สุดที่ <b>อ.${esc(top.name)}</b>`:''}`);
+    const where=focusArea?'ในขอบเขตป่านี้':'ในเชียงใหม่';
+    if(!a.total)parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา ดาวเทียมไม่พบจุดความร้อน${where}`);
+    else parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา พบจุดความร้อน${focusArea?'ในขอบเขตป่า':''} <b>${esc(Number(a.total).toLocaleString('th-TH'))}</b> จุด${top?` มากที่สุดที่ <b>อ.${esc(top.name)}</b>`:''}`);
     if(pm.avg!==null){const lv=root.CmePublicGuidance?.pmLevel(pm.avg);if(lv)parts.push(`ฝุ่นเฉลี่ยช่วงนี้ระดับ <b style="color:var(${pmToken(pm.avg)})">${esc(lv.label)}</b>`);}
     return parts.join(' · ');
   }
@@ -76,7 +97,7 @@
     }else{
       title=`จุดความร้อนรายวัน`;
       const peakV=Math.max(0,...days.map(d=>d.count).filter(Number.isFinite));
-      items=days.map(d=>({v:d.count,label:dayLabel(d.date),hi:Number.isFinite(d.count)&&d.count===peakV&&peakV>0,gap:!d.partial_day&&!d.source_requests_complete}));
+      items=days.map(d=>({v:d.count,label:dayLabel(d.date),hi:Number.isFinite(d.count)&&d.count===peakV&&peakV>0,gap:!d.partial_day&&!d.source_requests_complete,ban:!!inBan(d.date)}));
       labels=days.map(d=>dayLabel(d.date));
     }
     const known=days.filter(d=>Number.isFinite(d.count));
@@ -87,7 +108,8 @@
       <p class="as-v">${num(a.total)} <span>จุด</span></p>
       ${bars(items,{label:title,unit:'จุด',color:it=>it.hi?'#ef4444':it.gap?'#94a3b8':'#f59e0b'})}${axis(labels,h.days===1?null:days.map(d=>d.date))}
       <p class="as-s">${!a.total?'ไม่พบจุด ไม่ได้แปลว่าไม่มีไฟ':peak?`วันที่พบมากที่สุด <b>${esc(dayLabel(peak.date))}</b> · ${esc(peak.count)} จุด`:''}</p>
-      ${incomplete?'<p class="as-note">แท่งสีเทา = วันที่ดาวเทียมส่งข้อมูลไม่ครบ</p>':''}
+      <p class="as-compare" data-compare="hot" aria-live="polite"></p>
+      ${incomplete?'<p class="as-note">แท่งสีเทา = วันที่ดาวเทียมส่งข้อมูลไม่ครบ</p>':''}${h.days===1?'':banNote(days.map(d=>d.date))}
       ${mapDays?`<button type="button" class="as-link" data-as-action="replay">▶ ย้อนดู ${esc(mapDays)} วันล่าสุดบนแผนที่</button>`:''}
     </article>`;
   }
@@ -99,15 +121,16 @@
       <ul>${pm.levels.filter(l=>l.n).map(l=>`<li><i style="background:var(${l.token})"></i>${esc(l.label)} <b>${esc(l.n)}</b> วัน</li>`).join('')}</ul></div>`;
   }
   function pmCard(h,a,pm){
-    const items=pm.series.map(x=>({v:x.v,label:dayLabel(x.date),model:x.kind==='model'}));
+    const items=pm.series.map(x=>({v:x.v,label:dayLabel(x.date),model:x.kind==='model',ban:!!inBan(x.date)}));
     const span=h.days===1?'24 ชม.':h.days+' วัน';
     return `<article class="as-card as-pm" aria-labelledby="asPmT">
-      <header class="as-head"><span class="as-ic pm" aria-hidden="true">≋</span><h3 id="asPmT" class="as-k">ฝุ่น PM2.5 ย้อนหลัง ${esc(span)}</h3></header>
+      <header class="as-head"><span class="as-ic pm" aria-hidden="true">≋</span><h3 id="asPmT" class="as-k">ฝุ่น PM2.5 ย้อนหลัง ${esc(span)}${focusArea?'<small class="as-scope">ภาพรวมจังหวัด</small>':''}</h3></header>
       ${pm.avg!==null?`<p class="as-v">${num(pm.avg,1)} <span>µg/m³</span> ${U()?U().pmChipHtml(pm.avg):''}</p>
         <p class="as-sub">เฉลี่ยรายวัน ${esc(pm.fullDays)} วันเต็มในช่วงนี้${pm.modelDays>pm.stationDays?' (ส่วนใหญ่จากแบบจำลอง)':''}${pm.latest?` · ล่าสุด ${esc(fmt1(pm.latest.v))} (${esc(dayLabel(pm.latest.date))})`:''}</p>${levelStrip(pm)}`
         :'<p class="as-v as-empty">ยังไม่มีค่าเฉลี่ยรายวันในช่วงนี้</p>'}
       ${bars(items,{label:'ฝุ่น PM2.5 รายวัน',unit:'µg/m³',color:it=>`var(${pmToken(it.v)})`})}${axis(items.map(i=>i.label),pm.series.map(x=>x.date))}
       <p class="as-s">${pm.peak?`วันที่ฝุ่นสูงสุด <b>${esc(dayLabel(pm.peak.date))}</b> · ${esc(fmt1(pm.peak.v))} µg/m³`:''}</p>
+      <p class="as-compare" data-compare="pm" aria-live="polite"></p>
       <p class="as-note">${pm.modelDays?`แท่งจาง = แบบจำลอง CAMS (${esc(pm.modelDays)} วันที่ไม่มีค่าสถานี) · `:''}สีตามเกณฑ์ค่าเฉลี่ย 24 ชม. กรมควบคุมมลพิษ</p>
     </article>`;
   }
@@ -150,7 +173,7 @@
   }
   function windCard(h,w,err){
     const span=h.days===1?'24 ชม.':h.days+' วัน';
-    const head=`<header class="as-head"><span class="as-ic wind" aria-hidden="true">➶</span><h3 id="asWindT" class="as-k">ลมย้อนหลัง ${esc(span)}</h3></header>`;
+    const head=`<header class="as-head"><span class="as-ic wind" aria-hidden="true">➶</span><h3 id="asWindT" class="as-k">ลมย้อนหลัง ${esc(span)}${focusArea?'<small class="as-scope">ภาพรวมจังหวัด</small>':''}</h3></header>`;
     if(err)return `${head}<p class="as-s">อ่านข้อมูลลมย้อนหลังไม่ได้ตอนนี้</p>`;
     if(!w)return `${head}<div class="as-wind-skel" aria-label="กำลังโหลดลม"></div>`;
     const st=windStats(w);if(!st)return `${head}<p class="as-s">ยังไม่มีข้อมูลลมในช่วงนี้</p>`;
@@ -206,6 +229,16 @@
       <p class="as-note">นับเฉพาะจุดที่อยู่ในขอบเขตป่า RECOFTC · ยังไม่ใช่เหตุไฟที่ยืนยันแล้ว</p>
     </article>`;
   }
+  function forestFocusCard(f,a){
+    const area=f.area_rai?Number(f.area_rai).toLocaleString('th-TH')+' ไร่':'';
+    return `<article class="as-card as-forest as-focus" aria-labelledby="asFocT">
+      <header class="as-head"><span class="as-ic forest" aria-hidden="true">🌳</span><h3 id="asFocT" class="as-k">${esc(f.name||'ป่าชุมชน')}</h3></header>
+      <p class="as-sub">${[f.amphoe?'อ.'+esc(f.amphoe):'',f.tambon?'ต.'+esc(f.tambon):'',area].filter(Boolean).join(' · ')}</p>
+      <p class="as-v">${num(a.total)} <span>จุดความร้อนในขอบเขตป่า</span></p>
+      <p class="as-note">นับเฉพาะจุดที่อยู่ในขอบเขตป่า RECOFTC · ฝุ่นและลมด้านบนเป็นภาพรวมจังหวัด ยังไม่มีสถานีวัดในป่า</p>
+      <button type="button" class="as-link ghost" data-as-forest="${esc(f.forest_id)}">ดูป่านี้บนแผนที่</button>
+    </article>`;
+  }
   function wxIcon(d){
     if(Number.isFinite(d.rain_mm)&&d.rain_mm>=5)return '🌧️';
     if(Number.isFinite(d.rain_mm)&&d.rain_mm>=0.5)return '🌦️';
@@ -253,18 +286,52 @@
     if(!a){el.innerHTML='<div class="as-skeleton" role="status" aria-label="กำลังโหลดข้อมูลย้อนหลัง"><i></i><i></i><i></i></div>';return;}
     const pm=pmSeries(a,(a.hotspots||[]).map(d=>d.date)), norm=opts.norm||(s=>String(s||'').replace(/^อำเภอ|^อ\./,'').trim());
     const span=history.days===1?'24 ชั่วโมง':history.days+' วัน';
+    focusArea=opts.forest||null;
+    const tail=focusArea?forestFocusCard(focusArea,a):`${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts)}`;
     el.innerHTML=`<h2 class="as-section past"><span class="as-badge">ย้อนหลัง</span>${esc(span)}ที่ผ่านมา · ข้อมูลที่เกิดขึ้นแล้ว</h2>
-      <p class="as-hero">${headline(history,a,pm)}</p>
-      <div class="as-grid">${hotspotCard(history,a,opts)}${pmCard(history,a,pm)}<article class="as-card as-wind" aria-labelledby="asWindT">${windCard(history,null)}</article>${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts)}</div>
+      <p class="as-hero">${focusArea?`<b>${esc(focusArea.name||'ป่าชุมชน')}</b> · `:''}${headline(history,a,pm)}</p>
+      ${banStatus()}
+      <div class="as-grid">${hotspotCard(history,a,opts)}${pmCard(history,a,pm)}<article class="as-card as-wind" aria-labelledby="asWindT">${windCard(history,null)}</article>${tail}</div>
       ${forecastHtml(forecast)}`;
     wire(el);countUp(el);
     const want=history.days, card=el.querySelector('.as-wind');
     loadWind(want,opts.fetcher||root.fetch?.bind(root)).then(w=>{if(card.isConnected){card.innerHTML=windCard(history,w);countUp(card);}})
       .catch(()=>{if(card.isConnected)card.innerHTML=windCard(history,null,true);});
   }
+  // Only compare when the earlier window was actually received (>= 80 % of its
+  // full days have complete satellite requests). Before the archive began the
+  // API returns 0, which must never read as "no fires back then".
+  function covered(prior){
+    const d=(prior?.analytics?.hotspots||[]).filter(x=>!x.partial_day);
+    return d.length>0&&d.filter(x=>x.source_requests_complete).length/d.length>=0.8;
+  }
+  function renderCompare(el,history,prior){
+    if(!el)return;
+    const span=history.days===1?'24 ชม.':history.days+' วัน';
+    const hot=el.querySelector('[data-compare="hot"]'), pmEl=el.querySelector('[data-compare="pm"]');
+    if(!prior||!covered(prior)){
+      if(hot)hot.innerHTML=`<span class="as-cmp none">ยังไม่มีข้อมูลครบของ ${esc(span)}ก่อนหน้า จึงยังเทียบไม่ได้</span>`;
+      if(pmEl)pmEl.innerHTML='';
+      return;
+    }
+    const a=history.analytics,b=prior.analytics,d=a.total-b.total;
+    if(hot){
+      const pct=b.total>0?Math.round(Math.abs(d)/b.total*100):null;
+      hot.innerHTML=d===0?`<span class="as-cmp same">เท่ากับ ${esc(span)}ก่อนหน้า (${esc(b.total)} จุด)</span>`
+        :`<span class="as-cmp ${d>0?'up':'down'}">${d>0?'▲ มากกว่า':'▼ น้อยกว่า'} ${esc(span)}ก่อนหน้า ${esc(Math.abs(d))} จุด${pct!==null?` (${d>0?'+':'−'}${esc(pct)}%)`:''}</span><small>ก่อนหน้า ${esc(b.total)} จุด</small>`;
+    }
+    if(pmEl){
+      const cur=pmSeries(a,(a.hotspots||[]).map(x=>x.date)),old=pmSeries(b,(b.hotspots||[]).map(x=>x.date));
+      if(cur.avg!==null&&old.avg!==null&&old.fullDays>=Math.max(1,Math.round(history.days*0.8))){
+        const dv=cur.avg-old.avg;
+        pmEl.innerHTML=Math.abs(dv)<0.5?`<span class="as-cmp same">ฝุ่นเฉลี่ยใกล้เคียง ${esc(span)}ก่อนหน้า (${esc(fmt1(old.avg))})</span>`
+          :`<span class="as-cmp ${dv>0?'up':'down'}">${dv>0?'▲ สูงกว่า':'▼ ต่ำกว่า'} ${esc(span)}ก่อนหน้า ${esc(fmt1(Math.abs(dv)))} µg/m³</span><small>ก่อนหน้าเฉลี่ย ${esc(fmt1(old.avg))}</small>`;
+      }else pmEl.innerHTML='';
+    }
+  }
   function renderForecast(el,forecast){
     if(!el||!el.querySelector('.as-grid'))return;el.querySelector('.as-section.future')?.remove();const old=el.querySelector('.as-forecast');const html=forecastHtml(forecast);
     if(old)old.outerHTML=html;else if(html)el.insertAdjacentHTML('beforeend',html);
   }
-  root.CmeAnalyticsSummary={render,renderForecast,bars,pmSeries,headline,windStats,loadWind};
+  root.CmeAnalyticsSummary={render,renderForecast,renderCompare,covered,bars,pmSeries,headline,windStats,loadWind,BURN_BANS,inBan};
 })(window);
