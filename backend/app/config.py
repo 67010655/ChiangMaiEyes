@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     line_channel_secret: str | None = None
     line_channel_access_token: str | None = None
     line_basic_id: str = '@241mevgs'
+    # Public dust alerts stay paused until district values come from real
+    # stations (only two, both in Mueang, today). Set LINE_DUST_ALERTS_ENABLED
+    # to turn the chat commands and the sends back on.
+    line_dust_alerts_enabled: bool = False
     community_scheduler_enabled: bool = False
     community_site_url: str = 'https://chiangmaieyes.vercel.app'
     remote_snapshot_base_url: str | None = (

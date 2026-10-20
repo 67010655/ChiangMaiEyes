@@ -140,11 +140,22 @@ def subscribe_reply(district: str, value: float | None) -> str:
             'เปลี่ยนอำเภอ พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ" · หยุด พิมพ์ "หยุด"')
 
 
+PAUSED_REPLY = ('ยังไม่เปิดแจ้งเตือนฝุ่นรายอำเภอ เพราะตอนนี้มีสถานีวัดฝุ่นจริงเฉพาะ อ.เมือง\n'
+                'เรากำลังเพิ่มสถานีวัดในอำเภออื่น เมื่อพร้อมจะประกาศให้ทราบ ไม่มีการเก็บข้อมูลของคุณ\n'
+                'ดูค่าฝุ่นล่าสุด: ' + SITE)
+
+
 def handle_text(store, line_user: str, text: str, *, get=httpx.get):
     """Return the reply text for a dust command, or None if the text is not one."""
     cmd = parse_command(text)
     if not cmd:
         return None
+    if not store.settings.line_dust_alerts_enabled:
+        if cmd[0] == 'stop':
+            # Nothing new is stored while paused; still honour a stop for anyone subscribed earlier.
+            store.call('DELETE', '/rest/v1/cme_line_dust_subs', params={'line_user_id': 'eq.' + line_user})
+            return 'หยุดแจ้งเตือนฝุ่นแล้ว ข้อมูลอำเภอที่เลือกถูกลบ'
+        return PAUSED_REPLY
     if cmd[0] == 'stop':
         store.call('DELETE', '/rest/v1/cme_line_dust_subs', params={'line_user_id': 'eq.' + line_user})
         return 'หยุดแจ้งเตือนฝุ่นแล้ว ข้อมูลอำเภอที่เลือกถูกลบ\nรับใหม่ได้ พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ"'
@@ -181,6 +192,8 @@ def remaining_quota(token: str, *, get=httpx.get):
 def run_dust_alerts(store, now=None, *, get=httpx.get, post=httpx.post) -> dict:
     s = store.settings
     out = {'dust_checked': 0, 'dust_sent': 0, 'dust_skipped': 0}
+    if not s.line_dust_alerts_enabled:
+        return {**out, 'dust_mode': 'paused'}
     if not (s.line_channel_access_token and s.line_channel_secret):
         return {**out, 'dust_mode': 'unavailable'}
     now = now or datetime.now(timezone.utc)

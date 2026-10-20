@@ -347,8 +347,11 @@
   }
   // Public dust alerts: no account, just the LINE Official Account.
   const LINE_OA='@241mevgs';
+  // Paused: district values would come only from the CAMS model (real PM2.5
+  // stations exist only in Mueang). Re-open once districts have real stations.
+  const DUST_ALERTS_OPEN=false;
   function lineCard(names,selected){
-    if(!names?.length)return '';
+    if(!DUST_ALERTS_OPEN||!names?.length)return '';
     const list=[...names].sort((a,b)=>a.localeCompare(b,'th'));
     const pick=selected&&list.includes(selected)?selected:'';
     return `<section class="as-card as-line" aria-labelledby="asLineT">

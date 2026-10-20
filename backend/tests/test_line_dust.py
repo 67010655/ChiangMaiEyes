@@ -25,7 +25,7 @@ def aq(value):
 
 class Store:
     def __init__(self, subs=(), sent=()):
-        self.settings = Settings(cache_dir='.', line_channel_secret='s', line_channel_access_token='t')
+        self.settings = Settings(cache_dir='.', line_channel_secret='s', line_channel_access_token='t', line_dust_alerts_enabled=True)
         self.subs, self.sent, self.calls = list(subs), list(sent), []
     def rows(self, table, **p):
         return self.subs if table == 'cme_line_dust_subs' else self.sent
@@ -87,3 +87,15 @@ def test_stop_and_unfollow_forget_the_person():
     assert store.calls[-1][0] == 'DELETE'
     store.calls.clear(); d.forget(store, UID)
     assert {c[1] for c in store.calls} == {'/rest/v1/cme_line_dust_subs', '/rest/v1/cme_line_dust_sent'}
+
+
+def test_paused_by_default_stores_nothing_and_sends_nothing():
+    store = Store(subs=[{'line_user_id': UID, 'district': 'ฝาง'}])
+    store.settings = Settings(cache_dir='.', line_channel_secret='s', line_channel_access_token='t')
+    assert store.settings.line_dust_alerts_enabled is False
+    reply = d.handle_text(store, UID, 'แจ้งเตือนฝุ่น ฝาง')
+    assert 'ยังไม่เปิด' in reply and 'อ.เมือง' in reply
+    assert not store.calls  # nothing written
+    out, pushed = _run(store, 90)
+    assert out.get('dust_mode') == 'paused' and not pushed
+    assert 'หยุด' in d.handle_text(store, UID, 'หยุด') and store.calls[-1][0] == 'DELETE'
