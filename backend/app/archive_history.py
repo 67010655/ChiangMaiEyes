@@ -6,7 +6,7 @@ from app.environment_archive import window,stamp,forest_index
 from app.models import HistoryResponse,HotspotHistoryDay,DailyMetric,WeatherHistoryDay
 
 
-def read_history(settings,days=30,*,end=None,as_of=None,forest_id=None):
+def read_history(settings,days=30,*,end=None,as_of=None,forest_id=None,district=None):
     try:
         start,until=window(days,end)
         replay=stamp(as_of) if as_of else None
@@ -17,7 +17,7 @@ def read_history(settings,days=30,*,end=None,as_of=None,forest_id=None):
     if forest_id and forest_id not in {x[0] for x in forest_index()}:
         raise HTTPException(404,'ไม่พบขอบเขตป่าที่เลือก')
     r=CommunityStore(settings).call('POST','/rest/v1/rpc/cme_archive_analytics',json={
-        'p_start':start.isoformat(),'p_end':until.isoformat(),'p_as_of':replay.isoformat() if replay else None,'p_forest':forest_id})
+        'p_start':start.isoformat(),'p_end':until.isoformat(),'p_as_of':replay.isoformat() if replay else None,'p_forest':forest_id,**({'p_district':district.strip()} if district and district.strip() else {})})
     measured=[DailyMetric(date=x['date'],value=x['value']) for x in r['pm25'] if x['measurement_kind']=='measured']
     model=[DailyMetric(date=x['date'],value=x['value']) for x in r['pm25'] if x['measurement_kind']=='model']
     weather=[WeatherHistoryDay(**x) for x in r['weather'] if x['measurement_kind']=='model' and x['temp_max'] is not None and x['temp_min'] is not None]

@@ -136,9 +136,10 @@ def history(
     end: Annotated[str | None, Query(max_length=40)] = None,
     as_of: Annotated[str | None, Query(max_length=40)] = None,
     forest_id: Annotated[str | None, Query(max_length=100)] = None,
+    district: Annotated[str | None, Query(max_length=60)] = None,
     settings: Settings = Depends(get_settings),
 ) -> HistoryResponse:
-    return get_history(settings, days=days,end=end,as_of=as_of,forest_id=forest_id)
+    return get_history(settings, days=days,end=end,as_of=as_of,forest_id=forest_id,district=district)
 
 
 @app.get("/api/pm25", response_model=Pm25Response)

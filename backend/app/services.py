@@ -586,14 +586,14 @@ def get_hotspot_history(settings: Settings) -> HotspotHistoryResponse:
     return HotspotHistoryResponse(days=h.hotspots,source=h.sources.get('hotspots','คลังย้อนหลัง'),latest_update=h.latest_update)
 
 
-def get_history(settings: Settings, days: int = 30, *, end=None, as_of=None, forest_id=None) -> HistoryResponse:
+def get_history(settings: Settings, days: int = 30, *, end=None, as_of=None, forest_id=None, district=None) -> HistoryResponse:
     from app.archive_history import read_history
     from fastapi import HTTPException
-    cache_key=f"archive-history:{settings.supabase_url}:{days}:{end}:{as_of}:{forest_id}"
+    cache_key=f"archive-history:{settings.supabase_url}:{days}:{end}:{as_of}:{forest_id}:{district}"
     cached=_get_cached(cache_key,ttl=30)
     if cached is not None: return cached
     try:
-        response=read_history(settings,days,end=end,as_of=as_of,forest_id=forest_id)
+        response=read_history(settings,days,end=end,as_of=as_of,forest_id=forest_id,district=district)
     except HTTPException as exc:
         if exc.status_code<500: raise
         logger.warning('Durable history is unavailable')
