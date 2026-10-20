@@ -1,0 +1,46 @@
+/* A4: the ~677-option community-forest selects get a type-to-filter box
+ * (name or district). The native <select> stays — it keeps its form name,
+ * required rule and every existing script that reads or sets its value. */
+(function(root){
+  'use strict';
+  const SELECTORS=['#exportForest','#forestTerrainSelect','#spreadWorkspace select[name="forest_id"]'];
+  const MIN_OPTIONS=30;
+  // Thai text: case-insensitive, ignore spaces and the อ./อำเภอ prefix people may or may not type.
+  const norm=s=>String(s||'').toLowerCase().replace(/อำเภอ|อ\./g,'').replace(/\s+/g,'');
+  function enhance(sel){
+    if(!sel||sel.dataset.forestPicker)return;
+    sel.dataset.forestPicker='1';
+    let all=null, filtering=false;
+    const wrap=document.createElement('div');wrap.className='forest-picker';
+    const input=document.createElement('input');
+    input.type='search';input.className='forest-picker-input';input.placeholder='พิมพ์ชื่อป่าหรืออำเภอ';
+    input.setAttribute('aria-label','ค้นหาป่าชุมชนตามชื่อหรืออำเภอ');input.autocomplete='off';
+    if(sel.id)input.setAttribute('aria-controls',sel.id);
+    const status=document.createElement('span');status.className='forest-picker-count';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    wrap.append(input,status);sel.before(wrap);
+    const snapshot=()=>{all=[...sel.options].map(o=>({value:o.value,text:o.textContent}));};
+    const sync=()=>{wrap.hidden=sel.options.length<MIN_OPTIONS&&!input.value;};
+    // Other scripts rebuild the list (data arrives, theme of the page changes): start fresh.
+    new MutationObserver(()=>{if(filtering)return;snapshot();input.value='';status.textContent='';sync();}).observe(sel,{childList:true});
+    input.addEventListener('input',()=>{
+      if(!all)snapshot();
+      const q=norm(input.value), current=sel.value;
+      const keep=q?all.filter(o=>!o.value||o.value===current||norm(o.text).includes(q)):all;
+      filtering=true;
+      sel.replaceChildren(...keep.map(o=>new Option(o.text,o.value)));
+      sel.value=current;
+      // One match: pick it, the same as choosing it in the list.
+      const real=keep.filter(o=>o.value);
+      if(q&&real.length===1&&sel.value!==real[0].value){sel.value=real[0].value;sel.dispatchEvent(new Event('change',{bubbles:true}));}
+      filtering=false;
+      status.textContent=q?`พบ ${real.length} ป่า`:'';
+    });
+    snapshot();sync();
+  }
+  function scan(){SELECTORS.forEach(s=>document.querySelectorAll(s).forEach(enhance));}
+  scan();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scan);
+  // The spread form is rendered later; look again at most once per 500 ms.
+  let queued=false;
+  new MutationObserver(()=>{if(queued)return;queued=true;setTimeout(()=>{queued=false;scan();},500);}).observe(document.body||document.documentElement,{childList:true,subtree:true});
+  root.CmeForestPicker={enhance,norm};
+})(window);

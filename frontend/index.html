@@ -1294,6 +1294,7 @@
 <link rel="stylesheet" href="/ux-foundation.css">
 <link rel="stylesheet" href="/topbar.css">
 <link rel="stylesheet" href="/map-ui.css">
+<link rel="stylesheet" href="/analytics-ui.css">
 </head>
 <body class="public-mode">
 <div id="splashScreen" class="splash-screen">
@@ -1764,6 +1765,9 @@
   <button type="button" data-open-view="data">ข้อมูลในพื้นที่</button>
   <button type="button" data-open-view="report">สร้างรายงาน</button>
 </div>
+      <div id="anTop" class="an-top" aria-live="polite"></div>
+      <details class="an-about"><summary>ⓘ ช่วงเวลาและที่มาของตัวเลข</summary><p class="evidence-note" id="anStatus" role="status" aria-live="polite"></p></details>
+      <details class="an-expert" id="anExpert"><summary>สำหรับผู้เชี่ยวชาญ<small>ความแม่นยำ แบบจำลองไฟลาม ตัวเลือกข้อมูล และสถิติละเอียด</small></summary>
       <details class="archive-options">
       <summary>เลือกข้อมูลฝุ่นและเวลาย้อนหลัง</summary>
       <div class="archive-controls">
@@ -1774,7 +1778,6 @@
         <button class="evidence-action" id="anNow" type="button">กลับเวลาปัจจุบัน</button>
       </div>
       </details>
-      <p class="evidence-note" id="anStatus" role="status" aria-live="polite"></p>
       <details id="validationWorkspace" class="spread-workspace">
         <summary>ความแม่นยำที่วัดได้ · ไฟ ลม และ PM2.5</summary>
         <div class="spread-inner" id="validationContent"><p role="status">เปิดเพื่อดูผลเทียบข้อมูลวัดจริงและค่าฐาน</p></div>
@@ -1851,6 +1854,7 @@
           <div id="anSummary"></div>
         </div>
       </div></details>
+      </details>
     </div>
   </div>
 
@@ -2072,6 +2076,8 @@
 <script src="/hotspot-sheet.js"></script>
 <script src="/hotspot-replay.js"></script>
 <script src="/hotspot-spread.js"></script>
+<script src="/analytics-summary.js"></script>
+<script src="/forest-picker.js"></script>
 <script>
 /* ============================================================
    ChiangMaiEyes — live data rendering
@@ -3915,7 +3921,7 @@ async function renderAnalytics(r){
   const request=++analyticsRequest, status=document.getElementById('anStatus');
   const days=analyticsDays(r),replay=document.getElementById('anReplay').value;
   const key=[days,analyticsEnd,replay].join('/');
-  clearAnalytics();status.textContent='กำลังอ่านคลังย้อนหลังตามช่วงที่เลือก…';status.setAttribute('role','status');
+  clearAnalytics();globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),null);status.textContent='กำลังอ่านคลังย้อนหลังตามช่วงที่เลือก…';status.setAttribute('role','status');
   try{
     let h=analyticsCache.get(key);
     if(!h||Date.now()-h.received>30000){
@@ -3932,11 +3938,14 @@ async function renderAnalytics(r){
   }catch(error){
     if(request!==analyticsRequest)return;
     clearAnalytics();status.setAttribute('role','alert');
+    globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),null,{error:error?.message==='choose_time'?'เลือกเวลาไทยก่อนใช้โหมดข้อมูลที่ได้รับ ณ เวลานั้น (ในส่วนสำหรับผู้เชี่ยวชาญ)':'อ่านข้อมูลย้อนหลังไม่ได้ตอนนี้ ลองกดช่วงเวลาอีกครั้ง'});
     status.textContent=error?.message==='choose_time'?'เลือกเวลาไทยก่อนใช้โหมดข้อมูลที่ได้รับ ณ เวลานั้น':'อ่านช่วงข้อมูลไม่ได้ โปรดตรวจวันที่และลองอีกครั้ง ระบบจะไม่ใช้จุดปัจจุบันแทนประวัติ';
   }
 }
 function renderArchiveAnalytics(h){
   const e=CmeEvidence,a=h.analytics,days=a.hotspots||[],pmKind=document.getElementById('anPmKind').value;
+  globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),h,{pmKind,forecast:firePredictions?.weather_forecast});
+  globalThis.loadAnalyticsForecast?.();
   const pms=(a.pm25||[]).filter(p=>p.measurement_kind===pmKind);
   const pmN=pms.reduce((n,p)=>n+p.samples,0),pmMean=pmN?pms.reduce((n,p)=>n+p.value*p.samples,0)/pmN:null;
   const complete=days.filter(d=>d.source_requests_complete&&!d.partial_day),partial=days.length-complete.length;
@@ -3978,6 +3987,12 @@ function renderArchiveAnalytics(h){
 document.getElementById('anPmKind').onchange=()=>{if(selectedHistory)renderArchiveAnalytics(selectedHistory);};
 document.getElementById('anApply').onclick=()=>{const value=document.getElementById('anEnd').value;analyticsEnd=value?value+':00+07:00':null;renderAnalytics(currentRange);};
 document.getElementById('anNow').onclick=()=>{analyticsEnd=null;document.getElementById('anEnd').value='';document.getElementById('anReplay').value='latest';renderAnalytics(currentRange);};
+// Card actions: district -> map, ▶ -> map replay.
+document.getElementById('anTop').addEventListener('click',e=>{
+  const d=e.target.closest('[data-as-district]');
+  if(d){CmeNavigation.open('home');setTimeout(()=>flyToDistrict(d.dataset.asDistrict),120);return;}
+  if(e.target.closest('[data-as-action="replay"]')){CmeNavigation.open('home');setTimeout(()=>document.querySelector('.hs-replay-start:not([hidden])')?.click(),150);}
+});
 
 function normalizeDistrictName(name) {
   if (!name) return "";
@@ -6391,6 +6406,15 @@ function renderEvidenceSources(){
   }).join('');
 }
 let evidenceForecastRequest=null;
+function loadAnalyticsForecast(){
+  if(firePredictions?.weather_forecast)return;
+  evidenceForecastRequest ||= fetchJson('/api/fire-predictions',20000);
+  evidenceForecastRequest.then(d=>{
+    firePredictions=d;
+    globalThis.CmeAnalyticsSummary?.renderForecast(document.getElementById('anTop'),d?.weather_forecast);
+    renderEvidenceTimeline();
+  }).catch(()=>{evidenceForecastRequest=null;});
+}
 function renderEvidenceTimeline(){
   const e=CmeEvidence, el=document.getElementById('anEvidenceTimeline');
   const wholePast=selectedHistory?.hotspots||[];

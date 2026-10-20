@@ -110,10 +110,14 @@
     if(v.tooShort)return 'กรุณากรอกอย่างน้อย '+input.minLength+' ตัวอักษร';
     return 'กรุณาตรวจรูปแบบข้อมูลช่องนี้';
   }
+  // One note per field. Fields without an id get their own, so two of them
+  // in a form never share (and overwrite) one message.
+  let errSeq=0;
+  const errorId=input=>(input.id||(input.dataset.cmeErrId||=('cme-field-'+(++errSeq))))+'-error';
   document.addEventListener('invalid',event=>{
     const input=event.target;if(!input.matches('input,select,textarea'))return;
     input.setCustomValidity(invalidMessage(input));input.setAttribute('aria-invalid','true');
-    const id=(input.id||'cme-field')+'-error';let note=document.getElementById(id);
+    const id=errorId(input);let note=document.getElementById(id);
     if(!note){note=document.createElement('span');note.className='cme-field-error';note.id=id;input.after(note);}
     note.textContent=input.validationMessage;note.setAttribute('role','alert');
     input.setAttribute('aria-describedby',[...new Set((input.getAttribute('aria-describedby')||'').split(' ').filter(Boolean).concat(id))].join(' '));
@@ -121,7 +125,7 @@
   function clearFieldError(event){
     const input=event.target;if(!input.matches('input,select,textarea'))return;
     input.setCustomValidity('');input.removeAttribute('aria-invalid');
-    const id=(input.id||'cme-field')+'-error';document.getElementById(id)?.remove();
+    const id=errorId(input);document.getElementById(id)?.remove();
     input.setAttribute('aria-describedby',(input.getAttribute('aria-describedby')||'').split(' ').filter(s=>s!==id).join(' '));
   }
   document.addEventListener('input',clearFieldError);
