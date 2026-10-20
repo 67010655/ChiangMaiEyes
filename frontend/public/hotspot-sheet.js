@@ -55,16 +55,21 @@
       ${u?`<div><dt>UTM</dt><dd>${esc(utmText)} <button type="button" class="hs-copy" data-copy="${esc(utmText)}">คัดลอก</button></dd></div>`:''}
     </dl>`;
   }
-  function open(h,html,{onClose:cb}={}){
+  // Generic panel: same sheet for districts and other map places.
+  function openPanel({kicker='',title:t='',html='',onClose:cb}={}){
     ensure();
     if(onClose&&onClose!==cb)onClose();
     onClose=cb||null;
     lastFocus=document.activeElement;
-    const place=[h.subdistrict||h.tambon?'ต.'+(h.subdistrict||h.tambon):'',h.district?'อ.'+h.district:''].filter(Boolean).join(' ');
-    title.textContent=place||'จุดความร้อน';
-    body.innerHTML=html+factsHtml(h);
+    sheet.querySelector('.hs-sheet-kicker').textContent=kicker;
+    title.textContent=t;
+    body.innerHTML=html;
     sheet.hidden=false;document.body.classList.add('hs-sheet-open');
     requestAnimationFrame(()=>sheet.focus({preventScroll:true}));
+  }
+  function open(h,html,opts={}){
+    const place=[h.subdistrict||h.tambon?'ต.'+(h.subdistrict||h.tambon):'',h.district?'อ.'+h.district:''].filter(Boolean).join(' ');
+    openPanel({kicker:'จุดความร้อนจากดาวเทียม',title:place||'จุดความร้อน',html:html+factsHtml(h),onClose:opts.onClose});
   }
   function close(){
     if(!sheet||sheet.hidden)return;
@@ -72,5 +77,5 @@
     const cb=onClose;onClose=null;cb?.();
     if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});
   }
-  root.CmeHotspotSheet={open,close,utm,satName,isOpen:()=>!!sheet&&!sheet.hidden};
+  root.CmeHotspotSheet={open,openPanel,close,utm,satName,isOpen:()=>!!sheet&&!sheet.hidden};
 })(window);

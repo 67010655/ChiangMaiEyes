@@ -1767,94 +1767,6 @@
 </div>
       <div id="anTop" class="an-top" aria-live="polite"></div>
       <details class="an-about"><summary>ⓘ ช่วงเวลาและที่มาของตัวเลข</summary><p class="evidence-note" id="anStatus" role="status" aria-live="polite"></p></details>
-      <details class="an-expert" id="anExpert"><summary>สำหรับผู้เชี่ยวชาญ<small>ความแม่นยำ แบบจำลองไฟลาม ตัวเลือกข้อมูล และสถิติละเอียด</small></summary>
-      <details class="archive-options">
-      <summary>เลือกข้อมูลฝุ่นและเวลาย้อนหลัง</summary>
-      <div class="archive-controls">
-        <label for="anPmKind">ข้อมูลฝุ่น <select id="anPmKind" aria-label="ข้อมูลฝุ่น"><option value="measured">สถานีวัด</option><option value="model">แบบจำลอง CAMS</option></select></label>
-        <label>ย้อนหลังถึง <input type="datetime-local" id="anEnd" aria-label="ย้อนหลังถึงเวลาไทย"></label>
-        <label for="anReplay">วิธีดูย้อนหลัง <select id="anReplay" aria-label="วิธีดูย้อนหลัง"><option value="latest">ใช้ข้อมูลที่ได้รับทั้งหมดถึงตอนนี้</option><option value="as_of">ใช้เฉพาะข้อมูลที่ได้รับ ณ เวลาที่เลือก</option></select></label>
-        <button class="evidence-action" id="anApply" type="button">ดูช่วงนี้</button>
-        <button class="evidence-action" id="anNow" type="button">กลับเวลาปัจจุบัน</button>
-      </div>
-      </details>
-      <details id="validationWorkspace" class="spread-workspace">
-        <summary>ความแม่นยำที่วัดได้ · ไฟ ลม และ PM2.5</summary>
-        <div class="spread-inner" id="validationContent"><p role="status">เปิดเพื่อดูผลเทียบข้อมูลวัดจริงและค่าฐาน</p></div>
-      </details>
-      <details id="hindcastWorkspace" class="spread-workspace">
-        <summary>ทดสอบย้อนหลัง · ฤดูไฟ ม.ค.–เม.ย. 2569</summary>
-        <div class="spread-inner" id="hindcastContent"><p role="status">เปิดเพื่ออ่านข้อมูลย้อนหลังและผลทดลอง</p></div>
-      </details>
-      <details id="spreadWorkspace" class="spread-workspace"></details>
-      <section class="an-panel evidence-timeline" aria-label="ข้อมูลย้อนหลังและพยากรณ์">
-        <h3>ย้อนหลังและแนวโน้มในหน้าเดียว</h3>
-        <div class="timeline-key"><span>ย้อนหลังตามช่วงที่เลือก</span><b>แยกอดีตกับอนาคต</b><span>พยากรณ์อากาศปัจจุบัน</span></div>
-        <div id="anEvidenceTimeline" aria-live="polite">กำลังตรวจสอบช่วงข้อมูล…</div>
-        <p class="evidence-note">วันที่ไม่มีข้อมูลแสดงเป็นช่องว่าง ไม่เติมเป็นศูนย์ ระบบยังไม่มีผลพยากรณ์ตำแหน่งไฟล่วงหน้า 30 วัน</p>
-      </section>
-      <div class="an-cards" id="anCards"></div>
-<div class="analysis-primary-chart"><div class="an-panel col-8">
-          <h3>แนวโน้มจุดความร้อน 30 วัน</h3>
-          <div class="hint">รายวัน + เส้นค่าเฉลี่ยเคลื่อนที่ 7 วัน (moving average)</div>
-          <svg class="chart" id="anTrend" height="180" viewBox="0 0 640 180" preserveAspectRatio="none"></svg>
-        </div></div><details class="analysis-advanced"><summary>ดูสถิติละเอียดเพิ่มเติม</summary>      <div class="an-grid">
-
-        <div class="an-panel col-4">
-          <h3>ความเชื่อมั่นในช่วงที่เลือก</h3>
-          <div class="hint">ระดับความมั่นใจของดาวเทียมในการตรวจพบจุดความร้อน</div>
-          <svg class="chart" id="anConf" height="180" viewBox="0 0 200 180"></svg>
-        </div>
-
-        <div class="an-panel col-6">
-          <h3>ช่วงเวลาที่ตรวจพบจุดความร้อน</h3>
-          <div class="hint">รวมจำนวนตรวจพบตามชั่วโมงของวัน · เวลาไทย</div>
-          <svg class="chart" id="anHour" height="170" viewBox="0 0 480 170"></svg>
-          <div class="insight"><span class="b">▲</span><span id="anHourIns">—</span></div>
-        </div>
-        <div class="an-panel col-6">
-          <h3>การกระจายค่า FRP</h3>
-          <div class="hint">ฮิสโทแกรมของ Fire Radiative Power · MW</div>
-          <svg class="chart" id="anFrp" height="170" viewBox="0 0 480 170"></svg>
-          <div class="insight"><span class="b">▲</span><span id="anFrpIns">—</span></div>
-        </div>
-
-        <div class="an-panel col-6">
-          <h3>ความสัมพันธ์ จุดความร้อน × PM2.5</h3>
-          <div class="hint" id="anPmHint">จับคู่วันเดียวกัน ใช้เฉพาะวันที่คำขอจุดดาวเทียมครบและวันเต็ม</div>
-          <svg class="chart" id="anScatter" height="200" viewBox="0 0 480 200"></svg>
-          <div class="insight"><span class="b">r</span><span id="anCorr">—</span></div>
-        </div>
-        <div class="an-panel col-6">
-          <h3>จุดความร้อนรายอำเภอ</h3>
-          <div class="hint">ชื่ออำเภอในคลังอาจประมาณจากจุดอ้างอิง · คลิกเปิดแผนที่ปัจจุบัน</div>
-          <div id="anDist" style="width:100%;padding:4px 0"></div>
-        </div>
-
-        <div class="an-panel col-6">
-          <h3>ระดับตำบล</h3>
-          <div class="hint">ใช้เฉพาะเมื่อมีขอบเขตตำบล/ข้อมูลตำบลจริง</div>
-          <div id="anTambon" style="width:100%;padding:4px 0"></div>
-        </div>
-        <div class="an-panel col-6">
-          <h3>จุดดาวเทียมในขอบเขตป่าชุมชน</h3>
-          <div class="hint">จับคู่กับขอบเขต RECOFTC ที่ตรวจโครงสร้างแล้ว · ไม่ยืนยันเหตุไฟภาคสนาม</div>
-          <div id="anForestProx" style="width:100%;padding:4px 0"></div>
-        </div>
-
-        <div class="an-panel col-4">
-          <h3>แหล่งข้อมูลดาวเทียม</h3>
-          <div class="hint">สัดส่วนการตรวจจับ</div>
-          <svg class="chart" id="anSat" height="160" viewBox="0 0 200 160"></svg>
-          <div id="anSourceProducts" class="insight" style="display:block;margin-top:8px"></div>
-        </div>
-        <div class="an-panel col-8">
-          <h3>สรุปเชิงสถิติ</h3>
-          <div class="hint">ค่าทางสถิติของช่วงที่เลือก</div>
-          <div id="anSummary"></div>
-        </div>
-      </div></details>
-      </details>
     </div>
   </div>
 
@@ -1966,7 +1878,7 @@
           <dt>ดัชนีอากาศแห้งทดลอง</dt><dd>ใช้ (100 − ความชื้นสัมพัทธ์)/100 และลดครึ่งเมื่อฝนที่รายงานมากกว่า 1 mm เป็นเกณฑ์ทดลองจากอากาศอ้างอิงร่วม ยังไม่ใช่ปริมาณเชื้อเพลิงหรือโอกาสเกิดไฟรายป่า</dd>
           <dt>พยากรณ์อากาศและฝุ่น</dt><dd>อากาศล่วงหน้าจาก Open-Meteo และฝุ่นจาก CAMS เป็นแบบจำลองตามกริดและจุดอ้างอิง ดูรอบแบบจำลองและเวลาที่ข้อมูลแทน แยกจากค่าตรวจวัดสถานี</dd>
           <dt>การระบายอากาศ</dt><dd>อ่าน HPBL ลมในชั้น PBL และ VRATE ของ NOAA GFS โดยตรง หน่วย m, m/s และ m²/s เป็นคนละระดับกับลม 10 เมตร ไม่ใช้ยืนยันค่าฝุ่นในป่าหรือความปลอดภัย</dd>
-          <dt>ไฟจะลามไปไหน</dt><dd>ในหน้าวิเคราะห์มี <button type="button" class="evidence-action" data-open-spread>เครื่องมือจำลองไฟลาม</button> สำหรับลองเชื้อเพลิงแห้งชนิดเดียว ลมใกล้เปลวไฟ และความชันตามข้อมูลที่ระบุ เลื่อนเวลาเพื่อดูพื้นที่จำลองได้ ยังไม่สอบเทียบกับไฟจริงในเชียงใหม่ ภาพทิศปลายลมบนแผนที่ยังเป็นเพียงภาพประกอบ</dd>
+          <dt>ไฟจะลามไปไหน</dt><dd>กดจุดความร้อนที่ตรวจพบใน 24 ชั่วโมง แล้วกด “ดูแนวลามทดลอง 6 ชม.” ระบบใช้ลมพยากรณ์รายชั่วโมง ทางลาด และเชื้อเพลิงหญ้าแห้งสมมติ เป็นภาพ “ถ้ายังไหม้และไม่มีการดับ” ยังไม่สอบเทียบกับไฟจริงในเชียงใหม่ ภาพทิศปลายลมบนแผนที่ยังเป็นเพียงภาพประกอบ</dd>
         </dl>
       </details>
       <details class="guide-topic" id="guideReferences"><summary>แหล่งข้อมูลและเอกสารอ้างอิง (References)</summary><p>แต่ละแหล่งมีหน้าที่และข้อจำกัดต่างกัน กดชื่อแหล่งเพื่ออ่านต้นทาง</p><div id="evidenceSources" class="source-grid"></div><p>สูตรสรุปและการเชื่อมข้อมูลที่อธิบายด้านบนเป็นวิธีของ ChiangMaiEyes แหล่งข้อมูลไม่ได้รับรองผลคำนวณหรือความแม่นยำของเว็บนี้</p></details>
@@ -3836,73 +3748,6 @@ function corr(xs,ys){const mx=mean(xs),my=mean(ys);let n=0,dx=0,dy=0;for(let i=0
 let frpSamples=[];
 let pmPairs=[];
 
-// ---- chart primitives ----
-function donut(id,segs,{cx=100,cy=58,r=44,thick=20}){
-  const total=segs.reduce((s,x)=>s+x.val,0);
-  if(!total){document.getElementById(id).innerHTML=`<text x="${cx}" y="${cy}" text-anchor="middle" fill="#8b97a7" font-size="12">ไม่มีจุดให้แสดงสัดส่วน</text>`;return;}
-  let a0=-Math.PI/2,g='';
-  segs.forEach(s=>{
-    const a1=a0+s.val/total*Math.PI*2,large=(a1-a0)>Math.PI?1:0;
-    g+=`<path d="M${cx+Math.cos(a0)*r} ${cy+Math.sin(a0)*r} A${r} ${r} 0 ${large} 1 ${cx+Math.cos(a1)*r} ${cy+Math.sin(a1)*r}" fill="none" stroke="${s.color}" stroke-width="${thick}" stroke-linecap="butt"/>`;
-    a0=a1;
-  });
-  g+=`<text x="${cx}" y="${cy-1}" text-anchor="middle" fill="#e6edf3" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="20" font-weight="700">${total}</text>`;
-  g+=`<text x="${cx}" y="${cy+13}" text-anchor="middle" fill="#5c6675" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12">รวม</text>`;
-  let ly=cy+r+22;
-  segs.forEach((s,i)=>{g+=`<rect x="${cx-r-4}" y="${ly+i*16-9}" width="10" height="10" rx="2" fill="${s.color}"/><text x="${cx-r+12}" y="${ly+i*16}" fill="#8b97a7" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12">${s.label} · ${Math.round(s.val/total*100)}%</text>`;});
-  document.getElementById(id).innerHTML=g;
-}
-function histogram(id,bins,labels,{w=480,h=170,color='#ff8a3d',pad=22,minMax=1}){
-  const max=Math.max(minMax,...bins)*1.15||1,n=bins.length,gap=w/n,bw=gap*0.66;let g='';
-  for(let t=0;t<=3;t++){const y=(h-pad)-(h-pad-6)*t/3;g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/>`;}
-  bins.forEach((v,i)=>{const bh=v/max*(h-pad-6),x=i*gap+(gap-bw)/2,y=(h-pad)-bh;
-    g+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="2" fill="${color}" opacity="${(0.5+0.5*v/max).toFixed(2)}"/>`;
-    if(labels[i]!==undefined)g+=`<text x="${x+bw/2}" y="${h-6}" text-anchor="middle" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#5c6675">${labels[i]}</text>`;});
-  document.getElementById(id).innerHTML=g;
-}
-function scatterReg(id,pts,{w=480,h=200,pad=30}){
-  if(!pts||pts.length<2){document.getElementById(id).innerHTML='<text x="240" y="100" text-anchor="middle" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#3a4757">คู่วันที่ข้อมูลครบยังไม่พอ</text>';return 0;}
-  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
-  const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
-  const X=x=>pad+(x-xmin)/((xmax-xmin)||1)*(w-pad-8),Y=y=>(h-pad)-(y-ymin)/((ymax-ymin)||1)*(h-pad-8);
-  const mx=mean(xs),my=mean(ys);let num=0,den=0;pts.forEach(p=>{num+=(p.x-mx)*(p.y-my);den+=(p.x-mx)**2;});
-  const slope=den?num/den:0,inter=my-slope*mx;let g='';
-  g+=`<line x1="${pad}" y1="${h-pad}" x2="${w}" y2="${h-pad}" stroke="#222b36"/><line x1="${pad}" y1="6" x2="${pad}" y2="${h-pad}" stroke="#222b36"/>`;
-  g+=`<line x1="${X(xmin)}" y1="${Y(slope*xmin+inter)}" x2="${X(xmax)}" y2="${Y(slope*xmax+inter)}" stroke="#43b05f" stroke-width="2" stroke-dasharray="5 4"/>`;
-  pts.forEach(p=>{g+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="3.4" fill="#a855f7" opacity=".82"/>`;});
-  g+=`<text x="${(w+pad)/2}" y="${h-4}" text-anchor="middle" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#5c6675">จุดความร้อน/วัน →</text>`;
-  g+=`<text x="10" y="14" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#5c6675">PM2.5 ↑</text>`;
-  document.getElementById(id).innerHTML=g;
-  return corr(xs,ys);
-}
-function trendChart(id,daily,{w=640,h=180,pad=22,labels=[],complete=[]}){
-
-  if(!daily.length){document.getElementById(id).innerHTML='<text x="320" y="80" text-anchor="middle" fill="var(--muted)">ยังไม่มีข้อมูลย้อนหลังที่โหลดได้</text>';return;}
-  const ma=daily.map((_,i)=>{const from=Math.max(0,i-6),slice=daily.slice(from,i+1);return slice.every(Number.isFinite)&&(!complete.length||complete.slice(from,i+1).every(Boolean))?mean(slice):null;});
-  const rawMax=Math.max(4,...daily.filter(Number.isFinite));
-  const max=Math.ceil(rawMax*1.15)||4,n=daily.length||1,gap=w/n,bw=gap*0.58;
-  const Y=v=>(h-pad)-v/max*(h-pad-8);let g='';
-  const ticks=[0,Math.ceil(max/3),Math.ceil(max*2/3),max].filter((v,i,a)=>a.indexOf(v)===i);
-  ticks.forEach(t=>{const y=Y(t);g+=`<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#1a212b"/><text x="2" y="${y-2}" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#3a4757">${t}</text>`;});
-  daily.forEach((v,i)=>{if(!Number.isFinite(v))return;const bh=v/max*(h-pad-8),x=i*gap+(gap-bw)/2;g+=`<rect x="${x}" y="${(h-pad)-bh}" width="${bw}" height="${bh}" rx="1.5" fill="${i===n-1?'#43b05f':'#2c3744'}"/>`;});
-  let d='',connected=false;ma.forEach((v,i)=>{if(!Number.isFinite(v)){connected=false;return;}d+=(connected?' L':' M')+(i*gap+gap/2)+' '+Y(v);connected=true;});
-  g+=`<path d="${d}" fill="none" stroke="#ff8a3d" stroke-width="2"/>`;
-  ma.forEach((v,i)=>{if(Number.isFinite(v)&&(i%5===0||i===n-1))g+=`<circle cx="${i*gap+gap/2}" cy="${Y(v)}" r="2.4" fill="#ff8a3d"/>`;});
-  const labelIdx=n<=7?[0,Math.floor(n/2),n-1]:[0,Math.floor(n/4),Math.floor(n/2),Math.floor(n*3/4),n-1];
-  [...new Set(labelIdx)].forEach(i=>g+=`<text x="${i*gap+gap/2}" y="${h-5}" text-anchor="middle" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#5c6675">${labels[i]||''}</text>`);
-  document.getElementById(id).innerHTML=g;
-}
-function hbar(id,rows,{w=480,h=200,pad=78}){
-  const max=Math.max(...rows.map(r=>r.v))||1,rh=h/rows.length;let g='';
-  rows.forEach((r,i)=>{const bw=r.v/max*(w-pad-30),y=i*rh+rh/2;
-    const col=r.v>max*0.75?'#ff4d4d':r.v>max*0.5?'#f5640a':r.v>max*0.28?'#ff8a3d':'#facc15';
-    g+=`<text x="${pad-6}" y="${y+3}" text-anchor="end" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#8b97a7">${r.name}</text>`;
-    g+=`<rect x="${pad}" y="${y-6}" width="${w-pad-30}" height="12" rx="3" fill="#1a212b"/>`;
-    g+=`<rect x="${pad}" y="${y-6}" width="${bw}" height="12" rx="3" fill="${col}"/>`;
-    g+=`<text x="${pad+bw+6}" y="${y+3}" font-family="Poppins, IBM Plex Sans Thai, sans-serif" font-size="12" fill="#e6edf3">${r.v}</text>`;});
-  document.getElementById(id).innerHTML=g;
-}
-
 // ---- range-aware analytics render ----
 let currentRange='7d';
 document.querySelectorAll('#anRange button').forEach(b=>{
@@ -3910,24 +3755,21 @@ document.querySelectorAll('#anRange button').forEach(b=>{
   b.onclick=()=>{document.querySelectorAll('#anRange button').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');});b.classList.add('on');b.setAttribute('aria-pressed','true');currentRange=b.dataset.r;renderAnalytics(currentRange);};
 });
 
-let selectedHistory=null,analyticsRequest=0,analyticsEnd=null;
+let selectedHistory=null,analyticsRequest=0;
 const analyticsCache=new Map();
 const analyticsDays=r=>r==='24h'?1:({ '7d':7,'30d':30,'90d':90,'180d':180 }[r]||7);
 function clearAnalytics(){
   selectedHistory=null;
-  ['anCards','anTrend','anConf','anSat','anSourceProducts','anHour','anHourIns','anFrp','anFrpIns','anScatter','anCorr','anDist','anTambon','anForestProx','anSummary','anEvidenceTimeline'].forEach(id=>document.getElementById(id)?.replaceChildren());
 }
 async function renderAnalytics(r){
   const request=++analyticsRequest, status=document.getElementById('anStatus');
-  const days=analyticsDays(r),replay=document.getElementById('anReplay').value;
-  const key=[days,analyticsEnd,replay].join('/');
+  const days=analyticsDays(r);
+  const key=String(days);
   clearAnalytics();globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),null);status.textContent='กำลังอ่านคลังย้อนหลังตามช่วงที่เลือก…';status.setAttribute('role','status');
   try{
     let h=analyticsCache.get(key);
     if(!h||Date.now()-h.received>30000){
       const params=new URLSearchParams({days:String(days)});
-      if(analyticsEnd){params.set('end',analyticsEnd);if(replay==='as_of')params.set('as_of',analyticsEnd);}
-      else if(replay==='as_of')throw new Error('choose_time');
       const data=await fetchJson('/api/history?'+params,25000);
       h={data,received:Date.now()};analyticsCache.set(key,h);
     }
@@ -3938,61 +3780,52 @@ async function renderAnalytics(r){
   }catch(error){
     if(request!==analyticsRequest)return;
     clearAnalytics();status.setAttribute('role','alert');
-    globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),null,{error:error?.message==='choose_time'?'เลือกเวลาไทยก่อนใช้โหมดข้อมูลที่ได้รับ ณ เวลานั้น (ในส่วนสำหรับผู้เชี่ยวชาญ)':'อ่านข้อมูลย้อนหลังไม่ได้ตอนนี้ ลองกดช่วงเวลาอีกครั้ง'});
+    globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),null,{error:'อ่านข้อมูลย้อนหลังไม่ได้ตอนนี้ ลองกดช่วงเวลาอีกครั้ง'});
     status.textContent=error?.message==='choose_time'?'เลือกเวลาไทยก่อนใช้โหมดข้อมูลที่ได้รับ ณ เวลานั้น':'อ่านช่วงข้อมูลไม่ได้ โปรดตรวจวันที่และลองอีกครั้ง ระบบจะไม่ใช้จุดปัจจุบันแทนประวัติ';
   }
 }
 function renderArchiveAnalytics(h){
-  const e=CmeEvidence,a=h.analytics,days=a.hotspots||[],pmKind=document.getElementById('anPmKind').value;
-  globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),h,{pmKind,forecast:firePredictions?.weather_forecast});
-  globalThis.loadAnalyticsForecast?.();
-  const pms=(a.pm25||[]).filter(p=>p.measurement_kind===pmKind);
-  const pmN=pms.reduce((n,p)=>n+p.samples,0),pmMean=pmN?pms.reduce((n,p)=>n+p.value*p.samples,0)/pmN:null;
+  const a=h.analytics,days=a.hotspots||[];
   const complete=days.filter(d=>d.source_requests_complete&&!d.partial_day),partial=days.length-complete.length;
   const fullDays=days.filter(d=>!d.partial_day).length,edgeDays=days.length-fullDays,missingDays=fullDays-complete.length;
   const stamp=value=>value?new Date(value).toLocaleString('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'ยังไม่ระบุเวลา';
   document.getElementById('anStatus').textContent=`${stamp(h.start)} → ${stamp(h.end)} · เวลาไทย · ${fullDays?'คำขอ VIIRS ครบ '+complete.length+'/'+fullDays+' วันเต็ม':'ช่วงที่เลือกไม่มีวันปฏิทินเต็ม'}${edgeDays?' · ช่วงต้น/ท้ายรวม '+edgeDays+' วันเป็นเพียงบางชั่วโมง':''}${missingDays?' · คำขอขาด '+missingDays+' วัน':''} · ${h.as_of?'ใช้เฉพาะข้อมูลที่ได้รับถึง '+stamp(h.as_of):'ใช้ข้อมูลและการแก้ค่าที่ได้รับถึงตอนนี้'} · รับข้อมูลล่าสุด ${stamp(a.last_received)}`;
-  document.getElementById('anCards').innerHTML=`
-    <div class="an-card ember"><div class="k">จุดดาวเทียมที่ได้รับ</div><div class="v" style="color:var(--ember)">${a.total}<small> จุด</small></div><div class="d">${h.days} วัน · ${missingDays?'มีคำขอขาด ยังไม่ใช่ยอดครบ':'ยอดที่ได้รับตามเวลาที่เลือก'}</div></div>
-    <div class="an-card"><div class="k">วันเต็มที่คำขอ VIIRS ครบ</div><div class="v">${fullDays?complete.length:'—'}<small>${fullDays?' / '+fullDays+' วัน':''}</small></div><div class="d">${edgeDays} วันช่วงต้น/ท้ายไม่เต็ม${fullDays?'':' · ใช้ยอดรวมตามช่วงที่เลือก'}</div></div>
-    <div class="an-card"><div class="k">FRP สูงสุดในช่วงนี้</div><div class="v" style="color:var(--warn)">${a.frp.max??'—'}<small> MW</small></div><div class="d">${a.frp.known} จุดที่มีค่า · เฉลี่ย ${a.frp.mean?.toFixed(1)??'—'} MW</div></div>
-    <div class="an-card purple"><div class="k">PM2.5 · ${pmKind==='model'?'แบบจำลอง':'สถานีวัด'}</div><div class="v" style="color:var(--pm-purple)">${pmMean?.toFixed(1)??'—'}<small> µg/m³</small></div><div class="d">${pmN} ตัวอย่างในช่วงเดียวกัน</div></div>`;
-  const trendPanel=document.getElementById('anTrend').closest('.an-panel');
-  trendPanel.querySelector('h3').textContent=`จุดดาวเทียมย้อนหลัง ${h.days} วัน`;
-  trendPanel.querySelector('.hint').textContent='แท่ง: ยอดที่ได้รับรายวัน · เส้น: เฉลี่ย 7 วันเฉพาะช่วงที่คำขอครบ · ช่องว่างไม่ใช่ศูนย์';
-  trendChart('anTrend',days.map(d=>d.count),{labels:days.map(d=>bangkokDayLabel(d.date)),complete:days.map(d=>d.source_requests_complete&&!d.partial_day)});
-  const conf=a.confidence||{};
-  donut('anConf',[{label:'สูง',val:conf.high||0,color:'#43b05f'},{label:'ปกติ',val:conf.nominal||0,color:'#f59e0b'},{label:'ต่ำ',val:conf.low||0,color:'#94a3b8'},{label:'ไม่ระบุ',val:conf.unknown||0,color:'#64748b'}],{});
-  donut('anSat',(a.satellites||[]).map((x,i)=>({label:e.escapeHtml(normalizeSatelliteProduct(x.name).label),val:x.count,color:['#43b05f','#37d1d6','#a855f7','#f59e0b'][i%4]})),{cx:100,cy:52,r:40,thick:18});
-  document.getElementById('anSourceProducts').innerHTML=(a.sources||[]).map(x=>`<div class="dl"><span class="dk">${e.escapeHtml(x.source)}</span><span class="dv">${x.count}</span></div>`).join('')+'<p class="evidence-note">ยอดรายแหล่งอาจมีการตรวจเดียวกันซ้ำข้ามผลิตภัณฑ์ ยอดรวมด้านบนตัดซ้ำด้วยดาวเทียม พิกัด และเวลาตรวจพบ</p>';
-  histogram('anHour',a.hour_histogram,Array.from({length:24},(_,i)=>i%3===0?i:''),{color:'#ff8a3d'});
-  document.getElementById('anHourIns').textContent=`รวม ${a.total} จุดจากช่วงที่เลือก ไม่ใช่ค่าปัจจุบันบนแผนที่`;
-  histogram('anFrp',a.frp.bins,['0','20','40','60','80','100','120+'],{color:'#f5640a'});
-  document.getElementById('anFrpIns').textContent=`มี FRP ${a.frp.known}/${a.total} จุด · ค่าที่ไม่ส่งมาไม่เติมเป็น 0 MW`;
-  const pmByDate=Object.fromEntries(pms.map(p=>[p.date,p.value]));
-  const pairs=complete.filter(d=>Number.isFinite(d.count)&&Number.isFinite(pmByDate[d.date])).map(d=>({x:d.count,y:pmByDate[d.date]}));
-  const rr=scatterReg('anScatter',pairs,{});
-  document.getElementById('anPmHint').textContent=pmKind==='model'?'CAMS global ที่กริดอ้างอิงเมืองเชียงใหม่ ไม่ใช่เซนเซอร์ในป่าชุมชน · จับคู่วันเต็มที่คำขอ VIIRSครบ':'ค่าเฉลี่ยตัวอย่างสถานีวัดที่ได้รับ ไม่ใช่ค่าเฉลี่ย 24 ชั่วโมงตามมาตรฐาน · จับคู่วันเต็มที่คำขอ VIIRSครบ';
-  document.getElementById('anCorr').textContent=pairs.length>=3&&Number.isFinite(rr)?`r = ${rr.toFixed(2)} · ${pairs.length} คู่วัน · ไม่ยืนยันเหตุและผล`:`มี ${pairs.length} คู่วัน ยังไม่พอแปลผลหรือข้อมูลไม่มีความแปรปรวน`;
-  const rowsHtml=rows=>rows.map(x=>`<div class="dl"><span class="dk">${e.escapeHtml(x.name)}</span><span class="dv">${x.count} จุด</span></div>`).join('')||'<p class="evidence-note">ยังไม่มีรายการที่ระบุพื้นที่นี้ในคลังช่วงที่เลือก</p>';
-  document.getElementById('anDist').innerHTML=(a.districts||[]).map(x=>`<button type="button" class="evidence-action" data-archive-district="${e.escapeHtml(x.name)}">${e.escapeHtml(x.name)} · ${x.count} จุด ↗</button>`).join('')||'<p class="evidence-note">ยังไม่มีรายการที่ระบุอำเภอ</p>';
-  document.querySelectorAll('[data-archive-district]').forEach(b=>b.onclick=()=>flyToDistrict(b.dataset.archiveDistrict));
-  document.getElementById('anTambon').innerHTML=rowsHtml(a.tambons||[]);
-  const forests=(a.forests||[]).map(x=>({...x,name:allForests.find(f=>String(f.forest_id)===x.forest_id)?.name||x.forest_id}));
-  document.getElementById('anForestProx').innerHTML=rowsHtml(forests)+'<p class="evidence-note">เฉพาะจุดที่ระบบจับคู่ขอบเขตได้ ชื่อป่าอาจรอทะเบียนโหลด ห้ามใช้เป็นยอดไฟยืนยัน</p>';
-  const stats=e.dailyStats(complete.map(d=>d.count));
-  document.getElementById('anSummary').innerHTML=`<div class="dl"><span class="dk">ค่าเฉลี่ยจากวันเต็มที่คำขอครบ</span><span class="dv">${stats.mean?.toFixed(1)??'—'} จุด/วัน</span></div><div class="dl"><span class="dk">มัธยฐาน</span><span class="dv">${stats.median?.toFixed(1)??'—'} จุด/วัน</span></div><div class="dl"><span class="dk">ส่วนเบี่ยงเบนมาตรฐาน</span><span class="dv">${stats.sd?.toFixed(1)??'—'} จุด/วัน</span></div><div class="dl"><span class="dk">วันที่ข้อมูลขาดหรือวันไม่เต็ม</span><span class="dv">${partial} วัน</span></div><p class="evidence-note">${h.notes.map(e.escapeHtml).join(' · ')}</p>`;
-  renderEvidenceTimeline();
+  try{_anInputsSeen=allForests.length+'|'+hotspots.length;}catch(_){}
+  globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),h,analyticsSummaryOptions());
+  globalThis.loadAnalyticsForecast?.();
 }
-document.getElementById('anPmKind').onchange=()=>{if(selectedHistory)renderArchiveAnalytics(selectedHistory);};
-document.getElementById('anApply').onclick=()=>{const value=document.getElementById('anEnd').value;analyticsEnd=value?value+':00+07:00':null;renderAnalytics(currentRange);};
-document.getElementById('anNow').onclick=()=>{analyticsEnd=null;document.getElementById('anEnd').value='';document.getElementById('anReplay').value='latest';renderAnalytics(currentRange);};
-// Card actions: district -> map, ▶ -> map replay.
+// What the cards need from the rest of the page (map outlines, forest names,
+// how many days the map itself holds for ▶ replay).
+function analyticsSummaryOptions(){
+  const shapes=typeof districtLayerRef==='object'&&districtLayerRef?Object.entries(districtLayerRef).map(([name,layer])=>{
+    const g=layer.toGeoJSON?.().geometry;if(!g)return null;
+    const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[];
+    return {name,rings:polys.map(p=>p[0])};
+  }).filter(Boolean):[];
+  const w=window.CmeHotspotReplay?.windowFor?.(hotspots);
+  return {
+    forecast:firePredictions?.weather_forecast,shapes,norm:normalizeDistrictName,
+    forestInfo:id=>allForests.find(f=>String(f.forest_id)===String(id)),
+    mapDays:w?Math.max(1,Math.round((w.end-w.start)/864e5)):0
+  };
+}
+// Card actions: district -> map, forest -> map, ▶ -> map replay.
 document.getElementById('anTop').addEventListener('click',e=>{
   const d=e.target.closest('[data-as-district]');
   if(d){CmeNavigation.open('home');setTimeout(()=>flyToDistrict(d.dataset.asDistrict),120);return;}
+  const f=e.target.closest('[data-as-forest]');
+  if(f){const forest=allForests.find(x=>String(x.forest_id)===f.dataset.asForest);if(!forest)return;
+    CmeNavigation.open('home');setTimeout(()=>{map.flyTo([forest.latitude,forest.longitude],14,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});},120);return;}
   if(e.target.closest('[data-as-action="replay"]')){CmeNavigation.open('home');setTimeout(()=>document.querySelector('.hs-replay-start:not([hidden])')?.click(),150);}
 });
+// Forest names and map points can arrive after the archive: redraw once they
+// do, so forest ids become names and ▶ shows the map's real number of days.
+let _anInputsSeen='';
+setInterval(()=>{
+  if(!selectedHistory||!document.querySelector('.analytics.open'))return;
+  const key=allForests.length+'|'+hotspots.length;
+  if(key!==_anInputsSeen)renderArchiveAnalytics(selectedHistory);
+},2000);
 
 function normalizeDistrictName(name) {
   if (!name) return "";
@@ -4201,96 +4034,26 @@ function _locationPopup(latlng, html){
 // Builds the district detail body as a standalone function (not inlined into
 // selectDistrict) so the lazy predict-forecast fetch below can re-render
 // just the body once data arrives, without re-touching map/layer state.
-function _districtDetailBody(distNorm){
-  const distHs = hotspots.filter(h=>normalizeDistrictName(h.district)===distNorm);
-  const distFs = allForests.filter(f=>normalizeDistrictName(f.amphoe)===distNorm);
-  const frpSum = distHs.reduce((s,h)=>s+(h.frp||0),0);
-
-  const distPmStations = pmStations.filter(s => normalizeDistrictName(s.district) === distNorm);
-  const hasPm = distPmStations.length > 0;
-  const distPmAvg = hasPm ? Math.round(distPmStations.reduce((s, x) => s + x.pm, 0) / distPmStations.length) : null;
-  const pmHtml = hasPm
-    ? `<span style="color:${pmColor(distPmAvg)}">${distPmAvg} µg/m³</span> (${distPmStations.length} สถานี)`
-    : `<span style="color:var(--dim)" title="ไม่มีสถานีวัดในพื้นที่">—</span>`;
-
-  let correlationNote = '';
-  if (distHs.length > 0 && hasPm && distPmAvg > 37) {
-    correlationNote = `<div style="margin-top:8px;padding:6px;background:rgba(239,68,68,0.15);border:1.5px solid #ef444455;border-radius:4px;color:#fca5a5;font-size:12px;text-align:center;line-height:1.4">
-      พบจุดดาวเทียมและค่าฝุ่นสูงในข้อมูลชุดนี้ ยังไม่ยืนยันว่าเป็นเหตุเดียวกัน
-    </div>`;
-  }
-
-  const tambonMap = {};
-  distHs.forEach(h => {
-    const tb = h.subdistrict || h.tambon;
-    if(!tb)return;
-    if (!tambonMap[tb]) tambonMap[tb] = {count:0, frp:0};
-    tambonMap[tb].count++;
-    tambonMap[tb].frp += h.frp || 0;
-  });
-  const tambonRanked = Object.entries(tambonMap)
-    .sort((a,b) => b[1].frp - a[1].frp || b[1].count - a[1].count)
-    .slice(0, 5);
-  const tambonHtml = tambonRanked.length
-    ? `<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px">
-        <div style="font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.12em;margin-bottom:4px">ตำบลที่มีจุดดาวเทียมมาก</div>
-        ${tambonRanked.map(([tb, d], i) =>
-          `<div style="display:flex;justify-content:space-between;padding:2px 0;color:${i===0?'var(--ember)':'var(--txt)'};font-family:var(--mono);font-size:12px">
-            <span>${i+1}. ต.${tb}</span>
-            <span style="color:var(--muted)">${d.count}จุด ${d.frp>0?d.frp.toFixed(0)+'MW':''}</span>
-          </div>`
-        ).join('')}
-      </div>`
-    : '';
-
-  const layer = districtLayerRef[distNorm];
-  const c = layer ? layer.getBounds().getCenter() : null;
-  const link3d = c ? `<div style="margin-top:10px"><span onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${c.lng},${c.lat}],zoom:14,pitch:55,bearing:0,duration:motionDuration(1200)}),600)" style="cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--wind);text-decoration:underline">📍 ดูใน 3D</span></div>` : '';
-
-  const distTambonCount = _tambonFeatures.filter(f=>normalizeDistrictName(f.properties.amphoe_th)===distNorm).length;
-
-  const phase = (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm);
-  const phaseHtml = phase
-    ? phaseCard(phase, true)
-    : `<div class="ph-card"><h3><span>${distNorm}</span></h3><div style="font-family:var(--mono);font-size:12px;color:var(--dim)">ยังไม่มีข้อมูลเฟสไฟ — กำลังโหลด...</div></div>`;
-
-  let forecastHtml = '';
-  if(firePredictions){
-    const fc = (firePredictions.district_forecasts||[]).find(f=>normalizeDistrictName(f.district)===distNorm);
-    if(fc && fc.daily && fc.daily.length){
-      const trendIcon = fc.trend==='rising'?'📈 เพิ่มขึ้น':fc.trend==='falling'?'📉 ลดลง':fc.trend==='stable'?'➖ คงที่':'ยังไม่มีข้อมูลแนวโน้ม';
-      forecastHtml = `<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px">
-        <div style="font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.12em;margin-bottom:4px">แนวโน้ม 3 วันข้างหน้า (พยากรณ์อากาศจริง)</div>
-        <div style="font-family:var(--mono);font-size:12px;color:var(--txt)">${trendIcon} · พรุ่งนี้ ${experimentalScore(fc.daily[0].danger_score)}/100 ดัชนีอากาศแห้งจุดอ้างอิงร่วม</div>
-      </div>`;
-    }
-  } else if(firePredictionsPending){
-    forecastHtml = `<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px;font-family:var(--mono);font-size:12px;color:var(--dim)">กำลังโหลดแนวโน้ม 3 วันข้างหน้า...</div>`;
-  }
-
-  const moreHtml = [tambonHtml, forecastHtml, link3d].join('');
-  const moreBlock = moreHtml.trim()
-    ? `<details style="margin-top:6px"><summary style="font-family:var(--mono);font-size:12px;color:var(--wind);letter-spacing:.08em;cursor:pointer;user-select:none;list-style:none;padding-top:6px;border-top:1px solid var(--line-soft)">▸ ตำบลที่มีจุดดาวเทียมมาก · แนวโน้ม · 3D</summary>${moreHtml}</details>`
-    : '';
-
-  // 2-column stat grid (not 5 stacked full-width rows) — this, not the
-  // collapsible sections above, is what actually shrinks the common case: a
-  // quiet "ปกติ" district has nothing heavy to fold away, so the win has to
-  // come from packing the always-visible essentials tighter.
-  return `
-    ${phaseHtml}
-    <div class="dl-grid">
-      <div class="dl-cell" title="PM2.5 เฉลี่ย"><span class="dk">PM2.5</span><span class="dv">${pmHtml}</span></div>
-      <div class="dl-cell" title="จุดความร้อน"><span class="dk">จุดไฟ</span><span class="dv" style="color:${distHs.length?'var(--ember)':'var(--good)'}">${distHs.length}</span></div>
-      <div class="dl-cell" title="FRP รวม"><span class="dk">FRP</span><span class="dv">${frpSum>0?frpSum.toFixed(1)+'MW':'—'}</span></div>
-      <div class="dl-cell" title="ป่าชุมชน"><span class="dk">ป่าชุมชน</span><span class="dv" style="color:var(--good)">${distFs.length}</span></div>
-      <div class="dl-cell" title="จำนวนตำบล"><span class="dk">ตำบล</span><span class="dv">${distTambonCount}</span></div>
+function districtSummaryHtml(distNorm,{withTitle=false}={}){
+  const esc=CmeEvidence.escapeHtml;
+  const distHs=hotspots.filter(h=>normalizeDistrictName(h.district)===distNorm);
+  const recent=distHs.filter(h=>hotspotAgeClass(h)!=='old').length;
+  const distFs=allForests.filter(f=>normalizeDistrictName(f.amphoe)===distNorm);
+  const st=pmStations.filter(x=>normalizeDistrictName(x.district)===distNorm&&Number.isFinite(x.pm));
+  const pm=st.length?st.reduce((a,x)=>a+x.pm,0)/st.length:null;
+  const tambons=Object.entries(distHs.reduce((m,h)=>{const t=h.subdistrict||h.tambon;if(t)m[t]=(m[t]||0)+1;return m;},{})).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const days=(()=>{const ts=hotspots.map(h=>Date.parse(h.detected_at)).filter(Number.isFinite);return ts.length?Math.max(1,Math.round((Date.now()-Math.min(...ts))/864e5)):null;})();
+  return `<div class="ds-pop">${withTitle?`<p class="ds-kicker">อำเภอ</p><h3 class="ds-title">อ.${esc(distNorm)}</h3>`:''}
+    <div class="ds-stats">
+      <div><b>${recent}</b><span>จุดความร้อน 24 ชม.</span>${distHs.length>recent?`<small>รวม ${distHs.length} จุด${days?` ใน ${days} วัน`:''}</small>`:''}</div>
+      <div><b>${distFs.length}</b><span>ป่าชุมชน</span></div>
+      <div>${pm!==null?`<b>${pm.toFixed(0)}</b><span>ฝุ่น µg/m³</span>${CmeUx.pmChipHtml(pm)}`:`<b class="ds-none">—</b><span>ฝุ่น</span><small>ไม่มีสถานีวัดในอำเภอ</small>`}</div>
     </div>
-    ${correlationNote}
-    ${moreBlock}
-  `;
+    ${tambons.length?`<p class="ds-sub">ตำบลที่มีจุดมาก</p><ol class="ds-tambon">${tambons.map(([t,n])=>`<li><span>ต.${esc(t)}</span><b>${n} จุด</b></li>`).join('')}</ol>`:`<p class="ds-note">ไม่พบจุดความร้อนในอำเภอนี้ช่วงที่แสดง ไม่ได้แปลว่าไม่มีไฟ</p>`}
+    ${distHs.length&&pm!==null&&pm>37.5?'<p class="ds-note">พบทั้งจุดความร้อนและฝุ่นสูง ยังไม่ยืนยันว่าเป็นเหตุเดียวกัน</p>':''}
+    <div class="ds-actions"><button type="button" class="ds-btn" data-open-view="threed">⛰ ดูภูเขา 3D</button><a class="ds-btn ghost" href="tel:1362">📞 1362</a></div>
+  </div>`;
 }
-
 function selectDistrict(nameTh, layer){
   const distNorm = normalizeDistrictName(nameTh);
   layer = layer || districtLayerRef[distNorm];
@@ -4312,22 +4075,14 @@ function selectDistrict(nameTh, layer){
   renderTambonBoundaries();
 
   const center = layer.getBounds().getCenter();
-  const popup = _locationPopup(center,
-    _districtDetailBody(distNorm)); // phaseCard() (or its no-data fallback) already headlines the district name
-
-  // Predictions are lazy-loaded (same guard pattern as renderPredictTab, so
-  // they cooperate safely on the shared globals) — patch the forecast
-  // section in once they arrive, but only if this popup is still open.
-  if(!firePredictions && !firePredictionsPending){
-    firePredictionsPending = true;
-    fetchJson('/api/fire-predictions', 20000).then(d=>{ firePredictions=d; }).catch(()=>{ firePredictions=null; }).finally(()=>{
-      firePredictionsPending=false;
-      renderGuideNotes();
-      if(map.hasLayer(popup)){
-        popup.setContent(_districtDetailBody(distNorm));
-      }
-    });
+  // Short summary people can read on a phone: 3 numbers, top tambons, 3D.
+  // (The old body led with an experimental 0-100 score, removed per D2.)
+  if(isMobileViewport()&&window.CmeHotspotSheet){
+    map.closePopup();
+    CmeHotspotSheet.openPanel({kicker:'อำเภอ',title:'อ.'+distNorm,html:districtSummaryHtml(distNorm),onClose:()=>{}});
+    return;
   }
+  _locationPopup(center, districtSummaryHtml(distNorm,{withTitle:true}));
 }
 
 // Search matched a tambon: shows its real warning data if it's currently
@@ -5401,7 +5156,6 @@ async function renderPredictTab(body){
       <h3 style="margin-bottom:4px">พยากรณ์ล่วงหน้า 3 วัน</h3>
       <div style="font-size:12px;color:var(--dim)">อากาศจาก Open-Meteo และฝุ่นจากแบบจำลอง CAMS ดูเวลาและจุดอ้างอิงประกอบ ยังไม่มีผลคาดการณ์โอกาสเกิดไฟรายป่า</div><p class="evidence-note">รับอากาศจากต้นทาง ${CmeEvidence.escapeHtml(CmeEvidence.stamp(firePredictions.source_retrieved_at?.weather))} · รับฝุ่นแบบจำลอง ${CmeEvidence.escapeHtml(CmeEvidence.stamp(firePredictions.source_retrieved_at?.pm25_model))} · เก็บผลเดิมไม่เกิน 5 นาทีต่ออินสแตนซ์</p>
     </div>
-    <div class="ph-card" style="grid-column:1/-1"><h3>ทดลองแนวลามจากข้อมูลเชื้อเพลิง</h3><p class="evidence-note">แยกจากพยากรณ์อากาศ เลือกป่า ระบุเชื้อเพลิงและลมใกล้เปลวไฟ แล้วดูวงรีตามเงื่อนไขทดลอง ยังไม่ใช่การคาดการณ์ที่สอบเทียบแล้ว</p><button type="button" class="evidence-action" data-open-spread>เปิดเครื่องมือจำลอง</button></div>
     ${weatherHtml}
     ${pmHtml}
     ${spreadHtml}
@@ -6412,26 +6166,7 @@ function loadAnalyticsForecast(){
   evidenceForecastRequest.then(d=>{
     firePredictions=d;
     globalThis.CmeAnalyticsSummary?.renderForecast(document.getElementById('anTop'),d?.weather_forecast);
-    renderEvidenceTimeline();
   }).catch(()=>{evidenceForecastRequest=null;});
-}
-function renderEvidenceTimeline(){
-  const e=CmeEvidence, el=document.getElementById('anEvidenceTimeline');
-  const wholePast=selectedHistory?.hotspots||[];
-  const past=wholePast.slice(-14);
-  const future=firePredictions?.weather_forecast||[];
-  const pastHtml=past.length?`<div class="history-dots" aria-label="จำนวนจุดความร้อนรายวัน">${past.map(d=>`<span title="${e.escapeHtml(d.date)}: ${d.count??'ข้อมูลขาด'}${d.source_requests_complete?'':' · คำขอไม่ครบ'} จุด"><b>${d.count??'—'}</b><small>${bangkokDayLabel(d.date)}</small></span>`).join('')}</div>`:'<p>ยังไม่มีข้อมูลย้อนหลังที่โหลดได้ ไม่สามารถสรุปว่าไม่มีไฟ</p>';
-  const futureHtml=future.length?`<div class="forecast-days">${future.map(d=>`<div><b>${bangkokDayLabel(d.date)}</b><span>อุณหภูมิ ${d.temp_max_c??'—'}°C</span><span>ฝน ${d.rain_mm??'—'} มม.</span><span>ลมสูงสุด ${d.wind_kmh??'—'} กม./ชม.</span></div>`).join('')}</div><p class="evidence-note">พยากรณ์อากาศ Open-Meteo ของพื้นที่อ้างอิงเชียงใหม่ ไม่ใช่จำนวน hotspot หรือขอบเขตไฟในอนาคต · ชุดพยากรณ์ ${e.stamp(firePredictions.generated_at||firePredictions.latest_update)}</p>`:'<p>ยังไม่โหลดพยากรณ์อากาศ <button type="button" class="evidence-action" id="loadEvidenceForecast">ดูพยากรณ์ที่มี</button></p>';
-  el.innerHTML=`<div class="timeline-halves"><div><h4>ย้อนหลัง · แสดง ${past.length} วันท้ายจาก ${wholePast.length} วันในช่วงที่เลือก</h4>${pastHtml}</div><div><h4>พยากรณ์อากาศ · ${future.length} วัน</h4>${futureHtml}</div></div>`;
-  const btn=document.getElementById('loadEvidenceForecast');
-  if(btn) btn.onclick=async()=>{
-    btn.disabled=true;btn.textContent='กำลังโหลด…';
-    try{
-      evidenceForecastRequest ||= fetchJson('/api/fire-predictions',20000);
-      firePredictions=await evidenceForecastRequest;
-      renderEvidenceTimeline();
-    }catch(_){evidenceForecastRequest=null;btn.disabled=false;btn.textContent='โหลดไม่สำเร็จ กดลองอีกครั้ง';}
-  };
 }
 
 // The durable archive is separate from the short-lived live dashboard cache.
@@ -6741,14 +6476,5 @@ CmeCommunity.init({
 <script src="/ux-clarity.js"></script>
 <script src="/ventilation-ui.js"></script>
 <script src="/terrain-ui.js"></script>
-<link rel="stylesheet" href="/spread-workspace.css">
-<script src="/spread-workspace.js"></script>
-<script src="/live-spread.js"></script>
-<script src="/prediction-improvements.js"></script>
-<script src="/priority-validation.js"></script>
-<script src="/grid-spread-workspace.js"></script>
-<script src="/hindcast-workspace.js"></script>
-<link rel="stylesheet" href="/validation-ui.css">
-<script src="/validation-ui.js"></script>
 </body>
 </html>

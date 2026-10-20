@@ -28,22 +28,40 @@ const history = {
   },
 };
 
-it('shows three cards from the received numbers, gaps not filled with zero', () => {
+it('shows the summary and cards from the received numbers, gaps not filled with zero', () => {
   const { dom, w } = setup(); const el = w.document.getElementById('top');
-  w.CmeAnalyticsSummary.render(el, history, { pmKind: 'measured', forecast: [{ date: '2026-10-20', temp_max_c: 32.3, rain_mm: 0, wind_kmh: 6 }] });
-  expect(el.querySelectorAll('.as-card').length).toBe(3);
-  expect(el.querySelector('#asHotT').closest('.as-card').textContent).toContain('32');
-  expect(el.textContent).toContain('มากที่สุด 18 ต.ค. · 10 จุด');
-  expect(el.textContent).toContain('บางวันดาวเทียมส่งข้อมูลไม่ครบ');
-  // Missing day draws a flat marker, not a bar.
-  const rects = [...el.querySelectorAll('#asHotT ~ svg rect')] as any[];
-  expect(rects[2].getAttribute('height')).toBe('2');
-  // PM uses station values only and the PCD 24-h level of the latest full day.
-  const pm = el.querySelector('#asPmT').closest('.as-card').textContent;
-  expect(pm).toContain('40.2'); expect(pm).not.toContain('99'); expect(pm).toContain('เริ่มมีผลต่อสุขภาพ');
+  const h = { ...history, analytics: { ...history.analytics, forests: [{ forest_id: 'cmf-1', count: 3 }, { forest_id: 'cmf-2', count: 0 }] } };
+  w.CmeAnalyticsSummary.render(el, h, { forecast: [{ date: '2026-10-20', temp_max_c: 32.3, rain_mm: 0, wind_kmh: 6 }],
+    forestInfo: (id: string) => (id === 'cmf-1' ? { name: 'ป่าชุมชนบ้านทดสอบ', amphoe: 'ฝาง' } : null), mapDays: 4 });
+  expect(el.querySelectorAll('.as-card').length).toBe(5); // 4 cards + weather
+  // One-line summary built from the data, with the PCD level of the latest full day.
+  const hero = el.querySelector('.as-hero').textContent;
+  expect(hero).toContain('พบจุดความร้อน 32 จุด'); expect(hero).toContain('อ.ฝาง'); expect(hero).toContain('เริ่มมีผลต่อสุขภาพ');
+  const hot = el.querySelector('.as-hot');
+  expect(hot.textContent).toContain('วันที่พบมากที่สุด 18 ต.ค. · 10 จุด');
+  expect(hot.textContent).toContain('ส่งข้อมูลไม่ครบ');
+  // Missing day draws a flat marker, not a bar; replay names the map's real days.
+  expect(hot.querySelectorAll('rect')[2].getAttribute('class')).toBe('as-gap');
+  expect(hot.querySelector('[data-as-action="replay"]').textContent).toContain('4 วัน');
+  // PM uses station values only.
+  const pm = el.querySelector('.as-pm').textContent;
+  expect(pm).toContain('40.2'); expect(pm).not.toContain('99');
   // Districts with zero points are not ranked.
-  expect([...el.querySelectorAll('[data-as-district]')].map((b: any) => b.dataset.asDistrict)).toEqual(['ฝาง', 'แม่แตง']);
+  expect([...el.querySelectorAll('.as-rank [data-as-district]')].map((b: any) => b.dataset.asDistrict)).toEqual(['ฝาง', 'แม่แตง']);
+  // Forests: only those with points, by name, and never called fire.
+  const forest = el.querySelector('.as-forest');
+  expect([...forest.querySelectorAll('[data-as-forest]')].map((b: any) => b.dataset.asForest)).toEqual(['cmf-1']);
+  expect(forest.textContent).toContain('ป่าชุมชนบ้านทดสอบ'); expect(forest.textContent).toContain('ยังไม่ใช่เหตุไฟที่ยืนยันแล้ว');
   expect(el.querySelector('.as-forecast').textContent).toContain('ไม่ใช่การคาดการณ์ไฟ');
+  dom.window.close();
+});
+
+it('says no points is not no fire', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  w.CmeAnalyticsSummary.render(el, { days: 7, analytics: { total: 0, hotspots: [], pm25: [], districts: [], forests: [] } }, {});
+  expect(el.querySelector('.as-hot').textContent).toContain('ไม่ได้แปลว่าไม่มีไฟ');
+  expect(el.querySelector('.as-forest').textContent).toContain('ไม่ได้แปลว่าไม่มีไฟ');
+  expect(el.textContent).not.toContain('ปลอดภัย');
   dom.window.close();
 });
 
