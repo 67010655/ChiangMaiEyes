@@ -105,6 +105,7 @@ describe('hotspot selection with a popup', () => {
       spreadCone: () => ({ km: 2 }), wind: () => ({ deg: 0 }), CRITICAL_FRP_MW: 50,
       CmeEvidence: { confidenceLabel: () => 'nominal', escapeHtml: (s: string) => s },
       CmeCoordination: { html: () => '<section>ใครควรดูแลจุดนี้</section>' },
+      hotspotPopupHtml: (h: any) => `<div class="hs-pop"><b>${h.id}</b></div>`,
       formatAge: () => '20 นาที', animateDetail: vi.fn(), map: { flyTo }, motionDuration: () => 0,
       isMobileViewport: () => true, openMobileDrawer: openDrawer, closeMobileDrawers: closeDrawers,
       toggleBriefDetails: vi.fn(), setTimeout: vi.fn(),
@@ -118,6 +119,8 @@ describe('hotspot selection with a popup', () => {
     const { dom, ctx, openDrawer, closeDrawers, flyTo } = setupSelection();
     runInContext("selectHotspot({id:'real-marker',lat:18.8,lon:98.9,conf:'nominal',detected:20},{fromMarker:true})", ctx);
     expect(dom.window.document.getElementById('detailBody')!.textContent).toContain('real-marker');
+    // The side panel uses the shared hotspot card, not a second template.
+    expect(dom.window.document.querySelector('#detailBody .hs-pop')).not.toBeNull();
     expect(openDrawer).not.toHaveBeenCalled();
     expect(flyTo).not.toHaveBeenCalled();
     expect(closeDrawers).toHaveBeenCalledOnce();

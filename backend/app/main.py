@@ -81,8 +81,6 @@ from app.ventilation_archive import router as ventilation_archive_router
 app.include_router(ventilation_archive_router)
 from app.forest_terrain import router as forest_terrain_router
 app.include_router(forest_terrain_router)
-from app.public_cameras import router as public_cameras_router
-app.include_router(public_cameras_router)
 
 settings = get_settings()
 app.add_middleware(

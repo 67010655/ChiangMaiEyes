@@ -11,13 +11,13 @@
 <!-- Point at the SVG favicon that already ships; without this the browser
      auto-requests /favicon.ico and logs a 404 (no .ico file exists). -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<meta name="description" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศจังหวัดเชียงใหม่ แบบเรียลไทม์: จุดความร้อน (NASA/GISTDA), PM2.5, ทิศทางลม, การลามของไฟ และคะแนนความเสี่ยงหมอกควัน" />
+<meta name="description" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศจังหวัดเชียงใหม่ แบบเรียลไทม์: จุดความร้อน (NASA/GISTDA), PM2.5, ทิศทางลม, การลามของไฟ และป่าชุมชน" />
 <meta name="theme-color" content="#0b0e13" />
 <!-- Open Graph / Twitter — link previews on LINE, Facebook, X, etc. -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="ChiangMaiEyes" />
 <meta property="og:title" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศเชียงใหม่" />
-<meta property="og:description" content="จุดความร้อน PM2.5 ทิศทางลม การลามของไฟ และคะแนนความเสี่ยงหมอกควันจังหวัดเชียงใหม่ แบบเรียลไทม์จาก NASA/GISTDA" />
+<meta property="og:description" content="จุดความร้อน PM2.5 ทิศทางลม การลามของไฟ และป่าชุมชนจังหวัดเชียงใหม่ แบบเรียลไทม์จาก NASA/GISTDA" />
 <meta property="og:url" content="https://chiangmaieyes.vercel.app/" />
 <meta property="og:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
 <meta property="og:image:width" content="1200" />
@@ -25,7 +25,7 @@
 <meta property="og:locale" content="th_TH" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศเชียงใหม่" />
-<meta name="twitter:description" content="จุดความร้อน PM2.5 ทิศทางลม และคะแนนความเสี่ยงหมอกควันเชียงใหม่ แบบเรียลไทม์" />
+<meta name="twitter:description" content="จุดความร้อน PM2.5 ทิศทางลม และป่าชุมชนเชียงใหม่ แบบเรียลไทม์" />
 <meta name="twitter:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1564,16 +1564,7 @@
             <div style="font-size:12px;color:var(--dim);letter-spacing:.1em;margin-bottom:3px">อุณหภูมิ</div>
             <div id="condTemp" style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--txt)">—<small style="font-size:12px;color:var(--muted)">°C</small></div>
           </div>
-          <div style="flex:1 1 100%;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:8px;padding:8px 10px">
-            <div style="font-size:12px;color:var(--dim);letter-spacing:.1em;margin-bottom:4px">คะแนนอากาศเอื้อต่อไฟ (ทดลอง)</div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex:1;height:6px;background:linear-gradient(90deg,#43b05f,#facc15,#ff8a3d,#ff4d4d);border-radius:3px;position:relative">
-                <div id="condFwiPointer" style="position:absolute;top:-3px;width:12px;height:12px;background:#fff;border-radius:50%;border:2px solid #0b0e13;transform:translateX(-50%);left:0%;transition:.4s"></div>
-              </div>
-              <span id="condFwiLabel" style="font-size:12px;font-weight:600;color:var(--muted);min-width:52px;text-align:right">—</span>
-            </div>
-            <div id="condFwiNote" style="font-size:12px;color:var(--dim);margin-top:4px">Open-Meteo · อัปเดตทุก 10 นาที</div>
-          </div>
+          
         </div>
       </div>
 
@@ -1694,29 +1685,7 @@
         <svg class="chart" id="roseChart" height="150" viewBox="0 0 180 150" style="margin:0 auto"></svg>
       </div>
 
-      <div class="block" id="riskScoreBlock" style="display:none">
-        <h2>ความเสี่ยงหมอกควัน</h2>
-        <div id="riskScoreBody" style="display:flex;align-items:center;gap:14px;padding:6px 0">
-          <div id="riskGauge" style="position:relative;width:64px;height:64px;flex:none">
-            <svg viewBox="0 0 64 64" width="64" height="64">
-              <circle cx="32" cy="32" r="26" fill="none" stroke="#1a212b" stroke-width="8"/>
-              <circle id="riskArc" cx="32" cy="32" r="26" fill="none" stroke="#43b05f" stroke-width="8"
-                stroke-dasharray="163.4" stroke-dashoffset="163.4"
-                stroke-linecap="round" transform="rotate(-90 32 32)"
-                style="transition:stroke-dashoffset .6s ease,stroke .6s ease"/>
-            </svg>
-            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1">
-              <span id="riskScore" style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--txt)">—</span>
-              <span style="font-size:12px;color:var(--dim);letter-spacing:.06em">/10</span>
-            </div>
-          </div>
-          <div style="flex:1;min-width:0">
-            <div id="riskCategory" style="font-size:12px;font-weight:600;color:var(--good);margin-bottom:4px">—</div>
-            <div id="riskFactors" style="font-size:12px;color:var(--muted);line-height:1.6"></div>
-          </div>
-        </div>
-        <div id="riskLiveNote" style="display:none;font-size:12px;color:var(--dim);margin-top:4px;letter-spacing:.04em">คำนวณจาก PM2.5 + จุดความร้อน + ลม (ไม่ใช่การเตือนภัยทางการ)</div>
-      </div>
+      
 
       <div class="block">
         <h2>จุดดาวเทียมตามอำเภอ · 24 ชม.</h2>
@@ -1866,7 +1835,6 @@
           <dt>จำนวนจุดความร้อน</dt><dd>นับรายการตรวจพบในช่วงเวลาที่เลือก รวมรายการซ้ำที่พิสูจน์ว่าเป็นการตรวจพบเดียวกันตามแหล่ง เวลา ดาวเทียม และตำแหน่ง หนึ่งจุดยังไม่ใช่หนึ่งเหตุไฟที่คนยืนยัน</dd>
           <dt>ฝุ่นหน้าแรก</dt><dd>เฉลี่ยความเข้มข้นจากสถานีเชียงใหม่ที่ต้นทางมีค่าในชุดนั้น แต่ละสถานีแทนจุดติดตั้ง ไม่ใช่การวัดทุกป่าหรือทุกบ้าน AQI แสดงแยกจาก µg/m³</dd>
           <dt>ภูมิประเทศ</dt><dd>Copernicus GLO-30 เป็นพื้นผิวรวมต้นไม้และอาคาร นำมาทำกริด 30 เมตรใน UTM 47N แล้วคำนวณความชัน Horn 3×3 สรุปพิกเซลที่ศูนย์กลางอยู่ในขอบเขตป่า ค่ากลางของป่าไม่ใช่ความชันที่จุดไฟทุกจุด</dd>
-          <dt>ดัชนีอากาศแห้งทดลอง</dt><dd>ใช้ (100 − ความชื้นสัมพัทธ์)/100 และลดครึ่งเมื่อฝนที่รายงานมากกว่า 1 mm เป็นเกณฑ์ทดลองจากอากาศอ้างอิงร่วม ยังไม่ใช่ปริมาณเชื้อเพลิงหรือโอกาสเกิดไฟรายป่า</dd>
           <dt>พยากรณ์อากาศและฝุ่น</dt><dd>อากาศล่วงหน้าจาก Open-Meteo และฝุ่นจาก CAMS เป็นแบบจำลองตามกริดและจุดอ้างอิง ดูรอบแบบจำลองและเวลาที่ข้อมูลแทน แยกจากค่าตรวจวัดสถานี</dd>
           <dt>การระบายอากาศ</dt><dd>อ่าน HPBL ลมในชั้น PBL และ VRATE ของ NOAA GFS โดยตรง หน่วย m, m/s และ m²/s เป็นคนละระดับกับลม 10 เมตร ไม่ใช้ยืนยันค่าฝุ่นในป่าหรือความปลอดภัย</dd>
           <dt>ไฟจะลามไปไหน</dt><dd>กดจุดความร้อนที่ตรวจพบใน 24 ชั่วโมง แล้วกด “ดูแนวลามทดลอง 6 ชม.” ระบบใช้ลมพยากรณ์รายชั่วโมง ทางลาด และเชื้อเพลิงหญ้าแห้งสมมติ เป็นภาพ “ถ้ายังไหม้และไม่มีการดับ” ยังไม่สอบเทียบกับไฟจริงในเชียงใหม่ ภาพทิศปลายลมบนแผนที่ยังเป็นเพียงภาพประกอบ</dd>
@@ -3114,30 +3082,14 @@ document.querySelector('.layer[data-layer="wind"]').onclick=(function(){
 // ---- Selection / detail ----
 function selectHotspot(h,{fromMarker=false}={}){
   selected=h;
-  const s=spreadCone(h);
   const body=document.getElementById('detailBody');
-  const compass=['N','NE','E','SE','S','SW','W','NW'];
-  const blowTo=(wind().deg+180)%360;
-  
   const title = document.querySelector('#detailBlock h2');
   if (title) title.textContent = 'รายละเอียดจุดดาวเทียม';
-  
   document.getElementById('detailEmpty').style.display='none';
   body.style.display='block';
-  body.innerHTML=`
-    ${CmeCoordination.html(h.lat,h.lon)}
-    <div class="dl"><span class="dk">ID</span><span class="dv">${h.id}</span></div>
-    <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${h.district}</span></div>
-    <div class="dl"><span class="dk">ตำบล</span><span class="dv">${h.subdistrict||h.tambon||'—'}</span></div>
-    <div class="dl"><span class="dk">พิกัด</span><span class="dv">${h.lat.toFixed(3)}, ${h.lon.toFixed(3)}</span></div>
-    <div class="dl"><span class="dk">FRP</span><span class="dv ${(h.frp||0)>=CRITICAL_FRP_MW?'crit':'hot'}">${h.frp==null?'ไม่มีข้อมูล':Math.round(h.frp)+' MW'}</span></div>
-    <div class="dl"><span class="dk">ความเชื่อมั่นต้นทาง</span><span class="dv">${CmeEvidence.confidenceLabel(h.conf)}</span></div>
-    <div class="dl"><span class="dk">แหล่งความเชื่อมั่น</span><span class="dv">${CmeEvidence.escapeHtml(h.confSource||'ต้นทางไม่ระบุ')}</span></div>
-    <div class="dl"><span class="dk">ดาวเทียม</span><span class="dv">${h.sat}</span></div>
-    <div class="dl"><span class="dk">ตรวจพบเมื่อ</span><span class="dv">${formatAge(h.detected)} ก่อน</span></div>
-    <div class="dl"><span class="dk">ทิศปลายลมอ้างอิง</span><span class="dv">→ ${compass[Math.round(blowTo/45)%8]} (${blowTo.toFixed(0)}°)</span></div>
-    <details class="phase-method"><summary>ภาพประกอบปลายลมบนแผนที่</summary>
-    <p class="evidence-note">รูปกรวยยาว ${s.km.toFixed(2)} กม. = ระยะสูงสุดใน 1 ชั่วโมง ถ้าความเร็วอยู่ในช่วงที่เคยวัดในป่าผลัดใบ (เอกสารกรมป่าไม้ หน้า 10) ใช้แสดงทิศตามลม ไม่ใช่ขอบเขตไฟหรือเขตอันตรายที่ยืนยันแล้ว</p></details>`;
+  // M4: the side panel shows the same card as the popup and the phone sheet
+  // (time, what the land is, wind, 1362/directions, spread, details).
+  body.innerHTML=hotspotPopupHtml(h);
   animateDetail();
   // A marker already opens a Leaflet popup. A second drawer/backdrop would
   // cover its close button, and flyTo would override popup auto-pan.
@@ -4614,7 +4566,7 @@ function applyLive(dash, history, phases){
     const fwi=hum!=null&&temp!=null?Math.min(100,Math.round(Math.max(0,100-hum)*.6+Math.max(0,temp-20)*1.5+(weather.wind_speed_kmh||0)*.4)):null;
     liveConditions={humidity:hum,temp:temp,rain:weather.rain_1h_mm,fwi,updated_at:weather.latest_update};
     renderConditions();
-    document.getElementById('condFwiNote').textContent=sourceLabel('weather')+' · '+CmeEvidence.stamp(weather.latest_update)+' · คะแนนทดลอง ไม่ใช่ FWI มาตรฐาน';
+    {const n=document.getElementById('condFwiNote');if(n)n.textContent=sourceLabel('weather')+' · '+CmeEvidence.stamp(weather.latest_update)+' · คะแนนทดลอง ไม่ใช่ FWI มาตรฐาน';}
   }
   if(document.getElementById('reportview').classList.contains('open')) buildReport();
   rerenderAll();
@@ -4664,7 +4616,7 @@ async function fetchWeatherConditions(){
       fwi=Math.min(100,Math.round(dryness*0.6+heat+windBoost));
     }
     liveConditions={humidity:hum,temp:temp,rain:rain,fwi:fwi,updated_at:c.time+'+07:00'};
-    document.getElementById('condFwiNote').textContent='Open-Meteo แบบจำลอง · '+CmeEvidence.stamp(c.time+'+07:00')+' · คะแนนทดลอง ไม่ใช่ FWI มาตรฐาน';
+    {const n=document.getElementById('condFwiNote');if(n)n.textContent='Open-Meteo แบบจำลอง · '+CmeEvidence.stamp(c.time+'+07:00')+' · คะแนนทดลอง ไม่ใช่ FWI มาตรฐาน';}
     renderConditions();
   }catch(e){ /* silent — non-critical */ }
 }
@@ -4860,7 +4812,6 @@ function renderBeforeFire(body){
                onclick="selectTambonSearch('${t.tambon}',[${t.latitude},${t.longitude}],'${t.amphoe}');closeAllOverlays();">
             <div style="display:flex;justify-content:space-between;align-items:baseline">
               <b style="font-size:13px">ต.${t.tambon}</b>
-              <span style="font-family:var(--mono);font-size:12px;color:#facc15">${experimentalScore(t.danger_score)}/100 คะแนนทดลอง</span>
             </div>
             <div style="font-size:12px;color:var(--muted);margin-bottom:6px">อ.${t.amphoe}</div>
             ${(t.reasons||[]).map(r=>`<div style="font-size:12px;color:var(--dim);margin-top:2px">• ${r}</div>`).join('')}
@@ -4894,16 +4845,7 @@ function renderBeforeFire(body){
         <div style="font-size:12px;color:var(--muted);margin-top:2px">พัดจาก${windDir} ไป${_degToCompass(CmeEvidence.windTo(w.deg))}</div>
       </div>
     </div>
-    <div style="margin-top:14px;padding:12px 14px;background:var(--panel-2);border-left:3px solid ${fwiLvl.color};border-radius:0 8px 8px 0">
-      <div style="font-size:12px;color:var(--dim);letter-spacing:.08em;margin-bottom:6px">คะแนนอากาศเอื้อต่อไฟ (ทดลอง) — คำนวณจากความชื้น อุณหภูมิ และลม</div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="flex:1;height:8px;background:linear-gradient(90deg,#43b05f,#facc15,#ff8a3d,#ff4d4d);border-radius:4px;position:relative">
-          <div style="position:absolute;top:-4px;width:16px;height:16px;background:#fff;border-radius:50%;border:2px solid var(--bg);left:${fwi}%;transform:translateX(-50%)"></div>
-        </div>
-        <span style="font-size:18px;font-weight:700;font-family:var(--mono);color:${fwiLvl.color}">${fwi}</span>
-        <span style="font-size:12px;font-weight:600;color:${fwiLvl.color}">${fwiLvl.label}</span>
-      </div>
-    </div>
+    
   </div>
   ${beforeDistricts.length?beforeDistricts.map(p=>phaseCard(p)).join(''):`<div class="ph-card" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--good);font-family:var(--mono);font-size:13px">✓ ไม่มีอำเภอที่เข้าเกณฑ์เฝ้าระวังก่อนไฟขณะนี้</div>`}
   ${tambonWarningCards}`;
@@ -4989,12 +4931,10 @@ function renderAfterFire(body){
     </div>
     ${afterPhases.length?`<h4 style="font-size:12px;color:var(--muted);letter-spacing:.06em;margin-bottom:8px">อำเภอระยะ "หลังไฟ" (กำลังฟื้นตัว)</h4>
     ${afterPhases.map(p=>{
-      const s=experimentalScore(p.danger_score);
       return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line-soft)">
         <div style="width:8px;height:8px;border-radius:50%;background:var(--wind)"></div>
         <div style="flex:1;font-size:12px;color:var(--txt)">${p.district}</div>
         <div style="font-size:12px;color:var(--muted)">${(p.reasons||[]).slice(0,1).join('')}</div>
-        <div style="font-size:12px;font-family:var(--mono);color:var(--wind)">${s}/100</div>
       </div>`;
     }).join('')}`:`<div style="color:var(--good);font-size:13px;text-align:center;padding:16px">✓ ไม่มีอำเภอที่อยู่ในระยะหลังไฟในขณะนี้</div>`}
   </div>
@@ -5046,19 +4986,7 @@ async function renderPredictTab(body){
   const trendIcon=t=>t==='rising'?'📈':t==='falling'?'📉':'➖';
   const trendColor=t=>t==='rising'?'var(--danger)':t==='falling'?'var(--good)':'var(--muted)';
 
-  function forecastCard(f){
-    const days=(f.daily||[]).map(d=>`<div style="text-align:center;flex:1">
-      <div style="font-size:12px;color:var(--dim)">${(d.date||'').slice(5)}</div>
-      <div style="font-size:13px;font-weight:700;color:${trendColor(f.trend)}">${experimentalScore(d.danger_score)}</div>
-    </div>`).join('');
-    return `<div class="ph-card">
-      <h3 style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-        <span>${f.district}</span><span style="font-size:12px">${trendIcon(f.trend)}</span>
-      </h3>
-      <div style="font-size:12px;color:var(--dim);margin-bottom:6px">ดัชนีอากาศแห้งทดลอง /100 ไม่ใช่โอกาสเกิดไฟ</div>
-      <div style="display:flex;gap:4px">${days||'<div style="color:var(--dim);font-size:12px">ไม่มีข้อมูลพยากรณ์</div>'}</div>
-    </div>`;
-  }
+
 
   const spreadHtml=spreadRows.length?`<div class="ph-card" style="grid-column:1/-1">
     <h3 style="margin-bottom:10px">ภาพทดลองการลาม 48/72 ชม. (อำเภอที่พบจุดดาวเทียม)</h3>
@@ -5114,7 +5042,7 @@ async function renderPredictTab(body){
     ${weatherHtml}
     ${pmHtml}
     ${spreadHtml}
-    <div class="ph-card" style="grid-column:1/-1"><h3>ดัชนีอากาศแห้งที่จุดอ้างอิงเชียงใหม่</h3><p class="evidence-note">ใช้พยากรณ์จุดเดียวร่วมกันทุกอำเภอ จึงแสดงครั้งเดียว ไม่ใช่คะแนนเชื้อเพลิงหรือโอกาสเกิดไฟ</p>${forecasts.length?forecastCard({...forecasts[0],district:'จุดอ้างอิงอากาศร่วม'}):'ยังไม่มีข้อมูล'}</div>
+    
     <div class="ph-card" style="grid-column:1/-1">
       ${(firePredictions.notes||[]).map(n=>`<div style="font-size:12px;color:var(--dim);padding:3px 0">⚠️ ${n}</div>`).join('')}
     </div>`;
@@ -5123,7 +5051,6 @@ async function renderPredictTab(body){
 function phaseCard(p, compact){
   const phase=p.phase||'normal';
   const label=p.danger_score==null&&phase==='normal'?'ข้อมูลไม่พอประเมิน':PHASE_LABEL_TH[phase]||phase;
-  const score=experimentalScore(p.danger_score);
   const col=PHASE_COLOR[p.color]||'#ff8a3d';
   const inPath=(p.nearby_forests||[]).filter(f=>f.in_spread_path);
   const safe=(p.nearby_forests||[]).filter(f=>!f.in_spread_path);
@@ -5191,7 +5118,6 @@ function phaseCard(p, compact){
         <dt>เชื้อเพลิงในพื้นที่</dt><dd>ยังไม่มีข้อมูล ไม่ใช้ค่าคงที่รายอำเภอ</dd>
         <dt>ประวัติไฟ</dt><dd>ดูจากคลังย้อนหลัง ไม่รวมเป็นคะแนนติดไฟ</dd>
       </dl>
-      <p class="evidence-note">ค่า 85/100 เมื่อพบจุดดาวเทียมเป็นเกณฑ์จัดลำดับทดลอง ไม่ใช่ความรุนแรงไฟหรือโอกาสเกิดไฟ</p>
     </details>`;
   }
 
@@ -5211,7 +5137,6 @@ function phaseCard(p, compact){
     <span class="ph-badge ${phase}">${label.toUpperCase()}</span>
     <h3>
       <span>${p.district||'—'}</span>
-      <span style="font-family:var(--mono);font-size:12px;color:${col}">${score}/100</span>
     </h3>
     ${(p.reasons||[]).map(r=>`<div style="font-family:var(--mono);font-size:12px;color:var(--muted);padding:2px 0">· ${r}</div>`).join('')}
     ${calcHtml}
