@@ -34,6 +34,7 @@
   const pmToken=v=>U()?.category(v)?.token||'--state-old';
 
   let focusArea=null; // the forest the page is narrowed to, if any
+  let focusDistrict=null; // or the district
   // ---------- small pieces ----------
   // Bars that grow in; each bar carries its own readout for tap/hover.
   function bars(items,{label='',color=()=> 'var(--as-bar)',unit=''}={}){
@@ -77,11 +78,11 @@
       kind:stationDays?'measured':'model',pms:(a.pm25||[]).filter(p=>p.measurement_kind===(Object.keys(st).length?'measured':'model'))};
   }
   function headline(h,a,pm){
-    const top=focusArea?null:(a.districts||[]).find(d=>d.count>0);
+    const top=focusArea||focusDistrict?null:(a.districts||[]).find(d=>d.count>0);
     const parts=[];
-    const where=focusArea?'ในขอบเขตป่านี้':'ในเชียงใหม่';
+    const where=focusArea?'ในขอบเขตป่านี้':focusDistrict?'ในอ.'+focusDistrict:'ในเชียงใหม่';
     if(!a.total)parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา ดาวเทียมไม่พบจุดความร้อน${where}`);
-    else parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา พบจุดความร้อน${focusArea?'ในขอบเขตป่า':''} <b>${esc(Number(a.total).toLocaleString('th-TH'))}</b> จุด${top?` มากที่สุดที่ <b>อ.${esc(top.name)}</b>`:''}`);
+    else parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา พบจุดความร้อน${focusArea?'ในขอบเขตป่า':focusDistrict?'ใน อ.'+esc(focusDistrict):''} <b>${esc(Number(a.total).toLocaleString('th-TH'))}</b> จุด${top?` มากที่สุดที่ <b>อ.${esc(top.name)}</b>`:''}`);
     if(pm.avg!==null){const lv=root.CmePublicGuidance?.pmLevel(pm.avg);if(lv)parts.push(`ฝุ่นเฉลี่ยช่วงนี้ระดับ <b style="color:var(${pmToken(pm.avg)})">${esc(lv.label)}</b>`);}
     return parts.join(' · ');
   }
@@ -124,7 +125,7 @@
     const items=pm.series.map(x=>({v:x.v,label:dayLabel(x.date),model:x.kind==='model',ban:!!inBan(x.date)}));
     const span=h.days===1?'24 ชม.':h.days+' วัน';
     return `<article class="as-card as-pm" aria-labelledby="asPmT">
-      <header class="as-head"><span class="as-ic pm" aria-hidden="true">≋</span><h3 id="asPmT" class="as-k">ฝุ่น PM2.5 ย้อนหลัง ${esc(span)}${focusArea?'<small class="as-scope">ภาพรวมจังหวัด</small>':''}</h3></header>
+      <header class="as-head"><span class="as-ic pm" aria-hidden="true">≋</span><h3 id="asPmT" class="as-k">ฝุ่น PM2.5 ย้อนหลัง ${esc(span)}${focusArea||focusDistrict?'<small class="as-scope">ภาพรวมจังหวัด</small>':''}</h3></header>
       ${pm.avg!==null?`<p class="as-v">${num(pm.avg,1)} <span>µg/m³</span> ${U()?U().pmChipHtml(pm.avg):''}</p>
         <p class="as-sub">เฉลี่ยรายวัน ${esc(pm.fullDays)} วันเต็มในช่วงนี้${pm.modelDays>pm.stationDays?' (ส่วนใหญ่จากแบบจำลอง)':''}${pm.latest?` · ล่าสุด ${esc(fmt1(pm.latest.v))} (${esc(dayLabel(pm.latest.date))})`:''}</p>${levelStrip(pm)}`
         :'<p class="as-v as-empty">ยังไม่มีค่าเฉลี่ยรายวันในช่วงนี้</p>'}
@@ -173,7 +174,7 @@
   }
   function windCard(h,w,err){
     const span=h.days===1?'24 ชม.':h.days+' วัน';
-    const head=`<header class="as-head"><span class="as-ic wind" aria-hidden="true">➶</span><h3 id="asWindT" class="as-k">ลมย้อนหลัง ${esc(span)}${focusArea?'<small class="as-scope">ภาพรวมจังหวัด</small>':''}</h3></header>`;
+    const head=`<header class="as-head"><span class="as-ic wind" aria-hidden="true">➶</span><h3 id="asWindT" class="as-k">ลมย้อนหลัง ${esc(span)}${focusArea||focusDistrict?'<small class="as-scope">ภาพรวมจังหวัด</small>':''}</h3></header>`;
     if(err)return `${head}<p class="as-s">อ่านข้อมูลลมย้อนหลังไม่ได้ตอนนี้</p>`;
     if(!w)return `${head}<div class="as-wind-skel" aria-label="กำลังโหลดลม"></div>`;
     const st=windStats(w);if(!st)return `${head}<p class="as-s">ยังไม่มีข้อมูลลมในช่วงนี้</p>`;
@@ -199,7 +200,7 @@
     const paths=shapes.map(s=>{
       const d=s.rings.map(r=>'M'+r.map(pt=>{const [x,y]=P(pt);return `${((x-minX)*sx).toFixed(1)},${((y-minY)*sx).toFixed(1)}`;}).join('L')+'Z').join('');
       const c=counts[s.name]||0;
-      return `<path d="${d}" fill="${fill(c)}" data-as-district="${esc(s.name)}" tabindex="-1"><title>อ.${esc(s.name)} · ${c} จุด</title></path>`;
+      return `<path d="${d}" fill="${s.dim?'var(--as-map-empty)':fill(c)}" class="${s.dim?'dim':''}" data-as-district="${esc(s.name)}" tabindex="-1"><title>อ.${esc(s.name)}${s.dim?'':' · '+c+' จุด'}</title></path>`;
     }).join('');
     return `<svg class="as-map" viewBox="0 0 ${W} ${H}" role="img" aria-label="แผนที่อำเภอ สีตามจำนวนจุดความร้อน">${paths}</svg>
       <div class="as-map-key" aria-hidden="true"><i style="background:var(--as-map-empty)"></i>ไม่พบ<i style="background:#fbbf24"></i>น้อย<i style="background:#f97316"></i><i style="background:#ef4444"></i>มาก</div>`;
@@ -227,6 +228,18 @@
         ${rows.length>top.length?`<p class="as-note">และอีก ${esc(rows.length-top.length)} ป่า</p>`:''}`
         :'<p class="as-s as-good">ไม่พบจุดความร้อนในขอบเขตป่าชุมชนช่วงนี้</p><p class="as-note">ไม่ได้แปลว่าไม่มีไฟ ดาวเทียมอาจมองไม่เห็นไฟเล็กหรือใต้เรือนยอด</p>'}
       <p class="as-note">นับเฉพาะจุดที่อยู่ในขอบเขตป่า RECOFTC · ยังไม่ใช่เหตุไฟที่ยืนยันแล้ว</p>
+    </article>`;
+  }
+  function districtFocusCard(a,shapes,name){
+    const rows=(a.tambons||[]).filter(t=>t.count>0).slice(0,6), max=Math.max(1,...rows.map(r=>r.count));
+    const counts={[name]:a.total||0};
+    return `<article class="as-card as-dist as-focus" aria-labelledby="asDistT">
+      <header class="as-head"><span class="as-ic dist" aria-hidden="true">⌖</span><h3 id="asDistT" class="as-k">ตำบลใน อ.${esc(name)} ที่มีจุดความร้อน</h3></header>
+      <div class="as-dist-body">${miniMap((shapes||[]).map(x=>({...x,dim:x.name!==name})),counts)}
+      ${rows.length?`<ol class="as-rank">${rows.map((r,i)=>`<li><button type="button" data-as-district="${esc(name)}" aria-label="ต.${esc(r.name)} ${esc(r.count)} จุด">
+        <span class="as-rank-n">${i+1}</span><span class="as-name">ต.${esc(r.name)}</span><span class="as-track"><i style="--w:${(r.count/max*100).toFixed(1)}%"></i></span><b>${esc(r.count)}</b></button></li>`).join('')}</ol>`
+        :'<p class="as-s">ไม่พบจุดที่ระบุตำบลในช่วงนี้</p>'}</div>
+      <p class="as-note">กดเพื่อดูอำเภอนี้บนแผนที่ · ชื่อตำบลในคลังบางจุดประมาณจากตำแหน่ง</p>
     </article>`;
   }
   function forestFocusCard(f,a){
@@ -286,14 +299,17 @@
     if(!a){el.innerHTML='<div class="as-skeleton" role="status" aria-label="กำลังโหลดข้อมูลย้อนหลัง"><i></i><i></i><i></i></div>';return;}
     const pm=pmSeries(a,(a.hotspots||[]).map(d=>d.date)), norm=opts.norm||(s=>String(s||'').replace(/^อำเภอ|^อ\./,'').trim());
     const span=history.days===1?'24 ชั่วโมง':history.days+' วัน';
-    focusArea=opts.forest||null;
-    const tail=focusArea?forestFocusCard(focusArea,a):`${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts)}`;
+    focusArea=opts.forest||null; focusDistrict=focusArea?null:(opts.district||null);
+    const tail=focusArea?forestFocusCard(focusArea,a)
+      :focusDistrict?`${districtFocusCard(a,opts.shapes,focusDistrict)}${forestCard(a,opts)}`
+      :`${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts)}`;
     el.innerHTML=`<h2 class="as-section past"><span class="as-badge">ย้อนหลัง</span>${esc(span)}ที่ผ่านมา · ข้อมูลที่เกิดขึ้นแล้ว</h2>
-      <p class="as-hero">${focusArea?`<b>${esc(focusArea.name||'ป่าชุมชน')}</b> · `:''}${headline(history,a,pm)}</p>
+      <p class="as-hero">${focusArea?`<b>${esc(focusArea.name||'ป่าชุมชน')}</b> · `:focusDistrict?`<b>อ.${esc(focusDistrict)}</b> · `:''}${headline(history,a,pm)}</p>
       ${banStatus()}
       <div class="as-grid">${hotspotCard(history,a,opts)}${pmCard(history,a,pm)}<article class="as-card as-wind" aria-labelledby="asWindT">${windCard(history,null)}</article>${tail}</div>
-      ${forecastHtml(forecast)}`;
-    wire(el);countUp(el);
+      ${forecastHtml(forecast)}
+      ${lineCard((opts.shapes||[]).map(x=>x.name),focusDistrict||String(focusArea?.amphoe||'').replace(/^อำเภอ|^อ\./,'').trim())}`;
+    wire(el);wireLine(el);countUp(el);
     const want=history.days, card=el.querySelector('.as-wind');
     loadWind(want,opts.fetcher||root.fetch?.bind(root)).then(w=>{if(card.isConnected){card.innerHTML=windCard(history,w);countUp(card);}})
       .catch(()=>{if(card.isConnected)card.innerHTML=windCard(history,null,true);});
@@ -329,9 +345,36 @@
       }else pmEl.innerHTML='';
     }
   }
+  // Public dust alerts: no account, just the LINE Official Account.
+  const LINE_OA='@241mevgs';
+  function lineCard(names,selected){
+    if(!names?.length)return '';
+    const list=[...names].sort((a,b)=>a.localeCompare(b,'th'));
+    const pick=selected&&list.includes(selected)?selected:'';
+    return `<section class="as-card as-line" aria-labelledby="asLineT">
+      <header class="as-head"><span class="as-ic line" aria-hidden="true">💬</span><h3 id="asLineT" class="as-k">รับแจ้งเตือนฝุ่นทาง LINE</h3></header>
+      <p class="as-s">แจ้งเมื่อฝุ่นเฉลี่ย 24 ชม. ในอำเภอของคุณถึงระดับ <b style="color:var(--pm-unhealthy)">เริ่มมีผลต่อสุขภาพ</b> ขึ้นไป ไม่ต้องสมัครสมาชิก</p>
+      <div class="as-line-row"><label class="as-line-pick"><span>อำเภอ</span>
+        <select data-line-district aria-label="เลือกอำเภอที่ต้องการรับแจ้งเตือน"><option value="">เลือกอำเภอ</option>${list.map(n=>`<option value="${esc(n)}"${n===pick?' selected':''}>อ.${esc(n)}</option>`).join('')}</select></label>
+        <a class="as-line-go" data-line-go href="${pick?lineHref(pick):'#'}" target="_blank" rel="noopener" aria-disabled="${pick?'false':'true'}">เปิด LINE เพื่อรับแจ้งเตือน</a></div>
+      <ol class="as-line-steps"><li>กดปุ่ม แล้วกดส่งข้อความที่พิมพ์ไว้ให้</li><li>ยังไม่ได้เพิ่มเพื่อน? <a href="https://line.me/R/ti/p/${encodeURIComponent(LINE_OA)}" target="_blank" rel="noopener">เพิ่มเพื่อน ChiangMaiEyes</a> ก่อน</li><li>หยุดเมื่อไรก็ได้ พิมพ์ “หยุด” ในแชท</li></ol>
+      <p class="as-note">ค่าประมาณจากแบบจำลอง CAMS ที่กลางอำเภอ (มีสถานีวัดเฉพาะ อ.เมือง) · ไม่เกินวันละครั้งต่อระดับ · เก็บเพียงรหัสผู้ใช้ LINE กับอำเภอที่เลือก</p>
+    </section>`;
+  }
+  const lineHref=d=>`https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA)}/?${encodeURIComponent('แจ้งเตือนฝุ่น '+d)}`;
+  function wireLine(el){
+    if(el.dataset.lineWired)return;el.dataset.lineWired='1';
+    el.addEventListener('change',e=>{
+      const sel=e.target.closest?.('[data-line-district]');if(!sel)return;
+      const a=el.querySelector('[data-line-go]');
+      a.href=sel.value?lineHref(sel.value):'#';a.setAttribute('aria-disabled',sel.value?'false':'true');
+    });
+    el.addEventListener('click',e=>{const a=e.target.closest?.('[data-line-go]');if(a&&a.getAttribute('aria-disabled')==='true'){e.preventDefault();el.querySelector('[data-line-district]')?.focus();}});
+  }
   function renderForecast(el,forecast){
     if(!el||!el.querySelector('.as-grid'))return;el.querySelector('.as-section.future')?.remove();const old=el.querySelector('.as-forecast');const html=forecastHtml(forecast);
-    if(old)old.outerHTML=html;else if(html)el.insertAdjacentHTML('beforeend',html);
+    const line=el.querySelector('.as-line');
+    if(old)old.outerHTML=html;else if(html){if(line)line.insertAdjacentHTML('beforebegin',html);else el.insertAdjacentHTML('beforeend',html);}
   }
-  root.CmeAnalyticsSummary={render,renderForecast,renderCompare,covered,bars,pmSeries,headline,windStats,loadWind,BURN_BANS,inBan};
+  root.CmeAnalyticsSummary={lineHref,render,renderForecast,renderCompare,covered,bars,pmSeries,headline,windStats,loadWind,BURN_BANS,inBan};
 })(window);

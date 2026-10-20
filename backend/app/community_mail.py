@@ -328,6 +328,11 @@ def run_jobs(store: CommunityStore, dashboard=None, *, source='manual', claimed_
         queued = queue_incident_events(store,now) + queue_environment(store,dashboard,now)
         from app.community_line import process_outbox as process_line
         result = {'queued':queued,**process_outbox(store),**process_line(store)}
+        try:
+            from app.line_dust import run_dust_alerts
+            result.update(run_dust_alerts(store, now))
+        except Exception:
+            log.warning('Public dust alerts did not run')
         finish({'completed_at':datetime.now(timezone.utc).isoformat(),
                 'run_status':'completed','lease_until':None,'summary':result,'last_error':None})
         return result

@@ -190,3 +190,17 @@ body.light-mode .as-cmp.down{color:#15803d}
 .as-ban-status.on::before{filter:none}
 .as-link.ghost{background:var(--panel-2);color:var(--txt);border:1px solid var(--line);box-shadow:none}
 .as-focus{grid-column:auto}
+
+.as-map path.dim{opacity:.55;cursor:default}
+
+/* Public dust alerts on LINE. */
+.as-line{margin-top:14px;--as-accent:linear-gradient(90deg,#06c755,#43b05f)}
+.as-ic.line{background:rgba(6,199,85,.14)}
+.as-line-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin-top:6px}
+.as-line-pick{display:flex;flex-direction:column;gap:4px;flex:1 1 200px;font-size:13px;color:var(--muted)}
+.as-line-pick select{min-height:46px;padding:0 10px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);color:var(--txt);font:500 15px/1.2 var(--font)}
+.as-line-go{flex:1 1 200px;display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border-radius:12px;background:#06c755;color:#fff;font:700 15px/1 var(--font);text-decoration:none;box-shadow:0 6px 16px rgba(6,199,85,.25)}
+.as-line-go[aria-disabled="true"]{background:var(--panel-2);color:var(--muted);box-shadow:none;cursor:not-allowed}
+.as-line-steps{margin:10px 0 4px;padding-left:20px;font-size:14px;line-height:1.7;color:var(--txt)}
+.as-line-steps a{color:#06c755;font-weight:600}
+body.light-mode .as-line-steps a{color:#047a34}

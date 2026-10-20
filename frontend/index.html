@@ -1728,7 +1728,7 @@
 </div>
       <div class="an-area" role="group" aria-labelledby="anAreaLabel">
         <span class="an-area-label" id="anAreaLabel">📍 พื้นที่ที่ดู</span>
-        <select id="anForest" aria-label="เลือกทั้งจังหวัด หรือป่าชุมชน"><option value="">ทั้งจังหวัดเชียงใหม่</option></select>
+        <select id="anForest" aria-label="เลือกทั้งจังหวัด อำเภอ หรือป่าชุมชน"><option value="">ทั้งจังหวัดเชียงใหม่</option></select>
       </div>
       <div id="anTop" class="an-top" aria-live="polite"></div>
       <details class="an-about"><summary>ⓘ ช่วงเวลาและที่มาของตัวเลข</summary><p class="evidence-note" id="anStatus" role="status" aria-live="polite"></p></details>
@@ -3660,7 +3660,7 @@ CmeNavigation.init({
   close:()=>{closeAllOverlays();closeMobileDrawers();},
   views:{
     home:()=>setTimeout(()=>map.invalidateSize(),60),
-    analytics:()=>{analyticsEl.classList.add('open');renderAnalytics(currentRange);},
+    analytics:()=>{analyticsEl.classList.add('open');syncAnalyticsForests();renderAnalytics(currentRange);},
     report:openReport,threed:open3D,
     phase:()=>CmeCommunity.open('incidents'),community:()=>CmeCommunity.open('forest'),
     guide:()=>document.getElementById('guideview').classList.add('open'),
@@ -3719,6 +3719,13 @@ document.querySelectorAll('#anRange button').forEach(b=>{
 });
 
 let selectedHistory=null,analyticsRequest=0;
+// One picker value per area: '' = province, 'd:<district>', 'f:<forest_id>'.
+function analyticsScope(v){
+  v=String(v||'');
+  if(v.startsWith('d:'))return {district:v.slice(2)};
+  if(v.startsWith('f:'))return {forest:v.slice(2)};
+  return v?{forest:v}:{};
+}
 const analyticsCache=new Map();
 const analyticsDays=r=>r==='24h'?1:({ '7d':7,'30d':30,'90d':90,'180d':180 }[r]||7);
 function clearAnalytics(){
@@ -3729,13 +3736,17 @@ async function renderAnalytics(r){
   const days=analyticsDays(r);
   const area=document.getElementById('anForest')?.value||'';
   const key=days+'|'+area;
+  const scope=analyticsScope(area);
   clearAnalytics();globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),null);status.textContent='กำลังอ่านคลังย้อนหลังตามช่วงที่เลือก…';status.setAttribute('role','status');
   try{
     let h=analyticsCache.get(key);
     if(!h||Date.now()-h.received>30000){
       const params=new URLSearchParams({days:String(days)});
-      if(area)params.set('forest_id',area);
+      if(scope.forest)params.set('forest_id',scope.forest);
+      if(scope.district)params.set('district',scope.district);
       let data=await fetchJson('/api/history?'+params,25000);
+      // An older server ignores ?district=; never show province numbers under a district name.
+      if(scope.district&&data?.district!==scope.district)throw new Error('district_unsupported');
       // Dust and weather are province-wide (no stations inside forests); the
       // forest filter would drop them, so take them from the province window.
       if(area&&data?.analytics){
@@ -3751,7 +3762,7 @@ async function renderAnalytics(r){
   }catch(error){
     if(request!==analyticsRequest)return;
     clearAnalytics();status.setAttribute('role','alert');
-    globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),null,{error:'อ่านข้อมูลย้อนหลังไม่ได้ตอนนี้ ลองกดช่วงเวลาอีกครั้ง'});
+    globalThis.CmeAnalyticsSummary?.render(document.getElementById('anTop'),null,{error:error?.message==='district_unsupported'?'ยังกรองรายอำเภอไม่ได้ในตอนนี้ เลือก “ทั้งจังหวัดเชียงใหม่” หรือป่าชุมชนแทน':'อ่านข้อมูลย้อนหลังไม่ได้ตอนนี้ ลองกดช่วงเวลาอีกครั้ง'});
     status.textContent=error?.message==='choose_time'?'เลือกเวลาไทยก่อนใช้โหมดข้อมูลที่ได้รับ ณ เวลานั้น':'อ่านช่วงข้อมูลไม่ได้ โปรดตรวจวันที่และลองอีกครั้ง ระบบจะไม่ใช้จุดปัจจุบันแทนประวัติ';
   }
 }
@@ -3778,7 +3789,8 @@ function analyticsSummaryOptions(){
   return {
     forecast:firePredictions?.weather_forecast,shapes,norm:normalizeDistrictName,
     forestInfo:id=>allForests.find(f=>String(f.forest_id)===String(id)),
-    forest:(()=>{const id=document.getElementById('anForest')?.value;return id?allForests.find(f=>String(f.forest_id)===id)||{forest_id:id,name:'ป่าชุมชน '+id}:null;})(),
+    forest:(()=>{const id=(globalThis.analyticsScope||(()=>({})))(document.getElementById('anForest')?.value).forest;return id?allForests.find(f=>String(f.forest_id)===id)||{forest_id:id,name:'ป่าชุมชน '+id}:null;})(),
+    district:(globalThis.analyticsScope||(()=>({})))(document.getElementById('anForest')?.value).district||null,
     mapDays:w?Math.max(1,Math.round((w.end-w.start)/864e5)):0
   };
 }
@@ -3799,7 +3811,9 @@ async function loadPriorPeriod(h){
     let prior=analyticsPriorCache.get(key);
     if(!prior){
       const params=new URLSearchParams({days:String(h.days),end:h.start});
-      if(area)params.set('forest_id',area);
+      const scope=analyticsScope(area);
+      if(scope.forest)params.set('forest_id',scope.forest);
+      if(scope.district)params.set('district',scope.district);
       prior=await fetchJson('/api/history?'+params,25000);
       if(area&&prior?.analytics){
         const whole=await fetchJson('/api/history?'+new URLSearchParams({days:String(h.days),end:h.start}),25000);
@@ -3813,11 +3827,18 @@ async function loadPriorPeriod(h){
 }
 // Area picker: whole province or one community forest, remembered on this device.
 function syncAnalyticsForests(){
-  const sel=document.getElementById('anForest');if(!sel||!allForests.length||sel.options.length>1)return;
-  let saved='';try{saved=localStorage.getItem('cme.analytics.forest')||'';}catch(_){}
+  const sel=document.getElementById('anForest');if(!sel||!allForests.length)return;
+  const haveDistricts=!!sel.querySelector('optgroup[label="อำเภอ"]'), canDistricts=Object.keys(districtLayerRef||{}).length>0;
+  if(sel.options.length>1&&(haveDistricts||!canDistricts))return;
+  let saved=sel.value||'';try{saved=saved||localStorage.getItem('cme.analytics.forest')||'';}catch(_){}
+  if(saved&&!/^[df]:/.test(saved))saved='f:'+saved;
+  const districts=Object.keys(districtLayerRef||{}).sort((a,b)=>a.localeCompare(b,'th'));
   const rows=[...allForests].filter(f=>f.forest_id).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'th'));
-  sel.replaceChildren(new Option('ทั้งจังหวัดเชียงใหม่',''),...rows.map(f=>new Option(`${f.name||f.forest_id} · อ.${f.amphoe||'—'}`,f.forest_id)));
-  if(saved&&rows.some(f=>String(f.forest_id)===saved))sel.value=saved;
+  const group=(label,opts)=>{const g=document.createElement('optgroup');g.label=label;g.append(...opts);return g;};
+  sel.replaceChildren(new Option('ทั้งจังหวัดเชียงใหม่',''),
+    ...(districts.length?[group('อำเภอ',districts.map(d=>new Option('อ.'+d+' (ทั้งอำเภอ)','d:'+d)))]:[]),
+    group('ป่าชุมชน',rows.map(f=>new Option(`${f.name||f.forest_id} · อ.${f.amphoe||'—'}`,'f:'+f.forest_id))));
+  if(saved&&[...sel.options].some(o=>o.value===saved))sel.value=saved;
   if(sel.value&&document.querySelector('.analytics.open'))renderAnalytics(currentRange);
 }
 document.getElementById('anForest').addEventListener('change',e=>{

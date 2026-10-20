@@ -30,8 +30,9 @@ CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 CODE_PATTERN = re.compile(r'CME-([A-HJ-NP-Z2-9]{8})')
 CODE_MINUTES = 10
 HOTLINE = 'เห็นไฟจริง โทรสายด่วนไฟป่า 1362'
-HELP = ('บัญชีนี้ส่งแจ้งเตือนจุดความร้อนให้ตัวแทนป่าชุมชนเท่านั้น ไม่มีเจ้าหน้าที่ตอบแชท\n'
-        'ผูกบัญชีได้จากหน้า "ป่าของฉัน" → การแจ้งเตือน ใน ChiangMaiEyes\n' + HOTLINE)
+HELP = ('บัญชีนี้ส่งแจ้งเตือนอัตโนมัติ ไม่มีเจ้าหน้าที่ตอบแชท\n'
+        'รับแจ้งเตือนฝุ่น พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ" เช่น "แจ้งเตือนฝุ่น ฝาง" · หยุด พิมพ์ "หยุด"\n'
+        'ตัวแทนป่าชุมชน ผูกบัญชีได้จากหน้า "ป่าของฉัน" → การแจ้งเตือน ใน ChiangMaiEyes\n' + HOTLINE)
 
 
 def enabled(settings) -> bool:
@@ -103,6 +104,8 @@ def handle_event(store: CommunityStore, event: dict) -> str:
         return 'ignored'
     kind, token = event.get('type'), event.get('replyToken')
     if kind == 'unfollow':
+        from app.line_dust import forget
+        forget(store, line_user)  # public dust subscription, if any
         store.call('DELETE', '/rest/v1/cme_line_links', params={'line_user_id': 'eq.' + line_user})
         return 'unlinked'
     if kind == 'follow':
@@ -112,6 +115,12 @@ def handle_event(store: CommunityStore, event: dict) -> str:
     message = event.get('message') or {}
     if kind != 'message' or message.get('type') != 'text':
         return 'ignored'
+    from app.line_dust import handle_text
+    dust = handle_text(store, line_user, str(message.get('text', '')))
+    if dust:
+        if token:
+            reply(store, token, dust)
+        return 'dust'
     match = CODE_PATTERN.search(str(message.get('text', '')).upper())
     if not match:
         if token:

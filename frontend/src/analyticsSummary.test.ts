@@ -160,3 +160,19 @@ it('a chosen forest narrows hotspots and labels dust and wind as province-wide',
   expect([...el.querySelectorAll('.as-scope')].map((x: any) => x.textContent)).toEqual(['ภาพรวมจังหวัด', 'ภาพรวมจังหวัด']);
   dom.window.close();
 });
+
+it('district view narrows the summary and preselects that district for LINE alerts', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const shapes = [{ name: 'ฝาง', rings: [[[99, 19.8], [99.2, 19.8], [99.2, 20], [99, 19.8]]] }, { name: 'แม่อาย', rings: [[[99.2, 20], [99.3, 20], [99.3, 20.1], [99.2, 20]]] }];
+  const h = { days: 7, analytics: { total: 5, hotspots: [], pm25: [], districts: [{ name: 'ฝาง', count: 5 }], forests: [], tambons: [{ name: 'เวียง', count: 3 }, { name: 'ม่อนปิ่น', count: 2 }] } };
+  w.CmeAnalyticsSummary.render(el, h, { district: 'ฝาง', shapes });
+  expect(el.querySelector('.as-hero').textContent).toContain('อ.ฝาง');
+  expect(el.querySelector('.as-hero').textContent).toContain('ใน อ.ฝาง');
+  expect([...el.querySelectorAll('.as-rank .as-name')].map((x: any) => x.textContent)).toEqual(['ต.เวียง', 'ต.ม่อนปิ่น']);
+  expect(el.querySelector('.as-map path.dim')).not.toBeNull();
+  const go = el.querySelector('[data-line-go]');
+  expect(el.querySelector('[data-line-district]').value).toBe('ฝาง');
+  expect(decodeURIComponent(go.getAttribute('href'))).toBe('https://line.me/R/oaMessage/@241mevgs/?แจ้งเตือนฝุ่น ฝาง');
+  expect(el.querySelector('.as-line').textContent).toContain('แบบจำลอง CAMS');
+  dom.window.close();
+});

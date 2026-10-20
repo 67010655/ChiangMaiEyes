@@ -78,3 +78,17 @@ def test_trend_zero_reference_has_no_invented_percentage(monkeypatch):
     monkeypatch.setattr('app.services.get_history',lambda *a,**kw:h)
     s=HotspotResponse(count=99,density_per_100_km2=0,latest_update='2026-10-12T00:00:00Z',source='fixture',items=[])
     assert _hotspot_trend(Settings(cache_dir='.'),s,4).change_percent is None
+
+def test_district_filter_reaches_the_archive_and_is_echoed(monkeypatch):
+    sent={}
+    class Store:
+        def __init__(self,settings): pass
+        def call(self,method,path,json=None):
+            sent.update(json)
+            return {'start':'2026-10-13T00:00:00+07:00','end':'2026-10-20T00:00:00+07:00','as_of':None,'pm25':[],'weather':[],
+                    'hotspots':[],'hour_histogram':[0]*24,'checked_at':'2026-10-20T00:00:00Z','total':0}
+    monkeypatch.setattr('app.archive_history.CommunityStore',Store)
+    r=read_history(Settings(cache_dir='.'),7,district=' ฝาง ')
+    assert sent['p_district']=='ฝาง' and r.district=='ฝาง'
+    sent.clear(); r=read_history(Settings(cache_dir='.'),7)
+    assert 'p_district' not in sent and r.district is None

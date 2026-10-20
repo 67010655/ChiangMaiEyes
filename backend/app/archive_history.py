@@ -21,7 +21,7 @@ def read_history(settings,days=30,*,end=None,as_of=None,forest_id=None,district=
     measured=[DailyMetric(date=x['date'],value=x['value']) for x in r['pm25'] if x['measurement_kind']=='measured']
     model=[DailyMetric(date=x['date'],value=x['value']) for x in r['pm25'] if x['measurement_kind']=='model']
     weather=[WeatherHistoryDay(**x) for x in r['weather'] if x['measurement_kind']=='model' and x['temp_max'] is not None and x['temp_min'] is not None]
-    return HistoryResponse(days=days,start=r['start'],end=r['end'],as_of=r['as_of'],
+    return HistoryResponse(days=days,start=r['start'],end=r['end'],as_of=r['as_of'],district=(district.strip() or None) if district else None,
         hotspots=[HotspotHistoryDay(**x) for x in r['hotspots']],pm25=measured,pm25_model=model,weather=weather,
         hour_histogram=r['hour_histogram'],analytics=r,latest_update=r['checked_at'],
         sources={'hotspots':'คลังจุดดาวเทียมที่ระบบได้รับ','pm25':'สถานีวัด แยกจากแบบจำลอง',

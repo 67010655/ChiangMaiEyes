@@ -119,6 +119,9 @@ class HistoryResponse(BaseModel):
     start: str | None = None
     end: str | None = None
     as_of: str | None = None
+    # District the hotspot numbers were narrowed to (echoed so a client can
+    # tell an older server that ignored the filter from a filtered answer).
+    district: str | None = None
     status: Literal['available','unavailable'] = 'available'
     pm25_model: list[DailyMetric] = Field(default_factory=list)
     analytics: dict = Field(default_factory=dict)
