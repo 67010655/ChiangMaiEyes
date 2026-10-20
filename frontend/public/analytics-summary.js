@@ -24,31 +24,44 @@
         const read=`${it.label} · ${Number.isFinite(it.v)?fmt1(it.v)+(unit?' '+unit:''):'ไม่มีข้อมูล'}`;
         if(!Number.isFinite(it.v))return `<rect class="as-gap" x="${i*w+w*gap}" y="42" width="${w*(1-2*gap)}" height="2" data-read="${esc(read)}"><title>${esc(read)}</title></rect>`;
         const h=Math.max(2,it.v/max*40);
-        return `<rect class="as-bar${it.hi?' hi':''}" style="--i:${(i*Math.min(1,30/n)).toFixed(1)}" x="${i*w+w*gap}" y="${44-h}" width="${w*(1-2*gap)}" height="${h}" rx="0.8" fill="${color(it,i)}" data-read="${esc(read)}"><title>${esc(read)}</title></rect>`;
+        return `<rect class="as-bar${it.hi?' hi':''}${it.model?' model':''}" style="--i:${(i*Math.min(1,30/n)).toFixed(1)}" x="${i*w+w*gap}" y="${44-h}" width="${w*(1-2*gap)}" height="${h}" rx="0.8" fill="${color(it,i)}" data-read="${esc(read)}"><title>${esc(read)}</title></rect>`;
       }).join('')+`</svg><p class="as-readout" aria-live="polite"></p>`;
   }
-  function axis(labels){
+  function axis(labels,dates){
     if(!labels.length)return '';
+    if(dates&&dates[dates.length-1]===todayBkk())labels=[...labels.slice(0,-1),'วันนี้'];
     const pick=labels.length<=2?labels:[labels[0],labels[Math.floor((labels.length-1)/2)],labels[labels.length-1]];
     return `<div class="as-axis">${pick.map(l=>`<span>${esc(l)}</span>`).join('')}</div>`;
   }
   const num=(v,d=0)=>`<b class="as-num" data-count-to="${Number(v)}" data-dec="${d}">${esc(d?fmt1(v):Number(v).toLocaleString('th-TH'))}</b>`;
 
   // ---------- data shaping ----------
-  function pmSeries(a){
-    let kind='measured', pms=(a.pm25||[]).filter(p=>p.measurement_kind==='measured');
-    if(!pms.length){kind='model';pms=(a.pm25||[]).filter(p=>p.measurement_kind==='model');}
-    pms=[...pms].sort((x,y)=>x.date<y.date?-1:1);
-    // PCD levels are defined on 24-hour averages: use the latest full day, not today's partial.
-    const full=pms.filter(p=>p.date<todayBkk());
-    return {kind,pms,latest:full[full.length-1]||null,peak:pms.reduce((m,p)=>!m||p.value>m.value?p:m,null)};
+  // One value per day: the station mean when there is one, otherwise the CAMS
+  // model value for that day (kept apart and drawn faded). The range average
+  // and the count of days per PCD level follow the chosen range.
+  function pmSeries(a,dates=[]){
+    const of=k=>Object.fromEntries((a.pm25||[]).filter(p=>p.measurement_kind===k).map(p=>[p.date,p.value]));
+    const st=of('measured'), md=of('model');
+    const days=(dates.length?dates:[...new Set((a.pm25||[]).map(p=>p.date))].sort());
+    const series=days.map(d=>Number.isFinite(st[d])?{date:d,v:st[d],kind:'measured'}:Number.isFinite(md[d])?{date:d,v:md[d],kind:'model'}:{date:d,v:null,kind:null});
+    const have=series.filter(x=>Number.isFinite(x.v));
+    const full=have.filter(x=>x.date<todayBkk());
+    const avg=full.length?full.reduce((t,x)=>t+x.v,0)/full.length:null;
+    const levels=(root.CmePublicGuidance?.PM_LEVELS||[]).map((l,i)=>({label:l.label,token:['--pm-very-good','--pm-good','--pm-moderate','--pm-unhealthy','--pm-hazardous'][i],n:0}));
+    full.forEach(x=>{const lv=root.CmePublicGuidance?.pmLevel(x.v);const L=levels.find(l=>l.label===lv?.label);if(L)L.n++;});
+    const stationDays=full.filter(x=>x.kind==='measured').length;
+    return {series,avg,fullDays:full.length,levels,stationDays,modelDays:full.length-stationDays,
+      latest:[...full].reverse().find(x=>x.kind==='measured')||full[full.length-1]||null,
+      peak:full.reduce((m,x)=>!m||x.v>m.v?x:m,null),
+      // kept for callers and tests that read the station rows
+      kind:stationDays?'measured':'model',pms:(a.pm25||[]).filter(p=>p.measurement_kind===(Object.keys(st).length?'measured':'model'))};
   }
   function headline(h,a,pm){
     const top=(a.districts||[]).find(d=>d.count>0);
     const parts=[];
     if(!a.total)parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา ดาวเทียมไม่พบจุดความร้อนในเชียงใหม่`);
     else parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา พบจุดความร้อน <b>${esc(Number(a.total).toLocaleString('th-TH'))}</b> จุด${top?` มากที่สุดที่ <b>อ.${esc(top.name)}</b>`:''}`);
-    if(pm.latest){const lv=root.CmePublicGuidance?.pmLevel(pm.latest.value);if(lv)parts.push(`ฝุ่นล่าสุดอยู่ระดับ <b style="color:var(${pmToken(pm.latest.value)})">${esc(lv.label)}</b>`);}
+    if(pm.avg!==null){const lv=root.CmePublicGuidance?.pmLevel(pm.avg);if(lv)parts.push(`ฝุ่นเฉลี่ยช่วงนี้ระดับ <b style="color:var(${pmToken(pm.avg)})">${esc(lv.label)}</b>`);}
     return parts.join(' · ');
   }
 
@@ -72,37 +85,80 @@
     return `<article class="as-card as-hot" aria-labelledby="asHotT">
       <header class="as-head"><span class="as-ic hot" aria-hidden="true"><span class="hs-dot-pin age-new"></span></span><h3 id="asHotT" class="as-k">${title}</h3></header>
       <p class="as-v">${num(a.total)} <span>จุด</span></p>
-      ${bars(items,{label:title,unit:'จุด',color:it=>it.hi?'#ef4444':it.gap?'#94a3b8':'#f59e0b'})}${axis(labels)}
+      ${bars(items,{label:title,unit:'จุด',color:it=>it.hi?'#ef4444':it.gap?'#94a3b8':'#f59e0b'})}${axis(labels,h.days===1?null:days.map(d=>d.date))}
       <p class="as-s">${!a.total?'ไม่พบจุด ไม่ได้แปลว่าไม่มีไฟ':peak?`วันที่พบมากที่สุด <b>${esc(dayLabel(peak.date))}</b> · ${esc(peak.count)} จุด`:''}</p>
       ${incomplete?'<p class="as-note">แท่งสีเทา = วันที่ดาวเทียมส่งข้อมูลไม่ครบ</p>':''}
       ${mapDays?`<button type="button" class="as-link" data-as-action="replay">▶ ย้อนดู ${esc(mapDays)} วันล่าสุดบนแผนที่</button>`:''}
     </article>`;
   }
 
-  function gauge(v){
-    // PCD 24-h bands 0-15-25-37.5-75-(cap 100 for drawing only).
-    const stops=[15,25,37.5,75,100], tokens=['--pm-very-good','--pm-good','--pm-moderate','--pm-unhealthy','--pm-hazardous'];
-    let prev=0;const seg=stops.map((s,i)=>{const w=(s-prev);prev=s;return `<i style="flex:${w};background:var(${tokens[i]})"></i>`;}).join('');
-    const pos=Math.min(100,Math.max(0,v));
-    return `<div class="as-gauge" aria-hidden="true"><div class="as-gauge-bar">${seg}</div><span class="as-gauge-pin" style="left:${pos}%"></span></div>
-      <div class="as-gauge-scale" aria-hidden="true"><span>0</span><span style="left:15%">15</span><span style="left:25%">25</span><span style="left:37.5%">37.5</span><span style="left:75%">75</span></div>`;
+  function levelStrip(pm){
+    const total=pm.levels.reduce((t,l)=>t+l.n,0);if(!total)return '';
+    return `<div class="as-levels" role="img" aria-label="${esc(pm.levels.filter(l=>l.n).map(l=>l.label+' '+l.n+' วัน').join(' · '))}">
+      <div class="as-levels-bar">${pm.levels.filter(l=>l.n).map(l=>`<i style="flex:${l.n};background:var(${l.token})"></i>`).join('')}</div>
+      <ul>${pm.levels.filter(l=>l.n).map(l=>`<li><i style="background:var(${l.token})"></i>${esc(l.label)} <b>${esc(l.n)}</b> วัน</li>`).join('')}</ul></div>`;
   }
   function pmCard(h,a,pm){
-    const dates=(a.hotspots||[]).map(d=>d.date);
-    const byDate=Object.fromEntries(pm.pms.map(p=>[p.date,p.value]));
-    const src=dates.length?dates:pm.pms.map(p=>p.date);
-    const items=src.map(d=>({v:byDate[d],label:dayLabel(d)}));
-    const lv=pm.latest?root.CmePublicGuidance?.pmLevel(pm.latest.value):null;
+    const items=pm.series.map(x=>({v:x.v,label:dayLabel(x.date),model:x.kind==='model'}));
+    const span=h.days===1?'24 ชม.':h.days+' วัน';
     return `<article class="as-card as-pm" aria-labelledby="asPmT">
-      <header class="as-head"><span class="as-ic pm" aria-hidden="true">≋</span><h3 id="asPmT" class="as-k">ฝุ่น PM2.5 รายวัน${pm.kind==='model'?' · แบบจำลอง':''}</h3></header>
-      ${pm.latest?`<p class="as-v">${num(pm.latest.value,1)} <span>µg/m³</span> ${U()?U().pmChipHtml(pm.latest.value):''}</p>
-        <p class="as-sub">เฉลี่ย 24 ชม. วันที่ ${esc(dayLabel(pm.latest.date))}${lv?` · ${esc(lv.short)}`:''}</p>${gauge(pm.latest.value)}`
-        :'<p class="as-v as-empty">ยังไม่มีค่าเฉลี่ยรายวัน</p>'}
-      ${bars(items,{label:'ฝุ่น PM2.5 รายวัน',unit:'µg/m³',color:it=>`var(${pmToken(it.v)})`})}${axis(items.map(i=>i.label))}
-      <p class="as-s">${pm.peak?`สูงสุด <b>${esc(fmt1(pm.peak.value))}</b> µg/m³ วันที่ ${esc(dayLabel(pm.peak.date))}`:''}</p>
-      ${(()=>{const have=items.filter(i=>Number.isFinite(i.v)).length;return items.length>2&&have<items.length*.8?`<p class="as-note">มีค่าฝุ่น ${esc(have)} จาก ${esc(items.length)} วันในช่วงนี้ ค่าสูงสุดนับเฉพาะวันที่มีค่า</p>`:'';})()}
-      <p class="as-note">${pm.kind==='model'?'ช่วงนี้ไม่มีค่าสถานีวัด ใช้แบบจำลอง CAMS แทน · ':''}สีตามเกณฑ์กรมควบคุมมลพิษ</p>
+      <header class="as-head"><span class="as-ic pm" aria-hidden="true">≋</span><h3 id="asPmT" class="as-k">ฝุ่น PM2.5 ย้อนหลัง ${esc(span)}</h3></header>
+      ${pm.avg!==null?`<p class="as-v">${num(pm.avg,1)} <span>µg/m³</span> ${U()?U().pmChipHtml(pm.avg):''}</p>
+        <p class="as-sub">เฉลี่ยรายวัน ${esc(pm.fullDays)} วันเต็มในช่วงนี้${pm.modelDays>pm.stationDays?' (ส่วนใหญ่จากแบบจำลอง)':''}${pm.latest?` · ล่าสุด ${esc(fmt1(pm.latest.v))} (${esc(dayLabel(pm.latest.date))})`:''}</p>${levelStrip(pm)}`
+        :'<p class="as-v as-empty">ยังไม่มีค่าเฉลี่ยรายวันในช่วงนี้</p>'}
+      ${bars(items,{label:'ฝุ่น PM2.5 รายวัน',unit:'µg/m³',color:it=>`var(${pmToken(it.v)})`})}${axis(items.map(i=>i.label),pm.series.map(x=>x.date))}
+      <p class="as-s">${pm.peak?`วันที่ฝุ่นสูงสุด <b>${esc(dayLabel(pm.peak.date))}</b> · ${esc(fmt1(pm.peak.v))} µg/m³`:''}</p>
+      <p class="as-note">${pm.modelDays?`แท่งจาง = แบบจำลอง CAMS (${esc(pm.modelDays)} วันที่ไม่มีค่าสถานี) · `:''}สีตามเกณฑ์ค่าเฉลี่ย 24 ชม. กรมควบคุมมลพิษ</p>
     </article>`;
+  }
+
+  // ---------- wind over the chosen range ----------
+  // Hourly 10 m wind at the city reference point from Open-Meteo (the same
+  // provider as the map's streamlines); ERA5 archive beyond 92 days.
+  const REF={lat:18.79,lon:98.98}, windCache=new Map();
+  const DIR8=['เหนือ','ตะวันออกเฉียงเหนือ','ตะวันออก','ตะวันออกเฉียงใต้','ใต้','ตะวันตกเฉียงใต้','ตะวันตก','ตะวันตกเฉียงเหนือ'];
+  function loadWind(days,fetcher=root.fetch?.bind(root)){
+    const key=String(days);if(windCache.has(key))return windCache.get(key);
+    if(typeof fetcher!=='function')return Promise.reject(new Error('no fetch'));
+    const q=`latitude=${REF.lat}&longitude=${REF.lon}&hourly=wind_speed_10m,wind_direction_10m&timezone=Asia%2FBangkok`;
+    let url,source;
+    if(days<=92){url=`https://api.open-meteo.com/v1/forecast?${q}&past_days=${Math.max(1,days)}&forecast_days=0`;source='Open-Meteo';}
+    else{const end=new Date(Date.now()-6*864e5),start=new Date(end-days*864e5),d=x=>x.toISOString().slice(0,10);
+      url=`https://archive-api.open-meteo.com/v1/archive?${q}&start_date=${d(start)}&end_date=${d(end)}`;source='Open-Meteo ERA5';}
+    const pr=fetcher(url).then(r=>{if(!r.ok)throw Error('wind '+r.status);return r.json();}).then(j=>{
+      const sp=j.hourly?.wind_speed_10m||[],dr=j.hourly?.wind_direction_10m||[],t=j.hourly?.time||[];
+      const hours=sp.map((v,i)=>({spd:v,dir:dr[i],t:t[i]})).filter(x=>Number.isFinite(x.spd)&&Number.isFinite(x.dir));
+      return {hours,source,first:hours[0]?.t,last:hours[hours.length-1]?.t};
+    });
+    pr.catch(()=>windCache.delete(key));windCache.set(key,pr);return pr;
+  }
+  function windStats(w){
+    const n=w.hours.length;if(!n)return null;
+    const bins=new Array(8).fill(0);let sum=0,calm=0;
+    w.hours.forEach(x=>{sum+=x.spd;if(x.spd<5){calm++;return;}bins[Math.round(((x.dir+180)%360)/45)%8]++;}); // "blows toward"
+    const moving=n-calm, top=bins.indexOf(Math.max(...bins));
+    return {n,avg:sum/n,calmPct:calm/n*100,bins,moving,top,topPct:moving?bins[top]/moving*100:0};
+  }
+  function rose(st){
+    const max=Math.max(1,...st.bins);
+    const petals=st.bins.map((c,i)=>{const r=10+c/max*36,a=(i*45-90)*Math.PI/180,w=0.33;
+      const p=(ang,rad)=>`${(50+Math.cos(ang)*rad).toFixed(1)},${(50+Math.sin(ang)*rad).toFixed(1)}`;
+      return `<path class="as-petal${i===st.top&&c?' top':''}" style="--i:${i}" d="M50,50 L${p(a-w,r)} A${r},${r} 0 0 1 ${p(a+w,r)} Z"><title>พัดไปทาง${DIR8[i]} ${(st.moving?c/st.moving*100:0).toFixed(0)}%</title></path>`;}).join('');
+    return `<svg class="as-rose" viewBox="0 0 100 100" role="img" aria-label="ทิศที่ลมพัดไป">
+      <circle cx="50" cy="50" r="46" class="as-rose-ring"/><circle cx="50" cy="50" r="28" class="as-rose-ring"/>${petals}
+      <text x="50" y="8" class="as-rose-n">N</text><circle cx="50" cy="50" r="9" class="as-rose-hub"/></svg>`;
+  }
+  function windCard(h,w,err){
+    const span=h.days===1?'24 ชม.':h.days+' วัน';
+    const head=`<header class="as-head"><span class="as-ic wind" aria-hidden="true">➶</span><h3 id="asWindT" class="as-k">ลมย้อนหลัง ${esc(span)}</h3></header>`;
+    if(err)return `${head}<p class="as-s">อ่านข้อมูลลมย้อนหลังไม่ได้ตอนนี้</p>`;
+    if(!w)return `${head}<div class="as-wind-skel" aria-label="กำลังโหลดลม"></div>`;
+    const st=windStats(w);if(!st)return `${head}<p class="as-s">ยังไม่มีข้อมูลลมในช่วงนี้</p>`;
+    return `${head}<div class="as-wind-body">${rose(st)}<div>
+        <p class="as-v">${num(st.avg,1)} <span>กม./ชม. เฉลี่ย</span></p>
+        <p class="as-s">${st.moving?`ส่วนใหญ่ลมพัดไปทาง<b>${esc(DIR8[st.top])}</b> (${esc(st.topPct.toFixed(0))}% ของเวลาที่มีลม)`:'ลมเบามากเกือบตลอดช่วง'}</p>
+        <p class="as-sub">ลมเบามาก (ต่ำกว่า 5 กม./ชม.) ${esc(st.calmPct.toFixed(0))}% ของเวลา</p></div></div>
+      <p class="as-note">ไฟมักลามตามทิศที่ลมพัดไป · ${esc(w.source)} ลม 10 เมตร รายชั่วโมง ${esc(st.n.toLocaleString('th-TH'))} ชม. ที่จุดอ้างอิงเมืองเชียงใหม่ ไม่ใช่ลมในป่าแต่ละแห่ง</p>`;
   }
 
   // District choropleth from the map's own district outlines.
@@ -158,8 +214,9 @@
   }
   function forecastHtml(list){
     if(!list?.length)return '';
-    return `<section class="as-card as-forecast" aria-labelledby="asFcT">
-      <header class="as-head"><span class="as-ic wx" aria-hidden="true">☁</span><h3 id="asFcT" class="as-k">อากาศ ${esc(list.length)} วันข้างหน้า</h3></header>
+    return `<h2 class="as-section future"><span class="as-badge">พยากรณ์</span>ข้างหน้า ${esc(list.length)} วัน</h2>
+    <section class="as-card as-forecast" aria-labelledby="asFcT">
+      <header class="as-head"><span class="as-ic wx" aria-hidden="true">☁</span><h3 id="asFcT" class="as-k">อากาศที่คาดว่าจะเกิด</h3></header>
       <ul>${list.map(d=>`<li><span class="as-wx" aria-hidden="true">${wxIcon(d)}</span><b>${esc(weekday(d.date))} ${esc(dayLabel(d.date))}</b>
         <span class="as-temp">${Number.isFinite(d.temp_max_c)?esc(Math.round(d.temp_max_c))+'°':'—'}<small>${Number.isFinite(d.temp_min_c)?' / '+esc(Math.round(d.temp_min_c))+'°':''}</small></span>
         <span>${Number.isFinite(d.rain_mm)?(d.rain_mm<0.5?'ไม่มีฝน':'ฝน '+esc(fmt1(d.rain_mm))+' มม.'):'ฝน —'}</span>
@@ -194,15 +251,20 @@
     if(error){el.innerHTML=`<p class="as-error" role="alert">${esc(error)}</p>`;return;}
     const a=history?.analytics;
     if(!a){el.innerHTML='<div class="as-skeleton" role="status" aria-label="กำลังโหลดข้อมูลย้อนหลัง"><i></i><i></i><i></i></div>';return;}
-    const pm=pmSeries(a), norm=opts.norm||(s=>String(s||'').replace(/^อำเภอ|^อ\./,'').trim());
-    el.innerHTML=`<p class="as-hero">${headline(history,a,pm)}</p>
-      <div class="as-grid">${hotspotCard(history,a,opts)}${pmCard(history,a,pm)}${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts)}</div>
+    const pm=pmSeries(a,(a.hotspots||[]).map(d=>d.date)), norm=opts.norm||(s=>String(s||'').replace(/^อำเภอ|^อ\./,'').trim());
+    const span=history.days===1?'24 ชั่วโมง':history.days+' วัน';
+    el.innerHTML=`<h2 class="as-section past"><span class="as-badge">ย้อนหลัง</span>${esc(span)}ที่ผ่านมา · ข้อมูลที่เกิดขึ้นแล้ว</h2>
+      <p class="as-hero">${headline(history,a,pm)}</p>
+      <div class="as-grid">${hotspotCard(history,a,opts)}${pmCard(history,a,pm)}<article class="as-card as-wind" aria-labelledby="asWindT">${windCard(history,null)}</article>${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts)}</div>
       ${forecastHtml(forecast)}`;
     wire(el);countUp(el);
+    const want=history.days, card=el.querySelector('.as-wind');
+    loadWind(want,opts.fetcher||root.fetch?.bind(root)).then(w=>{if(card.isConnected){card.innerHTML=windCard(history,w);countUp(card);}})
+      .catch(()=>{if(card.isConnected)card.innerHTML=windCard(history,null,true);});
   }
   function renderForecast(el,forecast){
-    if(!el||!el.querySelector('.as-grid'))return;const old=el.querySelector('.as-forecast');const html=forecastHtml(forecast);
+    if(!el||!el.querySelector('.as-grid'))return;el.querySelector('.as-section.future')?.remove();const old=el.querySelector('.as-forecast');const html=forecastHtml(forecast);
     if(old)old.outerHTML=html;else if(html)el.insertAdjacentHTML('beforeend',html);
   }
-  root.CmeAnalyticsSummary={render,renderForecast,bars,pmSeries,headline};
+  root.CmeAnalyticsSummary={render,renderForecast,bars,pmSeries,headline,windStats,loadWind};
 })(window);

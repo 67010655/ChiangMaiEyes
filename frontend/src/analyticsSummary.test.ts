@@ -33,10 +33,10 @@ it('shows the summary and cards from the received numbers, gaps not filled with 
   const h = { ...history, analytics: { ...history.analytics, forests: [{ forest_id: 'cmf-1', count: 3 }, { forest_id: 'cmf-2', count: 0 }] } };
   w.CmeAnalyticsSummary.render(el, h, { forecast: [{ date: '2026-10-20', temp_max_c: 32.3, rain_mm: 0, wind_kmh: 6 }],
     forestInfo: (id: string) => (id === 'cmf-1' ? { name: 'ป่าชุมชนบ้านทดสอบ', amphoe: 'ฝาง' } : null), mapDays: 4 });
-  expect(el.querySelectorAll('.as-card').length).toBe(5); // 4 cards + weather
+  expect(el.querySelectorAll('.as-card').length).toBe(6); // 5 past cards (incl. wind) + weather
   // One-line summary built from the data, with the PCD level of the latest full day.
   const hero = el.querySelector('.as-hero').textContent;
-  expect(hero).toContain('พบจุดความร้อน 32 จุด'); expect(hero).toContain('อ.ฝาง'); expect(hero).toContain('เริ่มมีผลต่อสุขภาพ');
+  expect(hero).toContain('พบจุดความร้อน 32 จุด'); expect(hero).toContain('อ.ฝาง'); expect(hero).toContain('ฝุ่นเฉลี่ยช่วงนี้ระดับ ปานกลาง'); // (16.5 + 40.2) / 2 full days
   const hot = el.querySelector('.as-hot');
   expect(hot.textContent).toContain('วันที่พบมากที่สุด 18 ต.ค. · 10 จุด');
   expect(hot.textContent).toContain('ส่งข้อมูลไม่ครบ');
@@ -45,7 +45,10 @@ it('shows the summary and cards from the received numbers, gaps not filled with 
   expect(hot.querySelector('[data-as-action="replay"]').textContent).toContain('4 วัน');
   // PM uses station values only.
   const pm = el.querySelector('.as-pm').textContent;
-  expect(pm).toContain('40.2'); expect(pm).not.toContain('99');
+  expect(pm).toContain('28.4'); expect(pm).toContain('ล่าสุด 40.2'); expect(pm).not.toContain('99');
+  // Past and future are labelled apart.
+  expect(el.querySelector('.as-section.past').textContent).toContain('ย้อนหลัง');
+  expect(el.querySelector('.as-section.future').textContent).toContain('พยากรณ์');
   // Districts with zero points are not ranked.
   expect([...el.querySelectorAll('.as-rank [data-as-district]')].map((b: any) => b.dataset.asDistrict)).toEqual(['ฝาง', 'แม่แตง']);
   // Forests: only those with points, by name, and never called fire.
@@ -53,6 +56,33 @@ it('shows the summary and cards from the received numbers, gaps not filled with 
   expect([...forest.querySelectorAll('[data-as-forest]')].map((b: any) => b.dataset.asForest)).toEqual(['cmf-1']);
   expect(forest.textContent).toContain('ป่าชุมชนบ้านทดสอบ'); expect(forest.textContent).toContain('ยังไม่ใช่เหตุไฟที่ยืนยันแล้ว');
   expect(el.querySelector('.as-forecast').textContent).toContain('ไม่ใช่การคาดการณ์ไฟ');
+  dom.window.close();
+});
+
+it('fills a day with no station value from the model, kept apart and counted', () => {
+  const { dom, w } = setup();
+  const S = w.CmeAnalyticsSummary;
+  const a = { pm25: [
+    { date: '2026-09-01', value: 30, samples: 1, measurement_kind: 'model' },
+    { date: '2026-09-02', value: 12, samples: 24, measurement_kind: 'measured' },
+    { date: '2026-09-02', value: 50, samples: 24, measurement_kind: 'model' },
+  ] };
+  const pm = S.pmSeries(a, ['2026-09-01', '2026-09-02', '2026-09-03']);
+  expect(pm.series.map((x: any) => [x.v, x.kind])).toEqual([[30, 'model'], [12, 'measured'], [null, null]]);
+  expect(pm.stationDays).toBe(1); expect(pm.modelDays).toBe(1); expect(pm.avg).toBe(21);
+  expect(pm.levels.find((l: any) => l.label === 'ดีมาก').n).toBe(1);
+  expect(pm.levels.find((l: any) => l.label === 'ปานกลาง').n).toBe(1);
+  dom.window.close();
+});
+
+it('summarises wind as where it blows to, with calm hours apart', () => {
+  const { dom, w } = setup();
+  // wind FROM the north-east (45 deg) blows TOWARD the south-west
+  const hours = [...Array(6)].map(() => ({ spd: 10, dir: 45 })).concat([{ spd: 2, dir: 270 }, { spd: 3, dir: 90 }]);
+  const st = w.CmeAnalyticsSummary.windStats({ hours });
+  expect(st.top).toBe(5); // index 5 = ตะวันตกเฉียงใต้
+  expect(Math.round(st.calmPct)).toBe(25);
+  expect(st.avg).toBeCloseTo((60 + 5) / 8, 5);
   dom.window.close();
 });
 
