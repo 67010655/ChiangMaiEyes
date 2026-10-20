@@ -33,7 +33,7 @@ it('shows the summary and cards from the received numbers, gaps not filled with 
   const h = { ...history, analytics: { ...history.analytics, forests: [{ forest_id: 'cmf-1', count: 3 }, { forest_id: 'cmf-2', count: 0 }] } };
   w.CmeAnalyticsSummary.render(el, h, { forecast: [{ date: '2026-10-20', temp_max_c: 32.3, rain_mm: 0, wind_kmh: 6 }],
     forestInfo: (id: string) => (id === 'cmf-1' ? { name: 'ป่าชุมชนบ้านทดสอบ', amphoe: 'ฝาง' } : null), mapDays: 4 });
-  expect(el.querySelectorAll('.as-card').length).toBe(6); // 5 past cards (incl. wind) + weather
+  expect(el.querySelectorAll('.as-card').length).toBe(8); // 5 past cards + fire weather, outlook, weather
   // One-line summary built from the data, with the PCD level of the latest full day.
   const hero = el.querySelector('.as-hero').textContent;
   expect(hero).toContain('พบจุดความร้อน 32 จุด'); expect(hero).toContain('อ.ฝาง'); expect(hero).toContain('ฝุ่นเฉลี่ยช่วงนี้ระดับ ปานกลาง'); // (16.5 + 40.2) / 2 full days

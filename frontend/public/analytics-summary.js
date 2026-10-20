@@ -260,9 +260,8 @@
   }
   function forecastHtml(list){
     if(!list?.length)return '';
-    return `<h2 class="as-section future"><span class="as-badge">พยากรณ์</span>ข้างหน้า ${esc(list.length)} วัน</h2>
-    <section class="as-card as-forecast" aria-labelledby="asFcT">
-      <header class="as-head"><span class="as-ic wx" aria-hidden="true">☁</span><h3 id="asFcT" class="as-k">อากาศที่คาดว่าจะเกิด</h3></header>
+    return `<section class="as-card as-forecast" aria-labelledby="asFcT">
+      <header class="as-head"><span class="as-ic wx" aria-hidden="true">☁</span><h3 id="asFcT" class="as-k">อากาศ ${esc(list.length)} วันข้างหน้า</h3></header>
       <ul>${list.map(d=>`<li><span class="as-wx" aria-hidden="true">${wxIcon(d)}</span><b>${esc(weekday(d.date))} ${esc(dayLabel(d.date))}</b>
         <span class="as-temp">${Number.isFinite(d.temp_max_c)?esc(Math.round(d.temp_max_c))+'°':'—'}<small>${Number.isFinite(d.temp_min_c)?' / '+esc(Math.round(d.temp_min_c))+'°':''}</small></span>
         <span>${Number.isFinite(d.rain_mm)?(d.rain_mm<0.5?'ไม่มีฝน':'ฝน '+esc(fmt1(d.rain_mm))+' มม.'):'ฝน —'}</span>
@@ -307,9 +306,15 @@
       <p class="as-hero">${focusArea?`<b>${esc(focusArea.name||'ป่าชุมชน')}</b> · `:focusDistrict?`<b>อ.${esc(focusDistrict)}</b> · `:''}${headline(history,a,pm)}</p>
       ${banStatus()}
       <div class="as-grid">${hotspotCard(history,a,opts)}${pmCard(history,a,pm)}<article class="as-card as-wind" aria-labelledby="asWindT">${windCard(history,null)}</article>${tail}</div>
-      ${forecastHtml(forecast)}
+      <h2 class="as-section future"><span class="as-badge">พยากรณ์</span>ข้างหน้า · สิ่งที่คาดว่าจะเกิด ยังไม่เกิดขึ้น</h2>
+      <div class="as-future">
+        <section class="as-card as-fwi" aria-labelledby="asFwiT"><header class="as-head"><span class="as-ic fwi" aria-hidden="true">🔥</span><h3 id="asFwiT" class="as-k">อากาศเอื้อต่อไฟแค่ไหน · 16 วันข้างหน้า${focusDistrict?` · อ.${esc(focusDistrict)}`:focusArea?.amphoe?` · อ.${esc(String(focusArea.amphoe).replace(/^อำเภอ|^อ\./,'').trim())}`:''}</h3></header><div class="fw-body"><div class="as-wind-skel" aria-label="กำลังคำนวณ"></div></div></section>
+        <section class="as-card as-outlook" aria-labelledby="asOutT"><header class="as-head"><span class="as-ic wx" aria-hidden="true">📅</span><h3 id="asOutT" class="as-k">แนวโน้ม 4 สัปดาห์ · ฝนและอุณหภูมิเทียบกับปกติ</h3></header><div class="fw-body"><div class="as-wind-skel" aria-label="กำลังโหลด"></div></div></section>
+        ${forecastHtml(forecast)}
+      </div>
       ${lineCard((opts.shapes||[]).map(x=>x.name),focusDistrict||String(focusArea?.amphoe||'').replace(/^อำเภอ|^อ\./,'').trim())}`;
     wire(el);wireLine(el);countUp(el);
+    loadFuture(el,history,opts);
     const want=history.days, card=el.querySelector('.as-wind');
     loadWind(want,opts.fetcher||root.fetch?.bind(root)).then(w=>{if(card.isConnected){card.innerHTML=windCard(history,w);countUp(card);}})
       .catch(()=>{if(card.isConnected)card.innerHTML=windCard(history,null,true);});
@@ -374,10 +379,32 @@
     });
     el.addEventListener('click',e=>{const a=e.target.closest?.('[data-line-go]');if(a&&a.getAttribute('aria-disabled')==='true'){e.preventDefault();el.querySelector('[data-line-district]')?.focus();}});
   }
+  // Centre of each district outline (largest ring), for the fire-weather points.
+  function centre(rings){
+    const area=r=>{let a=0;for(let i=0,j=r.length-1;i<r.length;j=i++)a+=r[j][0]*r[i][1]-r[i][0]*r[j][1];return a/2;};
+    const r=[...rings].sort((x,y)=>Math.abs(area(y))-Math.abs(area(x)))[0];if(!r)return null;
+    let a=0,cx=0,cy=0;for(let i=0,j=r.length-1;i<r.length;j=i++){const f=r[j][0]*r[i][1]-r[i][0]*r[j][1];a+=f;cx+=(r[j][0]+r[i][0])*f;cy+=(r[j][1]+r[i][1])*f;}
+    return a?{lon:cx/(3*a),lat:cy/(3*a)}:null;
+  }
+  function loadFuture(el,history,opts){
+    const F=root.CmeFireWeather;if(!F)return;
+    const fwiBox=el.querySelector('.as-fwi .fw-body'), outBox=el.querySelector('.as-outlook .fw-body');
+    const points=(opts.shapes||[]).map(x=>({name:x.name,...(centre(x.rings)||{})})).filter(p=>Number.isFinite(p.lat));
+    const focus=focusDistrict||(focusArea?.amphoe?String(focusArea.amphoe).replace(/^อำเภอ|^อ\./,'').trim():null);
+    const fetcher=opts.fetcher||root.fetch?.bind(root);
+    if(points.length&&fetcher)F.loadDistricts(points,fetcher).then(data=>{
+      if(!fwiBox.isConnected)return;
+      fwiBox.innerHTML=F.fwiCard(data,{focus:focus&&points.some(p=>p.name===focus)?focus:null,hot:focusArea||focusDistrict?[]:(history.analytics?.hotspots||[])});
+    }).catch(()=>{if(fwiBox.isConnected)fwiBox.innerHTML='<p class="as-s">ยังคำนวณดัชนีไม่ได้ตอนนี้ ลองใหม่ภายหลัง</p>';});
+    else fwiBox.innerHTML='<p class="as-s">ยังคำนวณดัชนีไม่ได้ตอนนี้</p>';
+    if(fetcher)F.loadOutlook(18.79,98.98,fetcher).then(w=>{if(outBox.isConnected)outBox.innerHTML=F.outlookCard(w);})
+      .catch(()=>{if(outBox.isConnected)outBox.innerHTML='<p class="as-s">โหลดแนวโน้มรายสัปดาห์ไม่ได้ตอนนี้</p>';});
+    else outBox.innerHTML='';
+  }
   function renderForecast(el,forecast){
-    if(!el||!el.querySelector('.as-grid'))return;el.querySelector('.as-section.future')?.remove();const old=el.querySelector('.as-forecast');const html=forecastHtml(forecast);
-    const line=el.querySelector('.as-line');
-    if(old)old.outerHTML=html;else if(html){if(line)line.insertAdjacentHTML('beforebegin',html);else el.insertAdjacentHTML('beforeend',html);}
+    const box=el?.querySelector('.as-future');if(!box)return;
+    const old=box.querySelector('.as-forecast');const html=forecastHtml(forecast);
+    if(old)old.outerHTML=html;else if(html)box.insertAdjacentHTML('beforeend',html);
   }
   root.CmeAnalyticsSummary={lineHref,render,renderForecast,renderCompare,covered,bars,pmSeries,headline,windStats,loadWind,BURN_BANS,inBan};
 })(window);
