@@ -161,7 +161,7 @@ it('a chosen forest narrows hotspots and labels dust and wind as province-wide',
   dom.window.close();
 });
 
-it('district view narrows the summary; LINE dust sign-up stays hidden while paused', () => {
+it('district view narrows the summary; LINE sign-up waits for live sensor coverage', () => {
   const { dom, w } = setup(); const el = w.document.getElementById('top');
   const shapes = [{ name: 'ฝาง', rings: [[[99, 19.8], [99.2, 19.8], [99.2, 20], [99, 19.8]]] }, { name: 'แม่อาย', rings: [[[99.2, 20], [99.3, 20], [99.3, 20.1], [99.2, 20]]] }];
   const h = { days: 7, analytics: { total: 5, hotspots: [], pm25: [], districts: [{ name: 'ฝาง', count: 5 }], forests: [], tambons: [{ name: 'เวียง', count: 3 }, { name: 'ม่อนปิ่น', count: 2 }] } };
@@ -170,8 +170,23 @@ it('district view narrows the summary; LINE dust sign-up stays hidden while paus
   expect(el.querySelector('.as-hero').textContent).toContain('ใน อ.ฝาง');
   expect([...el.querySelectorAll('.as-rank .as-name')].map((x: any) => x.textContent)).toEqual(['ต.เวียง', 'ต.ม่อนปิ่น']);
   expect(el.querySelector('.as-map path.dim')).not.toBeNull();
-  // LINE dust alerts are paused until districts have real stations: no sign-up card.
+  // No coverage answer (no fetch here) means no sign-up card.
   expect(el.querySelector('.as-line')).toBeNull();
   expect(decodeURIComponent(w.CmeAnalyticsSummary.lineHref('ฝาง'))).toBe('https://line.me/R/oaMessage/@241mevgs/?แจ้งเตือนฝุ่น ฝาง');
+  dom.window.close();
+});
+
+it('LINE sign-up lists only districts with enough live sensors', async () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const h = { days: 7, analytics: { total: 0, hotspots: [], pm25: [], districts: [], forests: [], tambons: [] } };
+  const fetcher = async (url: string) => url === '/api/dust-alerts/coverage'
+    ? { ok: true, json: async () => ({ enabled: true, min_sensors: 2, districts: { 'หางดง': 4, 'ฮอด': 2, 'ฝาง': 1 } }) }
+    : { ok: false, json: async () => ({}) };
+  w.CmeAnalyticsSummary.render(el, h, { district: 'ฝาง', shapes: [], fetcher });
+  await new Promise(r => setTimeout(r, 20));
+  const opts = [...el.querySelectorAll('[data-line-district] option')].map((x: any) => x.value).filter(Boolean);
+  expect(opts.sort()).toEqual(['ฮอด', 'หางดง'].sort());
+  expect(el.querySelector('.as-line').textContent).toContain('อ.ฝาง ยังมีเซนเซอร์ที่ส่งข้อมูลไม่ถึง 2 จุด');
+  expect(el.querySelector('.as-line').textContent).toContain('World Air Quality Index Project');
   dom.window.close();
 });

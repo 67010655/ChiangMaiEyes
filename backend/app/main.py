@@ -67,6 +67,23 @@ def read_ventilation(response:Response,background_tasks:BackgroundTasks,lead_hou
     response.headers['Cache-Control']='public, max-age=0, s-maxage=600, stale-while-revalidate=60' if result['status']!='unavailable' else 'public, max-age=0, s-maxage=60'
     return public_frame(result)
 
+_dust_cov:dict={}
+@app.get('/api/dust-alerts/coverage')
+def read_dust_alert_coverage(response:Response,settings:Settings=Depends(get_settings)):
+    """Which districts can take LINE dust alerts: sensor counts only, never readings (WAQI terms)."""
+    from app import line_dust
+    import time
+    out={'enabled':bool(settings.line_dust_alerts_enabled and settings.aqicn_token),'min_sensors':line_dust.MIN_SENSORS,'districts':{}}
+    if out['enabled']:
+        hit=_dust_cov.get('v')
+        if hit and time.time()-hit[0]<600:out['districts']=hit[1]
+        else:
+            try:
+                out['districts']=line_dust.coverage(settings.aqicn_token);_dust_cov['v']=(time.time(),out['districts'])
+            except Exception:out['status']='unavailable'
+    response.headers['Cache-Control']='public, max-age=0, s-maxage=600, stale-while-revalidate=60'
+    return out
+
 from app.community import router as community_router
 app.include_router(community_router)
 from app.land_context import router as land_context_router

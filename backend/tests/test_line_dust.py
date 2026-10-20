@@ -115,3 +115,18 @@ def test_subscribing_needs_enough_sensors_and_stop_always_works():
     assert 'หยุด' in d.handle_text(paused, UID, 'หยุด') and paused.calls[-1][0] == 'DELETE'
     paused.calls.clear(); d.forget(paused, UID)
     assert {c[1] for c in paused.calls} == {'/rest/v1/cme_line_dust_subs', '/rest/v1/cme_line_dust_sent'}
+
+
+def test_coverage_endpoint_sends_counts_only(monkeypatch):
+    from fastapi.testclient import TestClient
+    from app import main
+    from app.config import get_settings
+    s = Settings(cache_dir='.', aqicn_token='k', line_dust_alerts_enabled=True)
+    main.app.dependency_overrides[get_settings] = lambda: s
+    main._dust_cov.clear()
+    monkeypatch.setattr(d, 'coverage', lambda token: {'ฝาง': 3})
+    try:
+        body = TestClient(main.app).get('/api/dust-alerts/coverage').json()
+    finally:
+        main.app.dependency_overrides.clear()
+    assert body == {'enabled': True, 'min_sensors': 2, 'districts': {'ฝาง': 3}}

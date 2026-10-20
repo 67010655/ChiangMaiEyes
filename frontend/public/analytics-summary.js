@@ -312,8 +312,9 @@
         <section class="as-card as-outlook" aria-labelledby="asOutT"><header class="as-head"><span class="as-ic wx" aria-hidden="true">📅</span><h3 id="asOutT" class="as-k">แนวโน้ม 4 สัปดาห์ · ฝนและอุณหภูมิเทียบกับปกติ</h3></header><div class="fw-body"><div class="as-wind-skel" aria-label="กำลังโหลด"></div></div></section>
         ${forecastHtml(forecast)}
       </div>
-      ${lineCard((opts.shapes||[]).map(x=>x.name),focusDistrict||String(focusArea?.amphoe||'').replace(/^อำเภอ|^อ\./,'').trim())}`;
+      <div data-line-slot></div>`;
     wire(el);wireLine(el);countUp(el);
+    fillLine(el,focusDistrict||String(focusArea?.amphoe||'').replace(/^อำเภอ|^อ\./,'').trim(),opts.fetcher||root.fetch?.bind(root));
     loadFuture(el,history,opts);
     const want=history.days, card=el.querySelector('.as-wind');
     loadWind(want,opts.fetcher||root.fetch?.bind(root)).then(w=>{if(card.isConnected){card.innerHTML=windCard(history,w);countUp(card);}})
@@ -352,16 +353,35 @@
   }
   // Public dust alerts: no account, just the LINE Official Account.
   const LINE_OA='@241mevgs';
-  // Paused: district values would come only from the CAMS model (real PM2.5
-  // stations exist only in Mueang). Re-open once districts have real stations.
-  const DUST_ALERTS_OPEN=false;
-  function lineCard(names,selected){
-    if(!DUST_ALERTS_OPEN||!names?.length)return '';
+  // Open only for districts where at least two live WAQI sensors report now;
+  // the backend sends counts only, never readings.
+  let coverageP=null,coverageAt=0;
+  function loadCoverage(fetcher){
+    if(coverageP&&Date.now()-coverageAt<600000)return coverageP;
+    if(typeof fetcher!=='function')return Promise.reject(new Error('no fetch'));
+    coverageAt=Date.now();
+    coverageP=fetcher('/api/dust-alerts/coverage').then(r=>{if(!r.ok)throw Error('coverage '+r.status);return r.json();});
+    coverageP.catch(()=>{coverageP=null;});
+    return coverageP;
+  }
+  function fillLine(el,selected,fetcher){
+    const slot=el.querySelector('[data-line-slot]');if(!slot)return;
+    loadCoverage(fetcher).then(c=>{
+      if(!slot.isConnected||!c?.enabled)return;
+      const min=c.min_sensors||2;
+      const ok=Object.entries(c.districts||{}).filter(([,n])=>n>=min).map(([d])=>d);
+      slot.outerHTML=lineCard(ok,selected,min);
+    }).catch(()=>{});
+  }
+  function lineCard(names,selected,min=2){
+    if(!names?.length)return '';
     const list=[...names].sort((a,b)=>a.localeCompare(b,'th'));
     const pick=selected&&list.includes(selected)?selected:'';
+    const missing=selected&&!pick?`<p class="as-s">อ.${esc(selected)} ยังมีเซนเซอร์ที่ส่งข้อมูลไม่ถึง ${min} จุด จึงยังรับแจ้งเตือนไม่ได้</p>`:'';
     return `<section class="as-card as-line" aria-labelledby="asLineT">
       <header class="as-head"><span class="as-ic line" aria-hidden="true">💬</span><h3 id="asLineT" class="as-k">รับแจ้งเตือนฝุ่นทาง LINE</h3></header>
       <p class="as-s">แจ้งเมื่อเซนเซอร์วัดฝุ่นในอำเภอของคุณวัดดัชนี AQI ของ PM2.5 ได้ระดับ <b style="color:var(--pm-unhealthy)">เริ่มมีผลต่อกลุ่มเสี่ยง</b> (101) ขึ้นไป ต่อเนื่องอย่างน้อย 1 ชม. ไม่ต้องสมัครสมาชิก</p>
+      ${missing}<p class="as-s">ตอนนี้เปิดให้ ${list.length} อำเภอที่มีเซนเซอร์ส่งข้อมูลอย่างน้อย ${min} จุด</p>
       <div class="as-line-row"><label class="as-line-pick"><span>อำเภอ</span>
         <select data-line-district aria-label="เลือกอำเภอที่ต้องการรับแจ้งเตือน"><option value="">เลือกอำเภอ</option>${list.map(n=>`<option value="${esc(n)}"${n===pick?' selected':''}>อ.${esc(n)}</option>`).join('')}</select></label>
         <a class="as-line-go" data-line-go href="${pick?lineHref(pick):'#'}" target="_blank" rel="noopener" aria-disabled="${pick?'false':'true'}">เปิด LINE เพื่อรับแจ้งเตือน</a></div>
@@ -406,5 +426,5 @@
     const old=box.querySelector('.as-forecast');const html=forecastHtml(forecast);
     if(old)old.outerHTML=html;else if(html)box.insertAdjacentHTML('beforeend',html);
   }
-  root.CmeAnalyticsSummary={lineHref,render,renderForecast,renderCompare,covered,bars,pmSeries,headline,windStats,loadWind,BURN_BANS,inBan};
+  root.CmeAnalyticsSummary={lineHref,lineCard,render,renderForecast,renderCompare,covered,bars,pmSeries,headline,windStats,loadWind,BURN_BANS,inBan};
 })(window);
