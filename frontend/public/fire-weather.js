@@ -156,7 +156,10 @@
     const peak=ahead.reduce((m,d)=>!m||d.fwi>m.fwi?d:m,null);
     const now=daily.find(d=>d.date===t)||daily.filter(d=>d.date<=t).pop();
     const nc=classOf(now?.fwi), pc=classOf(peak?.fwi);
-    return `<p class="as-v">${Number.isFinite(now?.fwi)?`<b class="as-num">${esc(now.fwi.toFixed(0))}</b> <span class="fw-chip" style="--c:${CLASSES[nc].color}">${esc(CLASSES[nc].label)}</span>`:'<b>—</b>'}<span>วันนี้${focus?'':' (ค่ากลางของอำเภอ)'}</span></p>
+    // Ring fills to the share of the scale up to "สูงมาก" (50); higher values show a full ring.
+    const off=Number.isFinite(now?.fwi)?(100-Math.min(100,now.fwi/50*100)).toFixed(1):'100';
+    return `<div class="fw-now">${Number.isFinite(now?.fwi)?`<div class="fw-ring" style="--c:${CLASSES[nc].color};--off:${off}" role="img" aria-label="FWI วันนี้ ${esc(now.fwi.toFixed(0))} ระดับ${esc(CLASSES[nc].label)}"><svg viewBox="0 0 76 76" aria-hidden="true"><circle class="track" cx="38" cy="38" r="30" pathLength="100"/><circle class="val" cx="38" cy="38" r="30" pathLength="100"/></svg><b>${esc(now.fwi.toFixed(0))}</b></div>`:''}
+      <p class="as-v">${Number.isFinite(now?.fwi)?`<span class="fw-chip" style="--c:${CLASSES[nc].color}">${esc(CLASSES[nc].label)}</span>`:'<b>—</b>'}<span>วันนี้${focus?'':' (ค่ากลางของอำเภอ)'}</span></p></div>
       ${peak?`<p class="as-s">16 วันข้างหน้า สูงสุดวันที่ <b>${esc(dLabel(peak.date))}</b> ระดับ <b style="color:${CLASSES[pc].color}">${esc(CLASSES[pc].label)}</b>${!focus&&peak.high?` · ${esc(peak.high)} จาก ${esc(peak.of)} อำเภอระดับสูงขึ้นไป`:''}</p>`:''}
       <svg class="as-bars fw-bars" viewBox="0 0 100 44" preserveAspectRatio="none" role="img" aria-label="ดัชนีอากาศเอื้อต่อไฟรายวัน 14 วันที่ผ่านมาและ 16 วันข้างหน้า">${bars}${split}</svg><p class="as-readout" aria-live="polite"></p>
       <div class="as-axis"><span>${esc(dLabel(view[0].date))}</span><span class="fw-axis-now">◀ ผ่านมา · วันนี้ · ข้างหน้า ▶</span><span>${esc(dLabel(view[n-1].date))}</span></div>

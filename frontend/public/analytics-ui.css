@@ -204,3 +204,7 @@ body.light-mode .as-cmp.down{color:#15803d}
 .as-line-steps{margin:10px 0 4px;padding-left:20px;font-size:14px;line-height:1.7;color:var(--txt)}
 .as-line-steps a{color:#06c755;font-weight:600}
 body.light-mode .as-line-steps a{color:#047a34}
+
+/* Sticky header was 70% see-through: content scrolled under it read as clutter. */
+.analytics .an-head{background:rgba(13,18,24,.95)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+body.light-mode .analytics .an-head{background:#f0f5f1!important}
