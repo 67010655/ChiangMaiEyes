@@ -1608,6 +1608,7 @@
 <div class="map-view-actions" aria-label="มุมมองสถานการณ์" hidden><span>แผนที่ 2D</span></div>
       <div id="map" role="application" aria-label="แผนที่จุดความร้อน คุณภาพอากาศ และทิศทางลมจังหวัดเชียงใหม่ (โต้ตอบได้)"></div>
       <div class="map-time-note" title="กดหมุดเพื่อดูเวลา จุดความร้อนยังไม่ยืนยันว่าไฟกำลังไหม้"><span class="legend-item"><span class="hs-dot-pin age-new"></span>ไม่เกิน 6 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-old"></span>เก่ากว่า</span></div>
+      <div id="hsReplay" class="hs-replay" hidden></div>
       <div class="map-overlay basemap-toggle">
         <button class="active" data-base="dark">สีเข้ม</button>
         <button data-base="osm">ถนน</button>
@@ -2059,6 +2060,7 @@
 <script src="/navigation-ui.js"></script>
 <script src="/ux-foundation.js"></script>
 <script src="/hotspot-sheet.js"></script>
+<script src="/hotspot-replay.js"></script>
 <script>
 /* ============================================================
    ChiangMaiEyes — live data rendering
@@ -2552,8 +2554,11 @@ function hotspotAgeClass(h,now=Date.now()){
 }
 function renderHotspots(){
   layers.hotspots.clearLayers();
-  hotspots.forEach(h=>{
-    const age=hotspotAgeClass(h);
+  // Replay (▶): only points seen by that moment, aged relative to it.
+  const replayAt=window.CmeHotspotReplay?.current()??null;
+  const items=replayAt===null?hotspots:CmeHotspotReplay.visibleAt(hotspots,replayAt);
+  items.forEach(h=>{
+    const age=hotspotAgeClass(h,replayAt??Date.now());
     const icon = L.divIcon({
       html:`<span class="hs-dot-pin age-${age}" aria-hidden="true"></span>`,
       // Finger-sized hit area around a small dot, geographic centre unchanged.
@@ -2585,7 +2590,11 @@ function renderHotspots(){
     layers.hotspots.addLayer(m);
   });
   document.getElementById('lcHot').textContent=hotspots.length;
+  window.CmeHotspotReplay?.refresh();
 }
+window.CmeHotspotReplay?.init({mountId:'hsReplay',getItems:()=>hotspots,onFrame:()=>{
+  window.CmeHotspotSheet?.close();map.closePopup();renderHotspots();
+}});
 
 // ---- ภาพประกอบทิศปลายลม cones (signature element) ----
 // Cone points DOWNWIND (wind FROM 'deg' → blows TO deg+180)
@@ -2623,6 +2632,13 @@ function renderSpread(){
 
 // ---- Wind velocity layer (leaflet-velocity + Open-Meteo spatial 3×3 grid) ----
 let velLayer = null;
+// leaflet-velocity schedules a move/draw on a timer or animation frame; if the
+// layer is replaced in that gap (theme switch, fresh wind data) the callback
+// runs with no map and throws. Skip it once the layer is off the map.
+if(L.CanvasLayer)['_onLayerDidMove','drawLayer'].forEach(k=>{
+  const f=L.CanvasLayer.prototype[k];
+  if(f)L.CanvasLayer.prototype[k]=function(...a){if(!this._map){this._frame=null;return this;}return f.apply(this,a);};
+});
 let _windCacheMs = 0, _windCacheField = null;
 let _windGridSamples = [];
 

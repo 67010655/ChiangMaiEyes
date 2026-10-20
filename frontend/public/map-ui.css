@@ -75,3 +75,26 @@ body.light-mode .hs-dot-pin{box-shadow:0 0 0 2px rgba(255,255,255,.9)}
 .hs-copy{margin-left:4px;min-height:32px;padding:2px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--txt);font:500 12px/1.4 var(--font);cursor:pointer}
 .hs-copy[data-copied]{color:var(--good,#43b05f)}
 body.hs-sheet-open .map-locate-group,body.hs-sheet-open .map-time-note{visibility:hidden}
+
+/* Hotspot replay (phase 4): a small button above the legend; while showing
+   the past, a bar with play/pause, a time slider and a clear "past" note. */
+.hs-replay{position:absolute;left:12px;bottom:58px;z-index:560;font-family:var(--font)}
+.hs-replay[hidden],.hs-replay [hidden]{display:none!important}
+.hs-replay-start{min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--txt);font:600 13px/1 var(--font);cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.hs-replay-start:hover{border-color:var(--wind,#38bdf8)}
+.hs-replay-bar{width:min(360px,calc(100vw - 24px));padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--txt);box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.hs-replay-note{margin:0 0 6px;font-size:12px;font-weight:600;color:#f59e0b}
+body.light-mode .hs-replay-note{color:#b45309}
+.hs-replay-row{display:flex;align-items:center;gap:8px}
+.hs-replay-play,.hs-replay-close{flex:none;width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--txt);font-size:15px;cursor:pointer}
+.hs-replay-play{background:#dc2626;border-color:#dc2626;color:#fff}
+.hs-replay-slider{flex:1;min-width:0;accent-color:#ef4444;height:44px}
+.hs-replay-when{margin:4px 0 0;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.hs-replay-when strong{color:var(--txt);font-weight:600}
+/* The live legend says "6 hours ago" relative to now; hide it while replaying. */
+body.hs-replaying .map-time-note{opacity:.35}
+@media(max-width:820px), (max-width:980px) and (max-height:500px){
+  .hs-replay{left:8px;bottom:100px}
+  .hs-replay-bar{width:calc(100vw - 16px)}
+  body.hs-sheet-open .hs-replay{visibility:hidden}
+}
