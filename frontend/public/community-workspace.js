@@ -77,7 +77,8 @@
   }
   function tabs(){
     if(!state.session)return '';
-    const entries=[['forest','ป่าของฉัน'],['incidents','ติดตามเหตุ'],['preferences','การแจ้งเตือน'],['practice','ซ้อมใช้งาน']];
+    const entries=[['forest','ป่าของฉัน'],['incidents','เหตุทั้งหมด'],['preferences','การแจ้งเตือน']];
+    if(state.tab==='practice')entries.push(['practice','ซ้อมใช้งาน']);
     if(state.me?.is_admin)entries.push(['review','ตรวจคำขอ']);
     return `<div class="cw-tabs" role="tablist" aria-label="พื้นที่ชุมชน">${entries.map(([id,label])=>`<button role="tab" aria-selected="${state.tab===id}" data-cw="tab" data-tab="${id}">${label}</button>`).join('')}</div>`;
   }
@@ -113,8 +114,9 @@
       <label>พื้นที่ที่ประสาน<select name="forest_id" required data-required-message="เลือกป่าชุมชนก่อน">${options(allowed,d.forest_id)}</select></label>
       <label>สิ่งที่พบ<select name="observation"><option value="smoke" ${d.observation==='smoke'?'selected':''}>เห็นควัน</option><option value="fire" ${d.observation==='fire'?'selected':''}>เห็นเปลวไฟ</option></select></label>
       <label>เวลาที่พบ (เวลาประเทศไทย)<input name="observed_local" type="datetime-local" value="${esc(d.observed_local)}" required></label>
+      <p class="cw-label">ตำแหน่งที่พบ</p>
+      <div class="cw-actions">${button('📍 ใช้ตำแหน่งฉันตอนนี้','gps','',!d.latitude)} ${button('เลือกบนแผนที่','pick')}</div>
       <div class="cw-fields"><label>ละติจูด<input name="latitude" type="number" step="any" min="-90" max="90" value="${esc(d.latitude)}" required></label><label>ลองจิจูด<input name="longitude" type="number" step="any" min="-180" max="180" value="${esc(d.longitude)}" required></label></div>
-      <div class="cw-actions">${button('เลือกตำแหน่งบนแผนที่','pick')} ${button('ใช้ตำแหน่งฉัน','gps')}</div>
       <label>รายละเอียด (เติมภายหลังได้)<textarea name="description" maxlength="2000" placeholder="สิ่งที่เห็นหรือข้อมูลให้ผู้รับประสานตรวจสอบ">${esc(d.description)}</textarea></label>
       <p class="cw-help" id="cwDraftSaved">${d.saved_at?'ร่างเก็บในเครื่องนี้ · '+date(d.saved_at):'ร่างจะเก็บในเครื่องนี้ระหว่างกรอก ยังไม่ใช่รายงานที่ส่งแล้ว'}</p>
       <div class="cw-actions"><button class="cw-btn primary">ส่งเหตุให้ตรวจสอบ</button>${button('กลับรายการ','cancel-create')}</div></form></section>`;
@@ -125,8 +127,38 @@
     if(state.create)return createForm();
     const selected=forest()||allowed[0];state.forestId=selected.forest_id;
     const related=state.incidents.filter(i=>i.forest_id===selected.forest_id||i.partner_forest_ids?.includes(selected.forest_id));
+    if(root.CmeForestPublic)return repForestView(selected,allowed,related);
     return `<div class="cw-layout"><section class="cw-section"><label class="cw-help" for="cwActiveForest">${state.me.is_admin?'เลือกพื้นที่ดูแลระบบ':'พื้นที่ที่ได้รับอนุมัติ'}</label><select class="cw-select" id="cwActiveForest">${options(allowed,selected.forest_id)}</select>${summary(selected)}${protectedNearbyView(selected)}${crossDistrictView(selected)}<div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">ขอบเขตจาก RECOFTC · ดาวเทียมยังไม่ยืนยันเหตุภาคสนาม · ลมอ้างอิงจังหวัดยังไม่ใช่ลมที่วัดในป่าแห่งนี้</p><div class="cw-actions">${button('แจ้งสิ่งที่พบ','create','',true)}${button('ส่งออกรายงานพื้นที่นี้','export')}</div></section>
       <section class="cw-section"><h2>งานที่ต้องดู</h2>${incidentRows(related.filter(i=>!['closed','cancelled'].includes(i.status)))}<div class="cw-actions">${button('ดูประวัติเหตุทั้งหมด','all-incidents')}</div><h3>ช่องทางประสานหน่วยงาน</h3><p class="cw-help"><a href="tel:052081758">052-081758</a> สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่)<br><a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a> · ตรวจ 9 ต.ค. 2026<br>เป็นช่องทางสอบถามผู้ประสาน ยังไม่มีรายชื่อหัวหน้าป่าแห่งนี้ที่ยืนยันแล้ว</p>${state.me.is_admin?'':`<details><summary>ขอสิทธิ์พื้นที่เพิ่มเติม</summary>${membershipView()}</details>`}</section></div>`;
+  }
+  // What to do now, by the forest's 24 h situation. Plain steps, no score.
+  function todoHtml(sit){
+    const toward=sit.wind?.toward===true;
+    const steps={
+      alert:['ดูตำแหน่งจุดบนแผนที่ด้านล่างว่าอยู่ตรงไหนของป่า','ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a> และแจ้งหน่วยงานในพื้นที่ (ดู "ใครดูแลพื้นที่นี้")','อย่าเข้าพื้นที่คนเดียว ประสานทีมและป่าข้างเคียงก่อน','กลับมาแล้ว กด "บันทึกเหตุ" ใส่ตำแหน่ง รูป และผล'],
+      watch:[toward?'<b>ลมพัดจากจุดความร้อนเข้าหาป่า</b> เฝ้าระวังเป็นพิเศษ':'ดูทิศลม ตอนนี้ไม่ได้พัดจากจุดความร้อนเข้าหาป่า','ถามป่าข้างเคียงหรือหน่วยงานว่ามีคนไปตรวจจุดนี้แล้วหรือยัง','ถ้าเห็นควันในป่า กด "บันทึกเหตุ"'],
+      calm:['ไม่มีจุดความร้อนในหรือรอบป่าใน 24 ชม. ล่าสุด','ตรวจว่าเปิดรับแจ้งเตือน LINE หรืออีเมลไว้แล้ว '+button('ตั้งค่าแจ้งเตือน','tab','data-tab="preferences"'),'ลองซ้อมบันทึกเหตุ ข้อมูลซ้อมไม่ถูกส่งจริง '+button('ซ้อมใช้งาน','tab','data-tab="practice"')],
+      unknown:['ข้อมูลดาวเทียมยังไม่พร้อม ยังสรุปไม่ได้ว่าปลอดภัย','ถ้าเห็นควันหรือไฟ โทร <a href="tel:1362">1362</a> แล้วกด "บันทึกเหตุ"'],
+    }[sit.status]||[];
+    return `<section class="rp-todo"><h2>ต้องทำอะไรตอนนี้</h2><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol></section>`;
+  }
+  function repForestView(selected,allowed,related){
+    const P=root.CmeForestPublic,{sit,html}=P.repSummaryHtml(selected,context.dashboard()),c=P.centre(selected);
+    const open=related.filter(i=>!['closed','cancelled'].includes(i.status));
+    const meta=[selected.tambon?'ต.'+selected.tambon:'',selected.amphoe?'อ.'+selected.amphoe:''].filter(Boolean).join(' · ');
+    return `<div class="rp">
+      <section class="rp-head"><p class="fp-kicker">${state.me.is_admin?'ผู้ดูแลระบบ · เลือกพื้นที่':'ป่าที่คุณดูแล'}</p>
+        ${allowed.length>1?`<label class="sr-only" for="cwActiveForest">เลือกป่า</label><select class="cw-select" id="cwActiveForest">${options(allowed,selected.forest_id)}</select>`:`<h2>${esc(selected.name)}</h2>`}
+        <p class="fp-meta">${esc(meta)}</p></section>
+      ${selected.boundary_quality==='needs_review'?`<p class="cw-help" role="status"><b>ขอบเขตนี้ต้องตรวจทบทวน</b><br>${esc(selected.boundary_note)} · ระยะใช้จุดอ้างอิงป่าแทน</p>`:''}
+      <section class="rp-now" data-rp-now>${html}</section>
+      <div class="rp-cta">${button('📝 บันทึกเหตุ','create','',true)}${c?`${button('ดูบนแผนที่หลัก','locate',`data-lat="${c.lat}" data-lon="${c.lon}"`)}`:''}${button('ส่งออกรายงาน','export')}</div>
+      ${todoHtml(sit)}
+      <section class="rp-section"><h2>เหตุที่ยังไม่ปิด${open.length?` <span class="rp-count">${open.length}</span>`:''}</h2>${incidentRows(open)}<div class="cw-actions">${button('ดูเหตุทั้งหมด','all-incidents')}</div></section>
+      <section class="rp-section"><h2>แผนที่ป่า</h2><div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">กดจุดบนแผนที่เพื่อดูว่าใครควรดูแล · ขอบเขตจาก RECOFTC · ดาวเทียมยังไม่ยืนยันเหตุภาคสนาม</p>${protectedNearbyView(selected)}${crossDistrictView(selected)}</section>
+      <details class="rp-section rp-who"><summary>ใครดูแลพื้นที่นี้ · เบอร์หน่วยงาน · ป่าข้างเคียง</summary>${c&&root.CmeCoordination?root.CmeCoordination.html(c.lat,c.lon,{myForestId:selected.forest_id}):''}<p class="cw-help"><a href="tel:052081758">052-081758</a> สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่) · <a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a> · ตรวจ 9 ต.ค. 2026</p></details>
+      ${state.me.is_admin?'':`<details class="rp-section"><summary>ขอสิทธิ์ป่าอื่นเพิ่ม</summary>${membershipView()}</details>`}
+    </div>`;
   }
   function protectedNearbyView(selected){
     const dash=context.dashboard(),q=dash?.data_quality?.hotspots;
@@ -180,7 +212,7 @@
   function preferencesView(){
     const p=state.me.preferences,admin=state.me.is_admin,mail=state.mailStatus||[];
     const hours=value=>Array.from({length:24},(_,h)=>`<option value="${h}" ${h===value?'selected':''}>${h.toString().padStart(2,'0')}:00 น.</option>`).join('');
-    return `<section class="cw-section">${admin?'<div class="cw-layout cw-preferences-layout"><div>':''}
+    return `<div class="rp-practice"><div><b>ซ้อมใช้งานก่อนฤดูไฟ</b><small>ลองบันทึกเหตุและรับแจ้งเตือนแบบทดสอบ ข้อมูลซ้อมไม่ถูกส่งจริง</small></div>${button('เริ่มซ้อม','tab','data-tab="practice"')}</div><section class="cw-section">${admin?'<div class="cw-layout cw-preferences-layout"><div>':''}
       ${lineView()}
       <h2>อีเมลของพื้นที่ที่คุณติดตาม</h2><p class="cw-help">ส่งถึงอีเมลที่ยืนยันของบัญชีนี้ เฉพาะป่าที่ได้รับอนุมัติ เมื่อข้อมูลใหม่เข้ามาหรือมีการประสานเหตุ</p>
       ${state.emailMode!=='live'?'<div class="cw-alert">ยังไม่ส่งถึงสมาชิกทั่วไป ขณะนี้ส่งได้เฉพาะอีเมลทดสอบที่กำหนด จะเปิดรับจริงหลังยืนยันโดเมนผู้ส่ง</div>':''}
@@ -232,7 +264,7 @@
       root.CmeForestPublic.attach(body,{forests:()=>state.catalog,dashboard:()=>context.dashboard(),locate:(lat,lon)=>context.locate(lat,lon),fetcher:path=>root.fetch((context.apiBase||'')+path),onPick:id=>{state.publicForest=id;}});
     }
     if(state.tab==='practice'&&state.session&&state.me&&root.CmePractice)root.CmePractice.attach(document.getElementById('cwPractice'),{api});
-    if(state.tab==='forest'&&state.me&&!state.detail&&!state.create)renderMap(forest());
+    if(state.tab==='forest'&&state.me&&!state.detail&&!state.create){renderMap(forest());const now=body.querySelector('[data-rp-now]');if(now&&root.CmeForestPublic){root.CmeForestPublic.fillAsync(now,forest(),path=>root.fetch((context.apiBase||'')+path));root.CmeCoordination?.hydrate?.(body);}}
     if(state.detail?.photos?.length)loadPhotos();
     if(state.busy)body.querySelectorAll('button').forEach(b=>b.disabled=true);
   }

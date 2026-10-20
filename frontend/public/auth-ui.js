@@ -19,7 +19,7 @@
   function text(id,value){const node=el(id);if(node){node.textContent=value;node.style.display=value?'block':'none';}}
   function clearMessages(){['siErr','siMsg','suErr','suMsg'].forEach(id=>text(id,''));}
   function switchTab(tab){
-    ['signin','signup'].forEach((name,index)=>{el(index?'authTabSignup':'authTabSignin').classList.toggle('active',tab===name);el(index?'authFormSignup':'authFormSignin').style.display=tab===name?'block':'none';});
+    ['signin','signup'].forEach((name,index)=>{el(index?'authTabSignup':'authTabSignin').classList.toggle('active',tab===name);el(index?'authTabSignup':'authTabSignin').setAttribute('aria-selected',String(tab===name));el(index?'authFormSignup':'authFormSignin').style.display=tab===name?'block':'none';});
     el('authHeading').textContent=tab==='signup'?'สมัครสมาชิก':'เข้าสู่ระบบ';
   }
   function requestedTarget(){
@@ -30,6 +30,7 @@
   function close(){
     el('authModalBackdrop').classList.remove('open');
     ['siPassword','siOtp','suPassword'].forEach(id=>{if(el(id))el(id).value='';});
+    ['siPassword','suPassword'].forEach(id=>{const i=el(id);if(i&&i.type==='text'){i.type='password';const b=i.parentElement?.querySelector('.auth-eye');if(b){b.textContent='แสดง';b.setAttribute('aria-pressed','false');b.setAttribute('aria-label','แสดงรหัสผ่าน');}}});
   }
   async function run(prefix,task){
     if(busy)return;
@@ -78,6 +79,7 @@
     if(!/^\d{6,12}$/.test(code)){text('siErr','กรอกรหัสครั้งเดียวจากอีเมลให้ครบ');return;}
     await run('si',async()=>{const {error}=await context.client.auth.verifyOtp({email:address,token:code,type:'email'});el('siOtp').value='';if(error)throw error;signedIn();});
   }
+  function togglePassword(id,button){const input=el(id);if(!input)return;const show=input.type==='password';input.type=show?'text':'password';button.textContent=show?'ซ่อน':'แสดง';button.setAttribute('aria-pressed',String(show));button.setAttribute('aria-label',show?'ซ่อนรหัสผ่าน':'แสดงรหัสผ่าน');}
   function sessionChanged(session){if(returning&&session){returning=false;signedIn();}}
   function init(adapter){
     context=adapter;
@@ -93,5 +95,5 @@
       if(event.key==='Escape'){event.preventDefault();event.stopPropagation();if(!busy)close();}
     });
   }
-  root.CmeAuth={init,open,close,switchTab,signIn,signUp,sendLink:()=>sendEmail('login','si'),resendConfirmation:prefix=>sendEmail('signup',prefix),verifyCode,sessionChanged,errorText};
+  root.CmeAuth={init,open,close,switchTab,signIn,signUp,sendLink:()=>sendEmail('login','si'),resendConfirmation:prefix=>sendEmail('signup',prefix),verifyCode,sessionChanged,errorText,togglePassword};
 })(window);

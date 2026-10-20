@@ -82,3 +82,30 @@ body.light-mode .fp-map-wind circle{fill:rgba(255,255,255,.85)}
 .fp-map-scale text,.fp-map-n{fill:var(--muted);font:500 10px var(--font)}
 .fp-map-wind text{fill:var(--wind);font:600 10px var(--font)}
 body.light-mode .fp-map .band{stroke:rgba(161,98,7,.75);fill:rgba(250,204,21,.08)}
+
+/* Rep "my forest" view (community-workspace.js repForestView). */
+.rp{display:grid;gap:14px;max-width:760px;margin:0 auto;padding-bottom:24px}
+.rp h2{margin:0;font:700 17px/1.35 var(--font);color:var(--txt)}
+.rp-head{padding:16px;border-radius:18px;border:1px solid rgba(67,176,95,.45);background:linear-gradient(135deg,rgba(67,176,95,.16),transparent 70%),var(--panel)}
+.rp-head h2{font-size:20px}
+.rp-head .cw-select{width:100%;min-height:46px;margin-top:4px;font:600 16px var(--font)}
+.rp-now{display:grid;gap:10px}
+.rp-cta{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rp-cta .cw-btn{min-height:46px;justify-content:center}
+.rp-cta .cw-btn.primary{grid-column:1/-1;min-height:56px;font-size:17px;font-weight:700;border-radius:14px}
+.rp-todo{padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--panel)}
+.rp-todo ol{margin:10px 0 0;padding:0;list-style:none;counter-reset:t;display:grid;gap:8px}
+.rp-todo li{counter-increment:t;position:relative;padding:10px 12px 10px 44px;border-radius:12px;background:var(--panel-2);font-size:14px;line-height:1.55;color:var(--txt)}
+.rp-todo li::before{content:counter(t);position:absolute;left:12px;top:10px;width:22px;height:22px;border-radius:50%;background:var(--green);color:var(--on-green);font:700 12px/22px var(--font);text-align:center}
+.rp-todo li .cw-btn{margin-top:6px;min-height:36px}
+.rp-section{padding:16px;border-radius:16px;border:1px solid var(--line);background:var(--panel)}
+.rp-section>h2{margin-bottom:10px}
+.rp-section>summary{cursor:pointer;font-weight:600;font-size:15px;min-height:36px;display:flex;align-items:center;color:var(--txt)}
+.rp-count{display:inline-block;min-width:22px;padding:0 7px;border-radius:999px;background:rgba(239,68,68,.16);color:var(--danger);font-size:13px;text-align:center}
+.rp .cw-map{border-radius:12px}
+.rp-practice{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:12px 14px;border-radius:14px;border:1px dashed var(--line);background:var(--panel-2)}
+.rp-practice b{display:block;font-size:14px;color:var(--txt)}
+.rp-practice small{font-size:12px;color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.cw-map .leaflet-control-attribution{position:static!important;max-width:none!important;margin:0!important;white-space:normal!important}
+.cw-map .leaflet-bottom.leaflet-right{margin-bottom:0!important}

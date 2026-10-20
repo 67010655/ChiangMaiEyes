@@ -81,3 +81,4 @@ body.light-mode .cw-form input,body.light-mode .cw-form select,body.light-mode .
 a.cw-btn{display:inline-flex;align-items:center;text-decoration:none}
 .cw-line{padding:0 0 18px;margin:0 0 18px;border-bottom:1px solid var(--line)}
 .cw-line-steps{list-style:none;padding:0;margin:12px 0;display:flex;gap:8px;flex-wrap:wrap}
+.cw-label{margin:12px 0 0;font-weight:600;font-size:14px;color:var(--txt)}

@@ -44,6 +44,11 @@ describe('account onboarding and recovery',()=>{
     expect(w.document.getElementById('authModalBackdrop').classList.contains('open')).toBe(true);
     expect(w.location.hash).toBe('#community');expect(w.document.querySelector('img')).toBeNull();dom.window.close();
   });
+  it('shows and re-hides the password, and closing always hides it again',()=>{
+    const {dom,w}=setup();const input=w.document.getElementById('siPassword'),eye=input.parentElement.querySelector('.auth-eye');
+    w.CmeAuth.togglePassword('siPassword',eye);expect(input.type).toBe('text');expect(eye.getAttribute('aria-pressed')).toBe('true');
+    w.CmeAuth.close();expect(input.type).toBe('password');expect(eye.getAttribute('aria-pressed')).toBe('false');dom.window.close();
+  });
   it('clears all entered credentials when closing the dialog',()=>{
     const {dom,w}=setup();w.document.getElementById('siPassword').value='fixture';w.document.getElementById('siOtp').value='123456';
     w.CmeAuth.close();for(const id of ['siPassword','siOtp','suPassword'])expect(w.document.getElementById(id).value).toBe('');dom.window.close();

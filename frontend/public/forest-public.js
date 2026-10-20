@@ -149,6 +149,16 @@
       <p class="as-note">ขอบเขตป่าจาก RECOFTC · จุดความร้อน NASA FIRMS (VIIRS/MODIS) · ระยะเป็นเส้นตรงโดยประมาณ ไม่ใช่ระยะเดินทาง</p>
     </article>`;
   }
+  // Rep view: the same status and facts, without the public card's map and actions.
+  function repSummaryHtml(f,dash,now=Date.now()){
+    const sit=situation(f,dash,now), nearest=sit.rows[0];
+    return {sit,html:`${statusHtml(sit)}<div class="fp-facts">
+        <div class="fp-fact"><span class="fp-k">จุดใกล้ที่สุด</span><b>${nearest?nearest.km===0?'อยู่ในขอบเขตป่า':kmText(nearest.km)+' จากขอบป่า':sit.status==='unknown'?'รอข้อมูล':'ไม่มีในระยะ 5 กม.'}</b>${nearest?`<small>${esc(E().stamp(nearest.h.detected_at))} · ระยะเส้นตรง</small>`:''}</div>
+        ${windHtml(sit)}
+        <div class="fp-fact" data-fp-dust><span class="fp-k">ฝุ่นใกล้ป่า</span><b class="fp-wait">กำลังดูเซนเซอร์…</b></div>
+        <div class="fp-fact" data-fp-fwi><span class="fp-k">อากาศเอื้อต่อไฟวันนี้</span><b class="fp-wait">กำลังคำนวณ…</b></div>
+      </div>`};
+  }
   function dustHtml(f,data){
     const n=nearestSensor(f,data);
     if(!n)return `<span class="fp-k">ฝุ่นใกล้ป่า</span><b>ไม่มีเซนเซอร์ในระยะ ${SENSOR_KM} กม.</b><small>ดูค่าฝุ่นภาพรวมที่หน้าแผนที่</small>`;
@@ -245,5 +255,5 @@
     });
   }
 
-  root.CmeForestPublic={html,attach,recall,situation,forestsNearHotspots,nearestSensor,forestCard,listHtml,fwiHtml,dustHtml,mapSvg,NEAR_KM};
+  root.CmeForestPublic={html,attach,recall,repSummaryHtml,fillAsync,centre,situation,forestsNearHotspots,nearestSensor,forestCard,listHtml,fwiHtml,dustHtml,mapSvg,NEAR_KM};
 })(typeof window!=='undefined'?window:globalThis);

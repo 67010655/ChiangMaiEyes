@@ -38,6 +38,18 @@ async function setup({ signedIn = false, approved = false, failCreate = false, o
 }
 
 describe('representative workspace interaction and evidence boundaries', () => {
+  it('approved rep: my-forest view leads with status, a record button and what to do, in 3 tabs', async () => {
+    const { dom } = await setup({ signedIn: true, approved: true, publicView: true });
+    const doc = dom.window.document;
+    expect([...doc.querySelectorAll('.cw-tabs button')].map((b: any) => b.textContent)).toEqual(['ป่าของฉัน', 'เหตุทั้งหมด', 'การแจ้งเตือน']);
+    expect(doc.querySelector('.rp-head')?.textContent).toContain('ป่าที่คุณดูแล');
+    expect(doc.querySelector('.fp-status.calm')).not.toBeNull();
+    expect(doc.querySelector('.rp-cta [data-cw="create"]')?.textContent).toContain('บันทึกเหตุ');
+    expect(doc.querySelector('.rp-todo')?.textContent).toContain('ต้องทำอะไรตอนนี้');
+    expect(doc.body.textContent).not.toContain('99 µg/m³');
+    expect(doc.querySelector('script')).toBeNull();
+    dom.window.close();
+  });
   it('signed out: everyone sees the forest lookup, no rep tabs, and still no private requests', async () => {
     const { dom, calls } = await setup({ publicView: true });
     const doc = dom.window.document;

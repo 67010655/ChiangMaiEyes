@@ -1289,6 +1289,7 @@
 <link rel="stylesheet" href="/analytics-ui.css">
 <link rel="stylesheet" href="/fire-weather.css">
 <link rel="stylesheet" href="/forest-public.css">
+<link rel="stylesheet" href="/auth-modal.css">
 <link rel="stylesheet" href="/magic-effects.css">
 </head>
 <body class="public-mode">
@@ -1307,48 +1308,53 @@
 
 <!-- Auth modal: sign in / sign up (Supabase Auth) -->
 <div class="cme-modal-backdrop" id="authModalBackdrop">
-  <div class="cme-modal" role="dialog" aria-modal="true" aria-labelledby="authHeading">
+  <div class="cme-modal auth-box" role="dialog" aria-modal="true" aria-labelledby="authHeading" aria-describedby="authLead">
     <button class="close-x" aria-label="ปิดหน้าบัญชี" onclick="closeAuthModal()">&times;</button>
-    <h3 id="authHeading">เข้าสู่ระบบ</h3>
-    <p class="fire-help">พบไฟป่าหรือควัน? <a href="tel:1362">โทร 1362 ได้โดยไม่ต้องสมัครสมาชิก</a> · <a href="https://news.dnp.go.th/news/36837" target="_blank" rel="noopener">กรมอุทยานฯ</a></p>
-    <p class="hint">เข้าสู่ระบบเพื่อขอสิทธิ์ตัวแทนป่าชุมชน ผู้ดูแลจะตรวจสอบพื้นที่ก่อนเปิดให้บันทึกและร่วมประสานเหตุ</p>
-    <div class="tabs">
-      <button id="authTabSignin" class="active" onclick="switchAuthTab('signin')">เข้าสู่ระบบ</button>
-      <button id="authTabSignup" onclick="switchAuthTab('signup')">สมัครสมาชิก</button>
+    <header class="auth-head">
+      <span class="auth-badge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l6 8h-3l4 6h-6v4h-2v-4H5l4-6H6z"/></svg></span>
+      <div><p class="auth-kicker">สำหรับตัวแทนป่าชุมชน</p><h3 id="authHeading">เข้าสู่ระบบ</h3></div>
+    </header>
+    <p class="auth-lead" id="authLead">ดูป่า ไฟ และฝุ่นได้โดยไม่ต้องมีบัญชี บัญชีใช้สำหรับรับแจ้งเตือน บันทึกเหตุ และประสานงานของป่าที่คุณดูแล</p>
+    <div class="tabs auth-tabs" role="tablist" aria-label="เลือกเข้าสู่ระบบหรือสมัครสมาชิก">
+      <button id="authTabSignin" class="active" role="tab" onclick="switchAuthTab('signin')">มีบัญชีแล้ว</button>
+      <button id="authTabSignup" role="tab" onclick="switchAuthTab('signup')">สมัครใหม่</button>
     </div>
     <form id="authFormSignin" onsubmit="return handleSignIn(event)">
       <label for="siEmail">อีเมล</label>
-      <input type="email" id="siEmail" required autocomplete="username">
+      <input type="email" id="siEmail" required autocomplete="username" inputmode="email" placeholder="name@example.com">
       <label for="siPassword">รหัสผ่าน</label>
-      <input type="password" id="siPassword" required autocomplete="current-password">
-      <div class="actions">
-        <button type="submit" class="primary" id="siSubmitBtn">เข้าสู่ระบบ</button>
-        <button type="button" class="ghost" id="siLinkBtn" onclick="sendSignInLink()">รับลิงก์เข้าใช้ทางอีเมล</button>
-      </div>
-      <details style="margin-top:14px"><summary>มีรหัสเข้าสู่ระบบครั้งเดียว</summary>
-        <label for="siOtp">รหัสจากอีเมล</label><input id="siOtp" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="12">
-        <div class="actions"><button type="button" class="ghost" id="siOtpBtn" onclick="verifySignInCode()">ยืนยันรหัสครั้งเดียว</button></div>
-      </details>
+      <div class="auth-pass"><input type="password" id="siPassword" required autocomplete="current-password"><button type="button" class="auth-eye" aria-label="แสดงรหัสผ่าน" aria-pressed="false" onclick="CmeAuth.togglePassword('siPassword',this)">แสดง</button></div>
       <div class="err" id="siErr" role="alert"></div><div class="msg" id="siMsg" role="status"></div>
-      <button type="button" class="ghost auth-resend" onclick="CmeAuth.resendConfirmation('si')">ส่งอีเมลยืนยันบัญชีใหม่</button>
+      <div class="actions"><button type="submit" class="primary" id="siSubmitBtn">เข้าสู่ระบบ</button></div>
+      <p class="auth-or"><span>หรือ ไม่ต้องใช้รหัสผ่าน</span></p>
+      <button type="button" class="ghost auth-wide" id="siLinkBtn" onclick="sendSignInLink()">✉️ ส่งลิงก์เข้าใช้ไปที่อีเมลนี้</button>
+      <details class="auth-help"><summary>เข้าใช้ไม่ได้?</summary>
+        <p>ได้รหัสตัวเลขในอีเมล ใส่ตรงนี้</p>
+        <label for="siOtp">รหัสจากอีเมล</label><input id="siOtp" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="12">
+        <div class="actions"><button type="button" class="ghost" id="siOtpBtn" onclick="verifySignInCode()">ยืนยันรหัส</button></div>
+        <p>สมัครแล้วแต่ยังไม่ได้อีเมลยืนยัน</p>
+        <button type="button" class="ghost auth-resend" onclick="CmeAuth.resendConfirmation('si')">ส่งอีเมลยืนยันบัญชีอีกครั้ง</button>
+      </details>
     </form>
     <form id="authFormSignup" style="display:none" onsubmit="return handleSignUp(event)">
-      <label for="suName">ชื่อ-สกุล / หน่วยงาน</label>
+      <ol class="auth-steps" aria-label="ขั้นตอนเป็นตัวแทน"><li class="on">สมัครบัญชี</li><li>ยืนยันอีเมล</li><li>ขอสิทธิ์ป่าที่ดูแล</li></ol>
+      <label for="suName">ชื่อ-สกุล หรือหน่วยงาน</label>
       <input type="text" id="suName" required maxlength="120" autocomplete="name" placeholder="ชื่อที่ใช้ประสานงานกับชุมชน">
       <label for="suEmail">อีเมล</label>
-      <input type="email" id="suEmail" required autocomplete="username">
-      <label for="suPassword">รหัสผ่าน อย่างน้อย 6 ตัวอักษร</label>
-      <input type="password" id="suPassword" required minlength="6" autocomplete="new-password">
-      <div class="actions">
-        <button type="submit" class="primary" id="suSubmitBtn">สมัครสมาชิก</button>
-      </div>
+      <input type="email" id="suEmail" required autocomplete="username" inputmode="email" placeholder="name@example.com">
+      <label for="suPassword">ตั้งรหัสผ่าน <small>อย่างน้อย 6 ตัวอักษร</small></label>
+      <div class="auth-pass"><input type="password" id="suPassword" required minlength="6" autocomplete="new-password"><button type="button" class="auth-eye" aria-label="แสดงรหัสผ่าน" aria-pressed="false" onclick="CmeAuth.togglePassword('suPassword',this)">แสดง</button></div>
       <div class="err" id="suErr" role="alert"></div>
       <div class="msg" id="suMsg" role="status"></div>
-      <button type="button" class="ghost auth-resend" onclick="CmeAuth.resendConfirmation('su')">ส่งอีเมลยืนยันบัญชีใหม่</button>
+      <div class="actions"><button type="submit" class="primary" id="suSubmitBtn">สมัครสมาชิก</button></div>
+      <p class="auth-note">สมัครแล้วยังไม่ใช่ตัวแทนทันที ผู้ดูแลจะตรวจหน้าที่ของคุณก่อนอนุมัติป่า</p>
+      <details class="auth-help"><summary>ไม่ได้รับอีเมลยืนยัน?</summary>
+        <button type="button" class="ghost auth-resend" onclick="CmeAuth.resendConfirmation('su')">ส่งอีเมลยืนยันบัญชีอีกครั้ง</button>
+      </details>
     </form>
+    <p class="fire-help auth-fire">🔥 เห็นไฟหรือควันตอนนี้? <a href="tel:1362">โทร 1362</a> ได้เลย ไม่ต้องสมัคร · <a href="https://news.dnp.go.th/news/36837" target="_blank" rel="noopener">กรมอุทยานฯ</a></p>
   </div>
 </div>
-
 <!-- Manual hotspot report modal -->
 <div class="cme-modal-backdrop" id="reportModalBackdrop">
   <div class="cme-modal">

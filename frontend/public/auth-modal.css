@@ -1,0 +1,61 @@
+/* Sign-in / sign-up dialog. Colours come only from theme tokens so the
+   dark and light themes both keep readable contrast. */
+#authModalBackdrop{background:rgba(5,10,8,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#authModalBackdrop .auth-box{max-width:420px;padding:22px 22px 18px;border-radius:20px;border:1px solid var(--line);
+  background:radial-gradient(120% 60% at 0 0,rgba(67,176,95,.14),transparent 60%),var(--panel);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+body.light-mode #authModalBackdrop{background:rgba(15,26,42,.38)}
+body.light-mode #authModalBackdrop .auth-box{box-shadow:0 24px 60px rgba(15,26,42,.22)}
+#authModalBackdrop .close-x{top:12px;right:12px;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--muted)}
+#authModalBackdrop .close-x:hover{background:var(--panel-2);color:var(--txt)}
+
+.auth-head{display:flex;align-items:center;gap:12px;padding-right:44px}
+.auth-badge{flex:none;width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:var(--green);color:var(--on-green)}
+.auth-badge svg{width:24px;height:24px;fill:currentColor}
+.auth-kicker{margin:0;font:600 12px/1.3 var(--disp);color:var(--green)}
+#authModalBackdrop .auth-head h3{margin:2px 0 0;font:700 20px/1.25 var(--disp);color:var(--txt)}
+.auth-lead{margin:12px 0 16px;font:400 14px/1.6 var(--disp);color:var(--muted)}
+
+#authModalBackdrop .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 14px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line-soft)}
+#authModalBackdrop .auth-tabs button{min-height:42px;border-radius:10px;font:600 14px var(--disp);color:var(--muted);background:none;border:0;cursor:pointer}
+#authModalBackdrop .auth-tabs button.active{background:var(--panel);color:var(--txt);box-shadow:0 1px 0 var(--line-soft),0 2px 8px rgba(0,0,0,.18);outline:1.5px solid var(--green);outline-offset:-1.5px}
+
+#authModalBackdrop .auth-box label{display:block;margin:12px 0 6px;font:600 14px/1.3 var(--disp);color:var(--txt)}
+#authModalBackdrop .auth-box label small{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
+#authModalBackdrop .auth-box input{min-height:48px;padding:0 14px;border-radius:12px;font:500 16px var(--disp);color:var(--txt);background:var(--bg);border:1.5px solid var(--line)}
+#authModalBackdrop .auth-box input::placeholder{color:var(--muted);opacity:.75}
+#authModalBackdrop .auth-box input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(67,176,95,.25)}
+.auth-pass{position:relative}
+#authModalBackdrop .auth-pass input{padding-right:72px}
+#authModalBackdrop .auth-eye{position:absolute;top:50%;right:6px;transform:translateY(-50%);min-height:36px;padding:0 12px;border-radius:9px;border:0;background:var(--panel-2);color:var(--txt);font:600 13px var(--disp);cursor:pointer}
+
+#authModalBackdrop .auth-box .actions{margin-top:16px}
+#authModalBackdrop .auth-box button.primary{width:100%;min-height:50px;border-radius:14px;border:0;background:var(--green);color:var(--on-green);font:700 16px var(--disp);cursor:pointer;
+  box-shadow:0 6px 18px rgba(67,176,95,.28)}
+#authModalBackdrop .auth-box button.primary:hover{filter:brightness(1.06)}
+#authModalBackdrop .auth-box button.ghost{min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--txt);font:600 14px var(--disp);padding:0 14px;cursor:pointer}
+#authModalBackdrop .auth-box button.ghost:hover{border-color:var(--green)}
+.auth-wide{width:100%}
+.auth-or{display:flex;align-items:center;gap:10px;margin:16px 0 10px;font:500 12px var(--disp);color:var(--muted)}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+
+.auth-help{margin-top:14px;padding-top:10px;border-top:1px solid var(--line-soft)}
+.auth-help summary{cursor:pointer;min-height:36px;display:flex;align-items:center;font:600 14px var(--disp);color:var(--muted)}
+.auth-help summary:hover{color:var(--txt)}
+.auth-help p{margin:10px 0 0;font:400 13px/1.5 var(--disp);color:var(--muted)}
+#authModalBackdrop .auth-help .auth-resend{margin-top:8px;width:100%}
+
+.auth-steps{list-style:none;display:flex;gap:6px;margin:0 0 4px;padding:0;counter-reset:s}
+.auth-steps li{flex:1;counter-increment:s;padding:8px 6px;border-radius:10px;background:var(--panel-2);font:500 12px/1.3 var(--disp);color:var(--muted);text-align:center}
+.auth-steps li::before{content:counter(s);display:block;margin:0 auto 4px;width:20px;height:20px;border-radius:50%;line-height:20px;background:var(--line-soft);color:var(--txt);font-weight:700}
+.auth-steps li.on{color:var(--txt);background:rgba(67,176,95,.14)}
+.auth-steps li.on::before{background:var(--green);color:var(--on-green)}
+.auth-note{margin:10px 0 0;font:400 13px/1.5 var(--disp);color:var(--muted)}
+
+#authModalBackdrop .auth-box .err{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:var(--txt);font:500 13px/1.5 var(--disp)}
+#authModalBackdrop .auth-box .msg{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(67,176,95,.12);border:1px solid rgba(67,176,95,.4);color:var(--txt);font:500 13px/1.5 var(--disp)}
+
+#authModalBackdrop .auth-fire{margin:16px -22px -18px;padding:12px 22px;border-top:1px solid var(--line-soft);border-radius:0 0 20px 20px;background:var(--panel-2);font:500 13px/1.5 var(--disp);color:var(--txt)}
+#authModalBackdrop .auth-fire a{color:var(--danger);font-weight:700}
+body.light-mode #authModalBackdrop .auth-fire a{color:#b42318}
+#authModalBackdrop .auth-box :focus-visible{outline:3px solid var(--wind);outline-offset:2px}
+@media(max-width:420px){#authModalBackdrop{padding:10px}#authModalBackdrop .auth-box{padding:18px 16px 16px}#authModalBackdrop .auth-fire{margin:16px -16px -16px;padding:12px 16px}}
