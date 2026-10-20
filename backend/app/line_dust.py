@@ -1,19 +1,28 @@
 """Public dust alerts on the LINE Official Account (no website account needed).
 
 People subscribe by chatting "แจ้งเตือนฝุ่น <อำเภอ>" and stop with "หยุด".
-There is a PM2.5 station only in Mueang, so every district uses the CAMS
-model (Open-Meteo Air Quality) at the district's centre, as a 24-hour mean of
-the hourly values - always labelled as a model estimate, never a station
-reading. An alert goes out when that mean reaches the PCD level
-"เริ่มมีผลต่อสุขภาพ" (> 37.5 µg/m³) or higher, once per person per level per
-day, and only while the account's monthly push quota keeps a reserve for the
-community-forest alerts.
+
+Readings come live from the World Air Quality Index Project (WAQI) sensors in
+each district - most are low-cost sensors, unvalidated at publication. We use
+each sensor's PM2.5 sub-index (US EPA AQI scale, iaqi.pm25), never the
+composite AQI and never converted to µg/m³. A district needs at least two
+sensors that reported within the last two hours; its value is their median.
+
+WAQI terms forbid redistributing cached or archived data, so no reading is
+stored: only our own state (the district's level and when it was first seen)
+and the send log (person, day, level). An alert goes out when the same level
+holds on checks at least an hour apart, once per person per level per day,
+and only while the LINE monthly quota keeps a reserve for forest alerts.
+Off until LINE_DUST_ALERTS_ENABLED is set; until then the job runs dry and
+records only sensor counts and categories.
 """
 from __future__ import annotations
 
 import json
 import logging
 import re
+import statistics
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
@@ -23,58 +32,75 @@ import httpx
 log = logging.getLogger(__name__)
 ICT = timezone(timedelta(hours=7))
 SITE = 'https://chiangmaieyes.vercel.app'
-AQ_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality'
+BOUNDS_URL = 'https://api.waqi.info/v2/map/bounds'
+FEED_URL = 'https://api.waqi.info/feed/@{uid}/'
 PUSH_URL = 'https://api.line.me/v2/bot/message/push'
 QUOTA_URL = 'https://api.line.me/v2/bot/message/quota'
 USED_URL = 'https://api.line.me/v2/bot/message/quota/consumption'
-ALERT_LEVEL = 4            # PCD level 4 = เริ่มมีผลต่อสุขภาพ
-QUOTA_RESERVE = 50         # messages kept for community-forest alerts
+CREDIT = 'ข้อมูล: World Air Quality Index Project และหน่วยงานเจ้าของสถานี'
+MIN_SENSORS = 2
+FRESH = timedelta(hours=2)
+PERSIST = timedelta(minutes=60)
+ALERT_FROM = 3             # US AQI category 3 = 101-150
+QUOTA_RESERVE = 50
 MAX_PER_RUN = 40
 
-# PCD 2566 AQI bands for 24-hour PM2.5 (same table as the website).
-LEVELS = [
-    (15, 'ดีมาก', ''),
-    (25, 'ดี', ''),
-    (37.5, 'ปานกลาง', 'ลดกิจกรรมกลางแจ้งที่ใช้แรงมาก กลุ่มเสี่ยงใส่หน้ากากเมื่ออยู่นอกอาคาร'),
-    (75, 'เริ่มมีผลต่อสุขภาพ', 'ใส่หน้ากากกันฝุ่นเมื่ออยู่นอกอาคาร ลดกิจกรรมกลางแจ้ง'),
-    (float('inf'), 'มีผลต่อสุขภาพ', 'งดกิจกรรมกลางแจ้ง ถ้ามีอาการให้พบแพทย์'),
+# US EPA AQI categories (the scale WAQI publishes), names in Thai.
+CATEGORIES = [
+    (50, 'ดี', ''),
+    (100, 'ปานกลาง', ''),
+    (150, 'เริ่มมีผลต่อกลุ่มเสี่ยง', 'เด็ก ผู้สูงอายุ และผู้มีโรคประจำตัว ควรลดกิจกรรมกลางแจ้ง ใส่หน้ากากกันฝุ่น'),
+    (200, 'มีผลต่อสุขภาพ', 'ทุกคนควรลดกิจกรรมกลางแจ้ง ใส่หน้ากากกันฝุ่นเมื่ออยู่นอกอาคาร'),
+    (300, 'มีผลต่อสุขภาพมาก', 'งดกิจกรรมกลางแจ้ง ปิดประตูหน้าต่าง ถ้ามีอาการให้พบแพทย์'),
+    (float('inf'), 'อันตราย', 'อยู่ในอาคาร งดกิจกรรมกลางแจ้ง ถ้ามีอาการให้พบแพทย์ทันที'),
 ]
 
 SUB_PATTERN = re.compile(r'^\s*(?:แจ้งเตือน\s*)?ฝุ่น\s+(?:อำเภอ|อ\.)?\s*(.+?)\s*$')
 STOP_WORDS = {'หยุด', 'หยุดฝุ่น', 'ยกเลิก', 'ยกเลิกฝุ่น', 'stop'}
 
 
-def level_of(value: float) -> tuple[int, str, str]:
-    for i, (top, label, advice) in enumerate(LEVELS, start=1):
-        if value <= top:
+def category(aqi: float) -> tuple[int, str, str]:
+    for i, (top, label, advice) in enumerate(CATEGORIES, start=1):
+        if aqi <= top:
             return i, label, advice
-    return 5, LEVELS[-1][1], LEVELS[-1][2]
+    return len(CATEGORIES), CATEGORIES[-1][1], CATEGORIES[-1][2]
 
 
-def _ring_centroid(ring):
-    a = cx = cy = 0.0
-    for (x0, y0), (x1, y1) in zip(ring, ring[1:] + ring[:1]):
-        f = x0 * y1 - x1 * y0
-        a += f; cx += (x0 + x1) * f; cy += (y0 + y1) * f
-    if not a:
-        n = len(ring) or 1
-        return sum(p[0] for p in ring) / n, sum(p[1] for p in ring) / n
-    return cx / (3 * a), cy / (3 * a)
+# ---------- districts ----------
+def _area(r):
+    return abs(sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(r, r[1:] + r[:1])))
 
 
 @lru_cache(maxsize=1)
-def districts() -> dict[str, tuple[float, float]]:
-    """District name (Thai, no prefix) -> (lat, lon) of the largest part's centroid."""
+def district_shapes() -> dict[str, list]:
     data = json.loads((Path(__file__).parent / 'data' / 'chiangmai-districts.json').read_text(encoding='utf-8'))
     out = {}
     for f in data['features']:
         name = str(f['properties'].get('amp_th') or '').replace('อำเภอ', '').strip()
         g = f['geometry']
-        polys = [g['coordinates']] if g['type'] == 'Polygon' else g['coordinates']
-        ring = max((p[0] for p in polys), key=lambda r: abs(sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(r, r[1:] + r[:1]))))
-        lon, lat = _ring_centroid([tuple(pt[:2]) for pt in ring])
-        out[name] = (round(lat, 4), round(lon, 4))
+        out[name] = [g['coordinates']] if g['type'] == 'Polygon' else g['coordinates']
     return out
+
+
+def districts():
+    return district_shapes()
+
+
+def _inside(lon, lat, ring):
+    inside = False
+    for (x0, y0), (x1, y1) in zip(ring, ring[1:] + ring[:1]):
+        if (y0 > lat) != (y1 > lat) and lon < (x1 - x0) * (lat - y0) / (y1 - y0) + x0:
+            inside = not inside
+    return inside
+
+
+def district_of(lat: float, lon: float) -> str | None:
+    for name, polys in district_shapes().items():
+        for poly in polys:
+            if _inside(lon, lat, [tuple(p[:2]) for p in poly[0]]) and not any(
+                    _inside(lon, lat, [tuple(p[:2]) for p in hole]) for hole in poly[1:]):
+                return name
+    return None
 
 
 def normalise(name: str) -> str | None:
@@ -99,79 +125,126 @@ def parse_command(text: str):
     return ('sub', d) if d else ('unknown', m.group(1)[:40])
 
 
-def pm24(lat: float, lon: float, *, now=None, get=httpx.get):
-    """24-hour mean of hourly CAMS PM2.5 ending at the current hour, or None."""
-    now = (now or datetime.now(timezone.utc)).astimezone(ICT)
-    r = get(AQ_URL, params={'latitude': lat, 'longitude': lon, 'hourly': 'pm2_5', 'past_days': 1,
-                            'forecast_days': 1, 'timezone': 'Asia/Bangkok'}, timeout=8.0)
+# ---------- live WAQI readings (never stored) ----------
+def _parse_time(value):
+    try:
+        t = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+    except (TypeError, ValueError):
+        return None
+    return t if t.tzinfo else None
+
+
+def sensors(token: str, *, get=httpx.get) -> list[dict]:
+    """Stations inside Chiang Mai districts: uid, district, reported time (from the map)."""
+    r = get(BOUNDS_URL, params={'latlng': '17.2,97.9,20.2,99.6', 'networks': 'all', 'token': token}, timeout=10.0)
     r.raise_for_status()
-    h = r.json().get('hourly') or {}
-    stop = now.replace(minute=0, second=0, microsecond=0, tzinfo=None)
-    vals = []
-    for t, v in zip(h.get('time') or [], h.get('pm2_5') or []):
+    body = r.json()
+    if body.get('status') != 'ok':
+        raise RuntimeError('waqi bounds not ok')
+    out = []
+    for s in body.get('data') or []:
         try:
-            at = datetime.fromisoformat(t)
-        except ValueError:
+            lat, lon, uid = float(s['lat']), float(s['lon']), int(s['uid'])
+        except (KeyError, TypeError, ValueError):
             continue
-        if stop - timedelta(hours=24) < at <= stop and isinstance(v, (int, float)):
-            vals.append(float(v))
-    return round(sum(vals) / len(vals), 1) if len(vals) >= 18 else None
+        d = district_of(lat, lon)
+        if d:
+            out.append({'uid': uid, 'district': d, 'time': _parse_time((s.get('station') or {}).get('time'))})
+    return out
 
 
-def alert_text(district: str, value: float) -> str:
-    lvl, label, advice = level_of(value)
-    return '\n'.join([
+def pm25_sub_index(token: str, uid: int, *, get=httpx.get):
+    """(PM2.5 AQI sub-index, reported time) from one station feed, or (None, None)."""
+    r = get(FEED_URL.format(uid=uid), params={'token': token}, timeout=8.0)
+    r.raise_for_status()
+    body = r.json()
+    if body.get('status') != 'ok':
+        return None, None
+    d = body.get('data') or {}
+    v = ((d.get('iaqi') or {}).get('pm25') or {}).get('v')
+    t = _parse_time((d.get('time') or {}).get('iso'))
+    return (float(v), t) if isinstance(v, (int, float)) and v >= 0 else (None, t)
+
+
+def district_readings(token: str, wanted: set[str] | None = None, *, now=None, get=httpx.get) -> dict:
+    """{district: {'n': fresh sensors, 'median': sub-index}} for districts with enough fresh sensors."""
+    now = now or datetime.now(timezone.utc)
+    pool = [s for s in sensors(token, get=get) if wanted is None or s['district'] in wanted]
+    def one(s):
+        try:
+            v, t = pm25_sub_index(token, s['uid'], get=get)
+        except Exception:
+            return None
+        if v is None or t is None or not (now - FRESH <= t <= now + timedelta(minutes=30)):
+            return None
+        return s['district'], v
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        got = [x for x in ex.map(one, pool) if x]
+    by: dict[str, list[float]] = {}
+    for d, v in got:
+        by.setdefault(d, []).append(v)
+    return {d: {'n': len(v), 'median': statistics.median(v)} for d, v in by.items() if len(v) >= MIN_SENSORS}
+
+
+def coverage(token: str, *, now=None, get=httpx.get) -> dict[str, int]:
+    """Sensors per district that reported recently (map timestamps only, one request)."""
+    now = now or datetime.now(timezone.utc)
+    out: dict[str, int] = {}
+    for s in sensors(token, get=get):
+        if s['time'] and now - FRESH <= s['time'] <= now + timedelta(minutes=30):
+            out[s['district']] = out.get(s['district'], 0) + 1
+    return out
+
+
+# ---------- messages ----------
+def alert_text(district: str, reading: dict) -> str:
+    _, label, advice = category(reading['median'])
+    return '\n'.join(x for x in [
         f'⚠️ ฝุ่น PM2.5 อ.{district} ระดับ "{label}"',
-        f'ค่าเฉลี่ย 24 ชม. ประมาณ {value:.0f} µg/m³',
-        'ค่าประมาณจากแบบจำลอง CAMS ไม่ใช่สถานีวัดในอำเภอ',
+        f'ดัชนี AQI ของ PM2.5 ค่ากลาง {reading["median"]:.0f} จากเซนเซอร์ {reading["n"]} จุดในอำเภอ (ค่ารายชั่วโมง ต่อเนื่องอย่างน้อย 1 ชม.)',
         f'คำแนะนำ: {advice}' if advice else '',
+        'เกณฑ์ AQI ของ US EPA · เซนเซอร์ส่วนใหญ่เป็นเซนเซอร์ราคาประหยัด ค่าอาจคลาดเคลื่อน',
+        CREDIT,
         f'ดูข้อมูลเพิ่ม: {SITE}',
         'หยุดรับแจ้ง พิมพ์ "หยุด"',
-    ]).replace('\n\n', '\n')
+    ] if x)
 
 
-def subscribe_reply(district: str, value: float | None) -> str:
-    now = ''
-    if value is not None:
-        _, label, _ = level_of(value)
-        now = f'\nตอนนี้ฝุ่นเฉลี่ย 24 ชม. ประมาณ {value:.0f} µg/m³ ระดับ "{label}" (แบบจำลอง CAMS)'
-    return (f'รับแจ้งเตือนฝุ่น อ.{district} แล้ว{now}\n'
-            'จะแจ้งเมื่อค่าเฉลี่ย 24 ชม. ถึงระดับ "เริ่มมีผลต่อสุขภาพ" ขึ้นไป ไม่เกินวันละครั้งต่อระดับ\n'
+def subscribe_reply(district: str, n: int) -> str:
+    return (f'รับแจ้งเตือนฝุ่น อ.{district} แล้ว จากเซนเซอร์วัดฝุ่น {n} จุดในอำเภอ\n'
+            'จะแจ้งเมื่อดัชนี AQI ของ PM2.5 ถึงระดับ "เริ่มมีผลต่อกลุ่มเสี่ยง" (101) ขึ้นไป ต่อเนื่องอย่างน้อย 1 ชม. ไม่เกินวันละครั้งต่อระดับ\n'
+            f'{CREDIT}\n'
             'เปลี่ยนอำเภอ พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ" · หยุด พิมพ์ "หยุด"')
 
 
-PAUSED_REPLY = ('ยังไม่เปิดแจ้งเตือนฝุ่นรายอำเภอ เพราะตอนนี้มีสถานีวัดฝุ่นจริงเฉพาะ อ.เมือง\n'
-                'เรากำลังเพิ่มสถานีวัดในอำเภออื่น เมื่อพร้อมจะประกาศให้ทราบ ไม่มีการเก็บข้อมูลของคุณ\n'
+PAUSED_REPLY = ('ยังไม่เปิดแจ้งเตือนฝุ่นรายอำเภอ เรากำลังตรวจข้อมูลเซนเซอร์ เมื่อพร้อมจะประกาศให้ทราบ ไม่มีการเก็บข้อมูลของคุณ\n'
                 'ดูค่าฝุ่นล่าสุด: ' + SITE)
 
 
-def handle_text(store, line_user: str, text: str, *, get=httpx.get):
+def handle_text(store, line_user: str, text: str, *, get=httpx.get, now=None):
     """Return the reply text for a dust command, or None if the text is not one."""
     cmd = parse_command(text)
     if not cmd:
         return None
-    if not store.settings.line_dust_alerts_enabled:
-        if cmd[0] == 'stop':
-            # Nothing new is stored while paused; still honour a stop for anyone subscribed earlier.
-            store.call('DELETE', '/rest/v1/cme_line_dust_subs', params={'line_user_id': 'eq.' + line_user})
-            return 'หยุดแจ้งเตือนฝุ่นแล้ว ข้อมูลอำเภอที่เลือกถูกลบ'
-        return PAUSED_REPLY
     if cmd[0] == 'stop':
         store.call('DELETE', '/rest/v1/cme_line_dust_subs', params={'line_user_id': 'eq.' + line_user})
         return 'หยุดแจ้งเตือนฝุ่นแล้ว ข้อมูลอำเภอที่เลือกถูกลบ\nรับใหม่ได้ พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ"'
+    s = store.settings
+    if not s.line_dust_alerts_enabled or not s.aqicn_token:
+        return PAUSED_REPLY
     if cmd[0] == 'unknown':
         return f'ไม่พบอำเภอ "{cmd[1]}" ในเชียงใหม่ ลองพิมพ์ เช่น "แจ้งเตือนฝุ่น ฝาง"'
     district = cmd[1]
+    try:
+        n = coverage(s.aqicn_token, get=get, now=now).get(district, 0)
+    except Exception:
+        return 'ตรวจเซนเซอร์ไม่ได้ในตอนนี้ ลองใหม่อีกครั้งภายหลัง'
+    if n < MIN_SENSORS:
+        return f'อ.{district} ยังมีเซนเซอร์วัดฝุ่นที่ส่งข้อมูลไม่ถึง {MIN_SENSORS} จุด จึงยังแจ้งเตือนไม่ได้\nดูค่าฝุ่นภาพรวม: {SITE}'
     store.call('POST', '/rest/v1/cme_line_dust_subs', params={'on_conflict': 'line_user_id'},
                json={'line_user_id': line_user, 'district': district, 'updated_at': datetime.now(timezone.utc).isoformat()},
                headers={'Prefer': 'resolution=merge-duplicates,return=minimal'})
-    value = None
-    try:
-        lat, lon = districts()[district]
-        value = pm24(lat, lon, get=get)
-    except Exception:  # the reply still confirms the subscription
-        log.info('dust estimate unavailable for reply')
-    return subscribe_reply(district, value)
+    return subscribe_reply(district, n)
 
 
 def forget(store, line_user: str):
@@ -180,7 +253,7 @@ def forget(store, line_user: str):
 
 
 def remaining_quota(token: str, *, get=httpx.get):
-    """Messages left this month, or None for an unlimited plan / unknown."""
+    """Messages left this month, or None for an unlimited plan."""
     head = {'Authorization': 'Bearer ' + token}
     q = get(QUOTA_URL, headers=head, timeout=6.0); q.raise_for_status()
     if q.json().get('type') != 'limited':
@@ -189,14 +262,37 @@ def remaining_quota(token: str, *, get=httpx.get):
     return int(q.json().get('value', 0)) - int(used.json().get('totalUsage', 0))
 
 
+# ---------- the 10-minute job ----------
+def _held_level(store, district: str, level: int, now: datetime) -> bool:
+    """Record our own state for the district; True once the level has held for PERSIST."""
+    rows = store.rows('cme_dust_district_state', select='level,first_seen', district='eq.' + district) or []
+    if rows and int(rows[0]['level']) == level:
+        first = _parse_time(rows[0]['first_seen'])
+        store.call('PATCH', '/rest/v1/cme_dust_district_state', params={'district': 'eq.' + district},
+                   json={'checked_at': now.isoformat()})
+        return bool(first and now - first >= PERSIST)
+    store.call('POST', '/rest/v1/cme_dust_district_state', params={'on_conflict': 'district'},
+               json={'district': district, 'level': level, 'first_seen': now.isoformat(), 'checked_at': now.isoformat()},
+               headers={'Prefer': 'resolution=merge-duplicates,return=minimal'})
+    return False
+
+
 def run_dust_alerts(store, now=None, *, get=httpx.get, post=httpx.post) -> dict:
     s = store.settings
     out = {'dust_checked': 0, 'dust_sent': 0, 'dust_skipped': 0}
+    if not s.aqicn_token:
+        return {**out, 'dust_mode': 'no_sensor_source'}
+    now = now or datetime.now(timezone.utc)
     if not s.line_dust_alerts_enabled:
-        return {**out, 'dust_mode': 'paused'}
+        # Dry run: verify the feed parses. Only counts and category numbers are kept, no readings.
+        try:
+            r = district_readings(s.aqicn_token, now=now, get=get)
+        except Exception:
+            return {**out, 'dust_mode': 'dry_run_failed'}
+        return {**out, 'dust_mode': 'dry_run', 'dust_districts': len(r),
+                'dust_coverage': {d: [v['n'], category(v['median'])[0]] for d, v in sorted(r.items())}}
     if not (s.line_channel_access_token and s.line_channel_secret):
         return {**out, 'dust_mode': 'unavailable'}
-    now = now or datetime.now(timezone.utc)
     day = now.astimezone(ICT).date().isoformat()
     subs = store.rows('cme_line_dust_subs', select='line_user_id,district') or []
     if not subs:
@@ -208,29 +304,30 @@ def run_dust_alerts(store, now=None, *, get=httpx.get, post=httpx.post) -> dict:
     by_district: dict[str, list[str]] = {}
     for r in subs:
         by_district.setdefault(r['district'], []).append(r['line_user_id'])
-    budget = MAX_PER_RUN
+    try:
+        readings = district_readings(s.aqicn_token, set(by_district), now=now, get=get)
+    except Exception:
+        return {**out, 'dust_mode': 'sensors_unavailable'}
     try:
         left = remaining_quota(s.line_channel_access_token, get=get)
-        if left is not None:
-            budget = min(budget, max(0, left - QUOTA_RESERVE))
     except Exception:
         return {**out, 'dust_mode': 'quota_unknown'}  # never send blind
+    budget = MAX_PER_RUN if left is None else min(MAX_PER_RUN, max(0, left - QUOTA_RESERVE))
     for district, users in by_district.items():
-        if district not in districts():
-            continue
-        try:
-            value = pm24(*districts()[district], now=now, get=get)
-        except Exception:
+        reading = readings.get(district)
+        if not reading:
+            store.call('DELETE', '/rest/v1/cme_dust_district_state', params={'district': 'eq.' + district})
             continue
         out['dust_checked'] += 1
-        if value is None:
+        level = category(reading['median'])[0]
+        if level < ALERT_FROM:
+            store.call('DELETE', '/rest/v1/cme_dust_district_state', params={'district': 'eq.' + district})
             continue
-        lvl = level_of(value)[0]
-        if lvl < ALERT_LEVEL:
+        if not _held_level(store, district, level, now):
             continue
-        text = alert_text(district, value)
+        text = alert_text(district, reading)
         for uid in users:
-            if (uid, lvl) in sent_today:
+            if (uid, level) in sent_today:
                 continue
             if budget <= 0:
                 out['dust_skipped'] += 1
@@ -245,7 +342,7 @@ def run_dust_alerts(store, now=None, *, get=httpx.get, post=httpx.post) -> dict:
                 budget -= 1
                 out['dust_sent'] += 1
                 store.call('POST', '/rest/v1/cme_line_dust_sent', params={'on_conflict': 'line_user_id,day,level'},
-                           json={'line_user_id': uid, 'day': day, 'level': lvl, 'district': district, 'value': value},
+                           json={'line_user_id': uid, 'day': day, 'level': level, 'district': district},
                            headers={'Prefer': 'resolution=ignore-duplicates,return=minimal'})
             else:  # blocking the account sends an unfollow event, which forgets them
                 out['dust_skipped'] += 1

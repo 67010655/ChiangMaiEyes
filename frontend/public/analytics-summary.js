@@ -361,12 +361,12 @@
     const pick=selected&&list.includes(selected)?selected:'';
     return `<section class="as-card as-line" aria-labelledby="asLineT">
       <header class="as-head"><span class="as-ic line" aria-hidden="true">💬</span><h3 id="asLineT" class="as-k">รับแจ้งเตือนฝุ่นทาง LINE</h3></header>
-      <p class="as-s">แจ้งเมื่อฝุ่นเฉลี่ย 24 ชม. ในอำเภอของคุณถึงระดับ <b style="color:var(--pm-unhealthy)">เริ่มมีผลต่อสุขภาพ</b> ขึ้นไป ไม่ต้องสมัครสมาชิก</p>
+      <p class="as-s">แจ้งเมื่อเซนเซอร์วัดฝุ่นในอำเภอของคุณวัดดัชนี AQI ของ PM2.5 ได้ระดับ <b style="color:var(--pm-unhealthy)">เริ่มมีผลต่อกลุ่มเสี่ยง</b> (101) ขึ้นไป ต่อเนื่องอย่างน้อย 1 ชม. ไม่ต้องสมัครสมาชิก</p>
       <div class="as-line-row"><label class="as-line-pick"><span>อำเภอ</span>
         <select data-line-district aria-label="เลือกอำเภอที่ต้องการรับแจ้งเตือน"><option value="">เลือกอำเภอ</option>${list.map(n=>`<option value="${esc(n)}"${n===pick?' selected':''}>อ.${esc(n)}</option>`).join('')}</select></label>
         <a class="as-line-go" data-line-go href="${pick?lineHref(pick):'#'}" target="_blank" rel="noopener" aria-disabled="${pick?'false':'true'}">เปิด LINE เพื่อรับแจ้งเตือน</a></div>
       <ol class="as-line-steps"><li>กดปุ่ม แล้วกดส่งข้อความที่พิมพ์ไว้ให้</li><li>ยังไม่ได้เพิ่มเพื่อน? <a href="https://line.me/R/ti/p/${encodeURIComponent(LINE_OA)}" target="_blank" rel="noopener">เพิ่มเพื่อน ChiangMaiEyes</a> ก่อน</li><li>หยุดเมื่อไรก็ได้ พิมพ์ “หยุด” ในแชท</li></ol>
-      <p class="as-note">ค่าประมาณจากแบบจำลอง CAMS ที่กลางอำเภอ (มีสถานีวัดเฉพาะ อ.เมือง) · ไม่เกินวันละครั้งต่อระดับ · เก็บเพียงรหัสผู้ใช้ LINE กับอำเภอที่เลือก</p>
+      <p class="as-note">ใช้ค่ากลางจากเซนเซอร์อย่างน้อย 2 จุดในอำเภอ ส่วนใหญ่เป็นเซนเซอร์ราคาประหยัด ค่าอาจคลาดเคลื่อน · เกณฑ์ AQI ของ US EPA · ไม่เกินวันละครั้งต่อระดับ · เก็บเพียงรหัสผู้ใช้ LINE กับอำเภอที่เลือก · ข้อมูล: <a href="https://waqi.info/" target="_blank" rel="noopener">World Air Quality Index Project</a> และหน่วยงานเจ้าของสถานี</p>
     </section>`;
   }
   const lineHref=d=>`https://line.me/R/oaMessage/${encodeURIComponent(LINE_OA)}/?${encodeURIComponent('แจ้งเตือนฝุ่น '+d)}`;

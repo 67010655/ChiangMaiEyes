@@ -4525,7 +4525,7 @@ function renderAqiStations(){
   if(!el)return;
   const rows=currentDashboard?.pm25?.aqi_stations||[];
   const esc=CmeEvidence.escapeHtml;
-  el.innerHTML=rows.length?rows.map(s=>`<p><b>${esc(s.name)} · AQI ${esc(s.aqi)}</b><br><small>${esc(s.district)} · เวลาแหล่งข้อมูล ${s.updated_at?CmeEvidence.stamp(s.updated_at):s.upstream_time_text?esc(s.upstream_time_text)+' (ต้นทางไม่ระบุเขตเวลา)':'ยังไม่ระบุ'} · รับ ${CmeEvidence.stamp(s.retrieved_at)}</small></p>`).join(''):'ยังไม่มีดัชนีจากต้นทางสำรองในรอบนี้';
+  el.innerHTML=rows.length?rows.map(s=>`<p><b>${esc(s.name)} · AQI ${esc(s.aqi)}</b><br><small>${esc(s.district)} · เวลาแหล่งข้อมูล ${s.updated_at?CmeEvidence.stamp(s.updated_at):s.upstream_time_text?esc(s.upstream_time_text)+' (ต้นทางไม่ระบุเขตเวลา)':'ยังไม่ระบุ'} · รับ ${CmeEvidence.stamp(s.retrieved_at)}</small></p>`).join('')+'<p class="evidence-note">ข้อมูล: <a href="https://waqi.info/" target="_blank" rel="noopener">World Air Quality Index Project</a> และหน่วยงานเจ้าของสถานี · ยังไม่ผ่านการตรวจสอบจากต้นทาง</p>':'ยังไม่มีดัชนีจากต้นทางสำรองในรอบนี้';
 }
 
 function rerenderAll(){

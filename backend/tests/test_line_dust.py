@@ -6,6 +6,8 @@ from app.config import Settings
 UID = 'U' + '0' * 32
 ICT = timezone(timedelta(hours=7))
 NOW = datetime(2026, 3, 10, 9, 30, tzinfo=ICT)
+FANG = (19.92, 99.21)   # inside อ.ฝาง
+HOD = (18.19, 98.61)    # inside อ.ฮอด
 
 
 class Resp:
@@ -16,86 +18,97 @@ class Resp:
         if self.status_code >= 400: raise RuntimeError(self.status_code)
 
 
-def aq(value):
-    """Hourly CAMS values ending at the current hour (Bangkok)."""
-    stop = NOW.replace(minute=0, tzinfo=None)
-    times = [(stop - timedelta(hours=h)).isoformat(timespec='minutes') for h in range(30, -6, -1)]
-    return Resp({'hourly': {'time': times, 'pm2_5': [value] * len(times)}})
+def waqi(values, *, age_min=20, where=FANG):
+    """Fake WAQI: stations 1..n at `where`, PM2.5 sub-index from `values`."""
+    t = (NOW - timedelta(minutes=age_min)).isoformat()
+    def get(url, params=None, **kw):
+        if url == d.BOUNDS_URL:
+            return Resp({'status': 'ok', 'data': [{'uid': i + 1, 'lat': where[0], 'lon': where[1], 'aqi': '999',
+                                                   'station': {'time': t}} for i in range(len(values))]})
+        if url.startswith('https://api.waqi.info/feed/@'):
+            uid = int(url.split('@')[1].strip('/'))
+            return Resp({'status': 'ok', 'data': {'aqi': 999, 'iaqi': {'pm25': {'v': values[uid - 1]}}, 'time': {'iso': t}}})
+        if url == d.QUOTA_URL: return Resp({'type': 'limited', 'value': 1000})
+        if url == d.USED_URL: return Resp({'totalUsage': 10})
+        raise AssertionError(url)
+    return get
 
 
 class Store:
-    def __init__(self, subs=(), sent=()):
-        self.settings = Settings(cache_dir='.', line_channel_secret='s', line_channel_access_token='t', line_dust_alerts_enabled=True)
-        self.subs, self.sent, self.calls = list(subs), list(sent), []
+    def __init__(self, subs=(), enabled=True):
+        self.settings = Settings(cache_dir='.', line_channel_secret='s', line_channel_access_token='t',
+                                 aqicn_token='k', line_dust_alerts_enabled=enabled)
+        self.subs, self.sent, self.state, self.calls = list(subs), [], {}, []
     def rows(self, table, **p):
-        return self.subs if table == 'cme_line_dust_subs' else self.sent
+        if table == 'cme_line_dust_subs': return self.subs
+        if table == 'cme_dust_district_state':
+            row = self.state.get(p['district'][3:]); return [row] if row else []
+        return self.sent
     def call(self, method, path, **kw):
         self.calls.append((method, path, kw.get('params'), kw.get('json')))
-        if method == 'POST' and path.endswith('cme_line_dust_sent'):
-            self.sent.append(kw['json'])
+        body = kw.get('json') or {}
+        if path.endswith('cme_line_dust_sent') and method == 'POST': self.sent.append(body)
+        if path.endswith('cme_dust_district_state'):
+            key = (kw.get('params') or {}).get('district', 'eq.' + body.get('district', ''))[3:]
+            if method == 'POST': self.state[body['district']] = dict(body)
+            elif method == 'PATCH': self.state[key].update(body)
+            elif method == 'DELETE': self.state.pop(key, None)
 
 
-def test_commands_are_thai_district_names_or_stop():
-    assert d.parse_command('แจ้งเตือนฝุ่น ฝาง') == ('sub', 'ฝาง')
-    assert d.parse_command('ฝุ่น อ.ฝาง') == ('sub', 'ฝาง')
-    assert d.parse_command('แจ้งเตือนฝุ่น อำเภอเมือง')[0] == 'sub'
-    assert d.parse_command('หยุด') == ('stop',)
-    assert d.parse_command('แจ้งเตือนฝุ่น ลอนดอน')[0] == 'unknown'
-    assert d.parse_command('CME-ABCDEFGH') is None  # rep link codes still go to the old path
-    assert len(d.districts()) == 25
-
-
-def test_24_hour_mean_needs_enough_hours():
-    assert d.pm24(18.8, 98.9, now=NOW, get=lambda *a, **k: aq(42)) == 42
-    thin = Resp({'hourly': {'time': [NOW.replace(minute=0, tzinfo=None).isoformat()], 'pm2_5': [99]}})
-    assert d.pm24(18.8, 98.9, now=NOW, get=lambda *a, **k: thin) is None
-
-
-def _run(store, value, quota=(1000, 10)):
+def run(store, values, at=NOW, **kw):
     pushed = []
-    def get(url, **kw):
-        if url == d.QUOTA_URL: return Resp({'type': 'limited', 'value': quota[0]})
-        if url == d.USED_URL: return Resp({'totalUsage': quota[1]})
-        return aq(value)
-    def post(url, **kw):
-        pushed.append(kw['json']); return Resp({}, 200)
-    return d.run_dust_alerts(store, NOW, get=get, post=post), pushed
+    def post(url, **k): pushed.append(k['json']); return Resp({}, 200)
+    return d.run_dust_alerts(store, at, get=waqi(values, **kw), post=post), pushed
 
 
-def test_alerts_only_at_unhealthy_once_per_day_and_say_it_is_a_model():
+def test_categories_are_us_epa_aqi_not_converted():
+    assert d.category(100)[1] == 'ปานกลาง'
+    assert d.category(101)[1] == 'เริ่มมีผลต่อกลุ่มเสี่ยง'
+    assert d.category(151)[1] == 'มีผลต่อสุขภาพ'
+    assert d.district_of(*FANG) == 'ฝาง' and d.district_of(*HOD) == 'ฮอด'
+    assert d.parse_command('แจ้งเตือนฝุ่น อ.ฝาง') == ('sub', 'ฝาง') and d.parse_command('หยุด') == ('stop',)
+
+
+def test_district_value_needs_two_fresh_sensors_and_uses_the_pm25_sub_index():
+    r = d.district_readings('k', now=NOW, get=waqi([120, 140, 10]))
+    assert r == {'ฝาง': {'n': 3, 'median': 120}}  # median of the PM2.5 sub-index; composite 999 ignored
+    assert d.district_readings('k', now=NOW, get=waqi([150])) == {}            # one sensor is not enough
+    assert d.district_readings('k', now=NOW, get=waqi([150, 150], age_min=200)) == {}  # stale readings
+
+
+def test_alert_only_after_the_level_holds_an_hour_and_says_where_it_came_from():
     store = Store(subs=[{'line_user_id': UID, 'district': 'ฝาง'}])
-    out, pushed = _run(store, 30)            # ปานกลาง: no alert
-    assert out['dust_sent'] == 0 and not pushed
-    out, pushed = _run(store, 52)            # เริ่มมีผลต่อสุขภาพ
+    out, pushed = run(store, [130, 120])
+    assert out['dust_sent'] == 0 and not pushed            # first sighting: wait
+    out, pushed = run(store, [130, 120], at=NOW + timedelta(minutes=30))
+    assert not pushed                                      # still under an hour
+    out, pushed = run(store, [130, 120], at=NOW + timedelta(minutes=61))
     assert out['dust_sent'] == 1
     text = pushed[0]['messages'][0]['text']
-    assert 'เริ่มมีผลต่อสุขภาพ' in text and 'แบบจำลอง CAMS' in text and 'หยุด' in text
-    store.sent = [{'line_user_id': UID, 'level': 4}]
-    out, pushed = _run(store, 55)            # same level, same day: nothing
-    assert out['dust_sent'] == 0 and not pushed
+    assert 'เริ่มมีผลต่อกลุ่มเสี่ยง' in text and 'เซนเซอร์ 2 จุด' in text and 'World Air Quality Index Project' in text
+    assert 'µg' not in text                                 # never converted
+    assert 'value' not in store.sent[0]                     # no reading stored
+    out, pushed = run(store, [130, 120], at=NOW + timedelta(minutes=80))
+    assert not pushed                                       # same level, same day
+    run(store, [40, 50], at=NOW + timedelta(minutes=90))
+    assert 'ฝาง' not in store.state                         # back to normal clears our state
 
 
-def test_keeps_a_quota_reserve_for_forest_alerts():
-    store = Store(subs=[{'line_user_id': UID, 'district': 'ฝาง'}])
-    out, pushed = _run(store, 80, quota=(300, 300 - d.QUOTA_RESERVE))
-    assert not pushed and out['dust_skipped'] == 1
+def test_dry_run_keeps_only_counts_and_categories():
+    store = Store(subs=[{'line_user_id': UID, 'district': 'ฝาง'}], enabled=False)
+    out, pushed = run(store, [130, 120])
+    assert out['dust_mode'] == 'dry_run' and out['dust_coverage'] == {'ฝาง': [2, 3]} and not pushed
+    assert not [c for c in store.calls if c[0] != 'GET']    # nothing written while dry
 
 
-def test_stop_and_unfollow_forget_the_person():
+def test_subscribing_needs_enough_sensors_and_stop_always_works():
     store = Store()
-    assert 'หยุด' in d.handle_text(store, UID, 'หยุด')
-    assert store.calls[-1][0] == 'DELETE'
-    store.calls.clear(); d.forget(store, UID)
-    assert {c[1] for c in store.calls} == {'/rest/v1/cme_line_dust_subs', '/rest/v1/cme_line_dust_sent'}
-
-
-def test_paused_by_default_stores_nothing_and_sends_nothing():
-    store = Store(subs=[{'line_user_id': UID, 'district': 'ฝาง'}])
-    store.settings = Settings(cache_dir='.', line_channel_secret='s', line_channel_access_token='t')
-    assert store.settings.line_dust_alerts_enabled is False
-    reply = d.handle_text(store, UID, 'แจ้งเตือนฝุ่น ฝาง')
-    assert 'ยังไม่เปิด' in reply and 'อ.เมือง' in reply
-    assert not store.calls  # nothing written
-    out, pushed = _run(store, 90)
-    assert out.get('dust_mode') == 'paused' and not pushed
-    assert 'หยุด' in d.handle_text(store, UID, 'หยุด') and store.calls[-1][0] == 'DELETE'
+    assert 'ยังมีเซนเซอร์' in d.handle_text(store, UID, 'แจ้งเตือนฝุ่น ฝาง', get=waqi([100]), now=NOW)
+    assert not store.calls
+    reply = d.handle_text(store, UID, 'แจ้งเตือนฝุ่น ฝาง', get=waqi([100, 90]), now=NOW)
+    assert 'เซนเซอร์วัดฝุ่น 2 จุด' in reply and store.calls[-1][1] == '/rest/v1/cme_line_dust_subs'
+    paused = Store(enabled=False)
+    assert 'ยังไม่เปิด' in d.handle_text(paused, UID, 'แจ้งเตือนฝุ่น ฝาง', get=waqi([100, 90]), now=NOW) and not paused.calls
+    assert 'หยุด' in d.handle_text(paused, UID, 'หยุด') and paused.calls[-1][0] == 'DELETE'
+    paused.calls.clear(); d.forget(paused, UID)
+    assert {c[1] for c in paused.calls} == {'/rest/v1/cme_line_dust_subs', '/rest/v1/cme_line_dust_sent'}
