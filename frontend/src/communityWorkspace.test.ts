@@ -7,12 +7,14 @@ const evidence = readFileSync(resolve(__dirname, '../public/decision-support.js'
 const workspace = readFileSync(resolve(__dirname, '../public/community-workspace.js'), 'utf8');
 const f = { forest_id: 'fixture-A', name: 'ป่าทดสอบ <script>bad()</script>', amphoe: 'อำเภอทดสอบ', latitude: 18.85, longitude: 98.85,
   boundary: { type: 'Polygon', coordinates: [[[98.8,18.8],[98.9,18.8],[98.9,18.9],[98.8,18.9],[98.8,18.8]]] } };
+const forestPublic = readFileSync(resolve(__dirname, '../public/forest-public.js'), 'utf8');
 const tick = () => new Promise(resolve => setTimeout(resolve, 5));
-async function setup({ signedIn = false, approved = false, failCreate = false, offline = false, nullStation = false } = {}) {
+async function setup({ signedIn = false, approved = false, failCreate = false, offline = false, nullStation = false, publicView = false } = {}) {
   const dom = new JSDOM('<section id="communityview"><button id="communityClose"></button><div id="communityContent"></div></section>',
     { url: 'https://fixture.example/', runScripts: 'outside-only' });
   const w = dom.window as any;
   w.eval(evidence);
+  if (publicView) w.eval(forestPublic);
   const calls: any[] = [];
   let user: any = signedIn ? { id: 'fixture-user' } : null;
   w.fetch = async (url: string, request: any) => {
@@ -36,6 +38,17 @@ async function setup({ signedIn = false, approved = false, failCreate = false, o
 }
 
 describe('representative workspace interaction and evidence boundaries', () => {
+  it('signed out: everyone sees the forest lookup, no rep tabs, and still no private requests', async () => {
+    const { dom, calls } = await setup({ publicView: true });
+    const doc = dom.window.document;
+    expect(doc.querySelector('.cw-tabs')).toBeNull();
+    expect(doc.getElementById('fpForest')).not.toBeNull();
+    expect(doc.body.textContent).toContain('เป็นตัวแทนป่าชุมชน?');
+    expect(doc.querySelector('[data-cw="signin"]')).not.toBeNull();
+    expect(doc.querySelector('script')).toBeNull();
+    expect(calls.some(call => call.path === '/me' || call.path === '/incidents')).toBe(false);
+    dom.window.close();
+  });
   it('shows a retryable failure instead of an endless loading state when the first request fails', async () => {
     const { dom } = await setup({ offline: true });
     expect(dom.window.document.body.textContent).toContain('Fixture connection lost');

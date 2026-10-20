@@ -76,9 +76,16 @@
     }
   }
   function tabs(){
+    if(!state.session)return '';
     const entries=[['forest','ป่าของฉัน'],['incidents','ติดตามเหตุ'],['preferences','การแจ้งเตือน'],['practice','ซ้อมใช้งาน']];
     if(state.me?.is_admin)entries.push(['review','ตรวจคำขอ']);
     return `<div class="cw-tabs" role="tablist" aria-label="พื้นที่ชุมชน">${entries.map(([id,label])=>`<button role="tab" aria-selected="${state.tab===id}" data-cw="tab" data-tab="${id}">${label}</button>`).join('')}</div>`;
+  }
+  // Everyone can look up a forest; the representative sign-in sits below.
+  function publicView(){
+    const P=root.CmeForestPublic;if(!P)return loginView();
+    const id=state.publicForest??P.recall();state.publicForest=id;
+    return P.html({forests:state.catalog,dashboard:context.dashboard(),selectedId:id,incidentsHtml:incidentRows(state.publicIncidents||[],true)});
   }
   function loginView(){return `<div class="cw-empty"><h2>พื้นที่สำหรับตัวแทนป่าชุมชน</h2><p>เข้าสู่ระบบเพื่อขอสิทธิ์พื้นที่ เมื่อผู้ดูแลยืนยันแล้ว คุณจะบันทึกเหตุ ร่วมประสานงาน และตั้งค่าอีเมลของป่าที่รับผิดชอบได้</p><p>ยังไม่มีบัญชี? เลือกสมัครสมาชิกในหน้าบัญชี แล้วจึงขอสิทธิ์พื้นที่</p>${button('เข้าสู่ระบบ / สมัครสมาชิก','signin','',true)} ${button('ดูเหตุที่เผยแพร่','public')}${E().fireHelpHtml()}</div>`;}
   function membershipView(){
@@ -207,7 +214,7 @@
     if(state.ready===false)content='<div class="cw-empty"><h2>ระบบข้อมูลชุมชนยังไม่พร้อม</h2><p>ยังไม่ได้โหลดรายการเหตุหรือสิทธิ์ของคุณ กรุณาลองใหม่ภายหลัง</p></div>';
     else if(state.ready===null)content='<div class="cw-loading" role="status">กำลังโหลดข้อมูลพื้นที่…</div>';
     else if(state.tab==='incidents'&&!state.session)content=`<section class="cw-section"><h2>เหตุที่อนุมัติให้เผยแพร่</h2><p class="cw-help">แสดงสรุปที่ผู้รับผิดชอบเลือกเผยแพร่ รายละเอียดสำหรับประสานอยู่ในพื้นที่ตัวแทน</p>${incidentRows(state.publicIncidents,true)}<div class="cw-actions">${button('เข้าสู่พื้นที่ตัวแทน','signin')}${button('ดูการวิเคราะห์รายอำเภอ (ทดลอง)','legacy-phase')}</div></section>`;
-    else if(!state.session)content=loginView();
+    else if(!state.session)content=publicView();
     else if(!state.me)content='<div class="cw-loading">กำลังตรวจสิทธิ์พื้นที่…</div>';
     else if(state.detail?.incident?.status)content=detailView();
     else if(state.detail)content='<div class="cw-loading">กำลังโหลดประวัติเหตุ…</div>';
@@ -220,6 +227,10 @@
     body.dataset.viewKey=state.tab+'/'+(state.detail?.incident?.id||'')+'/'+state.create;
     body.querySelectorAll('details').forEach((d,n)=>{const open=detailsOpen.get(body.dataset.viewKey+'/'+n);if(open!==undefined)d.open=open;});
     restoreForms();
+    if(!state.session&&state.ready&&root.CmeForestPublic&&body.querySelector('.fp')){
+      body.dataset.fpDash=context.dashboard()?'1':'';
+      root.CmeForestPublic.attach(body,{forests:()=>state.catalog,dashboard:()=>context.dashboard(),locate:(lat,lon)=>context.locate(lat,lon),fetcher:path=>root.fetch((context.apiBase||'')+path),onPick:id=>{state.publicForest=id;}});
+    }
     if(state.tab==='practice'&&state.session&&state.me&&root.CmePractice)root.CmePractice.attach(document.getElementById('cwPractice'),{api});
     if(state.tab==='forest'&&state.me&&!state.detail&&!state.create)renderMap(forest());
     if(state.detail?.photos?.length)loadPhotos();
@@ -333,7 +344,7 @@
     const match=location.hash.match(/^#community(?:\/incident\/([a-f0-9-]{36}))?$/i),requested=new URLSearchParams(location.search).get('incident'),fromEmail=/^[a-f0-9-]{36}$/i.test(requested||'')?requested:null;if(location.hash==='#community/practice'&&!fromEmail)open('practice');else if(match||fromEmail)open(fromEmail||match?.[1]?'incidents':'forest',fromEmail||match?.[1]||null);
   }
   root.CmeCommunity={init,open,close,hide,authChanged,api,statusNames,transitions,
-    dataChanged:()=>{if(isOpen()&&state.tab==='forest'&&!state.create&&!state.detail&&allowedForests().length)render();},
+    dataChanged:()=>{if(!isOpen())return;if(!state.session&&state.ready&&body?.dataset.fpDash==='')render();else if(state.tab==='forest'&&!state.create&&!state.detail&&allowedForests().length)render();},
     newIncident:async(point)=>{await open('forest');if(!state.session){state.notice='เข้าสู่ระบบและรับอนุมัติพื้นที่ก่อนแจ้งเหตุ';render();return;}if(!allowedForests().length){state.notice='ขอสิทธิ์ตัวแทนพื้นที่ก่อนบันทึกเหตุ';render();return;}state.draft=state.draft||readDraft()||newDraft(point);if(point){state.draft.latitude=point.lat;state.draft.longitude=point.lon;}state.create=true;state.detail=null;saveDraft();render();},
     myReports:()=>api('/my-reports'),cancelLegacy:id=>api('/my-reports/'+id+'/cancel',{method:'POST'})};
 })(window);

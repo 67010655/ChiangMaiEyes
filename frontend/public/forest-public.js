@@ -1,0 +1,249 @@
+/* Community-forest tab for everyone (no login). Pick a forest by name or
+ * "near me" and see its situation from data the site already has:
+ * satellite hotspots in the forest and within 5 km of its boundary (24 h),
+ * the province reference wind, the nearest live dust sensor, fire weather at
+ * the forest, and who to call. Nothing here ranks forests; the "near
+ * hotspots" list is ordered by the latest detection, not by a score. */
+(function(root){
+  'use strict';
+  const NEAR_KM=5, SENSOR_KM=15, LIST_MAX=8;
+  const KEY='cme-public-forest-v1';
+  const E=()=>root.CmeEvidence, C=()=>root.CmeCoordination;
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const DIRS=['เหนือ','ตะวันออกเฉียงเหนือ','ตะวันออก','ตะวันออกเฉียงใต้','ใต้','ตะวันตกเฉียงใต้','ตะวันตก','ตะวันตกเฉียงเหนือ'];
+  const dirName=deg=>DIRS[Math.round((((deg%360)+360)%360)/45)%8];
+  const kmText=km=>km<1?'น้อยกว่า 1 กม.':km.toFixed(km<10?1:0)+' กม.';
+
+  // ---------- geometry ----------
+  const rings=g=>!g?[]:g.type==='Feature'?rings(g.geometry):g.type==='Polygon'?[g.coordinates[0]]:g.type==='MultiPolygon'?g.coordinates.map(p=>p[0]):[];
+  const bboxCache=new WeakMap();
+  function bbox(f){
+    if(bboxCache.has(f))return bboxCache.get(f);
+    let b=null;
+    for(const r of rings(f.boundary))for(const [x,y] of r){if(!b)b=[x,y,x,y];else{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}}
+    if(!b&&Number.isFinite(f.longitude))b=[f.longitude,f.latitude,f.longitude,f.latitude];
+    bboxCache.set(f,b);return b;
+  }
+  function centre(f){
+    if(Number.isFinite(f.latitude)&&Number.isFinite(f.longitude))return {lat:f.latitude,lon:f.longitude};
+    const b=bbox(f);return b?{lat:(b[1]+b[3])/2,lon:(b[0]+b[2])/2}:null;
+  }
+  function bearing(a,b){
+    const r=Math.PI/180,y=Math.sin((b.lon-a.lon)*r)*Math.cos(b.lat*r),x=Math.cos(a.lat*r)*Math.sin(b.lat*r)-Math.sin(a.lat*r)*Math.cos(b.lat*r)*Math.cos((b.lon-a.lon)*r);
+    return (Math.atan2(y,x)/r+360)%360;
+  }
+  // Straight-line km from a point to the forest boundary (0 inside). A
+  // boundary flagged for review falls back to the forest reference point.
+  function distanceToForest(p,f){
+    if(f.boundary&&f.boundary_quality!=='needs_review'){
+      if(E().inBoundary(p.lat,p.lon,f.boundary))return 0;
+      if(C()?.boundaryDistance)return C().boundaryDistance(p,f.boundary);
+    }
+    const c=centre(f);return c?E().distanceKm(p,c):Infinity;
+  }
+
+  // ---------- data ----------
+  function ready(dash,k){const q=dash?.data_quality?.[k];return !!q&&!q.is_stale&&q.source_mode!=='UNAVAILABLE';}
+  function recentHotspots(dash,now=Date.now()){
+    if(!ready(dash,'hotspots'))return null;
+    return E().filterHotspots((dash.hotspots?.items||[]).map(h=>({...h,lat:h.latitude??h.lat,lon:h.longitude??h.lon})),{hours:24,now});
+  }
+  // Hotspots in the forest and within NEAR_KM of it, nearest first.
+  function around(f,hot){
+    const b=bbox(f);if(!b)return [];
+    const pad=NEAR_KM/111+0.01, padX=pad/Math.max(0.3,Math.cos(b[1]*Math.PI/180));
+    return hot.filter(h=>h.lon>=b[0]-padX&&h.lon<=b[2]+padX&&h.lat>=b[1]-pad&&h.lat<=b[3]+pad)
+      .map(h=>({h,km:distanceToForest(h,f)})).filter(x=>x.km<=NEAR_KM).sort((a,b)=>a.km-b.km);
+  }
+  function situation(f,dash,now=Date.now()){
+    const hot=recentHotspots(dash,now);
+    if(hot===null)return {status:'unknown',inside:0,near:0,rows:[],hotTime:dash?.data_quality?.hotspots?.latest_update};
+    const rows=around(f,hot);
+    const inside=rows.filter(r=>r.km===0).length, near=rows.length-inside;
+    const w=ready(dash,'weather')?dash.weather:null;
+    let wind=null;
+    if(w&&Number.isFinite(w.wind_direction_deg)){
+      const to=E().windTo(w.wind_direction_deg), c=centre(f);
+      const outside=rows.find(r=>r.km>0);
+      // "Toward the forest": the wind carries air from the nearest outside hotspot roughly at the forest (±45°).
+      let toward=null;
+      if(outside&&c){const d=Math.abs(((bearing(outside.h,c)-to)+540)%360-180);toward=d<=45;}
+      wind={to,dir:dirName(to),kmh:Number.isFinite(w.wind_speed_kmh)?Math.round(w.wind_speed_kmh):null,toward,source:w.source,time:dash.data_quality?.weather?.latest_update};
+    }
+    return {status:inside?'alert':near?'watch':'calm',inside,near,rows,wind,hotTime:dash.data_quality?.hotspots?.latest_update};
+  }
+  // Forests with any hotspot inside or within NEAR_KM in 24 h, latest detection first.
+  function forestsNearHotspots(forests,dash,now=Date.now()){
+    const hot=recentHotspots(dash,now);if(!hot?.length)return hot===null?null:[];
+    const out=[];
+    for(const f of forests){
+      const rows=around(f,hot);if(!rows.length)continue;
+      out.push({forest:f,inside:rows.filter(r=>r.km===0).length,near:rows.filter(r=>r.km>0).length,latest:Math.max(...rows.map(r=>Date.parse(r.h.detected_at)))});
+    }
+    return out.sort((a,b)=>b.latest-a.latest);
+  }
+  function nearestSensor(f,data){
+    const c=centre(f);if(!c||!data?.sensors)return null;
+    return data.sensors.filter(s=>s.fresh).map(s=>({s,km:E().distanceKm(c,{lat:s.lat,lon:s.lon})})).filter(x=>x.km<=SENSOR_KM).sort((a,b)=>a.km-b.km)[0]||null;
+  }
+
+  // ---------- views ----------
+  const STATUS={
+    calm:{cls:'calm',icon:'🌿',title:'ไม่พบจุดความร้อนในป่าและรอบ 5 กม.',sub:'ใน 24 ชม. ล่าสุด · ดาวเทียมอาจไม่เห็นไฟเล็กหรือไฟใต้เรือนยอด'},
+    watch:{cls:'watch',icon:'👀',title:n=>`พบ ${n} จุดรอบป่าในระยะ 5 กม.`,sub:'ใน 24 ชม. ล่าสุด · อยู่นอกขอบเขตป่า ยังไม่ยืนยันว่าเป็นไฟ'},
+    alert:{cls:'alert',icon:'🔥',title:n=>`พบ ${n} จุดในขอบเขตป่า`,sub:'ใน 24 ชม. ล่าสุด · จุดความร้อนจากดาวเทียม ยังไม่ยืนยันเหตุภาคสนาม'},
+    unknown:{cls:'unknown',icon:'⏳',title:'ยังไม่มีข้อมูลจุดความร้อนรอบล่าสุด',sub:'ข้อมูลดาวเทียมยังไม่พร้อมหรือเก่าเกินไป ไม่สรุปว่าปลอดภัย'},
+  };
+  function statusHtml(sit){
+    const s=STATUS[sit.status], n=sit.status==='alert'?sit.inside:sit.near;
+    const title=typeof s.title==='function'?s.title(n):s.title;
+    const extra=sit.status==='alert'&&sit.near?` และอีก ${sit.near} จุดรอบป่า`:'';
+    return `<div class="fp-status ${s.cls}" role="status"><span class="fp-status-ic" aria-hidden="true">${s.icon}</span><div><b>${esc(title)}${esc(extra)}</b><small>${esc(s.sub)}${sit.hotTime?' · ข้อมูล '+esc(E().stamp(sit.hotTime)):''}</small></div></div>`;
+  }
+  function windHtml(sit){
+    const w=sit.wind;
+    if(!w)return `<div class="fp-fact"><span class="fp-k">ลม</span><b>ยังไม่มีข้อมูล</b></div>`;
+    const lead=w.toward===true?'<em class="fp-warn">พัดจากจุดความร้อนเข้าหาป่า</em>':w.toward===false?'<em>ไม่ได้พัดจากจุดความร้อนเข้าหาป่า</em>':'';
+    return `<div class="fp-fact"><span class="fp-k">ลม</span><b><span class="fp-arrow" style="transform:rotate(${Math.round(w.to)}deg)" aria-hidden="true">↑</span> พัดไปทาง${esc(w.dir)}${w.kmh!==null?' · '+esc(w.kmh)+' กม./ชม.':''}</b>${lead}<small>ลมอ้างอิงระดับจังหวัด ไม่ใช่ลมที่วัดในป่านี้</small></div>`;
+  }
+  // Small map: forest outline, the 5 km band, hotspots and the wind arrow.
+  function mapSvg(f,sit){
+    const b=bbox(f);if(!b)return '';
+    // Fit the forest and any nearby hotspots (not the whole 5 km band, which would shrink a small forest to a dot).
+    const lat0=(b[1]+b[3])/2, kx=Math.cos(lat0*Math.PI/180);
+    let e=[...b];for(const r of sit.rows){e=[Math.min(e[0],r.h.lon),Math.min(e[1],r.h.lat),Math.max(e[2],r.h.lon),Math.max(e[3],r.h.lat)];}
+    const span=Math.max((e[2]-e[0])*kx,e[3]-e[1],0.02), pad=span*0.18;
+    const cx=(e[0]+e[2])/2, cy=(e[1]+e[3])/2, hw=Math.max((e[2]-e[0])*kx,0.02)/2+pad, hh=Math.max(e[3]-e[1],0.02)/2+pad;
+    const x0=cx-hw/kx,x1=cx+hw/kx,y0=cy-hh,y1=cy+hh;
+    const W=320,H=Math.max(150,Math.min(220,Math.round(W*(y1-y0)/((x1-x0)*kx))));
+    const sx=Math.min(W/((x1-x0)*kx),H/(y1-y0));
+    const ox=(W-(x1-x0)*kx*sx)/2, oy=(H-(y1-y0)*sx)/2;
+    const P=(lon,lat)=>[(ox+(lon-x0)*kx*sx).toFixed(1),(oy+(y1-lat)*sx).toFixed(1)];
+    const path=rings(f.boundary).map(r=>'M'+r.map(([x,y])=>P(x,y).join(',')).join('L')+'Z').join('');
+    const c=centre(f), cp=c?P(c.lon,c.lat):[W/2,H/2], ring=NEAR_KM/111*sx;
+    const dots=sit.rows.map(r=>{const [x,y]=P(r.h.lon,r.h.lat);return `<circle cx="${x}" cy="${y}" r="5" class="${r.km===0?'in':'near'}"/>`;}).join('');
+    const kmPx=sx/111, step=[0.5,1,2,5].find(k=>k*kmPx>=40)||5;
+    const scale=`<g class="fp-map-scale" transform="translate(12,${H-14})"><path d="M0 0H${(step*kmPx).toFixed(1)}M0 -4V0M${(step*kmPx).toFixed(1)} -4V0"/><text x="0" y="-7">${step} กม.</text></g><text class="fp-map-n" x="12" y="18">↑ ทิศเหนือ</text>`;
+    const arrow=sit.wind?`<g class="fp-map-wind" transform="translate(${W-26},26)"><circle r="16"/><g transform="rotate(${Math.round(sit.wind.to)})"><path d="M0 9V-9M0 -9l-5 6M0 -9l5 6"/></g><text y="30" text-anchor="middle">ลม</text></g>`:'';
+    return `<svg class="fp-map" viewBox="0 0 ${W} ${H}" role="img" aria-label="ขอบเขตป่า วงรอบ 5 กม. และจุดความร้อน 24 ชม.">
+      <circle cx="${cp[0]}" cy="${cp[1]}" r="${(ring+Math.max((b[2]-b[0])*kx,(b[3]-b[1]))*sx/2).toFixed(1)}" class="band"/>
+      ${path?`<path d="${path}" class="forest"/>`:`<circle cx="${cp[0]}" cy="${cp[1]}" r="6" class="forest"/>`}${dots}${arrow}${scale}</svg>
+      <p class="fp-map-key"><span><i class="k-forest"></i>ขอบเขตป่า</span><span><i class="k-band"></i>รอบ 5 กม. (โดยประมาณ)</span><span><i class="k-in"></i>ในป่า</span><span><i class="k-near"></i>รอบป่า</span></p>`;
+  }
+  function forestCard(f,dash,now=Date.now()){
+    const sit=situation(f,dash,now), c=centre(f);
+    const meta=[f.tambon?'ต.'+f.tambon:'',f.amphoe?'อ.'+f.amphoe:'',Number.isFinite(f.area_rai)?Math.round(f.area_rai).toLocaleString('th-TH')+' ไร่':''].filter(Boolean).join(' · ');
+    const nearest=sit.rows[0];
+    return `<article class="as-card fp-card" aria-labelledby="fpName">
+      <header class="fp-card-head"><div><p class="fp-kicker">ป่าชุมชน</p><h2 id="fpName">${esc(f.name||'ป่าชุมชน')}</h2><p class="fp-meta">${esc(meta)}${f.fire_management_active?' · <span class="fp-tag">มีการจัดการไฟในทะเบียน</span>':''}</p></div></header>
+      ${statusHtml(sit)}
+      ${mapSvg(f,sit)}
+      <div class="fp-facts">
+        <div class="fp-fact"><span class="fp-k">จุดใกล้ที่สุด</span><b>${nearest?nearest.km===0?'อยู่ในขอบเขตป่า':kmText(nearest.km)+' จากขอบป่า':sit.status==='unknown'?'รอข้อมูล':'ไม่มีในระยะ 5 กม.'}</b>${nearest?`<small>${esc(E().stamp(nearest.h.detected_at))} · ระยะเส้นตรง</small>`:''}</div>
+        ${windHtml(sit)}
+        <div class="fp-fact" data-fp-dust><span class="fp-k">ฝุ่นใกล้ป่า</span><b class="fp-wait">กำลังดูเซนเซอร์…</b></div>
+        <div class="fp-fact" data-fp-fwi><span class="fp-k">อากาศเอื้อต่อไฟวันนี้</span><b class="fp-wait">กำลังคำนวณ…</b></div>
+      </div>
+      <div class="fp-actions">${c?`<button type="button" class="cw-btn primary" data-fp="map" data-lat="${c.lat}" data-lon="${c.lon}">ดูป่านี้บนแผนที่</button>`:''}<a class="cw-btn" href="tel:1362">📞 เห็นไฟ โทร 1362</a></div>
+      <details class="fp-who"><summary>ใครดูแลพื้นที่นี้ · เบอร์หน่วยงาน · ป่าข้างเคียง</summary>${c&&C()?C().html(c.lat,c.lon,{myForestId:f.forest_id}):''}</details>
+      <p class="as-note">ขอบเขตป่าจาก RECOFTC · จุดความร้อน NASA FIRMS (VIIRS/MODIS) · ระยะเป็นเส้นตรงโดยประมาณ ไม่ใช่ระยะเดินทาง</p>
+    </article>`;
+  }
+  function dustHtml(f,data){
+    const n=nearestSensor(f,data);
+    if(!n)return `<span class="fp-k">ฝุ่นใกล้ป่า</span><b>ไม่มีเซนเซอร์ในระยะ ${SENSOR_KM} กม.</b><small>ดูค่าฝุ่นภาพรวมที่หน้าแผนที่</small>`;
+    const D=root.CmeDustSensors;
+    return `<span class="fp-k">ฝุ่นใกล้ป่า</span><b>${esc(n.s.aqi_pm25)} AQI ${D.chip(n.s.aqi_pm25)}</b><small>เซนเซอร์ห่าง ${esc(kmText(n.km))} · ${esc(D.ago(n.s.time))} · เกณฑ์ US EPA ไม่ใช่ µg/m³ · ข้อมูล World Air Quality Index Project</small>`;
+  }
+  function fwiHtml(days,today){
+    const F=root.CmeFireWeather, d=(days||[]).find(x=>x.date===today);
+    if(!F||!d||!Number.isFinite(d.fwi))return `<span class="fp-k">อากาศเอื้อต่อไฟวันนี้</span><b>คำนวณไม่ได้ในตอนนี้</b>`;
+    const k=F.CLASSES[F.classOf(d.fwi)];
+    const ahead=(days||[]).filter(x=>x.date>today).slice(0,7), hi=ahead.filter(x=>F.classOf(x.fwi)>=3).length;
+    return `<span class="fp-k">อากาศเอื้อต่อไฟวันนี้</span><b><span class="fp-dot" style="background:${k.color}"></span>${esc(k.label)} <small class="fp-num">FWI ${esc(d.fwi.toFixed(1))}</small></b><small>${hi?`7 วันข้างหน้ามี ${hi} วันระดับสูงขึ้นไป · `:''}ดัชนีจากอากาศ ไม่ใช่การพยากรณ์ว่าไฟจะเกิดที่ไหน · Open-Meteo</small>`;
+  }
+  function listHtml(rows,selectedId){
+    if(rows===null)return `<p class="cw-help">ข้อมูลจุดความร้อนยังไม่พร้อม</p>`;
+    if(!rows.length)return `<p class="fp-empty">ไม่พบจุดความร้อนในหรือรอบป่าชุมชนใดใน 24 ชม. ล่าสุด<br><small>ดาวเทียมอาจไม่เห็นไฟเล็ก การไม่พบจุดไม่ได้ยืนยันว่าไม่มีไฟ</small></p>`;
+    return `<ul class="fp-list">${rows.slice(0,LIST_MAX).map(r=>`<li><button type="button" data-fp="pick" data-id="${esc(r.forest.forest_id)}" class="${r.forest.forest_id===selectedId?'on':''}"><span class="fp-li-ic ${r.inside?'alert':'watch'}" aria-hidden="true">${r.inside?'🔥':'👀'}</span><span class="fp-li-t"><b>${esc(r.forest.name)}</b><small>อ.${esc(r.forest.amphoe||'')} · ${r.inside?`${r.inside} จุดในป่า`:''}${r.inside&&r.near?' · ':''}${r.near?`${r.near} จุดรอบป่า`:''}</small></span><span class="fp-li-time">${esc(E().stamp(new Date(r.latest).toISOString()))}</span></button></li>`).join('')}</ul>
+      ${rows.length>LIST_MAX?`<p class="cw-help">และอีก ${rows.length-LIST_MAX} ป่า · ค้นหาชื่อป่าด้านบนเพื่อดู</p>`:''}<p class="as-note">เรียงตามเวลาที่ตรวจพบล่าสุด ไม่ใช่การจัดอันดับความเสี่ยง</p>`;
+  }
+  function repHtml(){
+    return `<section class="fp-rep" aria-labelledby="fpRepT"><h2 id="fpRepT">เป็นตัวแทนป่าชุมชน?</h2><p>เข้าสู่ระบบแล้วขอสิทธิ์ป่าที่คุณดูแล เมื่อผู้ดูแลยืนยัน คุณจะได้</p>
+      <ul class="fp-perks"><li><span aria-hidden="true">🔔</span><b>แจ้งเตือนทาง LINE หรืออีเมล</b><small>เมื่อมีจุดความร้อนในหรือใกล้ป่าของคุณ</small></li><li><span aria-hidden="true">📝</span><b>บันทึกเหตุ</b><small>ตำแหน่ง รูป และผลการดับไฟ</small></li><li><span aria-hidden="true">🤝</span><b>ประสานป่าข้างเคียง</b><small>ขอให้ช่วยหรือรับเรื่องจากป่าใกล้กัน</small></li></ul>
+      <button type="button" class="cw-btn primary" data-cw="signin">เข้าสู่ระบบ / สมัครสมาชิก</button><p class="cw-help">การสมัครยังไม่ถือว่าเป็นตัวแทน ผู้ดูแลจะตรวจหน้าที่ก่อนอนุมัติ</p></section>`;
+  }
+  function options(forests,selected){
+    const sorted=[...forests].sort((a,b)=>(a.amphoe||'').localeCompare(b.amphoe||'','th')||(a.name||'').localeCompare(b.name||'','th'));
+    return '<option value="">เลือกป่าชุมชน</option>'+sorted.map(f=>`<option value="${esc(f.forest_id)}"${f.forest_id===selected?' selected':''}>${esc(f.name)} · อ.${esc(f.amphoe||'')}</option>`).join('');
+  }
+  function html({forests=[],dashboard=null,selectedId='',incidentsHtml='',now=Date.now()}={}){
+    const f=forests.find(x=>x.forest_id===selectedId)||null;
+    const rows=forestsNearHotspots(forests,dashboard,now);
+    return `<div class="fp">
+      <section class="fp-hero"><h2>ป่าชุมชนในเชียงใหม่ <span>${esc(forests.length.toLocaleString('th-TH'))} แห่ง</span></h2><p>เลือกป่าเพื่อดูจุดความร้อน ลม ฝุ่น และหน่วยงานที่ดูแล ไม่ต้องสมัครสมาชิก</p>
+        <div class="fp-pick"><select id="fpForest" aria-label="เลือกป่าชุมชน">${options(forests,selectedId)}</select><button type="button" class="cw-btn" data-fp="near">📍 ป่าใกล้ฉัน</button></div>
+        <div id="fpNearMe" aria-live="polite"></div></section>
+      <div id="fpCard">${f?forestCard(f,dashboard,now):''}</div>
+      <section class="fp-section"><h2>ป่าที่มีจุดความร้อนใกล้ใน 24 ชม.</h2>${listHtml(rows,selectedId)}</section>
+      <section class="fp-section"><h2>เหตุที่ชุมชนยืนยันและเผยแพร่</h2>${incidentsHtml}</section>
+      ${repHtml()}
+      ${E().fireHelpHtml?E().fireHelpHtml():''}
+    </div>`;
+  }
+  function nearMeHtml(rows){
+    if(!rows.length)return '<p class="cw-help">ไม่พบป่าชุมชนใกล้ตำแหน่งนี้</p>';
+    return `<ul class="fp-list compact">${rows.map(r=>`<li><button type="button" data-fp="pick" data-id="${esc(r.forest.forest_id)}"><span class="fp-li-t"><b>${esc(r.forest.name)}</b><small>อ.${esc(r.forest.amphoe||'')}</small></span><span class="fp-li-time">${esc(kmText(r.km))}</span></button></li>`).join('')}</ul><p class="as-note">ระยะเส้นตรงถึงขอบป่า ไม่ใช่ระยะเดินทาง · ตำแหน่งของคุณไม่ถูกส่งออกจากเครื่อง</p>`;
+  }
+
+  // ---------- behaviour ----------
+  const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Bangkok'}).format(new Date());
+  function remember(id){try{id?root.localStorage.setItem(KEY,id):root.localStorage.removeItem(KEY);}catch{}}
+  function recall(){try{return root.localStorage.getItem(KEY)||'';}catch{return '';}}
+  function fillAsync(el,f,fetcher){
+    const dust=el.querySelector('[data-fp-dust]'), fwi=el.querySelector('[data-fp-fwi]'), c=centre(f);
+    if(dust&&root.CmeDustSensors)root.CmeDustSensors.load(fetcher).then(d=>{if(dust.isConnected)dust.innerHTML=dustHtml(f,d);}).catch(()=>{if(dust.isConnected)dust.innerHTML='<span class="fp-k">ฝุ่นใกล้ป่า</span><b>โหลดเซนเซอร์ไม่สำเร็จ</b>';});
+    else if(dust)dust.remove();
+    if(fwi&&c&&root.CmeFireWeather)root.CmeFireWeather.loadDistricts([{name:'forest:'+f.forest_id,lat:c.lat,lon:c.lon}]).then(d=>{if(fwi.isConnected)fwi.innerHTML=fwiHtml(d[0]?.days,today());}).catch(()=>{if(fwi.isConnected)fwi.innerHTML=fwiHtml(null,today());});
+    else if(fwi)fwi.remove();
+    C()?.hydrate?.(el);
+  }
+  // ctx: {forests(), dashboard(), locate(lat,lon), fetcher}
+  function attach(el,ctx){
+    el._fpCtx=ctx;
+    if(!el.dataset.fpWired){el.dataset.fpWired='1';wire(el);}
+    root.CmeForestPicker?.enhance(el.querySelector('#fpForest'));
+    const box=el.querySelector('#fpCard'), id=el.querySelector('#fpForest')?.value;
+    const f=id&&ctx.forests().find(x=>x.forest_id===id);
+    if(f)fillAsync(box,f,ctx.fetcher);
+  }
+  // Listeners go on the long-lived container once; each render reads the latest ctx.
+  function wire(el){
+    const pick=id=>{
+      const ctx=el._fpCtx;
+      const f=ctx.forests().find(x=>x.forest_id===id);remember(f?id:'');ctx.onPick?.(f?id:'');
+      const sel=el.querySelector('#fpForest');if(sel&&sel.value!==(f?id:''))sel.value=f?id:'';
+      el.querySelectorAll('[data-fp="pick"]').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+      const box=el.querySelector('#fpCard');if(!box)return;
+      box.innerHTML=f?forestCard(f,ctx.dashboard()):'';
+      if(f){fillAsync(box,f,ctx.fetcher);box.scrollIntoView?.({block:'start',behavior:'smooth'});}
+    };
+    el.addEventListener('change',e=>{if(e.target.id==='fpForest')pick(e.target.value);});
+    el.addEventListener('click',e=>{
+      const b=e.target.closest?.('[data-fp]');if(!b)return;
+      if(b.dataset.fp==='pick')pick(b.dataset.id);
+      else if(b.dataset.fp==='map')el._fpCtx.locate(Number(b.dataset.lat),Number(b.dataset.lon));
+      else if(b.dataset.fp==='near'){
+        const out=el.querySelector('#fpNearMe');
+        if(!root.navigator?.geolocation){out.innerHTML='<p class="cw-help">เบราว์เซอร์นี้หาตำแหน่งไม่ได้ ลองค้นหาชื่อป่าแทน</p>';return;}
+        out.innerHTML='<p class="cw-help">กำลังหาตำแหน่งของคุณ…</p>';
+        root.navigator.geolocation.getCurrentPosition(p=>{
+          const seen=new Set(),rows=((C()?.nearest?.(p.coords.latitude,p.coords.longitude,el._fpCtx.forests(),12))||[]).filter(r=>{const k=r.forest.name+'|'+r.forest.amphoe;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,5);
+          out.innerHTML=nearMeHtml(rows);
+        },()=>{out.innerHTML='<p class="cw-help">ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง ลองค้นหาชื่อป่าแทน</p>';},{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
+      }
+    });
+  }
+
+  root.CmeForestPublic={html,attach,recall,situation,forestsNearHotspots,nearestSensor,forestCard,listHtml,fwiHtml,dustHtml,mapSvg,NEAR_KM};
+})(typeof window!=='undefined'?window:globalThis);
