@@ -30,7 +30,7 @@ body.light-mode .cm-province-line{stroke:#334155;stroke-opacity:.8}
   .map-time-note{display:flex!important;left:8px!important;right:auto!important;bottom:64px!important;max-width:calc(100% - 16px)!important;padding:4px 10px!important;border-radius:999px!important;font-size:12px!important;gap:10px!important}
 
   /* Keep attribution readable but small, clear of the action bar. */
-  .leaflet-control-attribution{margin-bottom:62px!important;font-size:12px!important;opacity:.85}
+  .leaflet-control-attribution{margin-bottom:96px!important;font-size:12px!important;opacity:.85}
 }
 
 /* Hotspot dots by age (H7): new = red with a slow ring, 6-24 h = orange, older = small grey. */
