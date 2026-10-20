@@ -1609,6 +1609,7 @@
       <div id="map" role="application" aria-label="แผนที่จุดความร้อน คุณภาพอากาศ และทิศทางลมจังหวัดเชียงใหม่ (โต้ตอบได้)"></div>
       <div class="map-time-note" title="กดหมุดเพื่อดูเวลา จุดความร้อนยังไม่ยืนยันว่าไฟกำลังไหม้"><span class="legend-item"><span class="hs-dot-pin age-new"></span>ไม่เกิน 6 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-old"></span>เก่ากว่า</span></div>
       <div id="hsReplay" class="hs-replay" hidden></div>
+      <button type="button" class="map-3d-btn" data-open-view="threed" aria-label="ดูภูเขา 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20 9 7l4 7 3-4 6 10z"/></svg><span>3D</span></button>
       <div class="map-overlay basemap-toggle">
         <button class="active" data-base="dark">สีเข้ม</button>
         <button data-base="osm">ถนน</button>
@@ -1892,10 +1893,10 @@
       <button id="tdMountain" type="button">ดูภูเขา</button>
     </div>
     <div class="td-hud td-legend" id="tdLegend">
-      <div class="lr"><span class="d" style="background:#facc15"></span>FRP &lt;30 MW</div>
-      <div class="lr"><span class="d" style="background:#ff8a3d"></span>FRP 30–60 MW</div>
-      <div class="lr"><span class="d" style="background:#f5640a"></span>FRP 60–100 MW</div>
-      <div class="lr"><span class="d" style="background:#ff4d4d"></span>FRP &gt;100 MW</div>
+      <div class="lr td-wind" id="tdWind" hidden></div>
+      <div class="lr"><span class="hs-dot-pin age-new"></span>จุดความร้อน ไม่เกิน 6 ชม.</div>
+      <div class="lr"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</div>
+      <div class="lr"><span class="hs-dot-pin age-old"></span>เก่ากว่า</div>
       <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#43b05f;border-radius:2px"></span>ป่าชุมชน (จัดการไฟ)</div>
       <div class="lr"><span class="d" style="background:#37d1d6;border-radius:2px"></span>ป่าชุมชน (ไม่ระบุ/ไม่มีข้อมูลจัดการไฟ)</div>
       <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#8b97a7"></span>อาคาร/สิ่งปลูกสร้าง (ซูมใกล้)</div>
@@ -2070,6 +2071,7 @@
 <script src="/ux-foundation.js"></script>
 <script src="/hotspot-sheet.js"></script>
 <script src="/hotspot-replay.js"></script>
+<script src="/hotspot-spread.js"></script>
 <script>
 /* ============================================================
    ChiangMaiEyes — live data rendering
@@ -2513,8 +2515,59 @@ function popupActionsHtml(lat,lon){
   const chip=pa&&['inside','near'].includes(pa.status)?`<p class="hs-chip">${pa.status==='inside'?'อยู่ในเขตพื้นที่อนุรักษ์':'ใกล้เขตพื้นที่อนุรักษ์'} · ประสานเจ้าหน้าที่ก่อนเข้าพื้นที่</p>`:'';
   return chip+`<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a></div>`;
 }
+// ---- Experimental spread outline for one tapped point (2D and 3D) ----
+const SPREAD_SIM_STYLE={3:{color:'#ef4444',fill:.2},6:{color:'#f97316',fill:.1}};
+const spreadSimStyle=hrs=>SPREAD_SIM_STYLE[hrs]||{color:'#f97316',fill:.1};
+let spreadSimLayer=null, spreadSimStop=null, spreadSimKey=null;
+function clearSpreadSim(){
+  spreadSimStop?.();spreadSimStop=null;spreadSimKey=null;
+  if(spreadSimLayer){map.removeLayer(spreadSimLayer);spreadSimLayer=null;}
+  if(mlMap?.getSource?.('spread-sim'))mlMap.getSource('spread-sim').setData({type:'FeatureCollection',features:[]});
+  document.querySelectorAll('.hs-spread-btn[aria-pressed="true"]').forEach(b=>{b.setAttribute('aria-pressed','false');b.textContent='▶ ดูแนวลามทดลอง 6 ชม.';});
+}
+function _ensure3DSpreadLayers(){
+  if(!mlMap||mlMap.getSource('spread-sim'))return;
+  mlMap.addSource('spread-sim',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  const col=['match',['get','hours'],3,'#ef4444','#f97316'];
+  mlMap.addLayer({id:'spread-sim-fill',type:'fill',source:'spread-sim',paint:{'fill-color':col,'fill-opacity':['match',['get','hours'],3,.28,.14]}});
+  mlMap.addLayer({id:'spread-sim-line',type:'line',source:'spread-sim',paint:{'line-color':col,'line-width':2,'line-dasharray':[2,1.5]}});
+}
+async function showSpreadSim(btn){
+  const lat=Number(btn.dataset.spreadLat), lon=Number(btn.dataset.spreadLon), key=lat+','+lon;
+  const msg=btn.parentElement.querySelector('.hs-spread-msg');
+  if(spreadSimKey===key){clearSpreadSim();if(msg)msg.hidden=true;return;}
+  clearSpreadSim();
+  btn.disabled=true;if(msg){msg.hidden=false;msg.textContent='กำลังคำนวณจากลมรายชั่วโมง…';}
+  try{
+    const data=await CmeHotspotSpread.load();
+    const result=CmeHotspotSpread.framesFor(data,lat,lon);
+    if(!result){if(msg)msg.textContent='จุดนี้ยังไม่อยู่ในรอบคำนวณล่าสุด (ใช้จุด 24 ชม. ล่าสุด สูงสุด 50 จุด)';return;}
+    spreadSimKey=key;btn.setAttribute('aria-pressed','true');btn.textContent='ซ่อนแนวลาม';
+    if(msg)msg.innerHTML=`<span class="hs-spread-key"><i style="background:#ef4444"></i>3 ชม. <i style="background:#f97316"></i>6 ชม.</span> ${CmeHotspotSpread.caption(result)}`;
+    const in3D=document.getElementById('threedview').classList.contains('open')&&mlMap;
+    const reduced=!motionDuration(1);
+    const last=result.frames[result.frames.length-1].feature;
+    if(in3D){
+      _ensure3DSpreadLayers();
+      spreadSimStop=CmeHotspotSpread.animate(result,lat,lon,list=>mlMap.getSource('spread-sim')?.setData({type:'FeatureCollection',features:list.map(f=>({type:'Feature',properties:{hours:f.hours},geometry:f.geometry}))}),{reduced});
+      const b=L.geoJSON(last).getBounds();
+      mlMap.fitBounds([[b.getWest(),b.getSouth()],[b.getEast(),b.getNorth()]],{padding:{top:90,bottom:isMobileViewport()?(document.getElementById('hotspotSheet')?.offsetHeight||0)+70:60,left:40,right:40},maxZoom:15.5,pitch:55,duration:motionDuration(900)});
+    }else{
+      spreadSimLayer=L.layerGroup().addTo(map);
+      spreadSimStop=CmeHotspotSpread.animate(result,lat,lon,list=>{
+        spreadSimLayer.clearLayers();
+        [...list].reverse().forEach(f=>{const st=spreadSimStyle(f.hours);L.geoJSON(f.geometry,{interactive:false,style:{color:st.color,weight:2,dashArray:'5 4',fillColor:st.color,fillOpacity:st.fill}}).addTo(spreadSimLayer);});
+      },{reduced});
+      const sheetH=isMobileViewport()?(document.getElementById('hotspotSheet')?.offsetHeight||0):0;
+      map.fitBounds(L.geoJSON(last).getBounds(),{paddingTopLeft:[24,isMobileViewport()?70:40],paddingBottomRight:[24,sheetH+24],maxZoom:16,animate:motionDuration(300)>0});
+    }
+  }catch(e){if(msg)msg.textContent='โหลดแนวลามไม่ได้ ลองใหม่อีกครั้ง';}
+  finally{btn.disabled=false;}
+}
+document.addEventListener('click',e=>{const b=e.target.closest?.('.hs-spread-btn');if(b){e.preventDefault();e.stopPropagation();showSpreadSim(b);}},true);
+
 function hotspotPopupHtml(h){
-  return `<div class="hs-pop">`+CmeEvidence.observationTimeHtml(h.detected_at,'ดาวเทียม')+CmeLandContext.summary(h)+popupWhereHtml(h.lat,h.lon,h.subdistrict||h.tambon,h.district)+popupActionsHtml(h.lat,h.lon)+
+  return `<div class="hs-pop">`+CmeEvidence.observationTimeHtml(h.detected_at,'ดาวเทียม')+CmeLandContext.summary(h)+popupWhereHtml(h.lat,h.lon,h.subdistrict||h.tambon,h.district)+popupActionsHtml(h.lat,h.lon)+(window.CmeHotspotSpread?.buttonHtml(h)||'')+
     `<details class="land-context-details"><summary>รายละเอียดและที่มาของข้อมูล</summary>${CmeCoordination.html(h.lat,h.lon)}${CmeLandContext.details(h)}<b>${h.id}</b> · ${h.district}<br>`+
     `ต.${h.subdistrict||h.tambon||'—'}<br>`+
     `${fmtFrp(h)} · ความเชื่อมั่น ${CmeEvidence.confidenceLabel(h.conf)}<br>`+
@@ -2543,7 +2596,7 @@ let selected=null;
 // visible above the sheet, forest proximity lines while it is open.
 function openHotspotSheet(h){
   map.closePopup();
-  CmeHotspotSheet.open(h,hotspotPopupHtml(h),{onClose:clearForestProximity});
+  CmeHotspotSheet.open(h,hotspotPopupHtml(h),{onClose:()=>{clearForestProximity();clearSpreadSim();}});
   showForestProximity(h.lat,h.lon);
   // Centre the pin in the map area that is still visible above the sheet.
   setTimeout(()=>{
@@ -2587,7 +2640,7 @@ function renderHotspots(){
       `onclick="open3D();setTimeout(()=>mlMap&&mlMap.flyTo({center:[${h.lon},${h.lat}],zoom:12,pitch:55,bearing:0,duration:motionDuration(1200)}),600)">📍 ดูใน 3D</span>`
     ,{maxWidth:320,maxHeight:Math.max(160,Math.min(560,window.innerHeight*.62))});
     m.on('popupopen',()=>showForestProximity(h.lat, h.lon));
-    m.on('popupclose', clearForestProximity);
+    m.on('popupclose', ()=>{clearForestProximity();clearSpreadSim();});
     // Phones get a bottom sheet (easier to read and scroll); desktop keeps the popup.
     m.off('click', m._openPopup, m);
     m.on('click',()=>{
@@ -2600,6 +2653,7 @@ function renderHotspots(){
   });
   document.getElementById('lcHot').textContent=hotspots.length;
   window.CmeHotspotReplay?.refresh();
+  if(typeof mlMap!=='undefined'&&mlMap&&document.getElementById('threedview')?.classList.contains('open'))_sync3DHotspots();
 }
 window.CmeHotspotReplay?.init({mountId:'hsReplay',getItems:()=>hotspots,onFrame:()=>{
   window.CmeHotspotSheet?.close();map.closePopup();renderHotspots();
@@ -3105,7 +3159,7 @@ function renderManualReports(){
       map.flyTo([r.latitude, r.longitude], Math.max(map.getZoom(),12), {duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
       showForestProximity(Number(r.latitude), Number(r.longitude));
     });
-    m.on('popupclose', clearForestProximity);
+    m.on('popupclose', ()=>{clearForestProximity();clearSpreadSim();});
     layers.manualReports.addLayer(m);
   });
   document.getElementById('lcManual').textContent = manualReports.length;
@@ -5714,6 +5768,8 @@ document.getElementById('tdClose').onclick=()=>{
 };
 
 async function open3D(){
+  // Replay and a 2D outline are 2D-only; stop them so both views show the same thing.
+  window.CmeHotspotReplay?.stop();clearSpreadSim();map.closePopup();window.CmeHotspotSheet?.close();
   document.getElementById('threedview').classList.add('open');
   if(velLayer){try{velLayer.remove();}catch(_){} velLayer=null;}
   if(!_3dInited){
@@ -6028,7 +6084,17 @@ function clear3DForestProximity(){
   }
 }
 
+let _3dPopup=null;
+// Wind in 3D: the same station reading the top bar shows (no streamlines here).
+function update3DWind(){
+  const el=document.getElementById('tdWind');if(!el)return;
+  if(!PREVAILING||!Number.isFinite(PREVAILING.kmh)){el.hidden=true;return;}
+  const to=(PREVAILING.deg+180)%360;
+  el.hidden=false;
+  el.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(${to}deg)"><path d="M12 3v18M12 3l-5 6M12 3l5 6"/></svg>ลมพัดไป ${CmeEvidence.escapeHtml(String(PREVAILING.kmh))} กม./ชม.`;
+}
 function _sync3DHotspots(){
+  update3DWind();
   // Remove old markers
   _3dMarkers.forEach(m=>m.remove());
   _3dMarkers=[];
@@ -6045,14 +6111,24 @@ function _sync3DHotspots(){
       // with the Popup default closeOnClick:true, that immediately closes
       // the popup this same click just opened. Guard on both.
       e.stopPropagation();
-      selectHotspot(h);
-      mlMap.flyTo({center:[h.lon,h.lat], zoom:Math.max(mlMap.getZoom(),14), duration:motionDuration(900)});
+      clearSpreadSim();
+      selectHotspot(h,{fromMarker:true});
       show3DForestProximity(h.lat, h.lon);
-      new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'320px',className:'coordination-popup'})
+      if(isMobileViewport()&&window.CmeHotspotSheet){
+        // Same sheet as 2D; keep the point above it.
+        CmeHotspotSheet.open(h,hotspotPopupHtml(h),{onClose:()=>{clear3DForestProximity();clearSpreadSim();}});
+        const sheetH=document.getElementById('hotspotSheet')?.offsetHeight||0;
+        mlMap.flyTo({center:[h.lon,h.lat],zoom:Math.max(mlMap.getZoom(),14),padding:{top:0,bottom:sheetH,left:0,right:0},duration:motionDuration(900)});
+        return;
+      }
+      mlMap.flyTo({center:[h.lon,h.lat], zoom:Math.max(mlMap.getZoom(),14), duration:motionDuration(900)});
+      _3dPopup?.remove();
+      _3dPopup=new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'320px',className:'coordination-popup'})
         .setLngLat([h.lon,h.lat])
-        .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3">${hotspotPopupHtml(h)}</div>`)
-        .on('close', clear3DForestProximity)
+        .setHTML(hotspotPopupHtml(h))
         .addTo(mlMap);
+      // MapLibre's on() does not return the popup, so it cannot sit in the chain.
+      _3dPopup.on('close', ()=>{clear3DForestProximity();clearSpreadSim();});
     });
     _3dMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([h.lon,h.lat]).addTo(mlMap));
   });
@@ -6080,11 +6156,11 @@ function _sync3DManualReports(){
       const isOwner = currentUser && currentUser.id === r.reporter_id;
       mlMap.flyTo({center:[r.longitude,r.latitude], zoom:Math.max(mlMap.getZoom(),14), duration:motionDuration(900)});
       show3DForestProximity(Number(r.latitude), Number(r.longitude));
-      new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'320px',className:'coordination-popup'})
+      const manualPopup=new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'320px',className:'coordination-popup'})
         .setLngLat([r.longitude,r.latitude])
         .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3">${manualReportPopupHtml(r)}${isOwner?`<br><span style="cursor:pointer;color:#ff4d4d;text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ยกเลิกรายงานนี้</span>`:''}</div>`)
-        .on('close', clear3DForestProximity)
         .addTo(mlMap);
+      manualPopup.on('close', clear3DForestProximity);
     });
     _3dManualMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([r.longitude,r.latitude]).addTo(mlMap));
   });
