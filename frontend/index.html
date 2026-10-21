@@ -2731,14 +2731,22 @@ function _applyVelocityLayer(field){
   // Thin, pale streamlines that sit behind the hotspots: visible at load,
   // never louder than the fire markers. Darker ink on the light basemap.
   const light=document.body.classList.contains('light-mode');
+  // Calm air (often < 1 m/s here) moved particles a pixel at a time, so the
+  // direction was invisible. Lengthen trails up to 6x when wind is light; the
+  // speed itself is read from the wind tile, not from trail length.
+  let sum=0,n=0;const u=field?.[0]?.data||[],v=field?.[1]?.data||[];
+  for(let i=0;i<u.length;i+=7){const sp=Math.hypot(u[i],v[i]);if(Number.isFinite(sp)){sum+=sp;n++;}}
+  const avg=n?sum/n:2, boost=Math.max(1,Math.min(6,3/Math.max(avg,0.3)));
   velLayer=L.velocityLayer({
     displayValues:false,
     data:field, maxVelocity:15,
     // Light winds (often 0–5 km/h in Chiang Mai) still draw readable streaks:
     // the trail length shows direction, the top card gives the speed.
-    colorScale:light?['rgba(30,64,140,.55)','rgba(30,58,138,.7)','rgba(23,37,84,.85)']:['rgba(226,232,240,.38)','rgba(241,245,249,.52)','rgba(255,255,255,.65)'],
-    velocityScale:0.018, opacity:0.92, particleAge:120, lineWidth:light?1.4:1.1,
-    particleMultiplier:isMobileViewport()?1/700:1/400, frameRate:24
+    // The site's wind colour (cyan, as in the wind tile): stands out from the
+    // grey basemap without beating it; stronger wind draws a little brighter.
+    colorScale:light?['rgba(14,116,144,.62)','rgba(14,116,144,.78)','rgba(21,94,117,.9)']:['rgba(55,209,214,.6)','rgba(80,220,225,.78)','rgba(150,240,244,.92)'],
+    velocityScale:0.018*boost, opacity:0.95, particleAge:160, lineWidth:2,
+    particleMultiplier:isMobileViewport()?1/550:1/350, frameRate:24
   }).addTo(map);
 }
 

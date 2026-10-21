@@ -73,7 +73,8 @@
     const clear=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);parts.forEach(p=>p.px=null);};
     const onMove=()=>clear();
     map.on('move',onMove);map.on('resize',resize);
-    const ink=light?'rgba(30,58,138,':'rgba(241,245,249,';
+    // Same wind colour as the 2D map: cyan on dark, deep teal on light.
+    const ink=()=>document.body.classList.contains('light-mode')?'rgba(14,116,144,':'rgba(55,209,214,';
     let raf=0,last=0;
     const frame=now=>{
       raf=requestAnimationFrame(frame);
@@ -83,7 +84,7 @@
       ctx.globalCompositeOperation='destination-in';ctx.fillStyle='rgba(0,0,0,0.9)';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.globalCompositeOperation='source-over';
       const z=map.getZoom(), step=0.0009*Math.pow(2,9-z);   // degrees per (m/s) per frame, constant on screen
-      ctx.lineWidth=light?1.6:1.3;ctx.lineCap='round';
+      ctx.lineWidth=2;ctx.lineCap='round';
       for(const p of parts){
         const uv=sample(p.lon,p.lat);
         if(!uv||++p.age>MAX_AGE){spawn(p);p.age=0;continue;}
@@ -92,7 +93,7 @@
         const pt=map.project([p.lon,p.lat]);
         if(p.px){
           const sp=Math.hypot(uv[0],uv[1]);
-          ctx.strokeStyle=ink+Math.min(.85,.35+sp/12).toFixed(2)+')';
+          ctx.strokeStyle=ink()+Math.min(.9,.58+sp/12).toFixed(2)+')';
           ctx.beginPath();ctx.moveTo(p.px.x,p.px.y);ctx.lineTo(pt.x,pt.y);ctx.stroke();
         }
         p.px=pt;
