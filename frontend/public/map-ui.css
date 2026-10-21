@@ -255,8 +255,7 @@ body.light-mode .mobile-drawer-tabs button.active{background:var(--green)!import
 .hs-sheet.peek{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.hs-sheet{transition:none}}
 
-/* Map search suggestions. */
-.map-search{position:relative}
+/* Map search suggestions (the absolute .map-search box anchors the list). */
 .ms-list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:1200;max-height:min(60dvh,420px);overflow-y:auto;margin:0;padding:6px;list-style:none;
   border-radius:14px;border:1px solid var(--line);background:var(--panel);box-shadow:0 14px 36px rgba(0,0,0,.35);animation:msIn .16s ease-out}
 @keyframes msIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
