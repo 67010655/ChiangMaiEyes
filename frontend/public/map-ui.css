@@ -230,3 +230,17 @@ body.light-mode .map-3d-btn{background:#f8faf8;color:#1e293b}
 .aqi-badge.stale{opacity:.45;border-style:dashed}
 .aqi-3d{width:36px;height:28px}
 .aqi-legend i.sq{border-radius:2px}
+
+/* Quick layer buttons: the same tinted line-icon badges as the top tiles. */
+.quick-layer .ql-ic{display:flex;align-items:center;justify-content:center;width:30px;height:30px;margin-bottom:4px;border-radius:9px;font-size:0}
+.quick-layer .ql-ic svg{width:18px;height:18px}
+.quick-layer.fire .ql-ic{background:rgba(239,68,68,.15);color:#ef4444}
+.quick-layer.dust .ql-ic{background:rgba(146,208,80,.18);color:var(--pm-good,#92d050)}
+.quick-layer.wind .ql-ic{background:rgba(56,189,248,.15);color:var(--wind)}
+.quick-layer.forest .ql-ic{background:rgba(67,176,95,.16);color:var(--green)}
+.quick-layer[aria-pressed="true"] .ql-ic{box-shadow:0 0 0 2px currentColor inset}
+/* Side panel cards share the site's card shape. */
+.side .kpi{border-radius:12px}
+/* Light mode: the blanket pale background on drawer tabs also hid the active
+   tab's white label. Keep the active tab green with readable text. */
+body.light-mode .mobile-drawer-tabs button.active{background:var(--green)!important;color:var(--on-green)!important;border-color:var(--green)!important}

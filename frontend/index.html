@@ -510,9 +510,9 @@
     color:var(--muted);text-transform:uppercase;margin:0 0 12px;
     display:flex;align-items:center;gap:8px;
   }
-  .block h2::before{content:"";width:4px;height:12px;background:var(--ember);border-radius:1px}
+  .block h2::before{content:"";width:4px;height:12px;background:#ef4444;border-radius:2px}
   .block h2.wind::before{background:var(--wind)}
-  .block h2.pm::before{background:var(--pm-purple)}
+  .block h2.pm::before{background:var(--pm-good,#92d050)}
 
   /* layer toggles */
   .layer{
@@ -1564,10 +1564,10 @@
       <div class="block quick-layers-block">
         <h2>เลือกสิ่งที่อยากเห็นบนแผนที่</h2>
         <div class="quick-layers" role="group" aria-label="ชั้นข้อมูลหลัก">
-          <button type="button" class="quick-layer fire" data-quick="fire" aria-pressed="false"><span class="ql-ic">🔥</span><span>ไฟ</span><small>จุดความร้อน</small></button>
-          <button type="button" class="quick-layer dust" data-quick="dust" aria-pressed="false"><span class="ql-ic">😷</span><span>ฝุ่น</span><small>สถานีวัด PM2.5</small></button>
-          <button type="button" class="quick-layer wind" data-quick="wind" aria-pressed="false"><span class="ql-ic">💨</span><span>ลม</span><small>ลมเคลื่อนไหว</small></button>
-          <button type="button" class="quick-layer forest" data-quick="forest" aria-pressed="false"><span class="ql-ic">🌳</span><span>ป่าชุมชน</span><small>ขอบเขตป่า</small></button>
+          <button type="button" class="quick-layer fire" data-quick="fire" aria-pressed="false"><span class="ql-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2.5 1-4 3-6 0 2 1 3 2 3 1-2 1-5 0-8Z"/></svg></span><span>ไฟ</span><small>จุดความร้อน</small></button>
+          <button type="button" class="quick-layer dust" data-quick="dust" aria-pressed="false"><span class="ql-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 9h12a3 3 0 1 0-3-3"/><path d="M2 13h18a2 2 0 1 1-2 2"/><path d="M5 17h7a2 2 0 1 1-2 2"/></svg></span><span>ฝุ่น</span><small>สถานีวัด PM2.5</small></button>
+          <button type="button" class="quick-layer wind" data-quick="wind" aria-pressed="false"><span class="ql-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h16a3 3 0 1 1-3 3"/><path d="M3 16h7"/></svg></span><span>ลม</span><small>ลมเคลื่อนไหว</small></button>
+          <button type="button" class="quick-layer forest" data-quick="forest" aria-pressed="false"><span class="ql-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3l6 8h-3l4 6h-6v4h-2v-4H5l4-6H6z"/></svg></span><span>ป่าชุมชน</span><small>ขอบเขตป่า</small></button>
         </div>
       </div>
       <details class="more-layers">
@@ -1714,7 +1714,7 @@
       <div class="block">
         <h2 class="pm">คุณภาพอากาศตอนนี้</h2>
         <div class="kpi-grid">
-          <div class="kpi"><div class="k">PM2.5 สูงสุดจากสถานี</div><div class="v" id="pmPeak" style="color:var(--pm-purple)">—<small> µg/m³</small></div><div class="trend up" id="pmPeakTr">▲ —</div></div>
+          <div class="kpi"><div class="k">PM2.5 สูงสุดจากสถานี</div><div class="v" id="pmPeak">—<small> µg/m³</small></div><div class="trend" id="pmPeakTr">▲ —</div></div>
           <div class="kpi" id="visKpi" hidden><div class="k">ทัศนวิสัย</div><div class="v" id="visKm">—<small> km</small></div><div class="trend down" id="visTr">▼ —</div></div>
         </div>
       </div>
@@ -3254,7 +3254,9 @@ function updatePmTrendMean(){
 }
 let hot7 = [];
 
-function lineChart(id,data,{w=300,h=92,color='#a855f7',fill='rgba(168,85,247,.16)',thr=null}){
+// Dust chart colour follows the latest PCD level, the same as the top tile.
+function pmLineStyle(){const v=pm24.length?pm24[pm24.length-1]:null;const c=(v!=null&&globalThis.CmeUx)?CmeUx.pmColor(v):'#92d050';return {color:c,fill:c,fillOpacity:.18};}
+function lineChart(id,data,{w=300,h=92,color='#a855f7',fill='rgba(168,85,247,.16)',fillOpacity=1,thr=null}){
 
   if(!data.length){document.getElementById(id).innerHTML='<text x="150" y="40" text-anchor="middle" fill="var(--muted)">ยังไม่มีข้อมูลในช่วงนี้</text>';return;}
   const max=Math.max(...data,thr||0)*1.12||1, min=Math.min(...data)*0.85;
@@ -3267,8 +3269,9 @@ function lineChart(id,data,{w=300,h=92,color='#a855f7',fill='rgba(168,85,247,.16
   document.getElementById(id).innerHTML=`
     <defs></defs>
     ${thrLine}
-    <path d="${area}" fill="${fill}"/>
-    <path d="${d}" fill="none" stroke="${color}" stroke-width="2"/>
+    <path d="${area}" fill="${fill}" fill-opacity="${fillOpacity}"/>
+    <path d="${d}" fill="none" stroke="rgba(15,23,42,.45)" stroke-width="4" stroke-linejoin="round"/>
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
     <circle cx="${X(data.length-1)}" cy="${Y(last)}" r="3.5" fill="${color}"/>
     <circle cx="${X(data.length-1)}" cy="${Y(last)}" r="6" fill="none" stroke="${color}" stroke-width="1" opacity=".5"/>`;
 }
@@ -3280,7 +3283,7 @@ function barChart(id,data,labels,{w=300,h=86}){
   let bars='';
   data.forEach((v,i)=>{
     const bh=v/max*(h-16), x=i*gap+(gap-bw)/2, y=h-16-bh;
-    const col=i===data.length-1?'#ff8a3d':'#3a4757';
+    const col=i===data.length-1?'#ef4444':'rgba(239,68,68,.38)';
     bars+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="2" fill="${col}"/>
            <text class="axis-lbl" x="${x+bw/2}" y="${h-4}" text-anchor="middle">${labels[i]}</text>`;
   });
@@ -3409,6 +3412,7 @@ function setKpis(){
   document.getElementById('kpiAqi').textContent='ดูรายสถานี';
   document.getElementById('kpiAqi').style.color='var(--muted)';
   document.getElementById('pmPeak').innerHTML=(pmReady?pmPeak:'—')+'<small> µg/m³</small>';
+  document.getElementById('pmPeak').style.color=pmReady&&globalThis.CmeUx?CmeUx.pmColor(pmPeak):'';
   document.getElementById('pmPeakTr').textContent='ค่ารอบปัจจุบัน · ดูเวลาของแต่ละสถานี';
   document.getElementById('visKm').innerHTML='—<small> km</small>';
   document.getElementById('visTr').textContent='ยังไม่มีข้อมูลทัศนวิสัยที่ตรวจวัด';
@@ -3771,7 +3775,7 @@ loadCommunityForests();
 loadBoundaries();
 loadTambonBoundaries();
 
-lineChart('pmChart',pm24,{color:'#a855f7',fill:'rgba(168,85,247,.16)'});
+lineChart('pmChart',pm24,typeof pmLineStyle==='function'?pmLineStyle():{});
 barChart('hotChart',hot7,['-6','-5','-4','-3','-2','-1','วันนี้'],{});
 document.getElementById('roseChart').innerHTML='<text x="150" y="50" text-anchor="middle" fill="var(--muted)">รอข้อมูลลมย้อนหลัง</text>';
 fetchWindRose();
@@ -4693,7 +4697,7 @@ function rerenderAll(){
   // Publish the new response to every non-map widget before drawing layers.
   // A failed optional canvas must never leave the previous response's KPI.
   buildAlerts(); setKpis(); setWindBadge(); rankList();
-  lineChart('pmChart',pm24,{color:'#a855f7',fill:'rgba(168,85,247,.16)'});
+  lineChart('pmChart',pm24,typeof pmLineStyle==='function'?pmLineStyle():{});
   if(typeof renderTileViz==='function')renderTileViz();
   barChart('hotChart',hot7,['-6','-5','-4','-3','-2','-1','วันนี้'],{});
   if(analyticsEl.classList.contains('open')) renderAnalytics(currentRange);
@@ -4905,7 +4909,7 @@ async function fetchAirQualityHourly(){
     document.querySelectorAll('.side.right .block h2').forEach(h => {
       if(h.textContent.indexOf('PM2.5') === 0) h.textContent = 'PM2.5 24 ชม. · แบบจำลอง Open-Meteo/CAMS';
     });
-    lineChart('pmChart', pm24, {color:'#a855f7', fill:'rgba(168,85,247,.16)'});
+    lineChart('pmChart',pm24,typeof pmLineStyle==='function'?pmLineStyle():{});
   } catch(e) {
     // Silently fall back to whatever pm24 already contains (daily history or mock)
   }
