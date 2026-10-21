@@ -141,7 +141,9 @@ async def no_store_api_responses(request: Request, call_next) -> Response:
     # blanket no-store.
     # NOAA model frames are also public and include model run/valid timestamps;
     # their short cache does not include any user, incident or photo data.
-    if request.url.path.startswith("/api/") and request.url.path not in ("/api/osm-structures","/api/ventilation","/api/forest-terrain"):
+    # These set their own short CDN cache below: public data that carries its
+    # own source timestamps, so a copy a minute old says exactly how old it is.
+    if request.url.path.startswith("/api/") and request.url.path not in ("/api/osm-structures","/api/ventilation","/api/forest-terrain","/api/dashboard","/api/fire-phases","/api/community-forests","/api/dust-sensors","/api/dust-alerts/coverage"):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
@@ -201,8 +203,11 @@ def summary(settings: Settings = Depends(get_settings)) -> SummaryResponse:
 
 
 @app.get("/api/dashboard", response_model=DashboardResponse)
-def dashboard(background_tasks: BackgroundTasks, settings: Settings = Depends(get_settings)) -> DashboardResponse:
+def dashboard(response: Response, background_tasks: BackgroundTasks, settings: Settings = Depends(get_settings)) -> DashboardResponse:
     data = get_dashboard(settings)
+    from app.services import LAST_DASHBOARD_TIMINGS
+    response.headers['Cache-Control'] = 'public, max-age=0, s-maxage=30, stale-while-revalidate=120'
+    response.headers['Server-Timing'] = ', '.join(f'{k};dur={v*1000:.0f}' for k, v in LAST_DASHBOARD_TIMINGS.items())
     from app.environment_archive import collect_dashboard
     background_tasks.add_task(collect_dashboard, settings, data)
     from app.community_mail import alerts_configured
@@ -213,7 +218,8 @@ def dashboard(background_tasks: BackgroundTasks, settings: Settings = Depends(ge
 
 
 @app.get("/api/fire-phases", response_model=FirePhaseResponse)
-def fire_phases(settings: Settings = Depends(get_settings)) -> FirePhaseResponse:
+def fire_phases(response: Response, settings: Settings = Depends(get_settings)) -> FirePhaseResponse:
+    response.headers['Cache-Control'] = 'public, max-age=0, s-maxage=60, stale-while-revalidate=300'
     return get_fire_phases(settings)
 
 
@@ -226,9 +232,11 @@ def fire_predictions(background_tasks: BackgroundTasks, settings: Settings = Dep
 
 
 @app.get("/api/community-forests", response_model=CommunityForestsResponse)
-def community_forests() -> CommunityForestsResponse:
+def community_forests(response: Response) -> CommunityForestsResponse:
     from app.providers.community_forest_provider import fetch_community_forests
     import datetime
+    # RECOFTC boundaries change a few times a year, not per visit.
+    response.headers['Cache-Control'] = 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400'
 
     forests = fetch_community_forests()
     return CommunityForestsResponse(

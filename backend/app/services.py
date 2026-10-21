@@ -1075,10 +1075,27 @@ def get_operational_intelligence(
     )
 
 
+# Per-source seconds of the last dashboard build (Server-Timing header).
+LAST_DASHBOARD_TIMINGS: dict[str, float] = {}
+
+
 def get_dashboard(settings: Settings) -> DashboardResponse:
-    hotspots = get_hotspots(settings)
-    pm25 = get_pm25(settings)
-    weather = get_weather(settings)
+    # The three sources are independent; with nothing cached their upstream
+    # waits used to add up (~15 s). Fetch them at the same time.
+    from concurrent.futures import ThreadPoolExecutor
+
+    def timed(name, fn):
+        t0 = time.perf_counter()
+        try:
+            return fn(settings)
+        finally:
+            LAST_DASHBOARD_TIMINGS[name] = time.perf_counter() - t0
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        f_hot = pool.submit(timed, 'hotspots', get_hotspots)
+        f_pm = pool.submit(timed, 'pm25', get_pm25)
+        f_wx = pool.submit(timed, 'weather', get_weather)
+        hotspots, pm25, weather = f_hot.result(), f_pm.result(), f_wx.result()
     risk = calculate_risk(pm25, hotspots, weather)
     summary = get_summary(settings, pm25, hotspots, weather, risk)
     intelligence = get_operational_intelligence(hotspots, pm25, weather, risk, settings)

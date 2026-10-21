@@ -12,7 +12,8 @@
 // Start the two first-screen requests now; fetchJson() picks them up later
 // instead of waiting until every script has downloaded and run.
 (function(){try{
-  var opt={cache:'no-store',headers:{'Cache-Control':'no-cache'}};
+  // No 'no-cache' request header here: the CDN may answer from its short copy.
+  var opt={cache:'no-store'};
   if(window.AbortSignal&&AbortSignal.timeout)opt.signal=AbortSignal.timeout(25000);
   var get=function(path){var p=fetch(path,opt).then(function(r){if(!r.ok)throw new Error(path+' → '+r.status);return r.json();});p.catch(function(){});return p;};
   window.__cmeEarly={'/api/dashboard':get('/api/dashboard'),'/api/community-forests':get('/api/community-forests')};
@@ -5478,7 +5479,9 @@ function fetchJson(path, ms){
   const early=globalThis.__cmeEarly&&globalThis.__cmeEarly[path];
   if(early){delete globalThis.__cmeEarly[path];return early.catch(()=>fetchJson(path,ms));}
   const ctl=new AbortController(); const id=setTimeout(()=>ctl.abort(), ms||15000);
-  return fetch(API_BASE+path,{cache:'no-store',headers:{'Cache-Control':'no-cache'},signal:ctl.signal})
+  // These endpoints send a short CDN cache; let the CDN use it.
+  const cdnOk=/^\/api\/(dashboard|fire-phases|community-forests)(\?|$)/.test(path);
+  return fetch(API_BASE+path,{cache:'no-store',headers:cdnOk?{}:{'Cache-Control':'no-cache'},signal:ctl.signal})
     .then(r=>{ if(!r.ok) throw new Error(path+' → '+r.status); return r.json(); })
     .finally(()=>clearTimeout(id));
 }
