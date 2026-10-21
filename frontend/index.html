@@ -1290,6 +1290,7 @@
 <link rel="stylesheet" href="/fire-weather.css">
 <link rel="stylesheet" href="/forest-public.css">
 <link rel="stylesheet" href="/auth-modal.css">
+<link rel="stylesheet" href="/guide.css">
 <link rel="stylesheet" href="/magic-effects.css">
 </head>
 <body class="public-mode">
@@ -1824,29 +1825,61 @@
 
   <!-- USER GUIDE OVERLAY -->
   <div class="guideview" id="guideview">
-    <div class="rp-toolbar"><div class="ttl">วิธีใช้</div><button class="an-close" id="guideClose" aria-label="กลับแผนที่">✕</button></div>
-    <div class="gd-body reader-guide">
-      <h1>เริ่มดูไฟและฝุ่นในเชียงใหม่</h1>
-      <p class="guide-lead">ChiangMaiEyes รวบรวมจุดความร้อน ฝุ่น ลม และขอบเขตป่าชุมชน 677 แห่ง เพื่อช่วยดูสถานการณ์และประสานผู้ดูแลพื้นที่ เปิดอ่านแผนที่ได้โดยไม่ต้องสมัคร</p>
-      <ul class="guide-cards" aria-label="ลองใช้ทีละอย่าง">
-        <li class="guide-card"><span class="gc-icon" aria-hidden="true">📍</span><h2>ดูไฟรอบตัว</h2><p>แผนที่ซูมไปที่ตำแหน่งของคุณ พร้อมจุดความร้อนใกล้ ๆ</p><button type="button" class="gc-try" data-guide-try="near">ลองใช้เลย</button></li>
-        <li class="guide-card"><span class="gc-icon" aria-hidden="true"><span class="hs-dot-pin age-new"></span></span><h2>อ่านจุดความร้อน</h2><p>แดง ไม่เกิน 6 ชม. · ส้ม 6–24 ชม. · เทา เก่ากว่า กดจุดเพื่อดูเวลาและพิกัด จุดความร้อนยังไม่ใช่ไฟที่ยืนยันแล้ว</p><button type="button" class="gc-try" data-guide-try="hotspot">ลองใช้เลย</button></li>
-        <li class="guide-card"><span class="gc-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h16a3 3 0 1 1-3 3"/><path d="M3 16h7"/></svg></span><h2>ดูทิศลม</h2><p>เส้นที่วิ่งบนแผนที่คือทางที่ลมพัดไป เส้นยาวแปลว่าลมแรงกว่า</p><button type="button" class="gc-try" data-guide-try="wind">ลองใช้เลย</button></li>
-        <li class="guide-card"><span class="gc-icon" aria-hidden="true">▶</span><h2>ย้อนดูหลายวัน</h2><p>เล่นจุดความร้อนตามเวลา เห็นว่าเกิดที่ไหนก่อนหลัง</p><button type="button" class="gc-try" data-guide-try="replay">ลองใช้เลย</button></li>
-        <li class="guide-card"><span class="gc-icon" aria-hidden="true">⛰️</span><h2>ภูเขา 3D</h2><p>ดูว่าจุดความร้อนอยู่บนสันเขาหรือในหุบ</p><button type="button" class="gc-try" data-open-view="threed">ลองใช้เลย</button></li>
-        <li class="guide-card"><span class="gc-icon" aria-hidden="true">💬</span><h2>แจ้งเตือนทาง LINE</h2><p>สำหรับตัวแทนป่าชุมชน รับแจ้งเมื่อมีจุดความร้อนในป่าที่ดูแล</p><button type="button" class="gc-try" data-open-view="community">ลองใช้เลย</button></li>
-      </ul>
-      <details class="guide-topic guide-more"><summary>อ่านละเอียด: ใช้แผนที่ทีละขั้น</summary>
-        <ol class="guide-steps">
-        <li><h2>เลือกพื้นที่ที่อยากดู</h2><p>เปิดหน้า “แผนที่” แล้วกด “ดูไฟรอบตัวฉัน” หรือค้นหาอำเภอ ตำบล หรือพิกัด เปลี่ยนเป็นภูเขา 3D ได้จากปุ่มชั้นข้อมูล</p></li>
-        <li><h2>กดจุดความร้อนและอ่านเวลา</h2><p>หมุดคือสิ่งที่ดาวเทียมตรวจพบ กดเพื่อดูเวลาตรวจพบและรายละเอียด จุดจางเป็นข้อมูลเกิน 24 ชั่วโมง ต้องสอบถามคนในพื้นที่ก่อนยืนยันว่าไฟยังไหม้ การไม่พบหมุดก็ยังสรุปว่าไม่มีไฟไม่ได้</p></li>
-        <li><h2>ดูฝุ่นและลมประกอบ</h2><p>ฝุ่นหน้าแรกใช้ค่าจากสถานีที่มีข้อมูล หน่วย µg/m³ ลูกศรลมชี้ไปทางที่ลมพัดไป อ่านแหล่งและเวลาด้วย แบบจำลองลมเคลื่อนไหว 10 เมตรกับลมสถานีเป็นคนละชุด</p></li>
-        <li><h2>ตรวจสอบและติดตามเรื่อง</h2><p>ผู้ดูแลชุมชนเข้าสู่ระบบ แล้วเปิด “ป่าชุมชน → ป่าของฉัน” เพื่อขออนุมัติพื้นที่ จึงบันทึกหรือประสานเหตุได้ ใช้แท็บ “ติดตามเหตุ” ในหน้านี้ดูงานที่เกี่ยวข้อง หากต้องดูแนวโน้มหรือทำเอกสาร ให้เปิด “วิเคราะห์” แล้วเลือกย้อนหลังหรือสร้างรายงาน</p></li>
-      </ol>
-      </details>
-      <details class="guide-topic"><summary>สมัครและรับแจ้งเตือนอย่างไร</summary><p>สมัครและยืนยันอีเมล ขอเป็นตัวแทนป่าที่ดูแล รอผู้ดูแลอนุมัติ แล้วกด “รับแจ้งเตือนทาง LINE” ใน “ป่าชุมชน → การแจ้งเตือน” ระบบส่งตามพื้นที่ที่ได้รับอนุมัติ ไม่ต้องเปิดเว็บค้างไว้ อีเมลยังส่งถึงสมาชิกทั่วไปไม่ได้จนกว่าจะยืนยันโดเมนผู้ส่ง</p></details>
-      <details class="guide-topic"><summary>ถ้าขึ้นว่าไม่มีข้อมูลหรือข้อมูลเก่า</summary><p>หมายถึงระบบยังไม่ได้ค่าที่ใช้ได้ในรอบนั้น ไม่ได้แปลว่าฝุ่นเป็นศูนย์หรือพื้นที่ปลอดภัย เปิด “วิเคราะห์ → ข้อมูลในพื้นที่” เพื่อดูแหล่งและเวลา หากมีเพียง AQI จะระบุว่าเป็นดัชนี ไม่แปลงเป็น PM2.5</p></details>
-      <details class="guide-topic" id="guideMethods"><summary>ตัวเลขคำนวณและคาดการณ์อย่างไร</summary>
+    <header class="gd-header"><div><h1>วิธีใช้</h1><p>อ่านไฟ ฝุ่น ลม และป่าชุมชน ใน 4 ขั้น</p></div><button type="button" class="gd-close" id="guideClose" aria-label="กลับแผนที่">✕</button></header>
+    <div class="gd-body reader-guide gd-v2">
+      <a class="gd-sos" href="tel:1362"><span class="gd-sos-ic" aria-hidden="true">🔥</span><span class="gd-sos-t"><b>เห็นไฟหรือควัน โทร 1362</b><small>สายด่วนกรมอุทยานฯ โทรได้เลย ไม่ต้องสมัคร · เว็บนี้ไม่ใช่การแจ้งเหตุฉุกเฉิน</small></span><span class="gd-sos-go" aria-hidden="true">โทร</span></a>
+
+      <section class="gd-sec" aria-labelledby="gdStart">
+        <h2 class="gd-h" id="gdStart">เริ่มใช้ใน 4 ขั้น</h2>
+        <ol class="guide-steps gd-steps">
+          <li><span class="gd-n" aria-hidden="true">1</span><div><div class="gd-step-top"><h3>ดูไฟรอบตัว</h3><button type="button" class="gc-try" data-guide-try="near">ลองเลย</button></div><p>กด “ดูไฟรอบตัวฉัน” แผนที่จะซูมไปที่คุณ จุดสีคือที่ดาวเทียมเห็นความร้อน ยังไม่ใช่ไฟที่ยืนยันแล้ว</p></div></li>
+          <li><span class="gd-n" aria-hidden="true">2</span><div><div class="gd-step-top"><h3>ดูฝุ่นและลม</h3><button type="button" class="gc-try" data-guide-try="dust">ลองเลย</button></div><p>ช่องฝุ่นบนสุดคือค่าสถานีกรมควบคุมมลพิษ ป้ายตัวเลขสี่เหลี่ยมคือเซนเซอร์ใกล้บ้าน เส้นที่วิ่งบนแผนที่คือทางที่ลมพัดไป</p></div></li>
+          <li><span class="gd-n" aria-hidden="true">3</span><div><div class="gd-step-top"><h3>เลือกป่าของคุณ</h3><button type="button" class="gc-try" data-open-view="community">ลองเลย</button></div><p>ในแท็บ “ป่าชุมชน” พิมพ์ชื่อป่า ดูจุดในป่าและรอบ 5 กม. ลม และเบอร์หน่วยงาน แชร์ให้คนในหมู่บ้านทาง LINE ได้</p></div></li>
+          <li><span class="gd-n" aria-hidden="true">4</span><div><div class="gd-step-top"><h3>ถ้าเห็นไฟจริง</h3><a class="gc-try" href="tel:1362">โทร 1362</a></div><p>โทร 1362 และแจ้งหน่วยงานในพื้นที่ (ดู “ติดต่อใคร” ในการ์ดป่า) อย่าเข้าไปดับคนเดียว ตัวแทนป่าบันทึกเหตุในเว็บหลังดับเสร็จ</p></div></li>
+        </ol>
+      </section>
+
+      <section class="gd-sec" aria-labelledby="gdLegend">
+        <h2 class="gd-h" id="gdLegend">สีและป้ายบนเว็บ</h2>
+        <div class="gd-legend">
+          <div class="gd-lg"><h3>จุดความร้อน <small>ดาวเทียม NASA FIRMS</small></h3><ul>
+            <li><span class="hs-dot-pin age-new" aria-hidden="true"></span>ไม่เกิน 6 ชม.</li><li><span class="hs-dot-pin age-recent" aria-hidden="true"></span>6–24 ชม.</li><li><span class="hs-dot-pin age-old" aria-hidden="true"></span>เก่ากว่า 24 ชม.</li></ul></div>
+          <div class="gd-lg"><h3>ฝุ่น PM2.5 <small>µg/m³ · เกณฑ์กรมควบคุมมลพิษ</small></h3><ul>
+            <li><i style="background:var(--pm-very-good)"></i>ดีมาก ≤15</li><li><i style="background:var(--pm-good)"></i>ดี 15.1–25</li><li><i style="background:var(--pm-moderate)"></i>ปานกลาง 25.1–37.5</li><li><i style="background:var(--pm-unhealthy)"></i>เริ่มมีผลต่อสุขภาพ 37.6–75</li><li><i style="background:var(--pm-hazardous)"></i>มีผลต่อสุขภาพ &gt;75</li></ul></div>
+          <div class="gd-lg"><h3>เซนเซอร์ฝุ่น <small>ป้ายสี่เหลี่ยม · AQI เกณฑ์ US EPA</small></h3><ul>
+            <li><i class="sq" style="background:#00e400"></i>ดี 0–50</li><li><i class="sq" style="background:#ffff00"></i>ปานกลาง 51–100</li><li><i class="sq" style="background:#ff7e00"></i>เริ่มมีผลต่อกลุ่มเสี่ยง 101–150</li><li><i class="sq" style="background:#ff0000"></i>มีผลต่อสุขภาพ 151–200</li><li><i class="sq" style="background:#8f3f97"></i>มีผลต่อสุขภาพมาก 201–300</li><li><i class="sq" style="background:#7e0023"></i>อันตราย &gt;300</li></ul></div>
+          <div class="gd-lg"><h3>อากาศเอื้อต่อไฟ <small>FWI · ไม่ใช่การพยากรณ์ว่าไฟจะเกิดที่ไหน</small></h3><ul>
+            <li><i style="background:#38bdf8"></i>ต่ำมาก</li><li><i style="background:#43b05f"></i>ต่ำ</li><li><i style="background:#facc15"></i>ปานกลาง</li><li><i style="background:#f97316"></i>สูง</li><li><i style="background:#ef4444"></i>สูงมาก</li><li><i style="background:#7f1d1d"></i>สูงสุด</li></ul></div>
+          <div class="gd-lg"><h3>สถานะป่าชุมชน <small>24 ชม. ล่าสุด</small></h3><ul>
+            <li><span aria-hidden="true">🌿</span>ไม่พบจุดในป่าและรอบ 5 กม.</li><li><span aria-hidden="true">👀</span>มีจุดรอบป่าในระยะ 5 กม.</li><li><span aria-hidden="true">🔥</span>มีจุดในขอบเขตป่า</li></ul></div>
+        </div>
+        <p class="gd-note">ฝุ่นมีตัวเลข 2 แบบที่ใช้คนละเกณฑ์ (µg/m³ กับ AQI) อย่าเทียบกันตรง ๆ</p>
+      </section>
+
+      <section class="gd-sec" aria-labelledby="gdAlerts">
+        <h2 class="gd-h" id="gdAlerts">รับแจ้งเตือน</h2>
+        <div class="gd-alerts">
+          <article class="gd-alert"><h3>💬 ฝุ่นรายอำเภอทาง LINE</h3><p class="gd-who">ทุกคน · ไม่ต้องสมัครสมาชิก</p><p>แจ้งเมื่อเซนเซอร์ในอำเภอวัดได้ระดับ “เริ่มมีผลต่อกลุ่มเสี่ยง” ขึ้นไปต่อเนื่อง 1 ชม. เปิดเฉพาะอำเภอที่มีเซนเซอร์ส่งข้อมูลอย่างน้อย 2 จุด หยุดได้ทุกเมื่อ พิมพ์ “หยุด”</p><button type="button" class="gc-try" data-guide-try="dustline">ไปรับแจ้งเตือน</button></article>
+          <article class="gd-alert"><h3>🌳 ไฟใกล้ป่าที่ดูแล</h3><p class="gd-who">ตัวแทนป่าชุมชนที่ได้รับอนุมัติ</p><ol><li>สมัครและยืนยันอีเมล</li><li>ขอสิทธิ์ป่าที่ดูแล แล้วรอผู้ดูแลอนุมัติ</li><li>เปิดแจ้งเตือน LINE หรืออีเมลใน “ป่าชุมชน → การแจ้งเตือน”</li></ol><button type="button" class="gc-try" data-open-view="community">ไปที่ป่าชุมชน</button></article>
+        </div>
+      </section>
+
+      <section class="gd-sec" aria-labelledby="gdFaq">
+        <h2 class="gd-h" id="gdFaq">คำถามที่พบบ่อย</h2>
+        <div class="gd-faq">
+          <details><summary>ไม่มีจุดบนแผนที่ แปลว่าไม่มีไฟใช่ไหม</summary><p>ไม่ใช่ การไม่พบหมุดก็ยังสรุปว่าไม่มีไฟไม่ได้ ดาวเทียมอาจไม่เห็นไฟเล็ก ไฟใต้เรือนยอด หรือช่วงที่มีเมฆ ถ้าเห็นควันให้เชื่อสิ่งที่เห็นและโทร 1362</p></details>
+          <details><summary>จุดความร้อนกับไฟป่าต่างกันอย่างไร</summary><p>จุดความร้อนคือพิกเซลที่ดาวเทียมวัดความร้อนได้สูงผิดปกติ อาจเป็นไฟป่า การเผาในไร่ หรือแหล่งความร้อนอื่น ต้องมีคนในพื้นที่ยืนยันก่อนจึงเป็นเหตุไฟ จุดจางคือข้อมูลเกิน 24 ชม. ไม่ได้แปลว่ายังไหม้อยู่</p></details>
+          <details><summary>ข้อมูลเก่าแค่ไหน</summary><p>ทุกตัวเลขมีเวลาของข้อมูลกำกับ ดาวเทียมผ่านเชียงใหม่วันละหลายรอบ ข้อมูลแบบใกล้เวลาจริงของ NASA FIRMS มักมาถึงภายในราว 3 ชม. หลังดาวเทียมผ่าน ถ้าขึ้นว่า “ไม่มีข้อมูล” หรือ “ข้อมูลเก่า” แปลว่าระบบยังไม่ได้ค่าที่ใช้ได้ ไม่ได้แปลว่าฝุ่นเป็นศูนย์หรือปลอดภัย</p></details>
+          <details><summary>ทำไมบางอำเภอไม่มีค่าฝุ่น</summary><p>สถานีกรมควบคุมมลพิษในเชียงใหม่ที่เราได้ข้อมูลมี 2 แห่ง อยู่ใน อ.เมืองทั้งคู่ ค่ารายอำเภอจึงมาจากเซนเซอร์ของ World Air Quality Index Project ซึ่งต้องมีอย่างน้อย 2 จุดที่ส่งข้อมูลใน 3 ชม. อำเภอที่ไม่ถึงเกณฑ์จะไม่แสดงค่า แทนที่จะเดา</p></details>
+          <details><summary>“อากาศเอื้อต่อไฟ” คืออะไร</summary><p>บอกว่าอากาศแห้ง ร้อน และลมแรงจนไฟติดและลามง่ายแค่ไหน คำนวณจากอุณหภูมิ ความชื้น ลม และฝน ไม่ได้บอกว่าไฟจะเกิดที่ไหนหรือเมื่อไร ดูได้ที่แท็บวิเคราะห์และในการ์ดป่า</p></details>
+          <details><summary>ข้อมูลที่ตัวแทนบันทึก ใครเห็นได้บ้าง</summary><p>รายละเอียดเหตุ รูป และชื่อผู้ประสานเห็นได้เฉพาะผู้มีสิทธิ์ในพื้นที่นั้น คนทั่วไปเห็นเฉพาะสรุปที่ผู้รับผิดชอบเลือกเผยแพร่ รูปไม่เผยแพร่พร้อมสรุปสาธารณะ</p></details>
+        </div>
+      </section>
+
+      <section class="gd-sec gd-expert" aria-labelledby="gdExpert">
+        <h2 class="gd-h" id="gdExpert">สำหรับผู้เชี่ยวชาญ</h2>
+        <p class="gd-note">วิธีคำนวณ ข้อจำกัด และแหล่งอ้างอิงของทุกตัวเลขบนเว็บ</p>
+      <details class="guide-topic" id="guideMethods"><summary>วิธีคำนวณแต่ละตัวเลข</summary>
         <dl class="guide-methods">
           <dt>จำนวนจุดความร้อน</dt><dd>นับรายการตรวจพบในช่วงเวลาที่เลือก รวมรายการซ้ำที่พิสูจน์ว่าเป็นการตรวจพบเดียวกันตามแหล่ง เวลา ดาวเทียม และตำแหน่ง หนึ่งจุดยังไม่ใช่หนึ่งเหตุไฟที่คนยืนยัน</dd>
           <dt>ฝุ่นหน้าแรก</dt><dd>เฉลี่ยความเข้มข้นจากสถานีเชียงใหม่ที่ต้นทางมีค่าในชุดนั้น แต่ละสถานีแทนจุดติดตั้ง ไม่ใช่การวัดทุกป่าหรือทุกบ้าน AQI แสดงแยกจาก µg/m³</dd>
@@ -1854,10 +1887,13 @@
           <dt>พยากรณ์อากาศและฝุ่น</dt><dd>อากาศล่วงหน้าจาก Open-Meteo และฝุ่นจาก CAMS เป็นแบบจำลองตามกริดและจุดอ้างอิง ดูรอบแบบจำลองและเวลาที่ข้อมูลแทน แยกจากค่าตรวจวัดสถานี</dd>
           <dt>การระบายอากาศ</dt><dd>อ่าน HPBL ลมในชั้น PBL และ VRATE ของ NOAA GFS โดยตรง หน่วย m, m/s และ m²/s เป็นคนละระดับกับลม 10 เมตร ไม่ใช้ยืนยันค่าฝุ่นในป่าหรือความปลอดภัย</dd>
           <dt>ไฟจะลามไปไหน</dt><dd>กดจุดความร้อนที่ตรวจพบใน 24 ชั่วโมง แล้วกด “ดูแนวลามทดลอง 6 ชม.” ระบบใช้ลมพยากรณ์รายชั่วโมง ทางลาด และเชื้อเพลิงหญ้าแห้งสมมติ เป็นภาพ “ถ้ายังไหม้และไม่มีการดับ” ยังไม่สอบเทียบกับไฟจริงในเชียงใหม่ ภาพทิศปลายลมบนแผนที่ยังเป็นเพียงภาพประกอบ</dd>
+          <dt>เซนเซอร์ฝุ่น (AQI)</dt><dd>ดัชนีย่อย PM2.5 ตามเกณฑ์ US EPA จาก World Air Quality Index Project อ่านสดทุก 10 นาที ค่าอำเภอเป็นค่ากลางของเซนเซอร์อย่างน้อย 2 จุดที่ส่งข้อมูลใน 3 ชม. ไม่แปลงเป็น µg/m³ และไม่เก็บย้อนหลังตามเงื่อนไขของแหล่งข้อมูล ส่วนใหญ่เป็นเซนเซอร์ราคาประหยัดที่ยังไม่ผ่านการตรวจสอบ</dd>
+          <dt>อากาศเอื้อต่อไฟ (FWI)</dt><dd>ระบบดัชนีสภาพอากาศเอื้อต่อไฟของแคนาดา (Van Wagner 1987) คำนวณจากอุณหภูมิ ความชื้น ลม และฝนตอนเที่ยงของ Open-Meteo ใช้ข้อมูลย้อนหลัง 60 วันเพื่อตั้งค่าเริ่มต้น และล่วงหน้า 16 วัน ระดับสีใช้เกณฑ์ของ EFFIS ซึ่งยังไม่ได้ปรับให้ตรงกับป่าเชียงใหม่ ไม่ได้บอกตำแหน่งที่ไฟจะเกิด</dd>
+          <dt>สถานะป่าชุมชน</dt><dd>นับจุดความร้อน 24 ชม. ที่อยู่ในขอบเขตป่าจาก RECOFTC หรือห่างจากขอบป่าไม่เกิน 5 กม. แบบเส้นตรง ป่าที่ขอบเขตรอตรวจใช้จุดอ้างอิงของป่าแทน ลมที่บอกว่า “พัดเข้าหาป่า” คือทิศลมอ้างอิงจังหวัดที่ต่างจากทิศจากจุดใกล้ที่สุดไปยังป่าไม่เกิน 45°</dd>
         </dl>
       </details>
       <details class="guide-topic" id="guideReferences"><summary>แหล่งข้อมูลและเอกสารอ้างอิง (References)</summary><p>แต่ละแหล่งมีหน้าที่และข้อจำกัดต่างกัน กดชื่อแหล่งเพื่ออ่านต้นทาง</p><div id="evidenceSources" class="source-grid"></div><p>สูตรสรุปและการเชื่อมข้อมูลที่อธิบายด้านบนเป็นวิธีของ ChiangMaiEyes แหล่งข้อมูลไม่ได้รับรองผลคำนวณหรือความแม่นยำของเว็บนี้</p></details>
-      <details class="guide-topic" id="guideNotesCard"><summary>หมายเหตุประกอบข้อมูลรอบที่เปิดดู</summary><div id="guideNotesList"><p>เปิดส่วนติดตามเหตุเพื่ออ่านหมายเหตุของข้อมูลรอบนั้น</p></div></details>
+      </section>
     </div>
   </div>
   <div class="guideview" id="dataview">
@@ -3733,6 +3769,14 @@ document.getElementById('guideview').addEventListener('click',e=>{
       if(_provinceBoundsForFit)map.fitBounds(_provinceBoundsForFit,{padding:[12,12]});
     }
     else if(kind==='replay')document.querySelector('.hs-replay-start:not([hidden])')?.click();
+    else if(kind==='dust'){
+      ['pm','sensors','wind'].forEach(k=>{const row=document.querySelector(`.layer[data-layer="${k}"]`);if(row&&!row.classList.contains('on'))row.click();});
+      if(_provinceBoundsForFit)map.fitBounds(_provinceBoundsForFit,{padding:[12,12]});
+    }
+    else if(kind==='dustline'){
+      CmeNavigation.open('analytics');
+      let n=0;const t=setInterval(()=>{const card=document.querySelector('#analytics .as-line');if(card||++n>40){clearInterval(t);if(!card)return;const go=()=>card.isConnected&&card.scrollIntoView({block:'center'});go();setTimeout(go,900);setTimeout(go,2200);}},150);
+    }
     else if(kind==='hotspot')openLatestHotspot();
   },120);
 });
