@@ -65,7 +65,7 @@
     container.insertBefore(canvas,mapCanvas.nextSibling);
     const ctx=canvas.getContext('2d');
     const [west,south,east,north]=bounds||[97.9,17.1,99.7,20.3];
-    const N=mobile?220:420, MAX_AGE=90;
+    const N=mobile?190:360, MAX_AGE=90;
     const spawn=p=>{p.lon=west+Math.random()*(east-west);p.lat=south+Math.random()*(north-south);p.age=Math.floor(Math.random()*MAX_AGE);p.px=null;return p;};
     const parts=Array.from({length:N},()=>spawn({}));
     const resize=()=>{const r=mapCanvas.getBoundingClientRect(),dpr=Math.min(2,root.devicePixelRatio||1);canvas.width=r.width*dpr;canvas.height=r.height*dpr;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(dpr,0,0,dpr,0,0);};
@@ -84,7 +84,7 @@
       ctx.globalCompositeOperation='destination-in';ctx.fillStyle='rgba(0,0,0,0.9)';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.globalCompositeOperation='source-over';
       const z=map.getZoom(), step=0.0009*Math.pow(2,9-z);   // degrees per (m/s) per frame, constant on screen
-      ctx.lineWidth=2;ctx.lineCap='round';
+      ctx.lineWidth=1.6;ctx.lineCap='round';
       for(const p of parts){
         const uv=sample(p.lon,p.lat);
         if(!uv||++p.age>MAX_AGE){spawn(p);p.age=0;continue;}
@@ -93,7 +93,7 @@
         const pt=map.project([p.lon,p.lat]);
         if(p.px){
           const sp=Math.hypot(uv[0],uv[1]);
-          ctx.strokeStyle=ink()+Math.min(.9,.58+sp/12).toFixed(2)+')';
+          ctx.strokeStyle=ink()+Math.min(.8,.42+sp/14).toFixed(2)+')';   // faint when calm, brighter in real wind
           ctx.beginPath();ctx.moveTo(p.px.x,p.px.y);ctx.lineTo(pt.x,pt.y);ctx.stroke();
         }
         p.px=pt;

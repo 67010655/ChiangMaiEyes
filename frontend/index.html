@@ -2710,22 +2710,15 @@ function _applyVelocityLayer(field){
   // Thin, pale streamlines that sit behind the hotspots: visible at load,
   // never louder than the fire markers. Darker ink on the light basemap.
   const light=document.body.classList.contains('light-mode');
-  // Calm air (often < 1 m/s here) moved particles a pixel at a time, so the
-  // direction was invisible. Lengthen trails up to 6x when wind is light; the
-  // speed itself is read from the wind tile, not from trail length.
-  let sum=0,n=0;const u=field?.[0]?.data||[],v=field?.[1]?.data||[];
-  for(let i=0;i<u.length;i+=7){const sp=Math.hypot(u[i],v[i]);if(Number.isFinite(sp)){sum+=sp;n++;}}
-  const avg=n?sum/n:2, boost=Math.max(1,Math.min(6,3/Math.max(avg,0.3)));
+  // Particle speed follows the model speed directly (no calm-air boost), so
+  // calm air looks calm and a stronger wind visibly moves faster. Colour runs
+  // from faint (calm) to brighter (about 20 km/h and up).
   velLayer=L.velocityLayer({
     displayValues:false,
-    data:field, maxVelocity:15,
-    // Light winds (often 0–5 km/h in Chiang Mai) still draw readable streaks:
-    // the trail length shows direction, the top card gives the speed.
-    // The site's wind colour (cyan, as in the wind tile): stands out from the
-    // grey basemap without beating it; stronger wind draws a little brighter.
-    colorScale:light?['rgba(14,116,144,.62)','rgba(14,116,144,.78)','rgba(21,94,117,.9)']:['rgba(55,209,214,.6)','rgba(80,220,225,.78)','rgba(150,240,244,.92)'],
-    velocityScale:0.018*boost, opacity:0.95, particleAge:160, lineWidth:2,
-    particleMultiplier:isMobileViewport()?1/550:1/350, frameRate:24
+    data:field, maxVelocity:6,
+    colorScale:light?['rgba(14,116,144,.5)','rgba(14,116,144,.62)','rgba(14,116,144,.74)','rgba(21,94,117,.86)']:['rgba(55,209,214,.42)','rgba(55,209,214,.54)','rgba(80,220,225,.66)','rgba(150,240,244,.8)'],
+    velocityScale:0.03, opacity:0.9, particleAge:120, lineWidth:1.6,
+    particleMultiplier:isMobileViewport()?1/650:1/450, frameRate:24
   }).addTo(map);
 }
 
