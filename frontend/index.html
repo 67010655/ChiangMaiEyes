@@ -1338,7 +1338,7 @@
     <ul class="splash-points">
       <li class="fire"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2.5 1-4 3-6 0 2 1 3 2 3 1-2 1-5 0-8Z"/></svg><span><b>จุดความร้อนจากดาวเทียม</b><small>ยังไม่ใช่ไฟที่ยืนยันแล้ว ต้องมีคนในพื้นที่ยืนยัน</small></span></li>
       <li class="dust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 9h12a3 3 0 1 0-3-3"/><path d="M2 13h18a2 2 0 1 1-2 2"/><path d="M5 17h7a2 2 0 1 1-2 2"/></svg><span><b>ฝุ่น PM2.5 ใกล้บ้าน</b><small>จากสถานีและเซนเซอร์ ทุกค่ามีแหล่งและเวลากำกับ</small></span></li>
-      <li class="wind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20V4m0 0-5 5m5-5 5 5"/></svg><span><b>ลมพัดไปทางไหน</b><small>ช่วยดูว่าไฟและควันน่าจะไปทางใด</small></span></li>
+      <li class="wind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20V4m0 0-5 5m5-5 5 5"/></svg><span><b>ลมพัดไปทางไหน</b><small>ช่วยดูว่าไฟและควันคาดว่าจะไปทางใด</small></span></li>
     </ul>
     <div class="splash-loading"><span class="splash-spinner"></span><span id="splashMsg">กำลังโหลดแผนที่และข้อมูลสด…</span></div>
     <div class="splash-bar" aria-hidden="true"><i></i></div>
@@ -1669,7 +1669,7 @@
       <!-- search bar over the map: every viewport (desktop + mobile) -->
       <div class="map-search">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="mobileSearchInput" type="text" aria-label="ค้นหาอำเภอ ตำบล หรือพิกัด" placeholder="ค้นหาอำเภอ ตำบล หรือพิกัด" autocomplete="off">
+        <input id="mobileSearchInput" type="text" aria-label="ค้นหาอำเภอ ตำบล ป่าชุมชน หรือพิกัด" placeholder="ค้นหาอำเภอ ตำบล ป่าชุมชน หรือพิกัด" autocomplete="off">
       </div>
 
       <!-- GPS-locate button: every viewport -->
@@ -2028,6 +2028,7 @@
 <script src="/analytics-summary.js"></script>
 <script src="/dust-sensors.js"></script>
 <script src="/forest-public.js"></script>
+<script src="/map-search.js"></script>
 <script src="/forest-picker.js"></script>
 <script src="/three-d-extras.js"></script>
 <script>
@@ -3735,8 +3736,43 @@ function runMobileSearch(query){
   }
   toast('ไม่พบอำเภอ ตำบล หรือพิกัดที่ค้นหา');
 }
-document.getElementById('mobileSearchInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter') runMobileSearch(e.target.value);
+// Suggestions while typing; Enter on an empty list still runs the old search.
+let _searchItems=null,_searchItemsKey='';
+function searchItems(){
+  const key=districts.length+'/'+_tambonFeatures.length+'/'+allForests.length;
+  if(_searchItems&&key===_searchItemsKey)return _searchItems;
+  const label=window.CmeForestPublic?.labeller?CmeForestPublic.labeller(allForests):(f=>f.name);
+  _searchItems=[
+    ...districts.map(d=>({kind:'district',name:d.name,ref:d})),
+    ..._tambonFeatures.map(f=>{const p=f.properties||{};return {kind:'tambon',name:p.tambon_th||p.T_NAME_T||'',sub:'อ.'+(p.amphoe_th||p.A_NAME_T||''),ref:f};}).filter(x=>x.name),
+    ...allForests.map(f=>({kind:'forest',name:label(f),short:f.name,sub:'อ.'+(f.amphoe||''),ref:f})),
+  ];
+  _searchItemsKey=key;return _searchItems;
+}
+function searchSuggestions(){
+  const counts={};CmeEvidence.filterHotspots(hotspots,{hours:24}).forEach(h=>{const d=normalizeDistrictName(h.district||'');if(d)counts[d]=(counts[d]||0)+1;});
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([name,n])=>({kind:'district',name,extra:n+' จุด',ref:districts.find(d=>d.name===name)}));
+}
+function openForestOnMap(f){
+  const c=window.CmeForestPublic?.centre(f);if(!c)return;
+  map.flyTo([c.lat,c.lon],13,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
+  const P=window.CmeForestPublic,html=P.forestCard(f,currentDashboard);
+  const ctx={forests:()=>allForests,dashboard:()=>currentDashboard,fetcher:path=>fetch(API_BASE+path),
+    locate:(lat,lon)=>{CmeHotspotSheet.close();map.closePopup();map.flyTo([lat,lon],14,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});}};
+  let host;
+  if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();CmeHotspotSheet.openPanel({kicker:'ป่าชุมชน',title:f.name,html});host=document.querySelector('#hotspotSheet .hs-sheet-body');}
+  else{const pop=L.popup({maxWidth:360,className:'forest-search-popup'}).setLatLng([c.lat,c.lon]).setContent(html).openOn(map);host=pop.getElement()?.querySelector('.leaflet-popup-content');}
+  if(host){P.attach(host,ctx);P.fillAsync(host,f,ctx.fetcher);}
+}
+CmeMapSearch.init({
+  input:document.getElementById('mobileSearchInput'),
+  items:searchItems,suggest:searchSuggestions,
+  onCoordinates:q=>runMobileSearch(q),
+  onPick:r=>{
+    if(r.kind==='district'){const layer=districtLayerRef[r.name];if(layer)selectDistrict(r.name,layer);else if(r.ref?.c)map.flyTo(r.ref.c,11);}
+    else if(r.kind==='tambon'){const c=_tambonCentroid(r.ref),p=r.ref.properties||{};if(c)selectTambonSearch(p.tambon_th||p.T_NAME_T,c,p.amphoe_th||p.A_NAME_T);}
+    else if(r.kind==='forest')openForestOnMap(r.ref);
+  }
 });
 
 // Splash screen: hide once the initial LIVE/offline attempt resolves, with

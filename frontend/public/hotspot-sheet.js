@@ -29,19 +29,57 @@
     sheet=document.createElement('section');
     sheet.className='hs-sheet';sheet.id='hotspotSheet';sheet.hidden=true;
     sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','false');sheet.setAttribute('aria-labelledby','hotspotSheetTitle');sheet.tabIndex=-1;
-    sheet.innerHTML=`<button type="button" class="hs-sheet-handle" aria-label="ปิดรายละเอียด"><span></span></button>
+    sheet.innerHTML=`<button type="button" class="hs-sheet-handle" aria-label="ลากขึ้นเพื่อขยาย ลากลงเพื่อย่อ"><span></span></button>
       <header class="hs-sheet-head"><div><p class="hs-sheet-kicker">จุดความร้อนจากดาวเทียม</p><h2 id="hotspotSheetTitle"></h2></div>
       <button type="button" class="hs-sheet-close" aria-label="ปิดรายละเอียด">✕</button></header>
       <div class="hs-sheet-body"></div>`;
     document.body.appendChild(sheet);
     body=sheet.querySelector('.hs-sheet-body');title=sheet.querySelector('#hotspotSheetTitle');
-    sheet.querySelector('.hs-sheet-close').onclick=close;sheet.querySelector('.hs-sheet-handle').onclick=close;
+    sheet.querySelector('.hs-sheet-close').onclick=close;
+    drag(sheet);
     sheet.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();}});
     sheet.addEventListener('click',e=>{
       const b=e.target.closest('[data-copy]');if(!b)return;
       const text=b.dataset.copy,done=()=>{b.dataset.copied='1';b.textContent='คัดลอกแล้ว';setTimeout(()=>{b.textContent='คัดลอก';delete b.dataset.copied;},1600);};
       if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(done,()=>{});else done();
     });
+  }
+  // Drag the handle or title row like a window: up to expand, down to shrink.
+  // Dragging down stops at the title row (✕ stays reachable); only ✕ closes.
+  const vh=()=>root.innerHeight||800;
+  function stops(){
+    const head=sheet.querySelector('.hs-sheet-head'),handle=sheet.querySelector('.hs-sheet-handle');
+    const peek=Math.ceil((handle?.offsetHeight||24)+(head?.offsetHeight||56)+18);
+    return {peek,half:Math.min(vh()*0.5,440),full:Math.round(vh()*0.86)};
+  }
+  function setStop(name){
+    if(!sheet)return;const st=stops();sheet.dataset.stop=name;
+    sheet.style.height=st[name]+'px';sheet.style.maxHeight='none';
+    sheet.classList.toggle('peek',name==='peek');
+  }
+  function drag(el){
+    const grips=[el.querySelector('.hs-sheet-handle'),el.querySelector('.hs-sheet-head')];
+    let y0=0,h0=0,moved=false,active=false,lastY=0,lastT=0,v=0;
+    const down=e=>{
+      if(e.target.closest('.hs-sheet-close'))return;
+      active=true;moved=false;y0=lastY=e.clientY;lastT=e.timeStamp;h0=el.getBoundingClientRect().height;v=0;
+      el.classList.add('dragging');e.currentTarget.setPointerCapture?.(e.pointerId);
+    };
+    const move=e=>{
+      if(!active)return;const dy=e.clientY-y0;if(Math.abs(dy)>6)moved=true;
+      const st=stops();el.style.maxHeight='none';el.style.height=Math.max(st.peek,Math.min(st.full,h0-dy))+'px';
+      const dt=Math.max(1,e.timeStamp-lastT);v=(e.clientY-lastY)/dt;lastY=e.clientY;lastT=e.timeStamp;
+    };
+    const up=e=>{
+      if(!active)return;active=false;el.classList.remove('dragging');
+      if(!moved){if(e.currentTarget.classList.contains('hs-sheet-handle'))setStop(el.dataset.stop==='full'?'half':'full');return;}
+      const st=stops(),h=el.getBoundingClientRect().height;
+      // A quick flick decides the direction; otherwise snap to the nearest stop.
+      if(v>0.6)setStop(h>st.half?'half':'peek');
+      else if(v<-0.6)setStop(h<st.half?'half':'full');
+      else setStop(['peek','half','full'].reduce((a,b)=>Math.abs(st[b]-h)<Math.abs(st[a]-h)?b:a));
+    };
+    for(const g of grips){if(!g)continue;g.addEventListener('pointerdown',down);g.addEventListener('pointermove',move);g.addEventListener('pointerup',up);g.addEventListener('pointercancel',up);}
   }
   function factsHtml(h){
     const u=utm(Number(h.lat),Number(h.lon));
@@ -64,7 +102,7 @@
     sheet.querySelector('.hs-sheet-kicker').textContent=kicker;
     title.textContent=t;
     body.innerHTML=html;
-    sheet.hidden=false;document.body.classList.add('hs-sheet-open');
+    sheet.hidden=false;document.body.classList.add('hs-sheet-open');setStop('half');sheet.scrollTop=0;
     requestAnimationFrame(()=>sheet.focus({preventScroll:true}));
   }
   function open(h,html,opts={}){
@@ -77,5 +115,5 @@
     const cb=onClose;onClose=null;cb?.();
     if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});
   }
-  root.CmeHotspotSheet={open,openPanel,close,utm,satName,isOpen:()=>!!sheet&&!sheet.hidden};
+  root.CmeHotspotSheet={open,openPanel,close,utm,satName,setStop,isOpen:()=>!!sheet&&!sheet.hidden};
 })(window);

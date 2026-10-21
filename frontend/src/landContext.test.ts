@@ -29,8 +29,8 @@ it('shows rice immediately without exposing the code and keeps cited details whe
   const {dom,w,c,host}=setup({fail:true});const h={lat:18.8,lon:98.9,landuse_type:'A101',landuse_name:'นาข้าว'};
   host.innerHTML=c.summary(h)+c.details(h);await tick();await c.hydrate(host);
   const first=host.querySelector('.land-context-summary').textContent;
-  expect(first).toContain('น่าจะเป็นการเผาในไร่');expect(first).toContain('พื้นที่เกษตร (นาข้าว)');expect(first).toContain('ไม่ใช่ไฟป่า');
-  expect(host.querySelector('.land-kind').textContent).toContain('พื้นที่เกษตร (นาข้าว) · น่าจะเป็นการเผาในแปลง ไม่ใช่ไฟป่า');
+  expect(first).toContain('คาดว่าเป็นการเผาในไร่');expect(first).toContain('พื้นที่เกษตร (นาข้าว)');expect(first).toContain('ไม่ใช่ไฟป่า');
+  expect(host.querySelector('.land-kind').textContent).toContain('พื้นที่เกษตร (นาข้าว) · คาดว่าเป็นการเผาในแปลง ไม่ใช่ไฟป่า');
   expect(host.textContent).not.toContain('A101');
   const facts=host.querySelectorAll('.land-context-fact:not(.land-kind):not(.seasonal-fuel):not(.spread-hint)');
   expect(facts).toHaveLength(4);
@@ -93,7 +93,7 @@ it('the first screen never calls a hotspot a confirmed forest fire and drops the
   const result={kind:'evergreen',headline:'ป่าไม่ผลัดใบ',label:'ป่าไม่ผลัดใบ',sources:[{name:'ESA WorldCover',year:2021,url:'https://esa-worldcover.org/en/data-access'}],reference:reference.profiles.evergreen,reference_sources:reference.sources};
   const {dom,c,host}=setup({result});host.innerHTML=c.summary({lat:18.8,lon:98.9})+c.details({lat:18.8,lon:98.9});await c.hydrate(host);
   const first=host.querySelector('.land-context-summary');
-  expect(first.textContent).toContain('จุดความร้อนในป่า');expect(first.textContent).not.toContain('น่าจะเป็นไฟป่า');
+  expect(first.textContent).toContain('จุดความร้อนในป่า');expect(first.textContent).not.toContain('น่าจะเป็นไฟป่า');expect(first.textContent).not.toContain('คาดว่าเป็นไฟป่า');
   expect(first.querySelector('.hs-level')).toBeNull();expect(first.textContent).not.toContain('เชื้อเพลิงแห้ง');
   expect(host.querySelector('.land-context-reference').textContent).toContain(reference.profiles.evergreen.fuel_level.text);
   dom.window.close();

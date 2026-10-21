@@ -42,11 +42,11 @@
   }
   function titleFor(kind,report){
     if(report)return 'รายงานไฟจากผู้ใช้ (ยังไม่ยืนยัน)';
-    return kind==='crop'?'น่าจะเป็นการเผาในไร่':DECIDUOUS.includes(kind)||['evergreen','plantation'].includes(kind)?'จุดความร้อนในป่า'
+    return kind==='crop'?'คาดว่าเป็นการเผาในไร่':DECIDUOUS.includes(kind)||['evergreen','plantation'].includes(kind)?'จุดความร้อนในป่า'
       :kind==='built'?'จุดความร้อนในเขตชุมชน':kind==='water'?'จุดความร้อน · แผนที่ระบุว่าเป็นแหล่งน้ำ':['grass','shrub'].includes(kind)?'จุดความร้อนในทุ่งหญ้า/พุ่มไม้':'จุดความร้อน';
   }
   function point(h){return {latitude:h.lat??h.latitude,longitude:h.lon??h.longitude,landuse_type:h.landuse_type||'',landuse_name:h.landuse_name||''};}
-  const headline=d=>d.label+(d.kind==='crop'?' · น่าจะเป็นการเผาในแปลง ไม่ใช่ไฟป่า':'');
+  const headline=d=>d.label+(d.kind==='crop'?' · คาดว่าเป็นการเผาในแปลง ไม่ใช่ไฟป่า':'');
   function quick(p){
     const d=direct(p.landuse_type,p.landuse_name);
     return d?{...d,headline:headline(d),sources:[{name:'GISTDA · การใช้ที่ดินกรมพัฒนาที่ดิน',url:lddUrl,year:null,note:'ต้นทางไม่ระบุปีสำรวจการใช้ที่ดิน'}],qualifier,note:'จุดความร้อนยังไม่ยืนยันชนิดไฟหรือสาเหตุ; ไฟในแปลงอาจลามเข้าป่าได้'}:null;

@@ -244,3 +244,40 @@ body.light-mode .map-3d-btn{background:#f8faf8;color:#1e293b}
 /* Light mode: the blanket pale background on drawer tabs also hid the active
    tab's white label. Keep the active tab green with readable text. */
 body.light-mode .mobile-drawer-tabs button.active{background:var(--green)!important;color:var(--on-green)!important;border-color:var(--green)!important}
+
+/* Bottom sheet behaves like a window: drag the handle/title, snap to stops. */
+.hs-sheet{transition:height .28s cubic-bezier(.2,.8,.2,1)}
+.hs-sheet.dragging{transition:none;user-select:none}
+.hs-sheet-handle,.hs-sheet-head{touch-action:none;cursor:grab}
+.hs-sheet.dragging .hs-sheet-handle,.hs-sheet.dragging .hs-sheet-head{cursor:grabbing}
+.hs-sheet-handle span{width:44px;height:5px;transition:background .2s}
+.hs-sheet-handle:hover span,.hs-sheet.dragging .hs-sheet-handle span{background:var(--muted)}
+.hs-sheet.peek{overflow:hidden}
+@media(prefers-reduced-motion:reduce){.hs-sheet{transition:none}}
+
+/* Map search suggestions. */
+.map-search{position:relative}
+.ms-list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:1200;max-height:min(60dvh,420px);overflow-y:auto;margin:0;padding:6px;list-style:none;
+  border-radius:14px;border:1px solid var(--line);background:var(--panel);box-shadow:0 14px 36px rgba(0,0,0,.35);animation:msIn .16s ease-out}
+@keyframes msIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.ms-title{padding:6px 10px 4px;font-size:12px;font-weight:600;color:var(--muted)}
+.ms-opt{display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 10px;border-radius:10px;cursor:pointer}
+.ms-opt[aria-selected="true"],.ms-opt:hover{background:var(--panel-2)}
+.ms-ic{flex:none;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--panel-2);font-size:15px}
+.ms-t{display:flex;flex-direction:column;min-width:0}
+.ms-t b{font-size:14px;font-weight:600;color:var(--txt);white-space:normal}
+.ms-t b mark{background:rgba(67,176,95,.28);color:inherit;border-radius:3px;padding:0 1px}
+.ms-t small{font-size:12px;color:var(--muted)}
+.ms-empty{padding:12px 10px;font-size:13px;color:var(--muted);line-height:1.5}
+body.light-mode .ms-list{box-shadow:0 14px 36px rgba(15,26,42,.16)}
+/* A forest card opened from search: the sheet already shows the name. */
+.hs-sheet .fp-card{border:0;padding:0;background:none;box-shadow:none}
+.hs-sheet .fp-card-head h2,.hs-sheet .fp-card-head .fp-kicker{display:none}
+.forest-search-popup .fp-card{border:0;padding:0;background:none;box-shadow:none;max-width:340px}
+@media(prefers-reduced-motion:reduce){.ms-list{animation:none}}
+.ms-ic svg{width:17px;height:17px}
+.ms-ic.district{background:rgba(56,189,248,.14);color:var(--wind)}
+.ms-ic.tambon{background:rgba(250,204,21,.16);color:#d4a106}
+.ms-ic.forest{background:rgba(67,176,95,.16);color:var(--green)}
+.ms-title{position:sticky;top:-6px;z-index:1;background:var(--panel)}
+.hs-sheet .fp-card::before,.hs-sheet .fp-card::after,.forest-search-popup .fp-card::before,.forest-search-popup .fp-card::after{display:none}
