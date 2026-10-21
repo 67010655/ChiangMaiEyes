@@ -77,14 +77,49 @@
       // kept for callers and tests that read the station rows
       kind:stationDays?'measured':'model',pms:(a.pm25||[]).filter(p=>p.measurement_kind===(Object.keys(st).length?'measured':'model'))};
   }
-  function headline(h,a,pm){
+  function headlineParts(h,a,pm){
     const top=focusArea||focusDistrict?null:(a.districts||[]).find(d=>d.count>0);
-    const parts=[];
     const where=focusArea?'ในขอบเขตป่านี้':focusDistrict?'ในอ.'+focusDistrict:'ในเชียงใหม่';
-    if(!a.total)parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา ดาวเทียมไม่พบจุดความร้อน${where}`);
-    else parts.push(`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา พบจุดความร้อน${focusArea?'ในขอบเขตป่า':focusDistrict?'ใน อ.'+esc(focusDistrict):''} <b>${esc(Number(a.total).toLocaleString('th-TH'))}</b> จุด${top?` มากที่สุดที่ <b>อ.${esc(top.name)}</b>`:''}`);
-    if(pm.avg!==null){const lv=root.CmePublicGuidance?.pmLevel(pm.avg);if(lv)parts.push(`ฝุ่นเฉลี่ยช่วงนี้ระดับ <b style="color:var(${pmToken(pm.avg)})">${esc(lv.label)}</b>`);}
-    return parts.join(' · ');
+    const fire=!a.total?`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา ดาวเทียมไม่พบจุดความร้อน${where}`
+      :`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา พบจุดความร้อน${focusArea?'ในขอบเขตป่า':focusDistrict?'ใน อ.'+esc(focusDistrict):''} <b>${esc(Number(a.total).toLocaleString('th-TH'))}</b> จุด${top?` มากที่สุดที่ <b>อ.${esc(top.name)}</b>`:''}`;
+    const lv=pm.avg!==null?root.CmePublicGuidance?.pmLevel(pm.avg):null;
+    const dust=lv?`ฝุ่นเฉลี่ยช่วงนี้ระดับ <b style="color:var(${pmToken(pm.avg)})">${esc(lv.label)}</b> <span class="as-hl-num">${esc(fmt1(pm.avg))} µg/m³</span>`:'';
+    return {fire,dust};
+  }
+  function headline(h,a,pm){const p=headlineParts(h,a,pm);return [p.fire,p.dust].filter(Boolean).join(' · ');}
+  const monthLabel=ym=>new Intl.DateTimeFormat('th-TH',{...tz,month:'short',year:'numeric'}).format(Date.parse(ym+'-15T12:00:00+07:00'));
+  // The month with the most hotspots, for ranges of a month or more.
+  function busiestMonth(h,a){
+    if(h.days<30||!a.total)return null;
+    const m={};(a.hotspots||[]).forEach(d=>{if(Number.isFinite(d.count)&&d.count>0)m[d.date.slice(0,7)]=(m[d.date.slice(0,7)]||0)+d.count;});
+    const best=Object.entries(m).sort((x,y)=>y[1]-x[1])[0];
+    return best?{ym:best[0],n:best[1]}:null;
+  }
+  // Fire and dust as two separate readings. A long average folds the rainy
+  // months in with the burning ones, so the dust line also gives the worst
+  // day and how many days reached the health-effect levels.
+  function heroHtml(h,a,pm){
+    const p=headlineParts(h,a,pm), month=busiestMonth(h,a), span=h.days===1?'24 ชม.':h.days+' วัน';
+    const badDays=pm.levels.slice(3).reduce((t,l)=>t+l.n,0);
+    const source=pm.stationDays>=pm.modelDays?'สถานีกรมควบคุมมลพิษ':'แบบจำลอง CAMS';
+    // Only explain when the two lines seem to disagree: many hotspots, a clean
+    // average, yet some days in the health-effect range. Point at the dustiest
+    // day and count the hotspots received in the same week (±3 days).
+    const peakLv=pm.peak?root.CmePublicGuidance?.pmLevel(pm.peak.v):null;
+    const near=pm.peak?(a.hotspots||[]).filter(d=>Number.isFinite(d.count)&&Math.abs(Date.parse(d.date)-Date.parse(pm.peak.date))<=3*864e5).reduce((t,d)=>t+d.count,0):0;
+    const why=h.days>=30&&a.total>=50&&pm.avg!==null&&pm.avg<=25&&pm.peak&&pm.peak.v>37.5
+      ?`<p class="as-why"><b>ทำไมไฟเยอะ แต่ฝุ่นเฉลี่ยดี?</b> ค่าเฉลี่ย ${esc(span)} รวมวันที่อากาศดีจำนวนมาก วันที่ฝุ่นสูงสุด ${esc(dayLabel(pm.peak.date))} วัดได้ <b style="color:var(${pmToken(pm.peak.v)})">${esc(fmt1(pm.peak.v))} µg/m³ (${esc(peakLv?.label||'')})</b> สัปดาห์นั้นพบจุดความร้อน <b>${esc(near.toLocaleString('th-TH'))}</b> จุด · จุดความร้อนนับทั้งพื้นที่ ส่วนฝุ่นมาจาก${esc(source)} สองค่านี้วัดคนละที่</p>`
+      :'';
+    return `<div class="as-hero as-hero2">
+      <div class="as-hl fire"><span class="as-hl-ic" aria-hidden="true"><span class="hs-dot-pin age-new"></span></span><div>
+        <h3 class="as-hl-k">จุดความร้อน · ดาวเทียม</h3>
+        <p class="as-hl-v">${focusArea?`<b>${esc(focusArea.name||'ป่าชุมชน')}</b> · `:focusDistrict?`<b>อ.${esc(focusDistrict)}</b> · `:''}${p.fire}</p>
+        ${month?`<p class="as-hl-s">พบมากที่สุดช่วง <b>${esc(monthLabel(month.ym))}</b> ${esc(month.n.toLocaleString('th-TH'))} จุด</p>`:''}</div></div>
+      <div class="as-hl pm"><span class="as-hl-ic" aria-hidden="true">≋</span><div>
+        <h3 class="as-hl-k">ฝุ่น PM2.5 · ${esc(source)}${focusArea||focusDistrict?' · ภาพรวมจังหวัด':''}</h3>
+        <p class="as-hl-v">${p.dust||'ยังไม่มีค่าเฉลี่ยฝุ่นรายวันในช่วงนี้'}</p>
+        ${pm.peak?`<p class="as-hl-s">วันที่สูงสุด <b>${esc(dayLabel(pm.peak.date))}</b> ${esc(fmt1(pm.peak.v))} µg/m³${pm.fullDays>1?` · ระดับเริ่มมีผลต่อสุขภาพขึ้นไป <b>${esc(badDays)}</b> จาก ${esc(pm.fullDays)} วัน`:''}</p>`:''}</div></div>
+      ${why}</div>`;
   }
 
   // ---------- cards ----------
@@ -303,7 +338,7 @@
       :focusDistrict?`${districtFocusCard(a,opts.shapes,focusDistrict)}${forestCard(a,opts)}`
       :`${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts)}`;
     el.innerHTML=`<h2 class="as-section past"><span class="as-badge">ย้อนหลัง</span>${esc(span)}ที่ผ่านมา · ข้อมูลที่เกิดขึ้นแล้ว</h2>
-      <p class="as-hero">${focusArea?`<b>${esc(focusArea.name||'ป่าชุมชน')}</b> · `:focusDistrict?`<b>อ.${esc(focusDistrict)}</b> · `:''}${headline(history,a,pm)}</p>
+      ${heroHtml(history,a,pm)}
       ${banStatus()}
       <div class="as-grid">${hotspotCard(history,a,opts)}${pmCard(history,a,pm)}<article class="as-card as-wind" aria-labelledby="asWindT">${windCard(history,null)}</article>${tail}</div>
       <h2 class="as-section future"><span class="as-badge">พยากรณ์</span>ข้างหน้า · สิ่งที่คาดว่าจะเกิด ยังไม่เกิดขึ้น</h2>

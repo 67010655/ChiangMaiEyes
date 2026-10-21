@@ -41,7 +41,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0b0e13;
@@ -378,39 +378,8 @@
   .rp-btn.ghost{background:#11161d;border:1px solid var(--line);color:var(--muted)}
   .rp-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
 
-  .paper{
-    width:880px;max-width:calc(100% - 40px);margin:24px auto 60px;background:#f6f7f4;color:#1c2530;
-    border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:46px 54px;
-    font-family:var(--font);line-height:1.55;
-  }
-  .paper .ph{display:flex;align-items:flex-start;gap:14px;border-bottom:3px solid var(--green-deep);padding-bottom:16px;margin-bottom:22px}
-  .paper .ph .plogo{width:42px;height:42px;border-radius:10px;flex:none;background:linear-gradient(150deg,var(--green),var(--green-deep));display:flex;align-items:center;justify-content:center}
-  .paper .ph .plogo svg{width:26px;height:26px}
-  .paper .ph h1{font-size:21px;margin:0;color:#16202b}
-  .paper .ph .meta{font-family:var(--font);font-size:12px;color:#5a6675;margin-top:3px;letter-spacing:.02em}
-  .paper .ph .stamp{margin-left:auto;text-align:right;font-family:var(--font);font-size:12px;color:#5a6675}
-  .paper .ph .stamp .lv{display:inline-block;margin-top:4px;padding:3px 9px;border-radius:5px;font-weight:700;font-size:12px}
   .lv.sev{background:#ffe2e2;color:#b91c1c}.lv.hi{background:#ffedd5;color:#c2410c}.lv.mod{background:#fef9c3;color:#a16207}
-
-  .paper h2{font-size:13px;letter-spacing:.06em;color:var(--green-deep);text-transform:uppercase;margin:24px 0 10px;
-    display:flex;align-items:center;gap:9px}
-  .paper h2 .no{font-family:var(--font);background:var(--green-deep);color:#fff;width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
-  .paper p{margin:0 0 11px;font-size:13.5px;color:#28323d}
-  .paper .lead{font-size:14.5px;color:#1c2530;background:#eef1ec;border-left:4px solid var(--green);padding:13px 16px;border-radius:0 6px 6px 0}
-  .paper .figs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 4px}
-  .paper .fig{background:#fff;border:1px solid #e0e3dd;border-radius:8px;padding:12px 14px}
-  .paper .fig .k{font-family:var(--font);font-size:12px;color:#7a8694;letter-spacing:.08em;text-transform:uppercase}
-  .paper .fig .v{font-family:var(--font);font-size:24px;font-weight:700;margin-top:4px;color:#16202b}
-  .paper .fig .v small{font-size:12px;color:#7a8694;font-weight:400}
-  .paper table{width:100%;border-collapse:collapse;margin:6px 0 8px;font-size:12.5px}
-  .paper th{text-align:left;font-family:var(--font);font-size:12px;letter-spacing:.06em;color:#7a8694;text-transform:uppercase;border-bottom:2px solid #d8dcd4;padding:7px 8px}
-  .paper td{padding:8px 8px;border-bottom:1px solid #e6e9e2;color:#28323d}
-  .paper td .tag{font-family:var(--font);font-size:12px;padding:2px 7px;border-radius:5px}
   .tag.sev{background:#ffe2e2;color:#b91c1c}.tag.hi{background:#ffedd5;color:#c2410c}.tag.mod{background:#fef9c3;color:#a16207}
-  .paper ul{margin:4px 0 12px;padding-left:0;list-style:none}
-  .paper li{font-size:13px;color:#28323d;padding:6px 0 6px 26px;position:relative}
-  .paper li::before{content:"▸";position:absolute;left:8px;color:var(--green-deep);font-weight:700}
-  .paper .pfoot{margin-top:26px;border-top:1px solid #d8dcd4;padding-top:14px;font-family:var(--font);font-size:12px;color:#7a8694;line-height:1.7}
 
   /* 3D view */
   .threedview{background:#070a0e}
@@ -448,7 +417,14 @@
   .td-title{top:18px;left:26px}
   .td-title h2{font-size:16px;margin:0;font-weight:700}.td-title h2 b{color:var(--green)}
   .td-title .s{font-family:var(--font);font-size:12px;color:var(--dim);letter-spacing:.1em;margin-top:2px}
-  .td-legend{bottom:22px;left:26px;background:rgba(13,18,24,.82);border:1px solid var(--line);border-radius:10px;padding:13px 15px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .td-legend{bottom:22px;left:26px;max-width:min(330px,calc(100% - 90px));background:rgba(13,18,24,.86);border:1px solid var(--line);border-radius:12px;padding:8px 12px;pointer-events:auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .td-legend>summary{cursor:pointer;min-height:32px;display:flex;align-items:center;gap:6px;font:600 13px var(--font);color:var(--txt);list-style:none}
+  .td-legend>summary::-webkit-details-marker{display:none}
+  .td-legend>summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .15s}
+  .td-legend:not([open])>summary::after{transform:rotate(-90deg)}
+  .td-legend .td-ages{flex-wrap:wrap;gap:4px 12px}.td-legend .td-ages>span{display:inline-flex;align-items:center}
+  .td-legend .td-sep{margin-top:4px;border-top:1px solid var(--line-soft);padding-top:6px}
+  .td-legend .td-fb{width:16px;height:16px;flex:none}
   .td-legend .lr{display:flex;align-items:center;gap:9px;font-family:var(--font);font-size:12px;color:var(--muted);padding:3px 0}
   .td-legend .lr .d{width:11px;height:11px;border-radius:50%;flex:none}
   .td-hint{bottom:22px;right:26px;font-family:var(--font);font-size:12px;color:var(--dim);text-align:right;line-height:1.7}
@@ -478,7 +454,7 @@
     .td-view-toggle{top:84px}
     .td-close{top:10px;right:10px}
     .threedview .maplibregl-ctrl-top-right{top:125px;right:10px}
-    .td-legend{bottom:16px;left:12px;padding:8px 10px}
+    .td-legend{bottom:16px;left:12px;padding:6px 10px}
   }
 
   @media print{
@@ -488,12 +464,7 @@
     .topbar,.communityview,.main>:not(.reportview){display:none!important}
     .reportview{position:static!important;display:block!important;overflow:visible!important;inset:auto!important;background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
     .rp-toolbar{display:none!important}
-    .paper{position:static!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;background:#fff!important}
-    .paper .ph,.paper .lead,.paper .figs,.paper h2,.paper li,.paper tr{break-inside:avoid}
-    .paper h2{break-after:avoid}
-    .paper td{padding:5px 8px}
-    .paper .pfoot{break-inside:avoid;margin-top:14px}
-    .paper thead{display:table-header-group}
+    .reportview>.workspace-links{display:none!important}
   }
 
   /* ── Panels ───────────────────────────────── */
@@ -1064,12 +1035,6 @@
        reserving 108px of horizontal padding + 4 rigid columns). The @media
        print rule already sizes correctly for actual A4 output — this only
        fixes the on-screen preview. */
-    .paper{padding:24px 18px;margin:14px auto 36px}
-    .paper .ph{flex-wrap:wrap}
-    .paper .ph .stamp{margin-left:0;text-align:left}
-    .paper .figs{grid-template-columns:repeat(2,1fr)}
-    .paper table{font-size:12px}
-    .paper th,.paper td{padding:6px 5px}
 
     #detailBlock{position:relative}
     .mobile-sheet-close{
@@ -1823,16 +1788,15 @@
       <button id="tdProvince" type="button">ภาพรวมจังหวัด</button>
       <button id="tdMountain" type="button">ดูภูเขา</button>
     </div>
-    <div class="td-hud td-legend" id="tdLegend">
+    <details class="td-hud td-legend" id="tdLegend" open>
+      <summary>สัญลักษณ์บนแผนที่</summary>
       <div class="lr td-wind" id="tdWind" hidden></div>
-      <div class="lr"><span class="hs-dot-pin age-new"></span>จุดความร้อน ไม่เกิน 6 ชม.</div>
-      <div class="lr"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</div>
-      <div class="lr"><span class="hs-dot-pin age-old"></span>เก่ากว่า</div>
-      <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#43b05f;border-radius:2px"></span>ป่าชุมชน (จัดการไฟ)</div>
-      <div class="lr"><span class="d" style="background:#37d1d6;border-radius:2px"></span>ป่าชุมชน (ไม่ระบุ/ไม่มีข้อมูลจัดการไฟ)</div>
-      <div class="lr" style="margin-top:6px;border-top:1px solid var(--line-soft);padding-top:6px"><span class="d" style="background:#8b97a7"></span>อาคาร/สิ่งปลูกสร้าง (ซูมใกล้)</div>
-      <div class="lr"><span class="d" style="background:#f5640a;border-radius:50%"></span>⛽ ปั๊มน้ำมัน</div>
-    </div>
+      <div class="lr td-ages"><span><span class="hs-dot-pin age-new"></span>จุดความร้อน ≤6 ชม.</span><span><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span><span class="hs-dot-pin age-old"></span>เก่ากว่า</span></div>
+      <div class="lr td-sep"><svg class="td-fb" viewBox="0 0 22 22" aria-hidden="true"><rect x="1.5" y="1.5" width="19" height="19" rx="4.5" fill="#2f8f4e" stroke="#fff" stroke-width="1.5"/><path d="M11 4.5l5.5 7h-3l3.5 4.5h-12l3.5-4.5h-3z M10 16h2v2.5h-2z" fill="#fff"/></svg>ป่าชุมชน (มีแผนจัดการไฟ)</div>
+      <div class="lr"><svg class="td-fb" viewBox="0 0 22 22" aria-hidden="true"><rect x="1.5" y="1.5" width="19" height="19" rx="4.5" fill="#0f8f8c" stroke="#fff" stroke-width="1.5"/><path d="M11 4.5l5.5 7h-3l3.5 4.5h-12l3.5-4.5h-3z M10 16h2v2.5h-2z" fill="#fff"/></svg>ป่าชุมชน (ไม่มีข้อมูลการจัดการไฟ)</div>
+      <div class="lr td-sep"><span class="d" style="background:#8b97a7;border-radius:2px"></span>อาคาร (ซูมใกล้)</div>
+      <div class="lr"><span class="d" style="background:#f5640a"></span>ปั๊มน้ำมัน</div>
+    </details>
     <div class="td-hud td-hint" id="tdHint">ลาก = หมุน · สกอลล์ = ซูม<br>คลิกหมุด/ป่า/อาคาร = ดูข้อมูล<br>ซูมใกล้ = เห็นอาคาร/ปั๊มน้ำมันจริง (OSM)</div>
   </div>
 
@@ -1934,71 +1898,84 @@
       </section>
     </div>
   </div>
-  <div class="guideview" id="dataview">
-    <div class="rp-toolbar"><div class="ttl">ข้อมูลในพื้นที่</div><button type="button" class="an-close" data-open-view="analytics" aria-label="กลับหน้าวิเคราะห์">✕</button></div>
-    <div class="gd-body"><div class="workspace-links" aria-label="ส่วนของหน้าวิเคราะห์">
+  <div class="guideview" id="dataview" data-no-disclose>
+    <header class="gd-header"><div><h1>ข้อมูลในพื้นที่</h1><p>ตัวเลขจริงที่เว็บเก็บไว้ ทุกค่ามีเวลาและที่มา</p></div><button type="button" class="gd-close" data-open-view="analytics" aria-label="กลับหน้าวิเคราะห์">✕</button></header>
+    <div class="gd-body dv-body"><div class="workspace-links" aria-label="ส่วนของหน้าวิเคราะห์">
   <button type="button" data-open-view="analytics">สรุปย้อนหลัง</button>
   <button type="button" data-open-view="data">ข้อมูลในพื้นที่</button>
   <button type="button" data-open-view="report">สร้างรายงาน</button>
 </div>
-      <p class="workspace-intro">เลือกดูข้อมูลที่ใช้ประกอบการอ่านพื้นที่ รายละเอียดเฉพาะทางเปิดเพิ่มได้เมื่อจำเป็น</p>
-      <details class="data-section"><summary id="airDataHeading">ค่าฝุ่นและเวลาของข้อมูล</summary><div id="evidenceFreshness" class="evidence-freshness"></div>        <details class="gd-card" id="aqiDetails">
-          <summary>ดัชนีคุณภาพอากาศ AQI จากต้นทางสำรอง</summary>
-          <p>ตัวเลขนี้เป็นดัชนีรวม ไม่ใช่ความเข้มข้น PM2.5 และไม่ใช้แทนค่าฝุ่นในรายงานหรือคลังย้อนหลัง</p>
-          <div id="aqiStationList"></div>
-        </details></details>
-      <section class="data-review" aria-labelledby="forestTerrainHeading">
-        <h2 id="forestTerrainHeading" tabindex="-1">ภูมิประเทศของป่าชุมชน</h2>
-        <p class="evidence-note">ความสูงและความชันจากพื้นผิวดาวเทียม Copernicus ประมาณ 30 เมตร รวมเรือนยอดต้นไม้ เลือกป่าเพื่อดูค่าสรุปตามขอบเขตจริง</p>
-        <div class="data-review-controls"><label for="forestTerrainSelect">ป่าที่ต้องการดู</label><select id="forestTerrainSelect"><option value="">เลือกป่าชุมชน</option></select><button type="button" id="forestTerrainLoad">ดูภูมิประเทศ</button></div>
-        <div id="forestTerrainBody" role="status" aria-live="polite"><p class="evidence-note">ยังไม่ได้เลือกป่า ค่านี้เป็นข้อมูลภูมิประเทศ ไม่ใช่ปริมาณเชื้อเพลิงหรือคะแนนความเสี่ยง</p></div>
-      </section>
-<details class="data-section"><summary>การระบายอากาศจากแบบจำลอง</summary>      <section class="data-review" id="ventilationPanel" aria-labelledby="ventilationHeading">
-        <h2 id="ventilationHeading" tabindex="-1">การระบายอากาศ · แบบจำลอง GFS</h2>
-        <p class="evidence-note">ดูความสูงชั้น PBL และลมในชั้นนั้นจาก NOAA ข้อมูลนี้ยังใช้ยืนยันระดับฝุ่นหรือคาดการณ์ไฟรายป่าไม่ได้</p>
-        <div class="data-review-controls"><label for="ventilationLead">เวลาของแบบจำลอง</label><select id="ventilationLead"><option value="0">รอบใกล้ปัจจุบัน</option><option value="24">รอบใกล้ 24 ชั่วโมงข้างหน้า</option><option value="48">รอบใกล้ 48 ชั่วโมงข้างหน้า</option></select><button type="button" id="ventilationLoad">โหลดข้อมูล GFS</button></div>
-        <div id="ventilationBody" role="status" aria-live="polite"><p class="evidence-note">กดโหลดเมื่ออยากดูรายละเอียดการระบายอากาศ</p></div>
-        <details class="gfs-archive">
-          <summary>ดูรอบ GFS ที่ระบบเก็บไว้</summary>
-          <p class="evidence-note">เริ่มเก็บจากวันที่เปิดคลังนี้ เลือกช่วงตามเวลาที่ระบบบันทึกไฟล์ครั้งแรก แต่ละรอบอาจแทนอากาศในอนาคต ไม่ได้มีประวัติครบก่อนเริ่มเก็บ</p>
-          <div class="data-review-controls"><label for="gfsArchiveDays">ช่วงที่ระบบเก็บไฟล์</label><select id="gfsArchiveDays"><option value="7">7 วัน</option><option value="30">30 วัน</option><option value="180">180 วัน</option></select><button type="button" id="gfsArchiveLoad">ตรวจคลัง GFS</button></div>
-          <p id="gfsArchiveStatus" class="evidence-note" role="status" aria-live="polite">กดตรวจคลังเพื่อดูรอบที่บันทึกสำเร็จ</p>
-          <ul id="gfsArchiveList" class="gfs-archive-list"></ul>
-        </details>
-      </section></details>
-      <section class="data-review" aria-labelledby="archiveHeading">
-        <h2 id="archiveHeading">ดูข้อมูลย้อนหลังที่ระบบบันทึกไว้</h2>
-        <p>ดูจุดความร้อน ฝุ่น และลมตามเวลาที่ต้นทางระบุ วันที่ไม่มีข้อมูลจะเว้นว่าง ไม่เติมเป็นศูนย์หรือสรุปว่าไม่มีไฟ</p>
-        <p class="evidence-note">ข้อมูลจุดความร้อนย้อนหลังที่นำเข้าเพิ่ม 180 วันมาจาก NASA FIRMS/VIIRS เป็นการตรวจจับจากดาวเทียม ไม่ใช่การยืนยันเหตุภาคสนาม และไม่ใช่ข้อมูล PM2.5 หรือลม</p>
-        <div class="data-review-controls" id="archiveControls" role="group" aria-label="ตัวกรองข้อมูลย้อนหลัง">
+
+      <section class="data-review dv-card" aria-labelledby="archiveHeading">
+        <h2 id="archiveHeading" tabindex="-1"><span class="dv-n" aria-hidden="true">1</span>ย้อนดูรายวัน · ทั้งจังหวัด</h2>
+        <p class="dv-lead">จุดความร้อน ฝุ่น และลมของแต่ละวันที่ระบบเก็บไว้ วันที่ไม่มีข้อมูลขึ้น “—” ไม่ได้แปลว่าเป็นศูนย์</p>
+        <div class="data-review-controls dv-controls" id="archiveControls" role="group" aria-label="ตัวกรองข้อมูลย้อนหลัง">
+          <div class="dv-seg">
           <button type="button" data-archive-days="1" aria-pressed="false">24 ชั่วโมง</button>
           <button type="button" data-archive-days="7" aria-pressed="true">7 วัน</button>
           <button type="button" data-archive-days="30" aria-pressed="false">30 วัน</button>
           <button type="button" data-archive-days="90" aria-pressed="false">90 วัน</button>
           <button type="button" data-archive-days="180" aria-pressed="false">180 วัน</button>
+          </div>
           <label for="archiveKind" class="sr-only">ชนิดข้อมูล</label>
           <select id="archiveKind"><option value="all">ทุกชนิดข้อมูล</option><option value="hotspot">จุดความร้อน</option><option value="pm25">PM2.5 สถานีวัด</option><option value="pm25_model">PM2.5 แบบจำลอง</option><option value="weather">ลมและอากาศ</option></select>
-          <button type="button" id="archiveRefresh">ตรวจข้อมูลล่าสุด</button>
+          <button type="button" id="archiveRefresh" class="dv-icon-btn" aria-label="โหลดข้อมูลใหม่" title="โหลดข้อมูลใหม่">↻</button>
         </div>
         <div id="archiveStatus" class="review-status" role="status" aria-live="polite">กำลังอ่านประวัติข้อมูล…</div>
         <div id="archiveDaily"></div>
-        <div id="archiveCollection"></div>
-        <div id="archiveGaps"></div>
-        <p class="evidence-note">เริ่มเก็บอัตโนมัติเป็นรอบ 10 นาทีหลังเปิดใช้การตั้งเวลาฐานข้อมูล ข้อมูลนี้แสดงเฉพาะรอบที่ระบบได้รับ; แหล่งภายนอกอาจหยุดหรือส่งข้อมูลไม่ครบ</p>
+        <details class="dv-more"><summary>ความครบของข้อมูล</summary>
+          <div id="archiveCollection"></div>
+          <div id="archiveGaps"></div>
+          <p class="evidence-note">ระบบเก็บทุก 10 นาที แสดงเฉพาะรอบที่ได้รับจริง แหล่งภายนอกอาจหยุดหรือส่งไม่ครบ จุดความร้อนย้อนหลัง 180 วันนำเข้าจาก NASA FIRMS/VIIRS เป็นการตรวจจากดาวเทียม ไม่ใช่การยืนยันเหตุภาคสนาม</p>
+        </details>
       </section>
-<details class="data-section"><summary>ผลตรวจเทียบในพื้นที่</summary>      <section class="data-review" id="fieldEvaluationPanel" aria-labelledby="fieldEvaluationHeading" hidden>
-        <h2 id="fieldEvaluationHeading">ทบทวนผลตรวจภาคสนามและการจับคู่ดาวเทียม</h2>
-        <p>ส่วนผู้ดูแล · แสดงเฉพาะผลรวม ไม่เปิดเผยคำอธิบายหรือข้อมูลระบุตัวผู้ตรวจ</p>
+
+      <section class="data-review dv-card" aria-labelledby="forestTerrainHeading">
+        <h2 id="forestTerrainHeading" tabindex="-1"><span class="dv-n" aria-hidden="true">2</span>ภูมิประเทศของป่าชุมชน</h2>
+        <p class="dv-lead">ป่าสูงแค่ไหน ชันแค่ไหน ไฟขึ้นเนินชันได้เร็วกว่าที่ราบ</p>
+        <div class="data-review-controls dv-pick"><label for="forestTerrainSelect">เลือกป่า</label><select id="forestTerrainSelect"><option value="">เลือกป่าชุมชน</option></select><button type="button" id="forestTerrainLoad">ดูภูมิประเทศ</button></div>
+        <div id="forestTerrainBody" role="status" aria-live="polite"><p class="evidence-note">ยังไม่ได้เลือกป่า</p></div>
+        <p class="dv-src">ความสูงจาก Copernicus DEM ประมาณ 30 เมตร รวมเรือนยอดต้นไม้ ไม่ใช่ปริมาณเชื้อเพลิงหรือคะแนนความเสี่ยง</p>
+      </section>
+
+      <section class="data-review dv-card" aria-labelledby="airDataHeading">
+        <h2 id="airDataHeading" tabindex="-1"><span class="dv-n" aria-hidden="true">3</span>ข้อมูลตอนนี้มาจากไหน อัปเดตเมื่อไร</h2>
+        <div id="evidenceFreshness" class="evidence-freshness"></div>
+        <details class="gd-card dv-more" id="aqiDetails">
+          <summary>ดัชนี AQI จากต้นทางสำรอง</summary>
+          <p class="evidence-note">เป็นดัชนีรวม ไม่ใช่ความเข้มข้น PM2.5 จึงไม่ใช้แทนค่าฝุ่นในรายงาน</p>
+          <div id="aqiStationList"></div>
+        </details>
+      </section>
+
+      <details class="dv-expert">
+        <summary><b>สำหรับผู้เชี่ยวชาญและผู้ดูแลระบบ</b><small>การระบายอากาศ GFS · คลังแบบจำลอง · ผลตรวจภาคสนาม</small></summary>
+      <section class="data-review" id="ventilationPanel" aria-labelledby="ventilationHeading">
+        <h2 id="ventilationHeading" tabindex="-1">การระบายอากาศ · แบบจำลอง GFS</h2>
+        <p class="evidence-note">ความสูงชั้นผสมอากาศ (PBL) และลมในชั้นนั้นจาก NOAA ใช้ยืนยันระดับฝุ่นหรือคาดการณ์ไฟรายป่าไม่ได้</p>
+        <div class="data-review-controls"><label for="ventilationLead">เวลาของแบบจำลอง</label><select id="ventilationLead"><option value="0">รอบใกล้ปัจจุบัน</option><option value="24">รอบใกล้ 24 ชั่วโมงข้างหน้า</option><option value="48">รอบใกล้ 48 ชั่วโมงข้างหน้า</option></select><button type="button" id="ventilationLoad">โหลดข้อมูล GFS</button></div>
+        <div id="ventilationBody" role="status" aria-live="polite"></div>
+        <details class="gfs-archive">
+          <summary>ดูรอบ GFS ที่ระบบเก็บไว้</summary>
+          <p class="evidence-note">เริ่มเก็บจากวันที่เปิดคลังนี้ แต่ละรอบอาจแทนอากาศในอนาคต</p>
+          <div class="data-review-controls"><label for="gfsArchiveDays">ช่วงที่ระบบเก็บไฟล์</label><select id="gfsArchiveDays"><option value="7">7 วัน</option><option value="30">30 วัน</option><option value="180">180 วัน</option></select><button type="button" id="gfsArchiveLoad">ตรวจคลัง GFS</button></div>
+          <p id="gfsArchiveStatus" class="evidence-note" role="status" aria-live="polite">กดตรวจคลังเพื่อดูรอบที่บันทึกสำเร็จ</p>
+          <ul id="gfsArchiveList" class="gfs-archive-list"></ul>
+        </details>
+      </section>
+      <section class="data-review" id="fieldEvaluationPanel" aria-labelledby="fieldEvaluationHeading" hidden>
+        <h2 id="fieldEvaluationHeading">ผลตรวจภาคสนามเทียบดาวเทียม</h2>
+        <p class="evidence-note">ส่วนผู้ดูแล · แสดงเฉพาะผลรวม ไม่เปิดเผยข้อมูลระบุตัวผู้ตรวจ</p>
         <div class="data-review-controls"><button type="button" id="fieldEvaluationRefresh">อ่านผลตรวจล่าสุด</button><span id="fieldEvaluationStatus" class="review-status" role="status" aria-live="polite"></span></div>
         <div id="fieldEvaluationBody"></div>
         <div class="camera-notice">ตัวเลขนี้มาจากกรณีที่ผู้ใช้เลือกตรวจและจับคู่เอง ไม่ใช่การสุ่มแทนทั้งจังหวัดหรือใบรับรองความแม่นยำ ก่อนตีความผลบวกลวง/ลบลวงต้องตรวจตำแหน่ง เวลาที่ตรวจ และช่วงข้อมูลของดาวเทียมร่วมกัน</div>
         <h3>เติมประวัติจุดความร้อนจาก NASA FIRMS</h3>
-        <p class="evidence-note">ตัวเลือกนี้สำหรับผู้ดูแล · บันทึกเฉพาะรายการที่ FIRMS คืนมาและแสดงช่องว่างเมื่อแหล่งข้อมูลไม่ตอบครบ</p>
+        <p class="evidence-note">บันทึกเฉพาะรายการที่ FIRMS คืนมา และแสดงช่องว่างเมื่อแหล่งข้อมูลไม่ตอบครบ</p>
         <div class="data-review-controls"><label for="archiveBackfillDays">ช่วงนำเข้า</label><select id="archiveBackfillDays"><option value="30">30 วัน</option><option value="90">90 วัน</option><option value="180">180 วัน</option></select><button type="button" id="archiveBackfill">นำเข้าประวัติ</button><span id="archiveBackfillStatus" class="review-status" role="status" aria-live="polite"></span></div><div id="archiveJobProgress" aria-live="polite"></div>
-      </section></details>
+      </section>
+      </details>
     </div>
   </div>
-
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -2009,7 +1986,9 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/decision-support.js"></script>
+<script src="/report.js"></script>
 <link rel="stylesheet" href="/forest-coordination.css">
+<link rel="stylesheet" href="/report.css">
 <script src="/forest-coordination.js"></script>
 <script src="/protected-areas.js"></script>
 <script src="/public-guidance.js"></script>
@@ -5650,7 +5629,8 @@ function openReport(){ syncExportForests(); document.getElementById('reportview'
 document.getElementById('rpClose').onclick=()=>{
   CmeNavigation.open('analytics');
 };
-document.getElementById('rpPdf').onclick=()=>window.print();
+const reportFonts=()=>document.fonts?Promise.race([Promise.all(['400 15px Sarabun','700 15px Sarabun'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,3000))]):Promise.resolve();
+document.getElementById('rpPdf').onclick=async()=>{await reportFonts();window.print();};
 let pngReportPending=false;
 document.getElementById('rpPng').onclick=async()=>{
   if(pngReportPending) return;
@@ -5660,14 +5640,18 @@ document.getElementById('rpPng').onclick=async()=>{
   button.disabled=true;button.setAttribute('aria-busy','true');
   toast('กำลังสร้างภาพ PNG…');
   try{
-    const reportWidth=document.getElementById('paper').getBoundingClientRect().width;
+    await reportFonts();
+    // Always A4 width, so a phone saves the same page as a computer.
+    const reportWidth=794;
     const canvas=await html2canvas(document.getElementById('paper'),{
-      backgroundColor:'#f6f7f4',scale:2,logging:false,imageTimeout:5000,
+      backgroundColor:'#ffffff',scale:2,logging:false,imageTimeout:5000,windowWidth:900,
       ignoreElements:el=>el.id==='map'||el.id==='ml-terrain-map',
       onclone:doc=>{
         const report=doc.getElementById('paper');
         const style=doc.createElement('style');
-        style.textContent='*{animation:none!important;transition:none!important}html,body{height:auto!important;overflow:visible!important}#paper{opacity:1!important;transform:none!important;filter:none!important;margin:0!important}';
+        // The paper's own rules, inlined: the clone does not always finish loading linked sheets.
+        const paperCss=[...document.styleSheets].filter(sh=>/\/report\.css/.test(sh.href||'')).flatMap(sh=>{try{return [...sh.cssRules].map(r=>r.cssText);}catch(_){return [];}}).join(' ');
+        style.textContent=paperCss+'*{animation:none!important;transition:none!important}html,body{height:auto!important;overflow:visible!important;background:#fff!important}#paper{opacity:1!important;transform:none!important;filter:none!important;margin:0!important;max-width:none!important;box-shadow:none!important}';
         doc.head.appendChild(style);
         report.style.width=reportWidth+'px';report.style.maxWidth='none';
         doc.body.replaceChildren(report);
@@ -5764,7 +5748,20 @@ async function open3D(){
 // constrained to.
 const CM_SOURCE_BOUNDS=[97.9,17.1,99.7,20.3];
 
+// Tree badge for community forests in 3D (and its legend swatch).
+const FOREST_BADGE={active:'#2f8f4e',other:'#0f8f8c'};
+function forestBadgeImage(fill){
+  const n=44,c=document.createElement('canvas');c.width=c.height=n;const g=c.getContext('2d');
+  g.fillStyle=fill;g.strokeStyle='#fff';g.lineWidth=3;
+  g.beginPath();g.roundRect?g.roundRect(3,3,n-6,n-6,9):g.rect(3,3,n-6,n-6);g.fill();g.stroke();
+  g.fillStyle='#fff';
+  g.beginPath();g.moveTo(22,9);g.lineTo(33,23);g.lineTo(27,23);g.lineTo(34,32);g.lineTo(10,32);g.lineTo(17,23);g.lineTo(11,23);g.closePath();g.fill();
+  g.fillRect(20,32,4,5);
+  return g.getImageData(0,0,n,n);
+}
 function initMapLibre3D(){
+  // Legend starts folded on phones, where the map is small.
+  const legend=document.getElementById('tdLegend');if(legend)legend.open=!isMobileViewport();
   const fastBuildings=!!window.mapTilerKey;
   const style={
     version:8,
@@ -5819,6 +5816,8 @@ function initMapLibre3D(){
 
   mlMap.on('load',()=>{
     syncTerrain();
+    // Credits start folded on phones; the ⓘ button opens them.
+    if(isMobileViewport())document.querySelector('#ml-terrain-map .maplibregl-compact-show')?.classList.remove('maplibregl-compact-show');
     updateTerrainStatus('loading');
     // GeoJSON source for forests (hotspots are rendered as DOM markers via
     // _sync3DHotspots(), not a GPU layer — no source needed for them here)
@@ -5836,14 +5835,14 @@ function initMapLibre3D(){
       'line-opacity':0.7
     }});
 
-    // Forest circles — reverted from 🌲 DOM markers (2026-07-14, user found
-    // the emoji markers didn't read well) back to a plain GPU circle layer.
-    mlMap.addLayer({id:'forests-circle',type:'circle',source:'forests-3d',paint:{
-      'circle-radius':5,
-      'circle-color':['case',['==',['get','active'],true],'#43b05f','#4ade80'],
-      'circle-opacity':0.88,
-      'circle-stroke-color':'#fff',
-      'circle-stroke-width':1
+    // Forests as a small tree badge (a rounded square), drawn once on a
+    // canvas: hotspots are round dots, so a round forest marker was easy to
+    // misread. A GPU symbol layer, not DOM markers, for 677 points.
+    ['active','other'].forEach(k=>{if(!mlMap.hasImage('cme-forest-'+k))mlMap.addImage('cme-forest-'+k,forestBadgeImage(FOREST_BADGE[k]),{pixelRatio:2});});
+    mlMap.addLayer({id:'forests-icon',type:'symbol',source:'forests-3d',layout:{
+      'icon-image':['case',['==',['get','active'],true],'cme-forest-active','cme-forest-other'],
+      'icon-size':['interpolate',['linear'],['zoom'],8,0.75,12,1],
+      'icon-allow-overlap':true,'icon-ignore-placement':true
     }});
 
     // Hotspot 🔥 emoji markers — rendered as HTML (MapLibre SDF can't render color emoji)
@@ -5871,8 +5870,8 @@ function initMapLibre3D(){
     // 3D hotspot clicks are handled inline in _sync3DHotspots() Marker elements
 
     // cursor for forests only; hotspot cursor handled by marker element style;
-    mlMap.on('mouseenter','forests-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
-    mlMap.on('mouseleave','forests-circle',()=>{mlMap.getCanvas().style.cursor='';});
+    mlMap.on('mouseenter','forests-icon',()=>{mlMap.getCanvas().style.cursor='pointer';});
+    mlMap.on('mouseleave','forests-icon',()=>{mlMap.getCanvas().style.cursor='';});
 
     // Chiang Mai province boundary + mask. The mask is a donut polygon: a
     // rectangle a bit larger than CM_SOURCE_BOUNDS with the REAL province
@@ -5883,7 +5882,7 @@ function initMapLibre3D(){
     // determined by ring position (ring[0]=outer, ring[1]=hole), not
     // winding direction. Inserted with an explicit beforeId so it always
     // lands right above bg/basemap/hillshade and below every data layer
-    // (forests-circle already exists by now — this fetch resolves on a
+    // (forests-icon already exists by now — this fetch resolves on a
     // later tick no matter where in this synchronous handler it's called
     // from) — without this, an async layer landing wherever it happens to
     // finish loading would risk masking a hotspot/building that turns out
@@ -5898,7 +5897,7 @@ function initMapLibre3D(){
       }});
       mlMap.addLayer({id:'cm-mask-fill',type:'fill',source:'cm-mask',paint:{
         'fill-color':'#070a0e','fill-opacity':1
-      }},'forests-circle');
+      }},'forests-icon');
 
       mlMap.addSource('cm-boundary',{type:'geojson',data:geo});
       mlMap.addLayer({id:'cm-boundary-line',type:'line',source:'cm-boundary',paint:{
@@ -5949,7 +5948,7 @@ function initMapLibre3D(){
       const box=[[e.point.x-_HIT_PAD_PX, e.point.y-_HIT_PAD_PX],[e.point.x+_HIT_PAD_PX, e.point.y+_HIT_PAD_PX]];
       const fuelHits=mlMap.queryRenderedFeatures(box,{layers:['fuel-3d-circle']});
       if(fuelHits.length){ _showFuelPopup(fuelHits[0]); return; }
-      const forestHits=mlMap.queryRenderedFeatures(box,{layers:['forests-circle']});
+      const forestHits=mlMap.queryRenderedFeatures(box,{layers:['forests-icon']});
       if(forestHits.length) _showForestPopup(forestHits[0]);
     });
 
@@ -6385,7 +6384,8 @@ function renderEvidenceSources(){
   document.getElementById('evidenceSources').innerHTML=e.sources.map(s=>`<article class="source-item"><a class="source-mark" href="${s.url}" target="_blank" rel="noopener">${e.escapeHtml(s.mark)}</a><div><h3><a href="${s.url}" target="_blank" rel="noopener">${e.escapeHtml(s.name)}</a></h3><b>${s.kind}</b><p>${s.note}</p></div></article>`).join('');
   document.getElementById('evidenceFreshness').innerHTML=['hotspots','pm25','weather'].map(k=>{
     const q=liveDataQ?.[k], label={hotspots:'จุดความร้อน',pm25:'ฝุ่น PM2.5',weather:'ลมและอากาศ'}[k];
-    return `<div><b>${label}</b><span>${q?e.escapeHtml(q.source):'กำลังรับข้อมูล'}</span><span>${q?(k==='weather'?'เวลาของอากาศ ':'รับชุดข้อมูลล่าสุด ')+e.stamp(q.latest_update):'ยังไม่ทราบเวลา'}${q?.is_stale?' · ข้อมูลเก่า':''}</span><small>ระบบตรวจแหล่งข้อมูล ${e.stamp(q?.checked_at)} · ${q?.source_mode==='LIVE'?'เชื่อมต้นทางได้ ไม่ได้หมายถึงวัดต่อเนื่องทุกวินาที':e.escapeHtml(q?.source_mode||'รอข้อมูล')}</small></div>`;
+    const state=!q?'wait':q.is_stale?'stale':q.source_mode==='LIVE'?'ok':'wait';
+    return `<div class="dv-src-row ${state}"><b>${label}</b><em>${{ok:'ปกติ',stale:'ข้อมูลเก่า',wait:'รอข้อมูล'}[state]}</em><span>${q?e.escapeHtml(q.source):'กำลังรับข้อมูล'}</span><span>${q?(k==='weather'?'เวลาของอากาศ ':'ข้อมูลล่าสุด ')+e.stamp(q.latest_update):'ยังไม่ทราบเวลา'}</span><small>ระบบตรวจเมื่อ ${e.stamp(q?.checked_at)}</small></div>`;
   }).join('');
 }
 let evidenceForecastRequest=null;
@@ -6404,7 +6404,7 @@ let archiveDays=7, archiveKind='all', archiveRequest=0;
 const reviewNumber=value=>Number(value).toLocaleString('th-TH',{maximumFractionDigits:1});
 function archiveDateLabel(value){
   const date=new Date(String(value)+'T12:00:00+07:00');
-  return Number.isNaN(date.getTime())?String(value):date.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Bangkok'});
+  return Number.isNaN(date.getTime())?String(value):date.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit',timeZone:'Asia/Bangkok'});
 }
 function renderArchive(data){
   const e=CmeEvidence, daily=Array.isArray(data.daily)?data.daily:[];
@@ -6423,15 +6423,23 @@ function renderArchive(data){
   });
   const rows=[...grouped.values()].sort((a,b)=>b.day.localeCompare(a.day));
   const status=document.getElementById('archiveStatus');
-  status.textContent=`พบ ${reviewNumber(data.total||0)} รายการที่บันทึกไว้ · แสดงสรุป ${rows.length} วันในช่วง ${archiveDays===1?'24 ชั่วโมง':archiveDays+' วัน'} · ตรวจเมื่อ ${CmeEvidence.stamp(data.checked_at)} · 0 จุดใช้เฉพาะวันเต็มที่คำขอ VIIRS ครบ ยังไม่ยืนยันว่าไม่มีไฟ`;
-  const body=rows.map(row=>`<tr><td>${e.escapeHtml(archiveDateLabel(row.day))}</td><td>${row.hotspot==null?'—':reviewNumber(row.hotspot)+' รายการ'}</td><td>${row.pmN?reviewNumber(row.pmSum/row.pmN)+' µg/m³':'—'}</td><td>${row.modelN?reviewNumber(row.modelSum/row.modelN)+' µg/m³':'—'}</td><td>${row.windN?reviewNumber(row.windSum/row.windN)+' กม./ชม.':'—'}</td><td>${row.windModelN?reviewNumber(row.windModelSum/row.windModelN)+' กม./ชม.':'—'}</td><td>${reviewNumber(row.samples)}</td></tr>`).join('');
-  document.getElementById('archiveDaily').innerHTML=`<div class="archive-table-wrap"><table class="archive-table"><thead><tr><th>วันที่ (ไทย)</th><th>จุดความร้อนที่บันทึก</th><th>PM2.5 สถานีวัด</th><th>PM2.5 แบบจำลอง</th><th>ลมสถานี</th><th>ลมแบบจำลอง</th><th>รายการข้อมูล</th></tr></thead><tbody>${body||'<tr><td colspan="7">ยังไม่มีข้อมูลที่เก็บในช่วงนี้ · ช่องว่างไม่ใช่ศูนย์และไม่ยืนยันว่าไม่มีไฟ</td></tr>'}</tbody></table></div>`;
+  status.textContent=`${rows.length} วันที่มีข้อมูล · ตรวจเมื่อ ${CmeEvidence.stamp(data.checked_at)}`;
+  // One dust and one wind column: the station value when there is one, else the model value marked as such.
+  const model='<small class="dv-model">แบบจำลอง</small>';
+  const pmCell=row=>{
+    const v=row.pmN?row.pmSum/row.pmN:row.modelN?row.modelSum/row.modelN:null;if(v===null)return '—';
+    const lv=CmePublicGuidance.pmLevel(v), tok=window.CmeUx?.category?.(v)?.token;
+    return `<span class="dv-pm"><i style="background:var(${tok||'--state-old'})" aria-hidden="true"></i><b>${reviewNumber(v)}</b> <span>${e.escapeHtml(lv?.label||'')}</span></span>${row.pmN?'':model}`;
+  };
+  const windCell=row=>row.windN?`<span class="dv-nw">${reviewNumber(row.windSum/row.windN)} กม./ชม.</span>`:row.windModelN?`<span class="dv-nw">${reviewNumber(row.windModelSum/row.windModelN)} กม./ชม.</span>`+model:'—';
+  const body=rows.map(row=>`<tr><th scope="row">${e.escapeHtml(archiveDateLabel(row.day))}</th><td>${row.hotspot==null?'—':`<b>${reviewNumber(row.hotspot)}</b> จุด`}</td><td>${pmCell(row)}</td><td>${windCell(row)}</td></tr>`).join('');
+  document.getElementById('archiveDaily').innerHTML=`<div class="archive-table-wrap"><table class="archive-table dv-table"><thead><tr><th scope="col">วันที่</th><th scope="col">จุดความร้อน</th><th scope="col">ฝุ่น PM2.5 <small>µg/m³</small></th><th scope="col">ลมเฉลี่ย</th></tr></thead><tbody>${body||'<tr><td colspan="4">ยังไม่มีข้อมูลที่เก็บในช่วงนี้ · ช่องว่างไม่ใช่ศูนย์</td></tr>'}</tbody></table></div>`;
   const runs=Array.isArray(data.collection)?data.collection:[];
   const checks=runs.reduce((sum,day)=>sum+(Number(day.checks)||0),0);
   const complete=runs.reduce((sum,day)=>sum+(Number(day.complete_checks)||0),0);
   const partial=runs.reduce((sum,day)=>sum+(Number(day.partial_checks)||0),0);
   const failed=runs.reduce((sum,day)=>sum+(Number(day.failed_checks)||0),0);
-  document.getElementById('archiveCollection').innerHTML=`<p class="evidence-note">รอบจัดเก็บตามเวลา: ${reviewNumber(checks)} รอบ · ครบ ${reviewNumber(complete)} · บางแหล่งขาด ${reviewNumber(partial)} · ต้นทางใช้ไม่ได้ ${reviewNumber(failed)} · วันแรก ${CmeEvidence.stamp(data.first_collected)} · ล่าสุด ${CmeEvidence.stamp(data.last_collected)}</p>`;
+  document.getElementById('archiveCollection').innerHTML=`<p class="evidence-note">${reviewNumber(data.total||0)} รายการที่บันทึกไว้ · รอบจัดเก็บตามเวลา: ${reviewNumber(checks)} รอบ · ครบ ${reviewNumber(complete)} · บางแหล่งขาด ${reviewNumber(partial)} · ต้นทางใช้ไม่ได้ ${reviewNumber(failed)} · วันแรก ${CmeEvidence.stamp(data.first_collected)} · ล่าสุด ${CmeEvidence.stamp(data.last_collected)}</p>`;
   const gaps=Array.isArray(data.days_without_observations)?data.days_without_observations:[];
   document.getElementById('archiveGaps').innerHTML=gaps.length
     ? `<p class="evidence-note">วันที่ไม่มีรายการในตัวกรองนี้ (${gaps.length} วัน):</p><div class="archive-gap-list">${gaps.slice(0,12).map(d=>`<span>${e.escapeHtml(archiveDateLabel(d))}</span>`).join('')}${gaps.length>12?`<span>และอีก ${gaps.length-12} วัน</span>`:''}</div>`
@@ -6594,14 +6602,23 @@ function buildEvidenceReport(){
   const paper=document.getElementById('paper');
   if(reason){paper.innerHTML=`<h2>${reason}</h2><p>รายงานยังไม่พร้อม ข้อมูลที่ขาดจะไม่ถูกแทนด้วยศูนย์</p>`;return;}
   const rows=e.filterHotspots(hotspots,{hours,forest,point});
-  const name=forest?forest.name:point?`รอบจุด ${selected.id} ภายใน 5 กม.`:'จังหวัดเชียงใหม่';
+  const name=forest?forest.name:point?`รัศมี 5 กม. รอบจุดที่${selected.tambon?' ต.'+selected.tambon:''}${selected.district?' อ.'+selected.district:''}`:'จังหวัดเชียงใหม่';
   const air=document.getElementById('exportAir').checked;
   const stations=forest?pmStations.filter(s=>e.inBoundary(s.c[0],s.c[1],forest.boundary)):point?pmStations.filter(s=>e.distanceKm(point,{lat:s.c[0],lon:s.c[1]})<=5):pmStations;
   const pmValid=liveDataQ?.pm25&&!liveDataQ.pm25.is_stale&&liveDataQ.pm25.source_mode!=='UNAVAILABLE';
   const pm=pmValid&&stations.length?Math.round(mean(stations.map(s=>s.pm))):null;
   const freshWind=PREVAILING&&liveDataQ?.weather&&!liveDataQ.weather.is_stale&&liveDataQ.weather.source_mode!=='UNAVAILABLE';
-  const sourceRows=['hotspots',...(air?['pm25','weather']:[])].map(k=>`<li>${e.escapeHtml(sourceLabel(k))} · ${k==='weather'?'เวลาของอากาศ':'รับชุดข้อมูลล่าสุด'} ${e.stamp(liveDataQ?.[k]?.latest_update)}</li>`).join('');
-  paper.innerHTML=`<header class="ph"><div><h1>สรุปสถานการณ์ ${e.escapeHtml(name)}</h1><div class="meta">ChiangMaiEyes · ${hours} ชั่วโมงล่าสุดจากข้อมูลที่ระบบได้รับ</div></div></header><p class="lead">ตรวจพบ <b>${rows.length} จุดความร้อน</b> ในพื้นที่และช่วงเวลาที่เลือก จุดความร้อนยังไม่ใช่เหตุไฟที่ยืนยันแล้ว การไม่พบจุดไม่ยืนยันว่าไม่มีไฟ</p><div class="figs"><div class="fig"><div class="k">จุดความร้อนที่เลือก</div><div class="v">${rows.length}<small> จุด</small></div></div>${air?`<div class="fig"><div class="k">ฝุ่นจาก ${stations.length} สถานีในพื้นที่</div><div class="v">${pm??'—'}<small> µg/m³</small></div></div>`:''}</div>${document.getElementById('exportMap').checked?`<h2>ตำแหน่งที่ควรตรวจสอบ</h2>${reportMapSvg(rows,forest)}`:''}${air?`<h2>อากาศและฝุ่น</h2><p>${pm===null?'ยังไม่มีค่าฝุ่นที่ใช้ได้จากสถานีในพื้นที่ที่เลือก':`เฉลี่ยจากสถานีในพื้นที่ ${pm} µg/m³ เป็นค่ารอบปัจจุบัน ไม่ใช่ค่าเฉลี่ย ${hours} ชั่วโมง`}</p><p>${freshWind?`${/Open-Meteo/i.test(sourceLabel('weather'))?'ลมแบบจำลอง 10 เมตรของพื้นที่อ้างอิงจังหวัด':'ลมจากสถานีอ้างอิงจังหวัด'}พัดไปทาง${DIR_COMPASS[Math.round(e.windTo(PREVAILING.deg)/45)%8]} ${PREVAILING.kmh} กม./ชม. ไม่ใช่การวัดลมในป่าแห่งนี้`:'ยังไม่มีข้อมูลลมที่ใช้ได้'}</p>`:''}${forest?`<h2>ช่องทางประสานงาน</h2>${forestContactHtml(forest)}`:''}${document.getElementById('exportTable').checked?`<h2>จุดความร้อนที่เลือก</h2><table><thead><tr><th>รหัส</th><th>ตำแหน่ง</th><th>FRP</th><th>ตรวจพบ (ICT)</th></tr></thead><tbody>${rows.map(h=>`<tr><td>${e.escapeHtml(h.id)}</td><td>${h.lat.toFixed(4)}, ${h.lon.toFixed(4)}</td><td>${h.frp==null?'ไม่ระบุ':h.frp+' MW'}</td><td>${e.stamp(h.detected_at)}</td></tr>`).join('')||'<tr><td colspan="4">ไม่พบจุดความร้อนในข้อมูลที่เลือก</td></tr>'}</tbody></table>`:''}<h2>เวลาและที่มา</h2><ul>${sourceRows}</ul><p>ดาวเทียมอาจตรวจไม่พบไฟขนาดเล็กหรือไฟที่ถูกบดบัง ต้องประสานผู้รับผิดชอบตรวจสอบก่อนตัดสินใจเข้าพื้นที่</p><div class="pfoot">สร้างรายงาน ${e.stamp(new Date().toISOString())} · ขอบเขต RECOFTC 677 แห่ง · <a href="https://firms.modaps.eosdis.nasa.gov/">NASA FIRMS</a> · <a href="https://forestinfo.forest.go.th/telephone_region.aspx">กรมป่าไม้</a></div>`;
+  const pmLv=pm===null?null:CmePublicGuidance.pmLevel(pm);
+  const windFrom=/Open-Meteo/i.test(sourceLabel('weather'));
+  const sources=[{what:'จุดความร้อน',label:sourceLabel('hotspots')+' (ดาวเทียม)',time:'รับข้อมูลล่าสุด '+e.stamp(liveDataQ?.hotspots?.latest_update)},
+    ...(air?[{what:'ฝุ่น PM2.5',label:sourceLabel('pm25'),time:'รับข้อมูลล่าสุด '+e.stamp(liveDataQ?.pm25?.latest_update)},
+      {what:'ลม',label:sourceLabel('weather')+(windFrom?' (แบบจำลอง ลม 10 เมตร)':''),time:'เวลาของข้อมูล '+e.stamp(liveDataQ?.weather?.latest_update)}]:[]),
+    {what:'ขอบเขตป่าชุมชน',label:'RECOFTC (677 แห่ง)',time:'ชุดข้อมูลที่โครงการได้รับ'}];
+  paper.innerHTML=CmeReport.html({scope,name,hours,rows,forest,point,air,now:Date.now(),
+    shapes:analyticsSummaryOptions().shapes,
+    pm:pm===null?null:{value:pm,stations:stations.length,level:pmLv},
+    wind:freshWind?{dir:DIR_COMPASS[Math.round(e.windTo(PREVAILING.deg)/45)%8],kmh:PREVAILING.kmh}:null,
+    sources,contact:e.contacts[0],showMap:document.getElementById('exportMap').checked,showTable:document.getElementById('exportTable').checked});
 }
 document.getElementById('exportOptions').addEventListener('change',buildReport);
 renderEvidenceSources();

@@ -11,6 +11,8 @@
       item.classList.toggle('active',active);
       if(active)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');
     });
+    // The analytics sub-pages share one tab row; mark the page that is open.
+    document.querySelectorAll('.workspace-links [data-open-view]').forEach(b=>{if(b.dataset.openView===view)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
     config.views[view]();
     if(target){
       const heading=document.getElementById(target);if(!heading)return;

@@ -190,3 +190,23 @@ it('LINE sign-up lists only districts with enough live sensors', async () => {
   expect(el.querySelector('.as-line').textContent).toContain('World Air Quality Index Project');
   dom.window.close();
 });
+
+it('keeps fire and dust apart, and explains a clean long average next to many hotspots', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  // 40 days: 60 hotspots in April with dusty air, then clean rainy days.
+  const dates = Array.from({ length: 40 }, (_, i) => new Date(Date.UTC(2026, 3, 1 + i)).toISOString().slice(0, 10));
+  const h = { days: 40, analytics: { total: 60, districts: [{ name: 'แม่แจ่ม', count: 60 }],
+    hotspots: dates.map((d, i) => ({ date: d, count: i < 15 ? 4 : 0, source_requests_complete: true, partial_day: false })),
+    pm25: dates.map((d, i) => ({ date: d, value: i < 15 ? 50 : 8, samples: 48, measurement_kind: 'measured' })) } };
+  w.CmeAnalyticsSummary.render(el, h, {});
+  const fire = el.querySelector('.as-hl.fire').textContent, dust = el.querySelector('.as-hl.pm').textContent;
+  expect(fire).toContain('พบจุดความร้อน 60 จุด'); expect(fire).not.toContain('ฝุ่น');
+  expect(dust).toContain('ฝุ่นเฉลี่ยช่วงนี้ระดับ ดี'); // (15×50 + 25×8) / 40 = 23.75
+  expect(dust).toContain('ระดับเริ่มมีผลต่อสุขภาพขึ้นไป 15 จาก 40 วัน');
+  const why = el.querySelector('.as-why').textContent;
+  expect(why).toContain('1 เม.ย.'); expect(why).toContain('50 µg/m³ (เริ่มมีผลต่อสุขภาพ)'); expect(why).toContain('สัปดาห์นั้นพบจุดความร้อน 16 จุด'); // 1–4 Apr × 4
+  // A short range never gets the note.
+  w.CmeAnalyticsSummary.render(el, history, {});
+  expect(el.querySelector('.as-why')).toBeNull();
+  dom.window.close();
+});

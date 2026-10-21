@@ -145,7 +145,7 @@
     const toast=document.getElementById('toast');if(toast){toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');}
     // Preserve every word/link, disclose long introductory caveats in all reading views.
     const disclose=note=>{
-      if(note.closest('details')||(note.textContent.length<80&&!(note.textContent.length>=30&&/ไม่ใช่|ยังไม่/.test(note.textContent))))return;
+      if(note.closest('details,[data-no-disclose]')||(note.textContent.length<80&&!(note.textContent.length>=30&&/ไม่ใช่|ยังไม่/.test(note.textContent))))return;
       const details=document.createElement('details');details.className='cme-source';
       const summary=document.createElement('summary');summary.textContent='ⓘ ที่มาและข้อควรรู้';details.append(summary);
       note.before(details);const body=document.createElement('div');details.append(body);body.append(note);

@@ -6,6 +6,24 @@ body.light-mode .an-top{--as-map-empty:#e2e8f0}
 .as-hero{margin:0 0 14px;padding:16px 18px;border-radius:16px;font:500 18px/1.6 var(--font);color:var(--txt);
   background:linear-gradient(120deg,rgba(239,68,68,.16),rgba(245,158,11,.10) 45%,rgba(67,176,95,.10));border:1px solid var(--line)}
 .as-hero b{font-weight:700}
+/* Fire and dust side by side, never in one sentence. */
+.as-hero2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;font-size:16px;line-height:1.55}
+.as-hl{display:flex;gap:12px;min-width:0}
+.as-hl+.as-hl{border-left:1px solid var(--line);padding-left:18px}
+.as-hl-ic{flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700}
+.as-hl.fire .as-hl-ic{background:rgba(239,68,68,.14)}
+.as-hl.pm .as-hl-ic{background:rgba(56,189,248,.14);color:var(--wind)}
+.as-hl-k{margin:0 0 2px;font:600 13px/1.4 var(--font);color:var(--muted)}
+.as-hl-v{margin:0;font-size:17px}
+.as-hl-num{color:var(--muted);font-size:14px;white-space:nowrap}
+.as-hl-s{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.as-hl-s b{color:var(--txt)}
+.as-why{grid-column:1/-1;margin:0;padding:10px 12px;border-radius:12px;background:var(--panel-2);font-size:14px;line-height:1.6;color:var(--muted)}
+.as-why b{color:var(--txt)}
+@media(max-width:640px){
+  .as-hero2{grid-template-columns:minmax(0,1fr)}
+  .as-hl+.as-hl{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:12px}
+}
 
 .as-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .as-card{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;
