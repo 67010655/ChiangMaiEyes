@@ -1,46 +1,154 @@
 # ChiangMaiEyes
 
-Public environmental intelligence dashboard for Chiang Mai, Thailand.
+> **In English, briefly:** a free, non-profit website for Chiang Mai, Thailand that shows satellite fire hotspots, PM2.5 dust and wind, and the boundaries of 677 community forests. Anyone can look without an account; community-forest representatives sign in to get alerts, record incidents and coordinate. Live at <https://chiangmaieyes.vercel.app>. The rest of this file is in Thai.
 
-## Stack
+เว็บดูไฟ ฝุ่น และลมในจังหวัดเชียงใหม่ ที่เชื่อได้ จากดาวเทียมและจากคนในพื้นที่จริง
 
-- Frontend: React, Vite, TypeScript, Leaflet, OpenStreetMap
-- Backend: Python, FastAPI
-- Database: none for MVP, cached JSON files only
-- Deployment: Vercel frontend and Vercel FastAPI backend
-- Hotspots: Vercel backend fetches cloud-friendly NASA/GISTDA satellite feeds; RFD is optional
+- เว็บจริง: <https://chiangmaieyes.vercel.app>
+- API: <https://backend-mocha-tau-49.vercel.app> (หน้าเว็บเรียกผ่าน `/api/*` ที่ rewrite ไปหา backend)
 
-## Local Development
+---
 
-Backend:
+## 1. ความตั้งใจ
 
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+**หนึ่งเว็บ สองชั้น: คนทั่วไป "ดู" ป่าชุมชน "ทำ"**
+
+| | คนทั่วไป (ไม่ต้อง login) | ตัวแทนป่าชุมชน (login) |
+|---|---|---|
+| คำถามในใจ | ใกล้บ้านมีไฟไหม ฝุ่นเป็นยังไง ออกนอกบ้านได้ไหม | ป่าของเรามีความเสี่ยงไหม ต้องทำอะไร ติดต่อใคร |
+| สิ่งที่ได้ | แผนที่ การ์ดไฟ ฝุ่น ลม ดูป่าชุมชนรายป่า แชร์ทาง LINE รับแจ้งเตือนฝุ่นรายอำเภอ | ป่าของฉัน รายการ "ต้องทำอะไรตอนนี้" บันทึกเหตุ แจ้งเตือนไฟใกล้ป่า |
+| เมื่อเห็นไฟ | โทร 1362 | โทร 1362 แล้วบันทึกเหตุหลังดับเสร็จ |
+
+กลุ่มเป้าหมายมีแค่ **ประชาชนเชียงใหม่** และ **ป่าชุมชน** ทุกการตัดสินใจคิดจากสองกลุ่มนี้ก่อน รายละเอียดอยู่ใน [docs/PRODUCT_BRIEF.md](docs/PRODUCT_BRIEF.md) (รวม "นิยามว่าเสร็จ" 8 ข้อที่ต้องผ่านกับผู้ใช้จริง)
+
+## 2. หลักที่ยึด (อย่าทิ้งข้อไหน)
+
+1. **ไม่แต่งข้อมูล** ทุกตัวเลขบนเว็บต้องมีแหล่งและเวลากำกับ ถ้าไม่มีข้อมูลให้บอกว่าไม่มี ห้ามเดาหรือแทนด้วยค่าเฉลี่ยจังหวัด
+2. **ไม่มีข้อมูล ≠ ปลอดภัย** และ **ไม่พบจุดความร้อน ≠ ไม่มีไฟ** ต้องบอกผู้ใช้เสมอ
+3. **จุดความร้อนไม่ใช่ไฟที่ยืนยันแล้ว** ดาวเทียมเห็นความร้อน คนในพื้นที่เป็นผู้ยืนยัน
+4. **เช็กความสดของข้อมูลจริง** อย่าเชื่อแค่ HTTP 200 ดูเวลาของข้อมูลแต่ละชุด
+5. **แยกหน่วยให้ชัด** ฝุ่น µg/m³ (เกณฑ์กรมควบคุมมลพิษ) กับ AQI (เกณฑ์ US EPA) เป็นคนละเกณฑ์ ห้ามแปลงหรือปนกัน
+6. **ไม่จัดอันดับป่า** เพราะเสี่ยงให้คนแข่งกันเข้าพื้นที่อันตราย รายการเรียงตามเวลาที่ตรวจพบเท่านั้น
+7. **ภาษาคน** หน้าแรกไม่มีศัพท์เทคนิค (FRP, VIIRS, FWI ฯลฯ อยู่ในส่วนผู้เชี่ยวชาญ)
+8. **มือถือก่อน** และ **ต้องอ่านออกทั้งโหมดมืดและสว่าง** ใช้สีจาก theme token เท่านั้น
+9. **ไม่ส่งข้อความแทนผู้ใช้** การแชร์ LINE เปิดหน้าเลือกแชทให้ผู้ใช้กดเอง
+
+## 3. หน้าในเว็บ
+
+| แท็บ | ใช้ทำอะไร | ไฟล์หลัก |
+|---|---|---|
+| **แผนที่** | จุดความร้อน (สีตามอายุ ≤6 ชม. / 6–24 ชม. / เก่ากว่า) ภาพทิศปลายลม ลมเคลื่อนไหว ฝุ่นสถานี เซนเซอร์ AQI ขอบเขตป่า พื้นที่อนุรักษ์ ย้อนดูหลายวัน และภูเขา 3D | `frontend/index.html`, `public/hotspot-*.js`, `public/three-d-extras.js`, `public/dust-sensors.js` |
+| **วิเคราะห์** | ย้อนหลัง 24 ชม.–180 วัน (ไฟ ฝุ่น ลม รายอำเภอ รายป่า) พยากรณ์อากาศเอื้อต่อไฟ 16 วัน แนวโน้ม 4 สัปดาห์ การ์ดรับแจ้งเตือนฝุ่นทาง LINE | `public/analytics-summary.js`, `public/fire-weather.js` |
+| **ป่าชุมชน** | ทุกคน: ค้นหาป่า การ์ดสถานการณ์ แชร์ ตัวแทน: ป่าของฉัน บันทึกเหตุ ประสานงาน การแจ้งเตือน | `public/forest-public.js`, `public/community-workspace.js` |
+| **วิธีใช้** | 4 ขั้นเริ่มใช้ สีและป้าย การแจ้งเตือน คำถามที่พบบ่อย วิธีคำนวณและแหล่งอ้างอิง | ส่วน `#guideview` ใน `index.html`, `public/guide.css` |
+
+ลิงก์ที่แชร์ได้: `/#community/forest/<forest_id>` เปิดการ์ดของป่านั้นทันที
+
+## 4. แหล่งข้อมูล
+
+| ข้อมูล | แหล่ง | หมายเหตุ |
+|---|---|---|
+| จุดความร้อน | NASA FIRMS (VIIRS/MODIS), GISTDA | RFD Firemap ปิดไว้ (บล็อก IP นอกไทย) |
+| ฝุ่นหลัก (µg/m³) | Air4Thai กรมควบคุมมลพิษ | ในเชียงใหม่มี 2 สถานี (35t, 36t) อยู่ อ.เมืองทั้งคู่ |
+| ฝุ่นเติมช่องว่าง | CAMS (แบบจำลอง) | ระบุว่าเป็นแบบจำลองทุกครั้ง |
+| เซนเซอร์ฝุ่น (AQI) | World Air Quality Index Project (WAQI) | ใช้ดัชนีย่อย PM2.5 เท่านั้น ไม่แปลงเป็น µg/m³ **ห้ามเก็บย้อนหลัง** ต้องให้เครดิตทุกที่ ใช้แบบไม่แสวงกำไร แจ้ง WAQI แล้ว (20 ต.ค. 2026) |
+| อากาศ ลม พยากรณ์ | Open-Meteo (forecast + seasonal) | ลมเป็นลมอ้างอิงจังหวัด ไม่ใช่ลมในป่า |
+| อากาศเอื้อต่อไฟ | คำนวณเองด้วย Canadian FWI (Van Wagner 1987) | เกณฑ์สี EFFIS ยังไม่ปรับให้ตรงเชียงใหม่ ไม่ใช่การพยากรณ์ตำแหน่งไฟ |
+| ขอบเขตป่าชุมชน 677 แห่ง | RECOFTC | ป่าใหม่จดทะเบียนทุกปี ดูข้อ 9 |
+| พื้นที่อนุรักษ์ | GISTDA 2017 | ใช้อ้างอิง ไม่ใช่แนวเขตตามกฎหมาย |
+| ภูมิประเทศ | Copernicus GLO-30 | |
+| เบอร์หน่วยงานป่าไม้ | บัญชีโทรศัพท์กรมป่าไม้ | `frontend/public/forest-agency-contacts.json` มีวันที่ตรวจกำกับ |
+
+แสดงเฉพาะข้อมูลติดต่อที่เป็นข้อมูลเปิดสาธารณะ ข้อมูลส่วนบุคคลของตัวแทนเห็นได้เฉพาะผู้มีสิทธิ์
+
+## 5. โครงสร้างระบบ
+
+```
+frontend/   หน้าเว็บจริงคือ index.html (สคริปต์ inline ขนาดใหญ่) + public/*.js, public/*.css
+            ⚠ ไม่ใช่ React SPA ใน src/ (src/ ใช้เก็บเทสต์ vitest เป็นหลัก)
+backend/    FastAPI บน Vercel (app/main.py, app/services.py, app/providers/*)
+            งานแจ้งเตือน: community_mail.py (run_jobs), community_line.py, line_dust.py
+supabase/   migrations (Auth, ตารางป่าชุมชน/เหตุ/สมาชิก, คลังข้อมูลย้อนหลัง, สถานะแจ้งเตือน)
+docs/       เอกสารผลิตภัณฑ์ สถาปัตยกรรม การ deploy
+```
+
+- **Supabase:** login (Supabase Auth), ข้อมูลป่าชุมชนและเหตุ (RLS เปิด ตารางส่วนใหญ่เข้าได้เฉพาะ service role ผ่าน backend), คลังสถิติย้อนหลัง
+- **งานตามเวลา (Supabase Cron, ตั้งไว้ในฐานข้อมูล ไม่ได้อยู่ใน migrations):** `chiangmaieyes-community-refresh` ทุก 10 นาที (อีเมล/LINE/แจ้งเตือนฝุ่น), `chiangmaieyes-archive-worker` ทุกนาที (คลังย้อนหลัง), `chiangmaieyes-gfs-current/24h/48h` ทุกชั่วโมง (การระบายอากาศ GFS) ดูได้ด้วย `select * from cron.job` นอกจากนี้ `/api/dashboard` ก็กระตุ้นงานชุมชนเป็นงานเบื้องหลังด้วย
+- **LINE Official Account:** `@241mevgs` ใช้ทั้งแจ้งเตือนตัวแทนป่าและแจ้งเตือนฝุ่นรายอำเภอ (พิมพ์ "แจ้งเตือนฝุ่น <อำเภอ>" / "หยุด")
+- **แจ้งเตือนฝุ่นรายอำเภอ:** ส่งเมื่อค่ากลางของเซนเซอร์ ≥2 จุด (ที่ส่งข้อมูลใน 3 ชม.) ถึง AQI 101 ขึ้นไปต่อเนื่อง 1 ชม. ไม่เกินวันละครั้งต่อระดับ เปิดด้วย `LINE_DUST_ALERTS_ENABLED`
+
+## 6. รันบนเครื่องและเทสต์
+
+```bash
+cd backend && python -m venv .venv && .venv/Scripts/activate && pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-Frontend:
-
-```powershell
-cd frontend
-npm install
-npm run dev
+```bash
+cd frontend && npm install && npm run dev
 ```
 
-Set `VITE_API_BASE_URL=http://localhost:8000` for local frontend API calls.
-Set AI advisor provider keys only on the backend as `GROQ_API_KEYS`; do not put
-provider keys in frontend `VITE_*` variables because they are browser-visible.
+เทสต์:
 
-## MVP Notes
+```bash
+npx vitest run --maxWorkers=2
+```
 
-Production no longer requires the local Thai-network refresh worker for
-hotspots. RFD Firemap remains available as optional enrichment, but it is
-disabled by default because it blocks some serverless infrastructure. The
-production path uses NASA/GISTDA satellite hotspot feeds that the Vercel backend
-can fetch directly.
-## Project Context
+```bash
+python -m pytest -q
+```
 
-Development decisions and handoff notes from the original build chat are saved in `docs/CHAT_CONTEXT.md`.
+(เทสต์ backend 4 ข้อจะล้มบนเครื่องที่ไม่มี `eccodes` / `rasterio` เป็นเรื่องปกติ)
+
+**เทสต์ที่ห้ามแก้ให้หลวมลง:** landContext, popupPresentation, spreadHint, publicGuidance, navigationUi, lineLink, liveRefresh
+
+## 7. การ deploy
+
+- **Deploy ด้วย Vercel CLI เท่านั้น** (Git deploy ปิดไว้: push ไม่ deploy เอง)
+- Frontend: รัน `vercel --prod` ในโฟลเดอร์ `frontend/`
+- Backend: โปรเจกต์ Vercel ชื่อ `backend` (Root Directory = `backend`) deploy จากโฟลเดอร์ที่ link กับโปรเจกต์นี้
+- ทุกครั้งต้องเห็นบรรทัด **"Aliased"** ใน log แล้วจึงตรวจเว็บจริง
+- Migration ใหม่ใน `supabase/migrations/` ต้อง apply ก่อน deploy backend ที่ใช้มัน
+- ลำดับการปล่อย: commit → ทดสอบ → เจ้าของงานสั่งปล่อย → deploy backend ก่อน frontend → ย้าย `main` → ตรวจเว็บจริง
+- รายละเอียด: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+
+**Environment variables (ชื่อเท่านั้น ค่าอยู่ใน Vercel ห้ามใส่ในโค้ด):**
+`NASA_FIRMS_MAP_KEY`, `GISTDA_API_KEY`, `GISTDA_DISASTER_API_KEY`, `AQICN_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `LINE_CHANNEL_SECRET`, `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_DUST_ALERTS_ENABLED`, `COMMUNITY_EMAIL_ENABLED`, `COMMUNITY_JOB_SECRET`, `CORS_ORIGINS`
+ห้ามใส่ key ของผู้ให้บริการใน `VITE_*` เพราะเบราว์เซอร์มองเห็น
+
+## 8. การตัดสินใจสำคัญ (และเหตุผล)
+
+| เมื่อ | ตัดสินใจ | เหตุผล |
+|---|---|---|
+| ต.ค. 2026 | เอากล้องสาธารณะออก | ส่วนใหญ่เป็นกล้องวัดระดับน้ำ ไม่ได้ช่วยดูไฟ |
+| ต.ค. 2026 | เอาคะแนนความเสี่ยงทดลองออกทั้งหมด | ยังไม่มีข้อมูลภาคสนามไว้ตรวจว่าแม่น |
+| ต.ค. 2026 | ไม่ทำพยากรณ์ไฟ 30 วัน ทำแค่ "อากาศเอื้อต่อไฟ" 16 วัน + แนวโน้ม 4 สัปดาห์ | พยากรณ์ตำแหน่งไฟทำไม่ได้น่าเชื่อถือ |
+| 20 ต.ค. 2026 | แจ้งเตือนฝุ่นรายอำเภอเปลี่ยนจากแบบจำลอง CAMS เป็นเซนเซอร์จริง (WAQI) | สถานีกรมฯ มีแค่ 2 แห่งใน อ.เมือง ค่าแบบจำลองรายอำเภอทำให้เข้าใจผิด |
+| 21 ต.ค. 2026 | หน้าป่าชุมชนเปิดให้ทุกคนดู ไม่ต้อง login | คนส่วนใหญ่ไม่ใช่ตัวแทน แต่อยากรู้เรื่องป่าใกล้บ้าน |
+| 21 ต.ค. 2026 | แต่ละป่ามี "ผู้ดูแลป่า" ของตัวเอง ตั้งกันเองได้ | ป่าชุมชนช่วยกันดูแล ไม่ให้ภาระตกที่คนเดียว |
+| — | ไม่ทำ offline/PWA, ไม่ทำ ranking, ไม่ทำ machine learning ตอนนี้ | ดู [docs/PRODUCT_BRIEF.md](docs/PRODUCT_BRIEF.md) |
+
+## 9. งานที่พักไว้และคำถามที่ยังไม่มีคำตอบ
+
+**ใครอนุมัติตัวแทนป่า (สำคัญที่สุดก่อนใช้จริง)**
+- ตอนนี้: ผู้ดูแลระบบอนุมัติในแท็บ "ตรวจคำขอ" ใช้ได้กับช่วงทดสอบที่มีคนไม่กี่คน
+- ที่ตั้งใจ: ผู้ดูแลระบบ → **ผู้ดูแลป่า** (ป่าละหลายคน ตั้งกันเองได้ อนุมัติสมาชิกในป่าตัวเอง) → สมาชิก/อาสา
+- ยังไม่มีคำตอบ: **ใครตรวจผู้ดูแลป่าคนแรกของแต่ละป่า** คนพัฒนาระบบไม่ควรเป็นคนอนุมัติถาวร ข้อเสนอคือให้หน่วยงานพันธมิตร (RECOFTC หรือสำนักจัดการทรัพยากรป่าไม้ที่ 1) รับเป็นเจ้าของ และใช้ **รหัสเชิญรายป่า** ที่เจ้าหน้าที่ภาคสนามแจกตอนลงพื้นที่
+- ต้องมี **ผู้ควบคุมข้อมูลส่วนบุคคลตาม PDPA** และประกาศความเป็นส่วนตัวก่อนเปิดใช้จริง
+
+**รอทำเมื่อมีเจ้าของงานแล้ว:** บทบาทผู้ดูแลป่า, รหัสเชิญ, ผู้อนุมัติรายอำเภอ, เอาปุ่ม "ดูแลป่าอื่นด้วย" ออกจากหน้าสมาชิก (ให้ผู้ดูแลระบบกำหนดหลายป่าให้เฉพาะผู้ประสานเครือข่ายหรือเจ้าหน้าที่)
+
+**ป่าชุมชนใหม่ (จดทะเบียนเพิ่มทุกปี):** นำเข้ารายชื่อทางการปีละครั้ง (ต้องเช็กว่าขอข้อมูลจาก RECOFTC/กรมป่าไม้ได้ไหม) และปุ่ม "แจ้งป่าชุมชนที่ยังไม่มีในระบบ" ที่ผ่านการตรวจก่อนขึ้นเว็บ
+
+**อื่น ๆ**
+- WAQI: ตั้งแต่คืน 20 ต.ค. 2026 แสดงสถานีในเชียงใหม่แค่ราว 8 จาก ~62 เป็นปัญหาฝั่งต้นทาง `/api/dust-sensors` มีจำนวนต่อพื้นที่ย่อย (`bounds.tiles`) ไว้ดู ถ้ายังไม่กลับมาให้สอบถาม WAQI
+- อบรม อบต. / ผู้ใช้ภาคสนาม
+- เปรียบเทียบปีต่อปี (ต้องเติมข้อมูลย้อนหลังปีที่แล้วก่อน)
+
+## 10. ทดสอบกับผู้ใช้จริง
+
+ทำตามเช็กลิสต์ใน [docs/TEST_DAY.md](docs/TEST_DAY.md) ก่อนเข้าฤดูไฟ (ม.ค.)
+
+## 11. เอกสารอื่น
+
+[PRODUCT_BRIEF](docs/PRODUCT_BRIEF.md) · [ARCHITECTURE](docs/ARCHITECTURE.md) · [API](docs/API.md) · [DEPLOYMENT](docs/DEPLOYMENT.md) · [FALLBACKS](docs/FALLBACKS.md) · [PROTECTED_AREAS](docs/PROTECTED_AREAS.md) · [LAND_CONTEXT](docs/LAND_CONTEXT.md) · [ROADMAP](docs/ROADMAP.md) · บันทึกการพัฒนาเดิม [CHAT_CONTEXT](docs/CHAT_CONTEXT.md)
