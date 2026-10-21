@@ -126,3 +126,10 @@ body.light-mode .fp-map .band{stroke:rgba(161,98,7,.75);fill:rgba(250,204,21,.08
 .fp-who .coordination-card{display:flex;flex-direction:column}
 .fp-who .coordination-card>h3{display:none}
 .fp-who .coordination-agency{order:-1;margin-bottom:8px}
+.fp-share{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fp-share .cw-btn{min-height:44px;justify-content:center;text-decoration:none;display:inline-flex;align-items:center}
+.fp-line-btn{background:#06c755!important;border-color:#06c755!important;color:#fff!important;font-weight:700}
+.fp-url{width:100%;min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font:500 13px var(--font);box-sizing:border-box}
+.fp,.rp,.fp-list,.rp-now{grid-template-columns:minmax(0,1fr)}
+.fp-list button{min-width:0}
+.fp-li-t b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.4}

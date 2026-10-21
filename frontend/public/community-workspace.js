@@ -375,7 +375,20 @@
     if(event.target.id==='cwActiveForest'){state.forestId=event.target.value;render();}
   }
   function authChanged(){sequence++;loading=null;formDrafts.clear();checkRequests.clear();fieldChecks.clear();detailsOpen.clear();root.CmePractice?.reset();clearPhotos();destroyMap();if(body)body.replaceChildren();state.me=null;state.session=null;state.incidents=[];state.detail=null;state.reviewQueue=[];state.mailStatus=[];state.jobsStatus=null;state.draft=null;state.create=false;state.notice='';render();if(isOpen())load();}
+  // Shared forest links: #community/forest/<forest_id> opens that forest's card.
+  function forestLink(){const m=location.hash.match(/^#community\/forest\/([A-Za-z0-9_-]{1,64})$/);return m?m[1]:null;}
+  async function openForestLink(id){
+    state.publicForest=id;try{root.localStorage.setItem('cme-public-forest-v1',id);}catch{}
+    await open('forest');
+    if(state.session&&state.me){
+      if(allowedForests().some(f=>f.forest_id===id)){state.forestId=id;render();}
+      else{const f=state.catalog.find(x=>x.forest_id===id);if(f){state.notice='ลิงก์ที่เปิดเป็นของ '+f.name+' ซึ่งไม่ใช่ป่าที่คุณดูแล ออกจากระบบเพื่อดูการ์ดสาธารณะของป่านั้น';render();}}
+    }
+    body?.querySelector('#fpCard')?.scrollIntoView?.({block:'start'});
+  }
   function init(adapter){context=adapter;container=document.getElementById('communityview');body=document.getElementById('communityContent');container.addEventListener('click',click);container.addEventListener('submit',submit);container.addEventListener('input',input);container.addEventListener('change',input);document.getElementById('communityClose').onclick=close;
+    root.addEventListener('hashchange',()=>{const id=forestLink();if(id)openForestLink(id);});
+    const linked=forestLink();if(linked){openForestLink(linked);return;}
     const match=location.hash.match(/^#community(?:\/incident\/([a-f0-9-]{36}))?$/i),requested=new URLSearchParams(location.search).get('incident'),fromEmail=/^[a-f0-9-]{36}$/i.test(requested||'')?requested:null;if(location.hash==='#community/practice'&&!fromEmail)open('practice');else if(match||fromEmail)open(fromEmail||match?.[1]?'incidents':'forest',fromEmail||match?.[1]||null);
   }
   root.CmeCommunity={init,open,close,hide,authChanged,api,statusNames,transitions,

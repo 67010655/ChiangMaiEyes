@@ -134,25 +134,52 @@ def _parse_time(value):
     return t if t.tzinfo else None
 
 
+# The province box is asked for in tiles: one big box has at times come back
+# with only a handful of stations (62 one hour, 8 the next). Tiles are merged
+# by station uid; LAST_BOUNDS keeps the per-tile counts (counts only).
+TILES = [(lat, lon, lat + 1.0, lon + 0.85) for lat in (17.2, 18.2, 19.2) for lon in (97.9, 98.75)]
+LAST_BOUNDS: dict = {}
+
+
 def sensors(token: str, *, get=httpx.get) -> list[dict]:
     """Stations inside Chiang Mai districts: uid, district, reported time (from the map)."""
-    r = get(BOUNDS_URL, params={'latlng': '17.2,97.9,20.2,99.6', 'networks': 'all', 'token': token}, timeout=10.0)
-    r.raise_for_status()
-    body = r.json()
-    if body.get('status') != 'ok':
-        raise RuntimeError('waqi bounds not ok')
-    out = []
-    for s in body.get('data') or []:
-        try:
-            lat, lon, uid = float(s['lat']), float(s['lon']), int(s['uid'])
-        except (KeyError, TypeError, ValueError):
+    def tile(box):
+        r = get(BOUNDS_URL, params={'latlng': ','.join(f'{v:.2f}' for v in box), 'networks': 'all', 'token': token}, timeout=10.0)
+        r.raise_for_status()
+        body = r.json()
+        if body.get('status') != 'ok':
+            raise RuntimeError('waqi bounds not ok')
+        return body.get('data') or []
+    with ThreadPoolExecutor(max_workers=len(TILES)) as ex:
+        results = list(ex.map(lambda b: _try(tile, b), TILES))
+    if all(isinstance(x, Exception) for x in results):
+        raise results[0]
+    seen: dict[int, dict] = {}
+    for rows in results:
+        if isinstance(rows, Exception):
             continue
-        d = district_of(lat, lon)
-        if d:
-            st = s.get('station') or {}
-            out.append({'uid': uid, 'district': d, 'time': _parse_time(st.get('time')),
-                        'name': str(st.get('name') or 'WAQI ' + str(uid))[:120], 'lat': lat, 'lon': lon})
-    return out
+        for s in rows:
+            try:
+                lat, lon, uid = float(s['lat']), float(s['lon']), int(s['uid'])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if uid in seen:
+                continue
+            d = district_of(lat, lon)
+            if d:
+                st = s.get('station') or {}
+                seen[uid] = {'uid': uid, 'district': d, 'time': _parse_time(st.get('time')),
+                             'name': str(st.get('name') or 'WAQI ' + str(uid))[:120], 'lat': lat, 'lon': lon}
+    LAST_BOUNDS.clear()
+    LAST_BOUNDS.update({'tiles': [len(x) if isinstance(x, list) else None for x in results], 'in_province': len(seen)})
+    return list(seen.values())
+
+
+def _try(fn, arg):
+    try:
+        return fn(arg)
+    except Exception as e:  # one failed tile must not hide the rest
+        return e
 
 
 def pm25_sub_index(token: str, uid: int, *, get=httpx.get):
@@ -232,7 +259,7 @@ def live_sensors(token: str, *, now=None, get=httpx.get) -> dict:
             districts[d] = {'n': len(v), 'median': None, 'level': None}
     return {'status': 'ok', 'retrieved_at': now.isoformat(), 'min_sensors': MIN_SENSORS,
             'fresh_hours': int(FRESH.total_seconds() // 3600), 'scale': 'US EPA AQI (PM2.5 sub-index)',
-            'credit': CREDIT, 'sensors': rows, 'districts': districts}
+            'credit': CREDIT, 'sensors': rows, 'districts': districts, 'bounds': dict(LAST_BOUNDS)}
 
 
 def coverage(token: str, *, now=None, get=httpx.get) -> dict[str, int]:

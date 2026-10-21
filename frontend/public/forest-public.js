@@ -152,6 +152,12 @@
       ${band}${path?`<path d="${path}" class="forest"/>`:`<circle cx="${cp[0]}" cy="${cp[1]}" r="6" class="forest"/>`}${dots}${arrow}${scale}</svg>
       <p class="fp-map-key">${key}</p>`;
   }
+  // A link that opens this forest's card; LINE's own share screen picks the chat.
+  const shareUrl=f=>(root.location?.origin||'https://chiangmaieyes.vercel.app')+'/#community/forest/'+encodeURIComponent(f.forest_id);
+  const shareText=f=>`${f.name||'ป่าชุมชน'}${f.amphoe?' อ.'+f.amphoe:''} · ดูจุดไฟ ลม และฝุ่นรอบป่า
+${shareUrl(f)}`;
+  const lineShareHref=f=>'https://line.me/R/share?text='+encodeURIComponent(shareText(f));
+  const shareHtml=f=>`<div class="fp-share"><a class="cw-btn fp-line-btn" href="${esc(lineShareHref(f))}" target="_blank" rel="noopener">💬 แชร์ทาง LINE</a><button type="button" class="cw-btn" data-fp="copy" data-url="${esc(shareUrl(f))}">🔗 คัดลอกลิงก์</button></div>`;
   function forestCard(f,dash,now=Date.now(),labelText=''){
     const sit=situation(f,dash,now), c=centre(f);
     const meta=[f.village&&!String(f.name||'').includes(f.village)?'บ้าน'+f.village:'',f.tambon?'ต.'+f.tambon:'',f.amphoe?'อ.'+f.amphoe:'',Number.isFinite(f.area_rai)?Math.round(f.area_rai).toLocaleString('th-TH')+' ไร่':''].filter(Boolean).join(' · ');
@@ -161,6 +167,7 @@
       ${mapSvg(f,sit)}
       ${factsHtml(sit)}
       <div class="fp-actions">${c?`<button type="button" class="cw-btn primary" data-fp="map" data-lat="${c.lat}" data-lon="${c.lon}">ดูป่านี้บนแผนที่</button>`:''}<a class="cw-btn fp-call" href="tel:1362">📞 เห็นไฟ โทร 1362</a></div>
+      ${shareHtml(f)}
       ${whoHtml(f,c)}
       ${limitsHtml()}
     </article>`;
@@ -261,6 +268,7 @@
     const pick=id=>{
       const ctx=el._fpCtx;
       const f=ctx.forests().find(x=>x.forest_id===id);remember(f?id:'');ctx.onPick?.(f?id:'');
+      try{root.history?.replaceState(null,'',f?'#community/forest/'+encodeURIComponent(id):'#community');}catch{}
       ctx.rerender?.();
       if(f)el.querySelector('#fpCard')?.scrollIntoView?.({block:'start',behavior:'smooth'});
     };
@@ -272,6 +280,11 @@
       const b=e.target.closest?.('[data-fp]');if(!b)return;
       if(b.dataset.fp==='pick')pick(b.dataset.id);
       else if(b.dataset.fp==='clear'){pick('');el.querySelector('#fpSearch')?.focus();}
+      else if(b.dataset.fp==='copy'){
+        const url=b.dataset.url, done=t=>{const old=b.textContent;b.textContent=t;setTimeout(()=>{if(b.isConnected)b.textContent=old;},2200);};
+        const fallback=()=>{const box=document.createElement('input');box.className='fp-url';box.readOnly=true;box.value=url;box.setAttribute('aria-label','ลิงก์ป่านี้');b.replaceWith(box);box.select();};
+        if(root.navigator?.clipboard?.writeText)root.navigator.clipboard.writeText(url).then(()=>done('✓ คัดลอกแล้ว'),fallback);else fallback();
+      }
       else if(b.dataset.fp==='map')el._fpCtx.locate(Number(b.dataset.lat),Number(b.dataset.lon));
       else if(b.dataset.fp==='near'){
         const out=el.querySelector('#fpResults');
@@ -285,5 +298,5 @@
     });
   }
 
-  root.CmeForestPublic={html,attach,recall,repSummaryHtml,fillAsync,centre,searchHtml,labeller,limitsHtml,situation,forestsNearHotspots,nearestSensor,forestCard,listHtml,fwiHtml,dustHtml,mapSvg,NEAR_KM};
+  root.CmeForestPublic={html,attach,recall,shareUrl,lineShareHref,repSummaryHtml,fillAsync,centre,searchHtml,labeller,limitsHtml,situation,forestsNearHotspots,nearestSensor,forestCard,listHtml,fwiHtml,dustHtml,mapSvg,NEAR_KM};
 })(typeof window!=='undefined'?window:globalThis);

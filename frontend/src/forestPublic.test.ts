@@ -99,3 +99,14 @@ it('search finds a forest by village or district and tells same-name forests apa
   expect(P.searchHtml(all, 'zzz')).toContain('ไม่พบป่า');
   dom.window.close();
 });
+
+it('share: LINE share text carries a link that opens this forest, and copy uses the same link', () => {
+  const { dom, w } = setup(); const P = w.CmeForestPublic;
+  expect(P.shareUrl(A)).toBe('https://fixture.example/#community/forest/A');
+  const href = P.lineShareHref(A);
+  expect(href.startsWith('https://line.me/R/share?text=')).toBe(true);
+  expect(decodeURIComponent(href.split('text=')[1])).toContain('https://fixture.example/#community/forest/A');
+  const card = P.forestCard(A, dash([]), NOW);
+  expect(card).toContain('data-fp="copy" data-url="https://fixture.example/#community/forest/A"');
+  dom.window.close();
+});

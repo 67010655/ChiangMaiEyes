@@ -142,3 +142,18 @@ def test_live_sensors_median_needs_two_fresh_and_lists_stale_apart():
     assert one['districts']['ฝาง'] == {'n': 1, 'median': None, 'level': None}
     old = d.live_sensors('k', now=NOW, get=waqi([150, 150], age_min=240))
     assert old['districts'] == {} and not any(s['fresh'] for s in old['sensors'])
+
+
+def test_sensors_merge_tiles_by_uid_and_survive_one_failed_tile():
+    calls = []
+    base = waqi([60, 80])
+    def get(url, params=None, **kw):
+        if url == d.BOUNDS_URL:
+            calls.append(params['latlng'])
+            if len(calls) == 2:
+                raise RuntimeError('tile down')
+        return base(url, params, **kw)
+    rows = d.sensors('k', get=get)
+    assert len(calls) == len(d.TILES)
+    assert sorted(r['uid'] for r in rows) == [1, 2]       # same stations from every tile, kept once
+    assert d.LAST_BOUNDS['in_province'] == 2 and d.LAST_BOUNDS['tiles'].count(None) == 1

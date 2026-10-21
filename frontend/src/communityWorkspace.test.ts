@@ -9,9 +9,9 @@ const f = { forest_id: 'fixture-A', name: 'ป่าทดสอบ <script>bad(
   boundary: { type: 'Polygon', coordinates: [[[98.8,18.8],[98.9,18.8],[98.9,18.9],[98.8,18.9],[98.8,18.8]]] } };
 const forestPublic = readFileSync(resolve(__dirname, '../public/forest-public.js'), 'utf8');
 const tick = () => new Promise(resolve => setTimeout(resolve, 5));
-async function setup({ signedIn = false, approved = false, failCreate = false, offline = false, nullStation = false, publicView = false } = {}) {
+async function setup({ signedIn = false, approved = false, failCreate = false, offline = false, nullStation = false, publicView = false, hash = '' } = {}) {
   const dom = new JSDOM('<section id="communityview"><button id="communityClose"></button><div id="communityContent"></div></section>',
-    { url: 'https://fixture.example/', runScripts: 'outside-only' });
+    { url: 'https://fixture.example/' + hash, runScripts: 'outside-only' });
   const w = dom.window as any;
   w.eval(evidence);
   if (publicView) w.eval(forestPublic);
@@ -48,6 +48,15 @@ describe('representative workspace interaction and evidence boundaries', () => {
     expect(doc.querySelector('.rp-todo')?.textContent).toContain('ต้องทำอะไรตอนนี้');
     expect(doc.body.textContent).not.toContain('99 µg/m³');
     expect(doc.querySelector('script')).toBeNull();
+    dom.window.close();
+  });
+  it('a shared forest link opens that forest card for everyone', async () => {
+    const { dom } = await setup({ publicView: true, hash: '#community/forest/fixture-A' });
+    await tick(); await tick();
+    const doc = dom.window.document;
+    expect(doc.getElementById('communityview')?.classList.contains('open')).toBe(true);
+    expect(doc.querySelector('.fp-card')).not.toBeNull();
+    expect(doc.querySelector('.fp-current')?.textContent).toContain('ป่าทดสอบ');
     dom.window.close();
   });
   it('signed out: everyone sees the forest lookup, no rep tabs, and still no private requests', async () => {
