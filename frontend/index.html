@@ -1074,22 +1074,41 @@
   }
 
   /* ── Splash screen (branding while the map/data boot) ─────── */
-  .splash-screen{
-    position:fixed;inset:0;z-index:5000;background:#fff;color:#16202b;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
-    transition:opacity .35s ease,visibility .35s ease;
-  }
+  /* Splash: theme colours, three lines to read while the first data loads.
+     Text is never faded in: the start-up script can block animation frames,
+     so only decorative motion (logo ring, loading bar) is animated. */
+  .splash-screen{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;padding:24px;color:var(--txt);
+    background:radial-gradient(120% 70% at 50% 0%,rgba(67,176,95,.18),transparent 60%),var(--bg);transition:opacity .45s ease,visibility .45s ease;cursor:pointer}
   .splash-screen.hide{opacity:0;visibility:hidden;pointer-events:none}
-  .splash-logo{width:64px;height:64px;border-radius:16px;
-    background:linear-gradient(150deg,var(--green),var(--green-deep));
-    display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(67,176,95,.35)}
-  .splash-logo svg{width:38px;height:38px}
-  .splash-title{font-family:var(--disp);font-size:22px;font-weight:700}
-  .splash-title b{color:var(--green-deep)}
-  .splash-loading{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;color:#5a6675}
-  .splash-spinner{width:14px;height:14px;border-radius:50%;flex:none;
-    border:2px solid #d8dcd4;border-top-color:var(--green);animation:splashspin .7s linear infinite}
+  .splash-card{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+  .splash-logo{position:relative;width:68px;height:68px;border-radius:20px;background:linear-gradient(150deg,var(--green),var(--green-deep));
+    display:flex;align-items:center;justify-content:center;box-shadow:0 10px 28px rgba(67,176,95,.35)}
+  .splash-logo svg{width:40px;height:40px}
+  .splash-logo::after{content:"";position:absolute;inset:-6px;border-radius:26px;border:2px solid rgba(67,176,95,.55);animation:splashRing 2.2s ease-out infinite}
+  .splash-title{font-family:var(--disp);font-size:24px;font-weight:700}
+  .splash-title b{color:var(--green)}
+  .splash-tag{margin:-6px 0 4px;font-size:14px;color:var(--muted)}
+  .splash-points{list-style:none;margin:0;padding:0;width:100%;display:grid;gap:8px;text-align:left}
+  .splash-points li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--line-soft)}
+  .splash-points svg{flex:none;width:34px;height:34px;padding:8px;box-sizing:border-box;border-radius:10px}
+  .splash-points .fire svg{background:rgba(239,68,68,.15);color:#ef4444}
+  .splash-points .dust svg{background:rgba(146,208,80,.18);color:var(--pm-good,#92d050)}
+  .splash-points .wind svg{border-radius:50%;background:rgba(56,189,248,.15);color:var(--wind)}
+  .splash-points b{display:block;font-size:14px;line-height:1.35}
+  .splash-points small{display:block;font-size:12px;line-height:1.4;color:var(--muted)}
+  .splash-loading{display:flex;align-items:center;gap:9px;margin-top:4px;font-size:12px;color:var(--muted)}
+  .splash-spinner{width:14px;height:14px;border-radius:50%;flex:none;border:2px solid var(--line);border-top-color:var(--green);animation:splashspin .7s linear infinite}
+  .splash-bar{width:100%;height:3px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+  .splash-bar i{display:block;width:40%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),#facc15);animation:splashBar 1.4s ease-in-out infinite}
+  .splash-sos{margin:2px 0 0;font-size:12px;color:var(--muted)}
+  .splash-sos b{color:#ef4444}
+  .splash-skip{font-size:11px;color:var(--muted);opacity:.8}
   @keyframes splashspin{to{transform:rotate(360deg)}}
+  @keyframes splashPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+  @keyframes splashUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes splashRing{0%{opacity:.9;transform:scale(.92)}80%,100%{opacity:0;transform:scale(1.25)}}
+  @keyframes splashBar{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
+  @media(prefers-reduced-motion:reduce){.splash-logo,.splash-title,.splash-tag,.splash-points li{animation:none}.splash-logo::after,.splash-bar i{animation:none}}
 
   /* Theme-aware contrast for controls and generated SVG chart labels. */
   .analytics svg text,.side svg text{fill:var(--muted)}
@@ -1294,17 +1313,26 @@
 <link rel="stylesheet" href="/magic-effects.css">
 </head>
 <body class="public-mode">
-<div id="splashScreen" class="splash-screen">
-  <div class="splash-logo">
-    <svg viewBox="0 0 24 24" fill="none">
-      <path d="M2.5 12 C6 6.5, 18 6.5, 21.5 12 C18 17.5, 6 17.5, 2.5 12 Z"
-            stroke="#fff" stroke-width="1.7" fill="rgba(255,255,255,.08)"/>
-      <circle cx="12" cy="12" r="3.6" stroke="#fff" stroke-width="1.7" fill="none"/>
-      <circle cx="12" cy="12" r="1.3" fill="#fff"/>
-    </svg>
+<div id="splashScreen" class="splash-screen" role="status" aria-live="polite" title="แตะเพื่อเข้าสู่แผนที่">
+  <div class="splash-card">
+    <div class="splash-logo">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M2.5 12 C6 6.5, 18 6.5, 21.5 12 C18 17.5, 6 17.5, 2.5 12 Z" stroke="#fff" stroke-width="1.7" fill="rgba(255,255,255,.08)"/>
+        <circle cx="12" cy="12" r="3.6" stroke="#fff" stroke-width="1.7" fill="none"/>
+        <circle cx="12" cy="12" r="1.3" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="splash-title">ChiangMai<b>Eyes</b></div>
+    <p class="splash-tag">ดูไฟ ฝุ่น และลมในเชียงใหม่ ไม่ต้องสมัคร</p>
+    <ul class="splash-points">
+      <li class="fire"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2.5 1-4 3-6 0 2 1 3 2 3 1-2 1-5 0-8Z"/></svg><span><b>จุดความร้อนจากดาวเทียม</b><small>ยังไม่ใช่ไฟที่ยืนยันแล้ว ต้องมีคนในพื้นที่ยืนยัน</small></span></li>
+      <li class="dust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 9h12a3 3 0 1 0-3-3"/><path d="M2 13h18a2 2 0 1 1-2 2"/><path d="M5 17h7a2 2 0 1 1-2 2"/></svg><span><b>ฝุ่น PM2.5 ใกล้บ้าน</b><small>จากสถานีและเซนเซอร์ ทุกค่ามีแหล่งและเวลากำกับ</small></span></li>
+      <li class="wind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20V4m0 0-5 5m5-5 5 5"/></svg><span><b>ลมพัดไปทางไหน</b><small>ช่วยดูว่าไฟและควันน่าจะไปทางใด</small></span></li>
+    </ul>
+    <div class="splash-loading"><span class="splash-spinner"></span><span id="splashMsg">กำลังโหลดแผนที่และข้อมูลสด…</span></div>
+    <div class="splash-bar" aria-hidden="true"><i></i></div>
+    <p class="splash-sos">เห็นไฟหรือควัน โทร <b>1362</b> ได้เลย · <span class="splash-skip">แตะเพื่อเข้าแผนที่</span></p>
   </div>
-  <div class="splash-title">ChiangMai<b>Eyes</b></div>
-  <div class="splash-loading"><span class="splash-spinner"></span><span id="splashMsg">กำลังโหลดแผนที่และข้อมูลสด…</span></div>
 </div>
 
 <!-- Auth modal: sign in / sign up (Supabase Auth) -->
@@ -1549,7 +1577,6 @@
         <div class="layer" data-layer="protected"><div class="sw" style="border-color:#e5a347;background:#e5a34722"></div><div class="lbl">พื้นที่อนุรักษ์ · แผนที่ 2D<small>ขอบเขตจาก GISTDA 2017 ใช้อ้างอิง ไม่ใช่แนวเขตทางกฎหมาย</small></div><span class="cnt" id="lcProtected">0</span></div>
         <div class="layer on" data-layer="boundaries"><div class="sw"></div><div class="lbl">ขอบเขตอำเภอ/จังหวัด<small>25 อำเภอ</small></div><span class="cnt" id="lcBoundaries">25</span></div>
         <div class="layer on" data-layer="tambonBoundaries"><div class="sw" style="background:rgba(34,211,238,.15);border-color:#22d3ee"></div><div class="lbl">ขอบเขตตำบล<small>ซูมเข้า/กดอำเภอเพื่อดู · 204 ตำบล</small></div><span class="cnt" id="lcTambonBoundaries">0</span></div>
-        <div class="layer on" data-layer="tambonWarnings"><div class="sw"></div><div class="lbl">⚠️ เฝ้าระวังระดับตำบล<small>อำเภอเสี่ยงและตำบลใกล้จุดความร้อน</small></div><span class="cnt" id="lcTambonWarn">0</span></div>
         <div class="layer" data-layer="ndvi"><div class="sw"></div><div class="lbl">ความเขียวของพืชพรรณ<small>ภาพผสม 8 วัน · ยังไม่ใช่ปริมาณเชื้อเพลิง</small></div><span class="cnt">off</span></div>
       </div>
 
@@ -3392,6 +3419,27 @@ function freshnessText(){
   const min=Math.max(0,Math.floor((Date.now()-Date.parse(at))/60000));
   return 'อัปเดต '+(min<1?'เมื่อสักครู่':min<60?min+' นาทีที่แล้ว':Math.floor(min/60)+' ชม.ที่แล้ว');
 }
+// Desktop tiles: a small graphic from data the page already holds (7-day
+// hotspot bars, 24 h dust line, wind dial). Hidden on phones by CSS.
+function renderTileViz(){
+  const put=(id,html,cls='')=>{const tile=document.getElementById(id);if(!tile)return;let v=tile.querySelector('.sig-viz');if(!v){v=document.createElement('div');v.setAttribute('aria-hidden','true');tile.appendChild(v);}v.className='sig-viz '+cls;v.innerHTML=html;};
+  const hv=(hot7||[]).filter(Number.isFinite);
+  if(hv.length>=2){
+    const max=Math.max(1,...hv),w=100/hv.length;
+    put('publicFireSignal',`<svg viewBox="0 0 100 42" preserveAspectRatio="none">${hv.map((v,i)=>{const h=Math.max(2,v/max*40);return `<rect class="bar${i===hv.length-1?' today':''}" x="${(i*w+w*.18).toFixed(1)}" y="${(42-h).toFixed(1)}" width="${(w*.64).toFixed(1)}" height="${h.toFixed(1)}" rx="1.5"/>`;}).join('')}</svg><small>${hv.length} วันล่าสุด</small>`);
+  }else put('publicFireSignal','');
+  const pv=(pm24||[]).filter(Number.isFinite);
+  if(pv.length>=3){
+    const lo=Math.min(...pv),hi=Math.max(...pv),span=Math.max(1,hi-lo),pts=pv.map((v,i)=>[(i/(pv.length-1)*100).toFixed(1),(38-(v-lo)/span*34).toFixed(1)]);
+    const line=pts.map(p=>p.join(',')).join(' ');
+    put('publicPmSignal',`<svg viewBox="0 0 100 42" preserveAspectRatio="none"><polygon class="area" points="0,42 ${line} 100,42"/><polyline class="line" points="${line}" vector-effect="non-scaling-stroke"/></svg><small>24 ชม. · ${Math.round(lo)}–${Math.round(hi)} µg/m³</small>`);
+  }else put('publicPmSignal','');
+  const arrow=document.getElementById('publicWindArrow');
+  if(arrow&&arrow.style.visibility!=='hidden'){
+    const deg=parseFloat(arrow.style.getPropertyValue('--wind-deg'))||0;
+    put('publicWindSignal',`<svg viewBox="-27 -27 54 54"><circle class="dial" r="22"/><text class="tick" y="-14" text-anchor="middle">N</text><text class="tick" x="16" y="3" text-anchor="middle">E</text><text class="tick" y="20" text-anchor="middle">S</text><text class="tick" x="-16" y="3" text-anchor="middle">W</text><g class="needle-g" style="transform:rotate(${deg}deg)"><path class="needle" d="M0 12V-16M0 -16l-5 6M0 -16l5 6"/></g></svg>`,'dialwrap');
+  }else put('publicWindSignal','');
+}
 function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   const updateValue=(id,value,format)=>{
     const el=document.getElementById(id);
@@ -3446,6 +3494,9 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   document.getElementById('publicPmSourceDetail').textContent=document.getElementById('publicPmMeta').textContent+(pmReady?' · ค่าเฉลี่ยจากสถานีที่มีข้อมูล ไม่ใช่ค่าที่วัดได้ทุกพื้นที่':'')+
     (pmLv?` · ระดับ${pmLv.label}: ${pmLv.advice} · เทียบ${pmLv.source} ค่าที่แสดงเป็นค่าล่าสุด ไม่ใช่ค่าเฉลี่ย 24 ชม.`:'');
   document.getElementById('publicWindSourceDetail').textContent=(windReady?'พัดไปทาง'+_degToCompass(blowTo)+' · ':'')+sourceLabel('weather')+' · '+document.getElementById('publicWindMeta').textContent;
+  const freshFire=newest&&Date.now()-Date.parse(newest)<=6*36e5;
+  document.getElementById('publicFireSignal').classList.toggle('fresh',!!freshFire);
+  renderTileViz();
 }
 // Single wind source for the popup spread hint: the same reading, direction
 // convention (+180 = blowing toward) and labels as the top wind card.
@@ -3681,14 +3732,18 @@ function hideSplash(){
   const el=document.getElementById('splashScreen');
   if(!el) return;
   const elapsed=Date.now()-_splashStart;
+  // First visit: long enough to read the three lines; afterwards, quick.
+  let seen=false;try{seen=localStorage.getItem('cme_splash_seen')==='1';localStorage.setItem('cme_splash_seen','1');}catch(_){}
+  const minimum=seen?500:2600;
   setTimeout(()=>{
     el.classList.add('hide');
     runMapRenderTask('boundary-fit',()=>{
       map.invalidateSize();
       if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, {padding:[12,12], animate:false});
     });
-  }, Math.max(0,500-elapsed));
+  }, Math.max(0,minimum-elapsed));
 }
+document.getElementById('splashScreen')?.addEventListener('click',()=>{const el=document.getElementById('splashScreen');if(!el.classList.contains('hide')){el.classList.add('hide');runMapRenderTask('boundary-fit',()=>{map.invalidateSize();if(_provinceBoundsForFit)map.fitBounds(_provinceBoundsForFit,{padding:[12,12],animate:false});});}});
 
 // ============================================================
 //  BOOT
@@ -4227,19 +4282,12 @@ function selectTambonSearch(tambonName, centroid, amphoeHint){
   const distNorm = amphoe ? normalizeDistrictName(amphoe) : null;
   const phase = distNorm ? (livePhases||[]).find(p=>normalizeDistrictName(p.district)===distNorm) : null;
 
-  const phaseLabel = w ? (w.phase==='during'?'ระหว่างไฟ (ใกล้จุดความร้อน)':w.phase==='before'?'เฝ้าระวังก่อนไฟ':'ปกติ') : null;
-  const phaseCol = w ? (w.phase==='during'?'var(--danger)':w.phase==='before'?'#facc15':'var(--good)') : null;
+  const inTambon=CmeEvidence.filterHotspots(hotspots,{hours:24}).filter(h=>(h.subdistrict||h.tambon)===tambonName);
   _locationPopup(centroid, `<div class="ds-pop search-pop">
     <h3 class="ds-title">ต.${tambonName}</h3>
     <div class="dl"><span class="dk">อำเภอ</span><span class="dv">${amphoe||'—'}</span></div>
-    ${w ? `
-      <div class="dl"><span class="dk">สถานะ</span><span class="dv" style="color:${phaseCol}">${phaseLabel}</span></div>
-      ${w.nearest_hotspot_km!=null?`<div class="dl"><span class="dk">จุดดาวเทียมใกล้สุด (จากจุดอ้างอิงป่า)</span><span class="dv">${w.nearest_hotspot_km} กม.</span></div>`:''}
-    ` : `<div style="font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.5">ไม่มีการเฝ้าระวังเป็นพิเศษสำหรับตำบลนี้ตอนนี้ (ไม่เข้าเกณฑ์ก่อนไฟ/ระหว่างไฟ)</div>`}
-    ${phase?`<div style="margin-top:10px;border-top:1px solid var(--line-soft);padding-top:8px">
-      <div style="font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.12em;margin-bottom:4px">บริบทระดับอำเภอ (${distNorm})</div>
-      <div class="dl"><span class="dk">เฟส</span><span class="dv" style="color:${PHASE_COLOR[phase.color]}">${PHASE_LABEL_TH[phase.phase]}</span></div>
-    </div>`:''}
+    <div class="dl"><span class="dk">จุดความร้อน 24 ชม. ในตำบล</span><span class="dv">${inTambon.length} จุด</span></div>
+    <p class="ds-note">${inTambon.length?'จุดความร้อนยังไม่ใช่ไฟที่ยืนยันแล้ว':'ไม่พบจุดในตำบลนี้ใน 24 ชม. ไม่ได้แปลว่าไม่มีไฟ'}</p>
   </div>`);
 }
 
@@ -4468,8 +4516,12 @@ function renderGuideNotes(){
     : `<p style="font-size:12px;color:var(--muted)">ยังไม่มีข้อมูล — เปิดแท็บ "สถานการณ์ไฟ" อย่างน้อยครั้งหนึ่งเพื่อดึงหมายเหตุจาก backend</p>`;
 }
 
+// The ⚠️ tambon markers were removed (21 Oct 2026): they came from the
+// experimental dryness score, so a district with one hotspot flagged tambons
+// 20+ km away. Hotspot dots and the district sheet's tambon counts remain.
 function renderTambonWarnings(warnings){
   layers.tambonWarnings.clearLayers();
+  return;
   const flagged=(warnings||[]).filter(t=>t.phase!=='normal');
   const cntEl=document.getElementById('lcTambonWarn');
   if(cntEl) cntEl.textContent=flagged.length;
@@ -4631,6 +4683,7 @@ function rerenderAll(){
   // A failed optional canvas must never leave the previous response's KPI.
   buildAlerts(); setKpis(); setWindBadge(); rankList();
   lineChart('pmChart',pm24,{color:'#a855f7',fill:'rgba(168,85,247,.16)'});
+  if(typeof renderTileViz==='function')renderTileViz();
   barChart('hotChart',hot7,['-6','-5','-4','-3','-2','-1','วันนี้'],{});
   if(analyticsEl.classList.contains('open')) renderAnalytics(currentRange);
   document.getElementById('footUpd').textContent=stamp();

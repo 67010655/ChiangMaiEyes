@@ -26,14 +26,11 @@
 .public-signal .brief-meaning{display:block;font-size:13px!important;line-height:1.4!important;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .public-signal .meaning{display:none!important}
 
-/* Dust: the whole tile takes the PCD category colour; dark ink on every fill. */
-.public-signal.pm.has-level{background:var(--tile-level)!important}
-.public-signal.pm.has-level .label,.public-signal.pm.has-level .value,.public-signal.pm.has-level .brief-meaning,.public-signal.pm.has-level>svg{color:var(--pm-ink)!important}
+/* Dust: the PCD category colour marks the tile (top accent + filled badge),
+   so all three tiles keep the same weight. */
+.public-signal.pm.has-level{box-shadow:inset 0 3px 0 var(--tile-level)}
 .public-signal .copy{width:100%}
 .pm-level-word{display:block;font-size:18px;font-weight:700;line-height:1.3}
-/* The fill colour already marks the dust tile, so its label gets the icon's room. */
-.public-signal.pm.has-level>svg{display:none!important}
-.public-signal.pm.has-level .label{padding-left:0}
 
 /* Gentle sway around the real bearing; never when motion is reduced. */
 @keyframes cmeWindSway{0%,100%{transform:rotate(calc(var(--wind-deg,0deg) - 8deg))}50%{transform:rotate(calc(var(--wind-deg,0deg) + 8deg))}}
@@ -67,4 +64,51 @@
   .public-signal{min-height:84px}
   .public-signal .label{font-size:13px!important}
   .public-signal .value,.pm-level-word{font-size:20px!important}
+}
+
+/* ---- Tiles v2: one structure for all three (badge · text · desktop graphic) ---- */
+.public-signal{display:grid!important;grid-template-columns:28px minmax(0,1fr);grid-template-rows:auto auto auto;column-gap:8px;row-gap:1px;align-content:start;
+  border:1px solid var(--line-soft)!important;background:var(--panel-2)!important;overflow:hidden;animation:sigIn .5s cubic-bezier(.2,.8,.2,1) both}
+.public-signal.pm{animation-delay:.06s}.public-signal.air{animation-delay:.12s}
+@keyframes sigIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.public-signal>.copy{display:contents!important}
+.public-signal>svg{position:static!important;grid-column:1;grid-row:1;align-self:center;width:28px!important;height:28px!important;padding:6px;box-sizing:border-box;border-radius:9px;display:block!important}
+.public-signal .label{grid-column:2;grid-row:1;align-self:center;padding-left:0!important}
+.public-signal .value{grid-column:1/-1;grid-row:2}
+.public-signal .brief-meaning{grid-column:1/-1;grid-row:3}
+.public-signal.fire>svg{background:rgba(239,68,68,.15);color:#ef4444!important}
+.public-signal.pm>svg{background:rgba(148,163,184,.18);color:var(--muted)!important}
+.public-signal.pm.has-level>svg{background:var(--tile-level);color:var(--pm-ink)!important}
+.public-signal.air>svg{border-radius:50%;background:rgba(56,189,248,.15);color:var(--wind)!important}
+/* A hotspot under 6 h: the fire badge breathes, like the map's urgent dots. */
+.public-signal.fire.fresh>svg{animation:sigPulse 2s ease-out infinite}
+@keyframes sigPulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}70%,100%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+body.light-mode .public-signal{background:var(--panel)!important;border-color:var(--line-soft)!important}
+.sig-viz{display:none}
+@media(prefers-reduced-motion:reduce){.public-signal{animation:none}.public-signal.fire.fresh>svg{animation:none}}
+
+/* Desktop: badge left, text middle, a small real-data graphic right. */
+@media(min-width:1100px){
+  .public-signal{grid-template-columns:44px minmax(0,1fr) minmax(96px,40%);column-gap:14px;align-content:center;padding:10px 14px!important}
+  .public-signal>svg{grid-row:1/4;width:44px!important;height:44px!important;padding:10px;border-radius:12px}
+  .public-signal.air>svg{border-radius:50%}
+  .public-signal .label,.public-signal .value,.public-signal .brief-meaning{grid-column:2}
+  .public-signal .value{grid-row:2}.public-signal .brief-meaning{grid-row:3}
+  .sig-viz{display:flex;grid-column:3;grid-row:1/4;flex-direction:column;justify-content:center;gap:4px;min-width:0;height:100%}
+  .sig-viz svg{width:100%;height:42px;overflow:visible}
+  .sig-viz small{font-size:11px;color:var(--muted);text-align:right;white-space:nowrap}
+  .sig-viz .bar{fill:rgba(239,68,68,.35)}.sig-viz .bar.today{fill:#ef4444}
+  .sig-viz .line{fill:none;stroke:var(--tile-level,var(--muted));stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .sig-viz .area{fill:var(--tile-level,var(--muted));opacity:.16}
+  .sig-viz .dial{fill:none;stroke:var(--line);stroke-width:1}
+  .sig-viz .tick{fill:var(--muted);font:600 9px var(--font)}
+  .sig-viz .needle{stroke:var(--wind);stroke-width:2.4;stroke-linecap:round;fill:none}
+  .sig-viz .needle-g{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+  .sig-viz.dialwrap svg{height:54px}
+  .public-signal .value,.pm-level-word{font-size:22px!important}
+}
+@media(max-width:1099px){
+  .public-signal{grid-template-columns:24px minmax(0,1fr);column-gap:6px}
+  .public-signal>svg{width:24px!important;height:24px!important;padding:5px;border-radius:8px;align-self:start}
+  .public-signal .label{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important;font-size:12px!important;align-self:center}
 }

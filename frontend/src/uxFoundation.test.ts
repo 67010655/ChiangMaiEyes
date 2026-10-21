@@ -134,10 +134,12 @@ it('foundation CSS and the anonymous font preconnection are in head exactly once
   expect(link.hasAttribute('crossorigin')).toBe(true);dom.window.close();
 });
 
-it('the card does not repeat the data age, and the dust tile takes the PCD colour (H11)',()=>{
+it('the card does not repeat the data age, and the dust tile carries the PCD colour without outweighing the others',()=>{
   const css=readFileSync(resolve(__dirname,'../public/topbar.css'),'utf8');
   expect(css).toMatch(/#publicBriefFreshness\{display:none!important\}/);
-  expect(css).toContain(".public-signal.pm.has-level{background:var(--tile-level)!important}");
+  expect(css).toContain(".public-signal.pm.has-level{box-shadow:inset 0 3px 0 var(--tile-level)}");
+  expect(css).toContain(".public-signal.pm.has-level>svg{background:var(--tile-level);color:var(--pm-ink)!important}");
+  expect(css).not.toContain(".public-signal.pm.has-level{background:var(--tile-level)");
   expect(css).toMatch(/prefers-reduced-motion:reduce\)\{\.public-signal\.air>svg\{animation:none/);
   expect(html.indexOf('/topbar.css')).toBeGreaterThan(html.indexOf('/ux-foundation.css'));
   expect(html.indexOf('/topbar.css')).toBeLessThan(html.indexOf('</head>'));
