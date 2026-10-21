@@ -223,7 +223,7 @@ ${shareUrl(f)}`;
     if(!hits.length)return `<p class="fp-line">ไม่พบป่าชื่อ "${esc(q)}" ลองพิมพ์ชื่อบ้านหรืออำเภอ</p>`;
     return `<ul class="fp-list compact" role="listbox" aria-label="ผลค้นหาป่าชุมชน">${hits.map(f=>`<li><button type="button" role="option" data-fp="pick" data-id="${esc(f.forest_id)}"><span class="fp-li-t"><b>${esc(label(f))}</b><small>${f.tambon&&!label(f).includes('ต.')?'ต.'+esc(f.tambon)+' · ':''}อ.${esc(f.amphoe||'')}</small></span></button></li>`).join('')}</ul>`;
   }
-  function html({forests=[],dashboard=null,selectedId='',incidentsHtml='',hasIncidents=false,now=Date.now()}={}){
+  function html({forests=[],dashboard=null,selectedId='',incidentsHtml='',hasIncidents=false,showRep=true,showList=true,now=Date.now()}={}){
     const f=forests.find(x=>x.forest_id===selectedId)||null, label=labeller(forests);
     const rows=forestsNearHotspots(forests,dashboard,now);
     return `<div class="fp">
@@ -232,10 +232,10 @@ ${shareUrl(f)}`;
         <div id="fpResults" aria-live="polite"></div>
         ${f?`<p class="fp-current">กำลังดู <b>${esc(label(f))}</b> <button type="button" class="fp-link" data-fp="clear">เปลี่ยนป่า</button></p>`:''}</section>
       <div id="fpCard" data-id="${f?esc(f.forest_id):''}">${f?forestCard(f,dashboard,now):''}</div>
-      <section class="fp-section"><h2>ป่าที่มีจุดความร้อนใกล้ · 24 ชม.</h2>${listHtml(rows,selectedId,label)}</section>
+      ${showList?`<section class="fp-section"><h2>ป่าที่มีจุดความร้อนใกล้ · 24 ชม.</h2>${listHtml(rows,selectedId,label)}</section>`:''}
       ${hasIncidents?`<section class="fp-section"><h2>เหตุที่ชุมชนยืนยันแล้ว</h2>${incidentsHtml}</section>`:''}
-      ${repHtml()}
-      ${f?'':`<p class="fp-line fp-call-line">🔥 เห็นไฟหรือควัน <a href="tel:1362">โทร 1362</a> ได้เลย ไม่ต้องสมัคร</p>`}
+      ${showRep?repHtml():''}
+      ${!showRep||f?'':`<p class="fp-line fp-call-line">🔥 เห็นไฟหรือควัน <a href="tel:1362">โทร 1362</a> ได้เลย ไม่ต้องสมัคร</p>`}
     </div>`;
   }
   function nearMeHtml(rows,label){

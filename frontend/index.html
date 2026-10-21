@@ -3734,7 +3734,7 @@ function hideSplash(){
   const elapsed=Date.now()-_splashStart;
   // First visit: long enough to read the three lines; afterwards, quick.
   let seen=false;try{seen=localStorage.getItem('cme_splash_seen')==='1';localStorage.setItem('cme_splash_seen','1');}catch(_){}
-  const minimum=seen?500:2600;
+  const minimum=seen?400:1500;
   setTimeout(()=>{
     el.classList.add('hide');
     runMapRenderTask('boundary-fit',()=>{

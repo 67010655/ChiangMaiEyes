@@ -133,3 +133,22 @@ body.light-mode .fp-map .band{stroke:rgba(161,98,7,.75);fill:rgba(250,204,21,.08
 .fp,.rp,.fp-list,.rp-now{grid-template-columns:minmax(0,1fr)}
 .fp-list button{min-width:0}
 .fp-li-t b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.4}
+
+/* Admin overview and incident list filters. */
+.adm-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.adm-stat{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font:inherit;text-align:left}
+button.adm-stat{cursor:pointer}
+button.adm-stat:hover{border-color:var(--green)}
+.adm-stat b{font:700 26px/1.1 var(--font);font-variant-numeric:tabular-nums}
+.adm-stat span{font-size:13px;color:var(--muted)}
+.adm-stat.warn{border-color:rgba(250,204,21,.6);background:rgba(250,204,21,.1)}
+.adm-stat.alert{border-color:rgba(239,68,68,.55);background:rgba(239,68,68,.1)}
+.rp-section .fp{padding-bottom:0}
+.cw-seg{display:inline-flex;padding:3px;gap:3px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line-soft)}
+.cw-seg-btn{min-height:40px;padding:0 14px;border-radius:9px;border:0;background:transparent;color:var(--muted);font:600 14px var(--font);cursor:pointer}
+.cw-seg-btn span{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:var(--line-soft);color:var(--txt);font-size:12px}
+.cw-seg-btn[aria-pressed="true"]{background:var(--panel);color:var(--txt);box-shadow:0 1px 4px rgba(0,0,0,.2);outline:1.5px solid var(--green);outline-offset:-1.5px}
+.cw-for{margin:0;padding:10px 12px;border-radius:12px;background:var(--panel-2);font-size:15px;color:var(--txt)}
+.cw-change summary{cursor:pointer;color:var(--green);font-weight:600;font-size:14px;min-height:36px;display:flex;align-items:center}
+.cw-who{margin-top:12px}
+@media(max-width:420px){.adm-stat b{font-size:22px}.adm-stat{padding:12px}}

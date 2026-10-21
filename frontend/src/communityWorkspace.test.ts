@@ -9,7 +9,7 @@ const f = { forest_id: 'fixture-A', name: 'ป่าทดสอบ <script>bad(
   boundary: { type: 'Polygon', coordinates: [[[98.8,18.8],[98.9,18.8],[98.9,18.9],[98.8,18.9],[98.8,18.8]]] } };
 const forestPublic = readFileSync(resolve(__dirname, '../public/forest-public.js'), 'utf8');
 const tick = () => new Promise(resolve => setTimeout(resolve, 5));
-async function setup({ signedIn = false, approved = false, failCreate = false, offline = false, nullStation = false, publicView = false, hash = '' } = {}) {
+async function setup({ signedIn = false, approved = false, failCreate = false, offline = false, nullStation = false, publicView = false, hash = '', admin = false, draft = null as any } = {}) {
   const dom = new JSDOM('<section id="communityview"><button id="communityClose"></button><div id="communityContent"></div></section>',
     { url: 'https://fixture.example/' + hash, runScripts: 'outside-only' });
   const w = dom.window as any;
@@ -22,11 +22,13 @@ async function setup({ signedIn = false, approved = false, failCreate = false, o
     const path = url.replace('/api/community', '');
     calls.push({ path, ...request });
     const data = path === '/status' ? { ready: true, email_mode: 'test' }
-      : path === '/me' ? { is_admin: false, memberships: approved ? [{ ...f, status: 'approved' }] : [], preferences: { events_enabled: false, quiet_start: 21, quiet_end: 7 } }
+      : path === '/me' ? { is_admin: admin, memberships: approved ? [{ ...f, status: 'approved' }] : [], preferences: { events_enabled: false, quiet_start: 21, quiet_end: 7 } }
       : path === '/incidents' && request.method === 'POST' ? { detail: 'Fixture network failure' }
+      : path === '/review-queue' ? [{ id: 'm1', name: 'ป่าคำขอ', amphoe: 'อ', status: 'pending', request_note: 'x', email: 'fixture@example.test' }]
       : [];
     return { ok: !(path === '/incidents' && request.method === 'POST' && failCreate), json: async () => data };
   };
+  if (draft) w.localStorage.setItem('cme-incident-draft-v1/fixture-user', JSON.stringify(draft));
   w.eval(workspace);
   w.CmeCommunity.init({ apiBase: '', user: () => user, session: async () => user ? { user, access_token: 'fixture-only-token' } : null,
     forests: () => [f], catalog: async () => ({ forests: [f] }), dashboard: () => ({
@@ -48,6 +50,41 @@ describe('representative workspace interaction and evidence boundaries', () => {
     expect(doc.querySelector('.rp-todo')?.textContent).toContain('ต้องทำอะไรตอนนี้');
     expect(doc.body.textContent).not.toContain('99 µg/m³');
     expect(doc.querySelector('script')).toBeNull();
+    dom.window.close();
+  });
+  it('an admin who represents no forest gets an overview, not a 677-forest "my forest"', async () => {
+    const { dom } = await setup({ signedIn: true, admin: true, publicView: true });
+    const doc = dom.window.document;
+    expect([...doc.querySelectorAll('.cw-tabs button')].map((b: any) => b.textContent)).toEqual(['ภาพรวม', 'เหตุทั้งหมด', 'ตรวจคำขอ (1)', 'การแจ้งเตือน']);
+    expect(doc.querySelector('.adm-stats')?.textContent).toContain('คำขอรอตรวจ');
+    expect(doc.getElementById('cwActiveForest')).toBeNull();
+    expect(doc.getElementById('fpSearch')).not.toBeNull();
+    dom.window.close();
+  });
+  it('one forest: the record form names it instead of asking again; no experimental button anywhere', async () => {
+    const { dom, w } = await setup({ signedIn: true, approved: true, publicView: true });
+    const doc = dom.window.document;
+    doc.querySelector('.rp-cta [data-cw="create"]')!.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await tick();
+    expect(doc.querySelector('#cwIncidentForm select[name="forest_id"]')).toBeNull();
+    expect((doc.querySelector('#cwIncidentForm input[name="forest_id"]') as any).value).toBe('fixture-A');
+    expect(doc.querySelector('.cw-for')?.textContent).toContain('บันทึกให้');
+    await w.CmeCommunity.open('incidents');
+    expect(doc.querySelector('[data-cw="legacy-phase"]')).toBeNull();
+    expect(doc.querySelectorAll('[data-cw="scope"]').length).toBe(2);
+    dom.window.close();
+  });
+  it('a draft older than 3 hours is offered, not silently reused', async () => {
+    const draft = { id: 'old', forest_id: 'fixture-A', observation: 'fire', observed_local: '2026-10-16T23:32', latitude: '18.85', longitude: '98.85', description: 'old note', saved_at: '2026-10-16T16:32:00Z' };
+    const { dom, w } = await setup({ signedIn: true, approved: true, publicView: true, draft });
+    const doc = dom.window.document;
+    doc.querySelector('.rp-cta [data-cw="create"]')!.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await tick();
+    expect((doc.querySelector('[name="observed_local"]') as any).value).not.toBe('2026-10-16T23:32');
+    expect(doc.querySelector('.cw-alert')?.textContent).toContain('มีร่างที่ยังไม่ได้ส่ง');
+    doc.querySelector('[data-cw="old-draft-use"]')!.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await tick();
+    expect((doc.querySelector('[name="description"]') as any).value).toBe('old note');
     dom.window.close();
   });
   it('a shared forest link opens that forest card for everyone', async () => {

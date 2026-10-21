@@ -19,11 +19,23 @@
   const isOpen=()=>container&&container.classList.contains('open');
   const allowedForests=()=>state.me?.is_admin?state.catalog:state.catalog.filter(f=>state.me?.memberships.some(m=>m.status==='approved'&&m.forest_id===f.forest_id));
   const forest=()=>state.catalog.find(f=>f.forest_id===state.forestId);
+  // Forests this person represents. An admin with none gets an overview, not "my forest".
+  const myForests=()=>state.catalog.filter(f=>state.me?.memberships.some(m=>m.status==='approved'&&m.forest_id===f.forest_id));
+  const adminOverview=()=>!!state.me?.is_admin&&!myForests().length;
+  const pendingRequests=()=>(state.reviewQueue||[]).filter(m=>m.status==='pending');
   const draftKey=()=>state.session?'cme-incident-draft-v1/'+state.session.user.id:null;
   function localTime(){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()).replace(' ','T');}
-  function newDraft(point={}){return {id:root.crypto.randomUUID(),forest_id:state.forestId,observation:'smoke',observed_local:localTime(),latitude:point.lat??'',longitude:point.lon??'',description:''};}
+  function newDraft(point={}){return {id:root.crypto.randomUUID(),started_at:new Date().toISOString(),forest_id:state.forestId,observation:'smoke',observed_local:localTime(),latitude:point.lat??'',longitude:point.lon??'',description:''};}
   function readDraft(){try{return JSON.parse(root.localStorage.getItem(draftKey()))||null;}catch{return null;}}
   function saveDraft(){const key=draftKey();if(!key||!state.draft)return;try{root.localStorage.setItem(key,JSON.stringify({...state.draft,saved_at:new Date().toISOString()}));const text=document.getElementById('cwDraftSaved');if(text)text.textContent='ร่างเก็บในเครื่องนี้แล้ว · '+date(new Date().toISOString());}catch{const text=document.getElementById('cwDraftSaved');if(text)text.textContent='เก็บร่างในเครื่องไม่ได้ โปรดเปิดหน้านี้ไว้ก่อนส่ง';}}
+  // A draft older than 3 h is not reused silently: the form starts fresh and
+  // offers the old one (its time and place are usually wrong by then).
+  function startDraft(point){
+    const old=state.draft||readDraft(),at=Date.parse(old?.saved_at||old?.started_at||'');
+    if(old&&Date.now()-at<3*36e5){state.draft=old;state.oldDraft=null;}
+    else{state.oldDraft=old&&(old.description||old.latitude)?old:null;state.draft=newDraft(point);}
+    if(point){state.draft.latitude=point.lat;state.draft.longitude=point.lon;}
+  }
   function dropDraft(){try{root.localStorage.removeItem(draftKey());}catch{}state.draft=null;}
   async function api(path,{method='GET',data,raw,publicOnly=false,binary=false}={}){
     if(root.navigator.onLine===false)throw new Error('ขณะนี้ออฟไลน์ ยังโหลดข้อมูลหรือยืนยันผลการส่งไม่ได้ กรุณาเชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง');
@@ -77,9 +89,11 @@
   }
   function tabs(){
     if(!state.session)return '';
-    const entries=[['forest','ป่าของฉัน'],['incidents','เหตุทั้งหมด'],['preferences','การแจ้งเตือน']];
+    const n=pendingRequests().length;
+    const entries=[['forest',adminOverview()?'ภาพรวม':'ป่าของฉัน'],['incidents','เหตุทั้งหมด']];
+    if(state.me?.is_admin)entries.push(['review','ตรวจคำขอ'+(n?` (${n})`:'')]);
+    entries.push(['preferences','การแจ้งเตือน']);
     if(state.tab==='practice')entries.push(['practice','ซ้อมใช้งาน']);
-    if(state.me?.is_admin)entries.push(['review','ตรวจคำขอ']);
     return `<div class="cw-tabs" role="tablist" aria-label="พื้นที่ชุมชน">${entries.map(([id,label])=>`<button role="tab" aria-selected="${state.tab===id}" data-cw="tab" data-tab="${id}">${label}</button>`).join('')}</div>`;
   }
   // Everyone can look up a forest; the representative sign-in sits below.
@@ -109,9 +123,15 @@
   }
   function incidentRows(rows,publicView=false){return rows.length?rows.map(i=>`<article class="cw-row"><div><h3>${esc(i.forest_name||state.catalog.find(f=>f.forest_id===i.forest_id)?.name||'ป่าชุมชน')}</h3>${badge(i.status)}<p>พบเหตุ ${date(i.observed_at)} · อัปเดต ${date(i.updated_at)}</p>${!publicView?`<p>${i.coordinator_id?'ผู้รับประสาน: '+esc(i.coordinator_name||'ตัวแทนที่รับเรื่อง'):'ยังไม่มีผู้รับประสานในระบบ'}</p>`:''}</div>${!publicView?button('ดูประวัติเหตุ','detail',`data-id="${esc(i.id)}"`):''}</article>`).join(''):`<div class="cw-empty"><h3>${publicView?'ยังไม่มีเหตุที่อนุมัติให้เผยแพร่':'ยังไม่มีเหตุในรายการนี้'}</h3><p>การไม่มีรายการในระบบไม่ได้ยืนยันว่าไม่มีไฟในพื้นที่</p></div>`;}
   function createForm(){
-    const d=state.draft||newDraft(),allowed=allowedForests();state.draft=d;
-    return `<section class="cw-section"><h2>แจ้งสิ่งที่พบ</h2><p class="cw-help">เริ่มจากตำแหน่ง เวลา และสิ่งที่เห็น รายละเอียดเพิ่มหลังส่งได้ เหตุใหม่จะอยู่ในสถานะรอตรวจสอบ</p><form class="cw-form" id="cwIncidentForm">
-      <label>พื้นที่ที่ประสาน<select name="forest_id" required data-required-message="เลือกป่าชุมชนก่อน">${options(allowed,d.forest_id)}</select></label>
+    const d=state.draft||newDraft(),allowed=state.me?.is_admin&&!adminOverview()?myForests():allowedForests();state.draft=d;
+    const chosen=allowed.find(f=>f.forest_id===d.forest_id);
+    const select=`<select name="forest_id" required data-required-message="เลือกป่าชุมชนก่อน">${chosen?'':'<option value="">เลือกป่าที่จะบันทึก</option>'}${options(allowed,d.forest_id)}</select>`;
+    const forestField=allowed.length===1?`<input type="hidden" name="forest_id" value="${esc(allowed[0].forest_id)}"><p class="cw-for">บันทึกให้ <b>${esc(allowed[0].name)}</b></p>`
+      :chosen?`<p class="cw-for">บันทึกให้ <b>${esc(chosen.name)}</b></p><details class="cw-change"><summary>เปลี่ยนป่า</summary><label>ป่าที่จะบันทึก${select}</label></details>`
+      :`<label>ป่าที่จะบันทึก${select}</label>`;
+    const old=state.oldDraft?`<div class="cw-alert" role="status">มีร่างที่ยังไม่ได้ส่งจาก ${date(state.oldDraft.saved_at||state.oldDraft.started_at)} <div class="cw-actions">${button('ใช้ร่างนั้นต่อ','old-draft-use')}${button('ทิ้งร่างนั้น','old-draft-drop')}</div></div>`:'';
+    return `<section class="cw-section"><h2>บันทึกเหตุ</h2><p class="cw-help">ใส่สิ่งที่เห็น เวลา และตำแหน่ง แล้วส่งได้เลย รูปและผลการดับไฟเพิ่มทีหลังในหน้าเหตุนั้น</p>${old}<form class="cw-form" id="cwIncidentForm">
+      ${forestField}
       <label>สิ่งที่พบ<select name="observation"><option value="smoke" ${d.observation==='smoke'?'selected':''}>เห็นควัน</option><option value="fire" ${d.observation==='fire'?'selected':''}>เห็นเปลวไฟ</option></select></label>
       <label>เวลาที่พบ (เวลาประเทศไทย)<input name="observed_local" type="datetime-local" value="${esc(d.observed_local)}" required></label>
       <p class="cw-label">ตำแหน่งที่พบ</p>
@@ -119,12 +139,13 @@
       <div class="cw-fields"><label>ละติจูด<input name="latitude" type="number" step="any" min="-90" max="90" value="${esc(d.latitude)}" required></label><label>ลองจิจูด<input name="longitude" type="number" step="any" min="-180" max="180" value="${esc(d.longitude)}" required></label></div>
       <label>รายละเอียด (เติมภายหลังได้)<textarea name="description" maxlength="2000" placeholder="สิ่งที่เห็นหรือข้อมูลให้ผู้รับประสานตรวจสอบ">${esc(d.description)}</textarea></label>
       <p class="cw-help" id="cwDraftSaved">${d.saved_at?'ร่างเก็บในเครื่องนี้ · '+date(d.saved_at):'ร่างจะเก็บในเครื่องนี้ระหว่างกรอก ยังไม่ใช่รายงานที่ส่งแล้ว'}</p>
-      <div class="cw-actions"><button class="cw-btn primary">ส่งเหตุให้ตรวจสอบ</button>${button('กลับรายการ','cancel-create')}</div></form></section>`;
+      <div class="cw-actions"><button class="cw-btn primary">ส่งบันทึกเหตุ</button>${button('ยกเลิก','cancel-create')}</div></form></section>`;
   }
   function forestView(){
-    const allowed=allowedForests();
-    if(!allowed.length)return membershipView();
     if(state.create)return createForm();
+    if(adminOverview())return adminView();
+    const allowed=state.me?.is_admin?myForests():allowedForests();
+    if(!allowed.length)return membershipView();
     const selected=forest()||allowed[0];state.forestId=selected.forest_id;
     const related=state.incidents.filter(i=>i.forest_id===selected.forest_id||i.partner_forest_ids?.includes(selected.forest_id));
     if(root.CmeForestPublic)return repForestView(selected,allowed,related);
@@ -161,6 +182,20 @@
       ${state.me.is_admin?'':`<details class="rp-section"><summary>ดูแลป่าอื่นด้วย? ส่งคำขอ (รอผู้ดูแลอนุมัติ)</summary>${membershipView()}</details>`}
     </div>`;
   }
+  function adminView(){
+    const pend=pendingRequests(),open=state.incidents.filter(i=>!['closed','cancelled'].includes(i.status));
+    const P=root.CmeForestPublic;
+    return `<div class="rp">
+      <section class="rp-head"><p class="fp-kicker">ผู้ดูแลระบบ</p><h2>ภาพรวมทุกป่า</h2><p class="fp-meta">คุณไม่ได้เป็นตัวแทนของป่าใด หน้านี้สรุปงานที่รอคุณ</p></section>
+      <div class="adm-stats">
+        <button type="button" class="adm-stat${pend.length?' warn':''}" data-cw="tab" data-tab="review"><b>${pend.length}</b><span>คำขอรอตรวจ</span></button>
+        <button type="button" class="adm-stat${open.length?' alert':''}" data-cw="all-incidents"><b>${open.length}</b><span>เหตุที่ยังไม่ปิด</span></button>
+        <div class="adm-stat"><b>${state.catalog.length.toLocaleString('th-TH')}</b><span>ป่าในระบบ</span></div>
+      </div>
+      ${open.length?`<section class="rp-section"><h2>เหตุที่ยังไม่ปิด</h2>${incidentRows(open.slice(0,5))}${open.length>5?`<div class="cw-actions">${button('ดูทั้งหมด','all-incidents')}</div>`:''}</section>`:''}
+      ${P?`<section class="rp-section"><h2>ดูป่าใดก็ได้</h2><p class="cw-help">ค้นหาชื่อป่าเพื่อดูสถานการณ์แบบเดียวกับที่คนทั่วไปเห็น</p>${P.html({forests:state.catalog,dashboard:context.dashboard(),selectedId:state.publicForest??P.recall(),showRep:false,showList:false})}</section>`:''}
+    </div>`;
+  }
   function protectedNearbyView(selected){
     const dash=context.dashboard(),q=dash?.data_quality?.hotspots;
     if(!q||q.is_stale||q.source_mode==='UNAVAILABLE')return '';
@@ -181,8 +216,8 @@
     const d=state.detail,i=d.incident,name=state.catalog.find(f=>f.forest_id===i.forest_id)?.name||'ป่าชุมชน';
     const invites=d.partners.filter(p=>p.status==='invited'&&(state.me.is_admin||allowedForests().some(f=>f.forest_id===p.forest_id)));
     const coor=state.incidents.find(x=>x.id===i.id)?.coordinator_name;
-    return `<div class="cw-actions">${button('กลับรายการเหตุ','back-list')}${button('ดูตำแหน่งบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</div><div class="cw-layout"><section class="cw-section">${root.CmeCoordination?.html(i.latitude,i.longitude,{myForestId:state.forestId})||''}<h2>${esc(name)}</h2>${badge(i.status)}<p class="cw-help">พบ${i.observation==='fire'?'เปลวไฟ':'ควัน'} ${date(i.observed_at)} · รับรายงาน ${date(i.created_at)}<br>พิกัด ${i.latitude.toFixed(5)}, ${i.longitude.toFixed(5)}</p><p class="cw-description">${esc(i.description||'ยังไม่มีรายละเอียดเพิ่มเติม')}</p><p>ผู้รับประสาน: ${i.coordinator_id?esc(i.coordinator_id===state.session.user.id?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):'ยังไม่มีผู้รับประสานในระบบ'}</p>
-      <p class="cw-next">ขั้นตอนถัดไป: ${esc({pending:'ผู้รับผิดชอบตรวจสอบรายงานและบันทึกผล',confirmed:'ระบุผู้รับประสานและอัปเดตการดำเนินงาน',coordinating:'บันทึกความคืบหน้าและชุมชนที่ร่วมประสาน',controlled:'ตรวจผลและบันทึกเหตุผลก่อนปิดเหตุ',closed:'เหตุปิดแล้ว เปิดใหม่เมื่อมีหลักฐานเพิ่มเติม',cancelled:'อ่านเหตุผลที่ยกเลิกในประวัติ'}[i.status]||'อ่านประวัติเพื่อติดตามความคืบหน้า')}</p>
+    return `<div class="cw-actions">${button('กลับรายการเหตุ','back-list')}${button('ดูตำแหน่งบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</div><div class="cw-layout"><section class="cw-section"><h2>${esc(name)}</h2>${badge(i.status)}<p class="cw-help">พบ${i.observation==='fire'?'เปลวไฟ':'ควัน'} ${date(i.observed_at)} · รับรายงาน ${date(i.created_at)}<br>พิกัด ${i.latitude.toFixed(5)}, ${i.longitude.toFixed(5)}</p><p class="cw-description">${esc(i.description||'ยังไม่มีรายละเอียดเพิ่มเติม')}</p><p>ผู้รับประสาน: ${i.coordinator_id?esc(i.coordinator_id===state.session.user.id?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):'ยังไม่มีผู้รับประสานในระบบ'}</p>
+      <p class="cw-next">ขั้นตอนถัดไป: ${esc({pending:'ผู้รับผิดชอบตรวจสอบรายงานและบันทึกผล',confirmed:'ระบุผู้รับประสานและอัปเดตการดำเนินงาน',coordinating:'บันทึกความคืบหน้าและชุมชนที่ร่วมประสาน',controlled:'ตรวจผลและบันทึกเหตุผลก่อนปิดเหตุ',closed:'เหตุปิดแล้ว เปิดใหม่เมื่อมีหลักฐานเพิ่มเติม',cancelled:'อ่านเหตุผลที่ยกเลิกในประวัติ'}[i.status]||'อ่านประวัติเพื่อติดตามความคืบหน้า')}</p><details class="fp-who cw-who"><summary>📞 ใครดูแลพื้นที่นี้ · เบอร์หน่วยงาน</summary>${root.CmeCoordination?.html(i.latitude,i.longitude,{myForestId:state.forestId})||''}</details>
       ${d.can_manage&&!i.coordinator_id?button('รับเป็นผู้ประสานเหตุ','claim','',true):''}
       ${invites.map(p=>`<div class="cw-alert">คำขอร่วมประสานสำหรับ ${esc(p.name)}<div class="cw-actions">${button('รับร่วมประสาน','accept',`data-forest="${esc(p.forest_id)}"`,true)}${button('ไม่รับคำขอ','decline',`data-forest="${esc(p.forest_id)}"`)}</div></div>`).join('')}
       ${i.linked_incident_id?`<div class="cw-alert">รายงานนี้เชื่อมกับเหตุหลักแล้ว ประวัติเดิมยังอยู่ ${button('เปิดเหตุหลัก','detail',`data-id="${esc(i.linked_incident_id)}"`)}</div>`:''}<h3>ชุมชนที่ขอร่วมประสาน</h3>${d.partners.length?d.partners.map(p=>`<div class="cw-row"><span>${esc(p.name)}</span>${badge(p.status)}</div>`).join(''):'<p class="cw-help">ยังไม่มีคำขอร่วมประสาน</p>'}
@@ -246,7 +281,7 @@
     let content;
     if(state.ready===false)content='<div class="cw-empty"><h2>ระบบข้อมูลชุมชนยังไม่พร้อม</h2><p>ยังไม่ได้โหลดรายการเหตุหรือสิทธิ์ของคุณ กรุณาลองใหม่ภายหลัง</p></div>';
     else if(state.ready===null)content='<div class="cw-loading" role="status">กำลังโหลดข้อมูลพื้นที่…</div>';
-    else if(state.tab==='incidents'&&!state.session)content=`<section class="cw-section"><h2>เหตุที่อนุมัติให้เผยแพร่</h2><p class="cw-help">แสดงสรุปที่ผู้รับผิดชอบเลือกเผยแพร่ รายละเอียดสำหรับประสานอยู่ในพื้นที่ตัวแทน</p>${incidentRows(state.publicIncidents,true)}<div class="cw-actions">${button('เข้าสู่พื้นที่ตัวแทน','signin')}${button('ดูการวิเคราะห์รายอำเภอ (ทดลอง)','legacy-phase')}</div></section>`;
+    else if(state.tab==='incidents'&&!state.session)content=`<section class="cw-section"><h2>เหตุที่อนุมัติให้เผยแพร่</h2><p class="cw-help">แสดงสรุปที่ผู้รับผิดชอบเลือกเผยแพร่ รายละเอียดสำหรับประสานอยู่ในพื้นที่ตัวแทน</p>${incidentRows(state.publicIncidents,true)}<div class="cw-actions">${button('เข้าสู่พื้นที่ตัวแทน','signin')}</div></section>`;
     else if(!state.session)content=publicView();
     else if(!state.me)content='<div class="cw-loading">กำลังตรวจสิทธิ์พื้นที่…</div>';
     else if(state.detail?.incident?.status)content=detailView();
@@ -254,7 +289,7 @@
     else if(state.tab==='practice')content='<section id="cwPractice"><p class="cw-loading">กำลังโหลดพื้นที่ซ้อม…</p></section>';
     else if(state.tab==='review')content=reviewView();
     else if(state.tab==='preferences')content=preferencesView();
-    else if(state.tab==='incidents')content=`<section class="cw-section"><h2>ติดตามและประสานเหตุ</h2><div class="cw-actions">${button(state.scope==='active'?'ดูทุกสถานะ':'ดูเฉพาะเหตุที่ยังไม่ปิด','scope')}${allowedForests().length?button('แจ้งสิ่งที่พบ','create','',true):''}${button('การวิเคราะห์รายอำเภอ (ทดลอง)','legacy-phase')}</div>${incidentRows(state.incidents.filter(i=>state.scope==='all'||!['closed','cancelled'].includes(i.status)))}${state.incidentMore?button('โหลดเหตุเก่ากว่านี้','older-incidents'):''}</section>`;
+    else if(state.tab==='incidents'){const openN=state.incidents.filter(i=>!['closed','cancelled'].includes(i.status)).length;const seg=(id,label,n)=>`<button type="button" class="cw-seg-btn" data-cw="scope" data-scope="${id}" aria-pressed="${state.scope===id}">${label} <span>${n}</span></button>`;content=`<section class="cw-section"><h2>เหตุทั้งหมด</h2><div class="cw-actions"><div class="cw-seg" role="group" aria-label="กรองเหตุ">${seg('active','ยังไม่ปิด',openN)}${seg('all','ทั้งหมด',state.incidents.length)}</div>${allowedForests().length?button('📝 บันทึกเหตุ','create','',true):''}</div>${incidentRows(state.incidents.filter(i=>state.scope==='all'||!['closed','cancelled'].includes(i.status)))}${state.incidentMore?button('โหลดเหตุเก่ากว่านี้','older-incidents'):''}</section>`;}
     else content=forestView();
     const head=container.querySelector('.cw-header');
     if(head){const signedIn=!!state.session;head.querySelector('h1').textContent=signedIn?'พื้นที่ป่าชุมชน':'ป่าชุมชน';head.querySelector('p').textContent=signedIn?'สถานการณ์ · บันทึกเหตุ · ประสานงาน':'ดูไฟ ลม และฝุ่นรอบป่า ไม่ต้องสมัคร';}
@@ -262,7 +297,8 @@
     body.dataset.viewKey=state.tab+'/'+(state.detail?.incident?.id||'')+'/'+state.create;
     body.querySelectorAll('details').forEach((d,n)=>{const open=detailsOpen.get(body.dataset.viewKey+'/'+n);if(open!==undefined)d.open=open;});
     restoreForms();
-    if(!state.session&&state.ready&&root.CmeForestPublic&&body.querySelector('.fp')){
+    const pick=body.querySelector('#cwIncidentForm select[name="forest_id"]');if(pick&&pick.options.length>30)root.CmeForestPicker?.enhance(pick);
+    if(state.ready&&root.CmeForestPublic&&body.querySelector('.fp')){
       body.dataset.fpDash=context.dashboard()?'1':'';
       root.CmeForestPublic.attach(body,{forests:()=>state.catalog,dashboard:()=>context.dashboard(),locate:(lat,lon)=>context.locate(lat,lon),fetcher:path=>root.fetch((context.apiBase||'')+path),onPick:id=>{state.publicForest=id;},rerender:()=>render()});
     }
@@ -287,7 +323,7 @@
           state.me=me;state.incidents=incidents;state.incidentMore=incidents.length===200;
           if(!state.forestId||!allowedForests().some(f=>f.forest_id===state.forestId))state.forestId=allowedForests()[0]?.forest_id||'';
           state.draft=state.draft||readDraft();
-          if(state.tab==='review'&&me.is_admin)state.reviewQueue=await api('/review-queue');
+          if((state.tab==='review'||state.tab==='forest')&&me.is_admin)state.reviewQueue=await api('/review-queue');
           if(state.tab==='preferences'){state.line=await api('/line').catch(()=>({available:false}));if(state.line.linked)state.lineCode=null;}
           if(state.tab==='preferences'&&me.is_admin)[state.mailStatus,state.jobsStatus]=await Promise.all([api('/mail-status'),api('/jobs-status')]);
           if(state.detail?.incident?.id){state.eventMore=true;state.detail=await api('/incidents/'+state.detail.incident.id);}
@@ -314,10 +350,12 @@
     if(a==='public'){state.tab='incidents';render();return;}
     if(a==='reload'){await load();return;}
     if(a==='legacy-phase'){context.closeOthers();context.legacyPhase();return;}
-    if(a==='scope'){state.scope=state.scope==='active'?'all':'active';render();return;}
+    if(a==='scope'){state.scope=b.dataset.scope||(state.scope==='active'?'all':'active');render();return;}
     if(a==='all-incidents'){state.tab='incidents';state.scope='all';render();return;}
     if(a==='back-list'){state.detail=null;state.tab='incidents';render();return;}
-    if(a==='create'){state.create=true;state.tab='forest';state.detail=null;state.draft=state.draft||readDraft()||newDraft();render();return;}
+    if(a==='create'){if(!b.closest('.rp-cta')&&myForests().length!==1)state.forestId='';state.create=true;state.tab='forest';state.detail=null;startDraft();render();return;}
+    if(a==='old-draft-use'){state.draft=state.oldDraft;state.oldDraft=null;saveDraft();render();return;}
+    if(a==='old-draft-drop'){state.oldDraft=null;render();return;}
     if(a==='cancel-create'){state.create=false;render();return;}
     if(a==='pick'){saveDraft();context.pick();return;}
     if(a==='gps'){if(!navigator.geolocation){state.error='เบราว์เซอร์นี้ไม่รองรับตำแหน่ง';render();return;}navigator.geolocation.getCurrentPosition(p=>{state.draft.latitude=p.coords.latitude.toFixed(5);state.draft.longitude=p.coords.longitude.toFixed(5);saveDraft();render();},()=>{state.error='ยังไม่ได้รับตำแหน่ง กรุณาเลือกบนแผนที่';render();},{timeout:8000});return;}
@@ -393,6 +431,6 @@
   }
   root.CmeCommunity={init,open,close,hide,authChanged,api,statusNames,transitions,
     dataChanged:()=>{if(!isOpen())return;if(!state.session&&state.ready&&body?.dataset.fpDash==='')render();else if(state.tab==='forest'&&!state.create&&!state.detail&&allowedForests().length)render();},
-    newIncident:async(point)=>{await open('forest');if(!state.session){state.notice='เข้าสู่ระบบและรับอนุมัติพื้นที่ก่อนแจ้งเหตุ';render();return;}if(!allowedForests().length){state.notice='ขอสิทธิ์ตัวแทนพื้นที่ก่อนบันทึกเหตุ';render();return;}state.draft=state.draft||readDraft()||newDraft(point);if(point){state.draft.latitude=point.lat;state.draft.longitude=point.lon;}state.create=true;state.detail=null;saveDraft();render();},
+    newIncident:async(point)=>{await open('forest');if(!state.session){state.notice='เข้าสู่ระบบและรับอนุมัติพื้นที่ก่อนแจ้งเหตุ';render();return;}if(!allowedForests().length){state.notice='ขอสิทธิ์ตัวแทนพื้นที่ก่อนบันทึกเหตุ';render();return;}startDraft(point);state.create=true;state.detail=null;saveDraft();render();},
     myReports:()=>api('/my-reports'),cancelLegacy:id=>api('/my-reports/'+id+'/cancel',{method:'POST'})};
 })(window);
