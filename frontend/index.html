@@ -2473,7 +2473,7 @@ function popupActionsHtml(lat,lon){
   // Safety-relevant: a park or sanctuary needs its officers before anyone goes in.
   const pa=window.CmeProtectedAreas?.query(Number(lat),Number(lon));
   const chip=pa&&['inside','near'].includes(pa.status)?`<p class="hs-chip">${pa.status==='inside'?'อยู่ในเขตพื้นที่อนุรักษ์':'ใกล้เขตพื้นที่อนุรักษ์'} · ประสานเจ้าหน้าที่ก่อนเข้าพื้นที่</p>`:'';
-  return chip+`<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a></div>`;
+  return chip+`<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a><button type="button" class="hs-3d" data-open3d="${Number(lat)},${Number(lon)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 19 9.5 8l4 6.5L16 11l5 8Z"/><path d="m8 10.6 1.5 1.4 1.4-1.2"/></svg>ดูใน 3D</button></div>`;
 }
 // ---- Experimental spread outline for one tapped point (2D and 3D) ----
 const SPREAD_SIM_STYLE={3:{color:'#ef4444',fill:.2},6:{color:'#f97316',fill:.1}};
@@ -5716,6 +5716,27 @@ async function start3DExtras(){
   if(!field||!document.getElementById('threedview').classList.contains('open'))return;
   CmeThreeDExtras.startWind(mlMap,field,{bounds:CM_SOURCE_BOUNDS,light:_tdBasemapKey==='osm',mobile:isMobileViewport()});
 }
+// "ดูใน 3D" in a hotspot popup: open the 3D view on that point at an angle
+// and open the same popup there.
+async function open3DAt(lat,lon){
+  CmeNavigation.open('threed');
+  let tries=0;
+  while(!(mlMap&&mlMap.isStyleLoaded&&mlMap.isStyleLoaded())&&tries++<80)await new Promise(r=>setTimeout(r,150));
+  if(!mlMap)return;
+  mlMap.flyTo({center:[lon,lat],zoom:14,pitch:62,bearing:-20,duration:motionDuration(1600)});
+  await new Promise(r=>mlMap.once('moveend',r));
+  // The first time 3D opens its markers arrive a moment after the map.
+  const i=hotspots.findIndex(h=>Math.abs(h.lat-lat)<1e-7&&Math.abs(h.lon-lon)<1e-7);
+  if(i<0)return;
+  for(let n=0;n<20&&!_3dMarkers[i];n++)await new Promise(r=>setTimeout(r,150));
+  _3dMarkers[i]?.getElement().click();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest?.('[data-open3d]');if(!b)return;
+  e.preventDefault();e.stopPropagation();
+  const [lat,lon]=b.dataset.open3d.split(',').map(Number);
+  if(Number.isFinite(lat)&&Number.isFinite(lon))open3DAt(lat,lon);
+},true);
 async function open3D(){
   // Replay and a 2D outline are 2D-only; stop them so both views show the same thing.
   window.CmeHotspotReplay?.stop();clearSpreadSim();map.closePopup();window.CmeHotspotSheet?.close();

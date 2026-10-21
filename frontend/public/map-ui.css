@@ -281,3 +281,11 @@ body.light-mode .ms-list{box-shadow:0 14px 36px rgba(15,26,42,.16)}
 .ms-ic.forest{background:rgba(67,176,95,.16);color:var(--green)}
 .ms-title{position:sticky;top:-6px;z-index:1;background:var(--panel)}
 .hs-sheet .fp-card::before,.hs-sheet .fp-card::after,.forest-search-popup .fp-card::before,.forest-search-popup .fp-card::after{display:none}
+
+/* "ดูใน 3D" in hotspot popups and sheets; hidden once you are in 3D. */
+.hs-actions:has(.hs-3d){flex-wrap:wrap}
+.hs-actions .hs-3d{flex:1 1 100%;min-height:44px;border-radius:12px;border:1px solid rgba(56,189,248,.45);background:rgba(56,189,248,.1);color:var(--txt);font:600 14px var(--font);cursor:pointer}
+.hs-actions .hs-3d:hover{border-color:var(--wind)}
+.hs-actions .hs-3d{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.hs-actions .hs-3d svg{width:18px;height:18px;color:var(--wind)}
+body:has(#threedview.open) .hs-3d{display:none}
