@@ -222,3 +222,17 @@ it('24 h bars run oldest to newest and each readout names the date and hour rang
   expect(el.querySelector('.as-hot .as-axis').textContent).toContain('ตอนนี้');
   dom.window.close();
 });
+
+it('24 h card explains when the live home count is ahead of the archive', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const hist = Array.from({ length: 24 }, (_, i) => (i === 13 ? 2 : 0));
+  const h = { days: 1, analytics: { ...history.analytics, total: 2, hour_histogram: hist } };
+  w.CmeAnalyticsSummary.render(el, h, { liveCount: 9 });
+  expect(el.querySelector('.as-hot .as-lag').textContent).toContain('9');
+  expect(el.querySelector('.as-hot .as-lag').textContent).toContain('อีก 7 จุด');
+  w.CmeAnalyticsSummary.render(el, h, { liveCount: 2 });
+  expect(el.querySelector('.as-lag')).toBeNull();
+  w.CmeAnalyticsSummary.render(el, { ...h, days: 7 }, { liveCount: 9 });
+  expect(el.querySelector('.as-lag')).toBeNull();
+  dom.window.close();
+});

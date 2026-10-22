@@ -128,7 +128,10 @@
   }
 
   // ---------- cards ----------
-  function hotspotCard(h,a,{mapDays}){
+  function hotspotCard(h,a,{mapDays,liveCount}){
+    // New detections reach the home tile first; say so instead of leaving two numbers that disagree.
+    const behind=h.days===1&&!focusArea&&!focusDistrict&&Number.isFinite(liveCount)&&liveCount>(a.total||0)
+      ?`<p class="as-note as-lag" role="note">หน้าแรกนับได้ <b>${esc(liveCount)}</b> จุด เพราะอ่านข้อมูลสดล่าสุด ส่วนกราฟนี้มาจากคลังที่บันทึกทุก 10 นาที อีก ${esc(liveCount-(a.total||0))} จุดใหม่จะขึ้นในรอบบันทึกถัดไป</p>`:'';
     const days=a.hotspots||[];
     let items, labels, title;
     if(h.days===1&&Array.isArray(a.hour_histogram)){
@@ -155,7 +158,7 @@
       <p class="as-v">${num(a.total)} <span>จุด</span></p>
       ${bars(items,{label:title,unit:'จุด',color:it=>it.hi?'#ef4444':it.gap?'#94a3b8':'#f59e0b'})}${axis(labels,h.days===1?null:days.map(d=>d.date))}
       <p class="as-s">${!a.total?'ไม่พบจุด ไม่ได้แปลว่าไม่มีไฟ':peak?`วันที่พบมากที่สุด <b>${esc(dayLabel(peak.date))}</b> · ${esc(peak.count)} จุด`:''}</p>
-      <p class="as-compare" data-compare="hot" aria-live="polite"></p>
+      <p class="as-compare" data-compare="hot" aria-live="polite"></p>${behind}
       ${incomplete?'<p class="as-note">แท่งสีเทา = วันที่ดาวเทียมส่งข้อมูลไม่ครบ</p>':''}${h.days===1?'':banNote(days.map(d=>d.date))}
       ${mapDays?`<button type="button" class="as-link" data-as-action="replay">▶ ย้อนดู ${esc(mapDays)} วันล่าสุดบนแผนที่</button>`:''}
     </article>`;

@@ -2709,6 +2709,30 @@ async function fetchWindGridUncached(){
   return _windCacheField;
 }
 
+// Keep the replay button just above the legend, however many lines the legend
+// wraps to (the wind label adds a second line on narrower maps). On phones the
+// map credit can land on the legend too: lift it the same way.
+(function(){
+  const note=document.querySelector('.map-time-note'),rp=document.getElementById('hsReplay');
+  if(!note||!rp)return;
+  const place=()=>{
+    rp.style.bottom='';
+    const box=note.offsetParent; if(!box)return;
+    const base=parseFloat(getComputedStyle(rp).bottom)||0;
+    const need=box.clientHeight-note.offsetTop+8;
+    if(need>base)rp.style.bottom=need+'px';
+    const credit=document.querySelector('#map .leaflet-control-attribution');
+    if(credit){
+      credit.style.removeProperty('margin-bottom');
+      const a=credit.getBoundingClientRect(),n=note.getBoundingClientRect();
+      const hit=a.width&&n.width&&a.bottom>n.top&&a.top<n.bottom&&a.right>n.left&&a.left<n.right;
+      if(hit)credit.style.setProperty('margin-bottom',(parseFloat(getComputedStyle(credit).marginBottom)||0)+(a.bottom-n.top)+6+'px','important');
+    }
+  };
+  if('ResizeObserver' in window)new ResizeObserver(place).observe(note);
+  addEventListener('resize',place);place();
+})();
+
 function _applyVelocityLayer(field){
   if(!document.querySelector('.layer[data-layer="wind"]')?.classList.contains('on')) return;
   if(velLayer){try{velLayer.remove();}catch(_){} velLayer=null;}
@@ -4031,7 +4055,9 @@ function analyticsSummaryOptions(){
     forestInfo:id=>allForests.find(f=>String(f.forest_id)===String(id)),
     forest:(()=>{const id=(globalThis.analyticsScope||(()=>({})))(document.getElementById('anForest')?.value).forest;return id?allForests.find(f=>String(f.forest_id)===id)||{forest_id:id,name:'ป่าชุมชน '+id}:null;})(),
     district:(globalThis.analyticsScope||(()=>({})))(document.getElementById('anForest')?.value).district||null,
-    mapDays:w?Math.max(1,Math.round((w.end-w.start)/864e5)):0
+    mapDays:w?Math.max(1,Math.round((w.end-w.start)/864e5)):0,
+    // The home tile counts the live feed; the archive saves it every 10 minutes.
+    liveCount:typeof liveDataQ==='object'&&liveDataQ?.hotspots&&!liveDataQ.hotspots.is_stale&&globalThis.CmeEvidence?CmeEvidence.filterHotspots(hotspots,{hours:24}).length:null
   };
 }
 // Card actions: district -> map, forest -> map, ▶ -> map replay.
