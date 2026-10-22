@@ -196,3 +196,22 @@ def test_incident_update_queues_line_for_a_linked_member_without_email_opt_in():
     table, row = store.inserted[0]
     assert table == 'cme_line_outbox' and row['dedup_key'] == 'incident/ev-1/user-1/forest-A'
     assert 'ยืนยันเหตุ' in row['message'] and row['message'].endswith('/#community/incident/inc-1')
+
+
+def test_help_reply_speaks_to_a_linked_rep_or_to_the_public():
+    def help_for(linked):
+        store = LineStore(linked=linked)
+        event = {'type': 'message', 'replyToken': 'r1', 'source': {'type': 'user', 'userId': LINE_USER},
+                 'message': {'type': 'text', 'text': 'สวัสดี'}}
+        assert line.handle_event(store, event) == 'help'
+        return json.loads(store.sent[-1].content)['messages'][0]['text']
+    rep, public = help_for(True), help_for(False)
+    assert 'ตัวแทนป่าชุมชน' in rep and '/#community' in rep
+    assert 'แจ้งเตือนฝุ่น' in public and 'ตัวแทนป่าชุมชน' not in public
+    assert '1362' in rep and '1362' in public
+
+
+def test_hotspot_text_lists_what_to_do_next():
+    text = line.hotspot_text(LineStore(), 'ป่าชุมชนบ้านทดสอบ', 3, '2026-10-19T03:00:00+00:00', 'GISTDA', '2026-10-19T03:05:00+00:00')
+    assert text.startswith('🔥') and 'ในป่าชุมชนบ้านทดสอบ' in text and 'ในป่า ป่า' not in text
+    assert '1.' in text and '2.' in text and '3.' in text

@@ -45,6 +45,19 @@ ALERT_FROM = 3             # US AQI category 3 = 101-150
 QUOTA_RESERVE = 50
 MAX_PER_RUN = 40
 
+# Chat copy: plain spoken Thai, an emoji per line, and always something to do.
+# No gendered particles (ครับ/ค่ะ): the account speaks for the project.
+LEVEL_EMOJI = {3: '🟠', 4: '🔴', 5: '🟣', 6: '🟤'}
+TIPS = {
+    3: ['เด็ก ผู้สูงอายุ คนท้อง และคนมีโรคประจำตัว ลดเวลาอยู่นอกบ้าน', 'ออกไปข้างนอกใส่หน้ากาก N95 หรือ KN95', 'ปิดหน้าต่างช่วงฝุ่นหนา'],
+    4: ['ทุกคนควรลดกิจกรรมกลางแจ้ง งดออกกำลังกายนอกบ้าน', 'ออกไปข้างนอกใส่หน้ากาก N95 หรือ KN95', 'ปิดประตูหน้าต่าง เปิดเครื่องฟอกอากาศถ้ามี'],
+    5: ['งดกิจกรรมกลางแจ้ง อยู่ในห้องที่ปิดมิดชิด', 'ใส่หน้ากาก N95 ทุกครั้งที่ออกนอกบ้าน', 'ถ้าแสบตา ไอ หายใจไม่สะดวก ให้พบแพทย์'],
+    6: ['อยู่ในอาคาร ปิดประตูหน้าต่าง', 'ใส่หน้ากาก N95 ถ้าจำเป็นต้องออกไป', 'มีอาการผิดปกติ ไปพบแพทย์ทันที'],
+}
+MAP_LINE = '🗺️ ดูค่าฝุ่นรอบบ้านบนแผนที่: ' + SITE
+STOP_LINE = '🛑 ไม่อยากรับแล้ว พิมพ์ "หยุด" ได้เลย'
+HOW_TO = '✏️ พิมพ์ "แจ้งเตือนฝุ่น" ตามด้วยชื่ออำเภอ เช่น แจ้งเตือนฝุ่น ฝาง หรือ แจ้งเตือนฝุ่น เมือง'
+
 # US EPA AQI categories (the scale WAQI publishes), names in Thai.
 CATEGORIES = [
     (50, 'ดี', ''),
@@ -274,27 +287,52 @@ def coverage(token: str, *, now=None, get=httpx.get) -> dict[str, int]:
 
 # ---------- messages ----------
 def alert_text(district: str, reading: dict) -> str:
-    _, label, advice = category(reading['median'])
+    level, label, _ = category(reading['median'])
+    tips = TIPS.get(level, [])
     return '\n'.join(x for x in [
-        f'⚠️ ฝุ่น PM2.5 อ.{district} ระดับ "{label}"',
-        f'ดัชนี AQI ของ PM2.5 ค่ากลาง {reading["median"]:.0f} จากเซนเซอร์ {reading["n"]} จุดในอำเภอ (ค่ารายชั่วโมง ต่อเนื่องอย่างน้อย 1 ชม.)',
-        f'คำแนะนำ: {advice}' if advice else '',
-        'เกณฑ์ AQI ของ US EPA · เซนเซอร์ส่วนใหญ่เป็นเซนเซอร์ราคาประหยัด ค่าอาจคลาดเคลื่อน',
+        f'{LEVEL_EMOJI.get(level, "😷")} ฝุ่นเริ่มเยอะแล้วที่ อ.{district}',
+        f'ระดับ "{label}" · AQI ของ PM2.5 ราว {reading["median"]:.0f}',
+        f'(ค่ากลางจากเซนเซอร์ {reading["n"]} จุดในอำเภอ ต่อเนื่องมาแล้วอย่างน้อย 1 ชม.)',
+        '',
+        '💡 ทำแบบนี้ดีกว่านะ' if tips else '',
+        *[f'• {t}' for t in tips],
+        '',
+        MAP_LINE,
+        'ℹ️ เกณฑ์ AQI ของ US EPA · เซนเซอร์ส่วนใหญ่เป็นแบบราคาประหยัด ค่าอาจคลาดเคลื่อนได้',
         CREDIT,
-        f'ดูข้อมูลเพิ่ม: {SITE}',
-        'หยุดรับแจ้ง พิมพ์ "หยุด"',
-    ] if x)
+        STOP_LINE,
+    ] if x is not None).replace('\n\n\n', '\n\n')
 
 
 def subscribe_reply(district: str, n: int) -> str:
-    return (f'รับแจ้งเตือนฝุ่น อ.{district} แล้ว จากเซนเซอร์วัดฝุ่น {n} จุดในอำเภอ\n'
-            'จะแจ้งเมื่อดัชนี AQI ของ PM2.5 ถึงระดับ "เริ่มมีผลต่อกลุ่มเสี่ยง" (101) ขึ้นไป ต่อเนื่องอย่างน้อย 1 ชม. ไม่เกินวันละครั้งต่อระดับ\n'
-            f'{CREDIT}\n'
-            'เปลี่ยนอำเภอ พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ" · หยุด พิมพ์ "หยุด"')
+    return '\n'.join([
+        f'✅ เรียบร้อย! จะคอยเฝ้าฝุ่น อ.{district} ให้นะ',
+        '',
+        f'📡 ใช้เซนเซอร์วัดฝุ่น {n} จุดในอำเภอ',
+        '🔔 เตือนเมื่อฝุ่นถึงระดับ "เริ่มมีผลต่อกลุ่มเสี่ยง" (AQI 101 ขึ้นไป) นานเกิน 1 ชม.',
+        '   ไม่เกินวันละครั้งต่อระดับ ไม่รบกวนบ่อยแน่นอน',
+        '',
+        '💡 ระหว่างนี้อยากรู้ค่าฝุ่นตอนนี้ เปิดแผนที่ได้เลย',
+        SITE,
+        '',
+        HOW_TO.replace('✏️ พิมพ์', '✏️ เปลี่ยนอำเภอ พิมพ์'),
+        STOP_LINE,
+        CREDIT,
+    ])
 
 
-PAUSED_REPLY = ('ยังไม่เปิดแจ้งเตือนฝุ่นรายอำเภอ เรากำลังตรวจข้อมูลเซนเซอร์ เมื่อพร้อมจะประกาศให้ทราบ ไม่มีการเก็บข้อมูลของคุณ\n'
-                'ดูค่าฝุ่นล่าสุด: ' + SITE)
+PAUSED_REPLY = '\n'.join([
+    '⏳ ตอนนี้ยังไม่เปิดแจ้งเตือนฝุ่นรายอำเภอ',
+    'กำลังตรวจข้อมูลเซนเซอร์ให้แน่ใจก่อน พร้อมเมื่อไรจะบอกในแชทนี้ ยังไม่ได้เก็บข้อมูลอะไรของคุณ',
+    '',
+    '💡 ระหว่างนี้ดูค่าฝุ่นล่าสุดได้ที่ ' + SITE,
+])
+STOP_REPLY = '\n'.join([
+    '👋 หยุดเตือนฝุ่นแล้ว ลบอำเภอที่เลือกเรียบร้อย',
+    'อยากกลับมารับอีก พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ" ได้ทุกเมื่อ',
+    '',
+    '💡 ฝุ่นหนาเมื่อไร ดูได้ที่ ' + SITE,
+])
 
 
 def handle_text(store, line_user: str, text: str, *, get=httpx.get, now=None):
@@ -304,19 +342,21 @@ def handle_text(store, line_user: str, text: str, *, get=httpx.get, now=None):
         return None
     if cmd[0] == 'stop':
         store.call('DELETE', '/rest/v1/cme_line_dust_subs', params={'line_user_id': 'eq.' + line_user})
-        return 'หยุดแจ้งเตือนฝุ่นแล้ว ข้อมูลอำเภอที่เลือกถูกลบ\nรับใหม่ได้ พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ"'
+        return STOP_REPLY
     s = store.settings
     if not s.line_dust_alerts_enabled or not s.aqicn_token:
         return PAUSED_REPLY
     if cmd[0] == 'unknown':
-        return f'ไม่พบอำเภอ "{cmd[1]}" ในเชียงใหม่ ลองพิมพ์ เช่น "แจ้งเตือนฝุ่น ฝาง"'
+        return f'🤔 ไม่เจออำเภอ "{cmd[1]}" ในเชียงใหม่เลย\n{HOW_TO}'
     district = cmd[1]
     try:
         n = coverage(s.aqicn_token, get=get, now=now).get(district, 0)
     except Exception:
-        return 'ตรวจเซนเซอร์ไม่ได้ในตอนนี้ ลองใหม่อีกครั้งภายหลัง'
+        return '🙏 ขอโทษที ตอนนี้ตรวจเซนเซอร์ไม่ได้ ลองพิมพ์ใหม่อีกครั้งในอีกสักพักนะ'
     if n < MIN_SENSORS:
-        return f'อ.{district} ยังมีเซนเซอร์วัดฝุ่นที่ส่งข้อมูลไม่ถึง {MIN_SENSORS} จุด จึงยังแจ้งเตือนไม่ได้\nดูค่าฝุ่นภาพรวม: {SITE}'
+        return '\n'.join([f'😅 อ.{district} ตอนนี้ยังมีเซนเซอร์ส่งข้อมูลไม่ถึง {MIN_SENSORS} จุด เลยยังเตือนให้ไม่ได้',
+                          'ถ้ามีจุดเดียว ค่าอาจเพี้ยนได้ง่าย เลยรอให้มีอย่างน้อย 2 จุดก่อน',
+                          '', '💡 ลองอำเภอใกล้เคียงแทนก่อนก็ได้ หรือดูค่าฝุ่นจากสถานีบนแผนที่', SITE])
     store.call('POST', '/rest/v1/cme_line_dust_subs', params={'on_conflict': 'line_user_id'},
                json={'line_user_id': line_user, 'district': district, 'updated_at': datetime.now(timezone.utc).isoformat()},
                headers={'Prefer': 'resolution=merge-duplicates,return=minimal'})

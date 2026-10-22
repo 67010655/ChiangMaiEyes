@@ -29,9 +29,49 @@ API = 'https://api.line.me/v2/bot/message/'
 CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 CODE_PATTERN = re.compile(r'CME-([A-HJ-NP-Z2-9]{8})')
 CODE_MINUTES = 10
-HOTLINE = 'เห็นไฟจริง โทรสายด่วนไฟป่า 1362'
-HELP = ('บัญชีนี้ส่งแจ้งเตือนจุดความร้อนให้ตัวแทนป่าชุมชน ไม่มีเจ้าหน้าที่ตอบแชท\n'
-        'ผูกบัญชีได้จากหน้า "ป่าของฉัน" → การแจ้งเตือน ใน ChiangMaiEyes\n' + HOTLINE)
+HOTLINE = '🔥 เห็นไฟหรือควันจริง โทรสายด่วนไฟป่า 1362 ได้เลย'
+SITE = 'https://chiangmaieyes.vercel.app'
+# Two audiences share the account: anyone who added it (dust, the map) and
+# forest reps who linked it from the website (hotspots in their forests).
+HELP_PUBLIC = '\n'.join([
+    '👋 สวัสดี! ChiangMaiEyes ช่วยดูไฟ ฝุ่น และลมในเชียงใหม่ให้',
+    '',
+    '🌫️ อยากให้เตือนเวลาฝุ่นเยอะ',
+    'พิมพ์ "แจ้งเตือนฝุ่น" ตามด้วยชื่ออำเภอ เช่น แจ้งเตือนฝุ่น ฝาง',
+    '',
+    '🗺️ ดูจุดไฟและค่าฝุ่นตอนนี้',
+    SITE,
+    '',
+    HOTLINE,
+    '',
+    'ℹ️ แชทนี้ตอบอัตโนมัติ ยังไม่มีเจ้าหน้าที่คอยตอบนะ',
+])
+HELP_REP = '\n'.join([
+    '🌳 สวัสดี ตัวแทนป่าชุมชน',
+    'บัญชีนี้ผูกกับ ChiangMaiEyes แล้ว จะส่งข้อความมาเมื่อ',
+    '🔥 ดาวเทียมพบจุดความร้อนใหม่ในป่าที่คุณดูแล',
+    '📋 มีการอัปเดตการประสานเหตุ',
+    '',
+    '💡 ดูป่าของคุณและบันทึกเหตุได้ที่',
+    SITE + '/#community',
+    '',
+    '🌫️ อยากรับเตือนฝุ่นด้วย พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ"',
+    HOTLINE,
+    '',
+    'ℹ️ แชทนี้ตอบอัตโนมัติ ยังไม่มีเจ้าหน้าที่คอยตอบนะ',
+])
+HELP = HELP_PUBLIC
+
+
+def is_rep(store: CommunityStore, line_user: str) -> bool:
+    try:
+        return bool(store.rows('cme_line_links', select='user_id', line_user_id='eq.' + line_user))
+    except Exception:
+        return False
+
+
+def forest_phrase(name: str) -> str:
+    return ('ใน' if str(name).startswith('ป่า') else 'ในป่า ') + str(name)
 
 
 def enabled(settings) -> bool:
@@ -109,7 +149,7 @@ def handle_event(store: CommunityStore, event: dict) -> str:
         return 'unlinked'
     if kind == 'follow':
         if token:
-            reply(store, token, 'ขอบคุณที่เพิ่มเพื่อน ChiangMaiEyes\n' + HELP)
+            reply(store, token, '🙏 ขอบคุณที่เพิ่มเพื่อนนะ\n\n' + (HELP_REP if is_rep(store, line_user) else HELP_PUBLIC))
         return 'followed'
     message = event.get('message') or {}
     if kind != 'message' or message.get('type') != 'text':
@@ -123,13 +163,19 @@ def handle_event(store: CommunityStore, event: dict) -> str:
     match = CODE_PATTERN.search(str(message.get('text', '')).upper())
     if not match:
         if token:
-            reply(store, token, HELP)
+            reply(store, token, HELP_REP if is_rep(store, line_user) else HELP_PUBLIC)
         return 'help'
     result = store.call('POST', '/rest/v1/rpc/cme_line_redeem',
                         json={'p_code_hash': _hash('CME-' + match.group(1)), 'p_line_user_id': line_user})
     if token:
-        reply(store, token, 'ผูกบัญชีกับ ChiangMaiEyes สำเร็จ จะได้รับแจ้งเมื่อพบจุดความร้อนใหม่หรือมีการประสานเหตุในป่าที่ได้รับอนุมัติ\n' + HOTLINE
-              if result == 'linked' else 'รหัสไม่ถูกต้องหรือหมดอายุแล้ว (ใช้ได้ 10 นาที ครั้งเดียว) กรุณากดรับรหัสใหม่ในหน้าเว็บ')
+        reply(store, token, '\n'.join([
+                  '🎉 ผูกบัญชีสำเร็จ! ต่อไปนี้จะได้รับข้อความเมื่อ',
+                  '🔥 พบจุดความร้อนใหม่ในป่าที่คุณได้รับอนุมัติ',
+                  '📋 มีการอัปเดตการประสานเหตุ',
+                  '', '💡 เปิดเสียงแจ้งเตือนของแชทนี้ไว้ จะได้ไม่พลาด', HOTLINE])
+              if result == 'linked' else '\n'.join([
+                  '⏰ รหัสนี้ไม่ถูกต้อง หรือหมดอายุแล้ว (ใช้ได้ 10 นาที และครั้งเดียว)',
+                  'กด "รับรหัสใหม่" ในเว็บ หน้าป่าชุมชน → การแจ้งเตือน แล้วส่งมาอีกครั้งนะ']))
     return result
 
 
@@ -141,22 +187,27 @@ def handle_webhook(store: CommunityStore, payload: bytes, signature: str | None)
 
 def hotspot_text(store: CommunityStore, forest_name: str, count: int, latest: str, source: str, updated) -> str:
     return '\n'.join([
-        f'พบจุดความร้อนจากดาวเทียม {count} จุดในป่า {forest_name}',
-        'ตรวจพบล่าสุด: ' + stamp(latest),
-        'จุดความร้อนยังไม่ใช่เหตุไฟที่ยืนยันแล้ว กรุณาตรวจสอบและประสานผู้รับผิดชอบ',
-        'แหล่งข้อมูล: ' + source + ' · ชุดข้อมูลเวลา ' + stamp(updated),
-        'เปิดดู: ' + store.settings.community_site_url.rstrip('/') + '/#community',
-        HOTLINE,
+        f'🔥 ดาวเทียมพบจุดความร้อน {count} จุด {forest_phrase(forest_name)}',
+        '🕒 ตรวจพบล่าสุด ' + stamp(latest),
+        '',
+        '💡 ควรทำต่อ',
+        '1. ตรวจในพื้นที่ หรือโทรถามคนที่อยู่ใกล้ป่า',
+        '2. ถ้าเป็นไฟจริง โทร 1362 และแจ้งหน่วยงานในพื้นที่ อย่าเข้าไปดับคนเดียว',
+        '3. ตรวจแล้วบันทึกเหตุในเว็บ คนอื่นจะได้ช่วยติดตาม',
+        '',
+        '📍 เปิดดูบนแผนที่: ' + store.settings.community_site_url.rstrip('/') + '/#community',
+        'ℹ️ จุดความร้อนยังไม่ใช่เหตุไฟที่ยืนยันแล้ว · ที่มา ' + source + ' · ข้อมูลเวลา ' + stamp(updated),
     ])[:4000]
 
 
 def incident_text(store: CommunityStore, forest_name: str, status_text: str, observed, changed, incident_id) -> str:
     return '\n'.join([
-        'อัปเดตการประสานเหตุ: ' + forest_name,
-        'สถานะในระบบ: ' + status_text,
-        'เวลาที่พบเหตุ: ' + stamp(observed),
-        'บันทึกเมื่อ: ' + stamp(changed),
-        'เปิดดู: ' + store.settings.community_site_url.rstrip('/') + '/#community/incident/' + str(incident_id),
+        f'📋 อัปเดตเหตุ{forest_phrase(forest_name)}',
+        '📌 สถานะตอนนี้: ' + status_text,
+        '🕒 พบเหตุ ' + stamp(observed) + ' · บันทึก ' + stamp(changed),
+        '',
+        '💡 เปิดดูรายละเอียดและช่วยอัปเดตได้ที่',
+        store.settings.community_site_url.rstrip('/') + '/#community/incident/' + str(incident_id),
     ])[:4000]
 
 
@@ -173,7 +224,7 @@ def queue_test(store: CommunityStore, user: dict) -> str:
         raise HTTPException(409, 'ผูก LINE กับบัญชีนี้ก่อนส่งข้อความทดสอบ')
     rows = store.insert('cme_line_outbox', {'dedup_key': 'test/' + user['id'] + '/' + secrets.token_hex(8),
         'user_id': user['id'], 'category': 'test',
-        'message': 'ทดสอบการแจ้งเตือนทาง LINE จาก ChiangMaiEyes สำเร็จ\nนี่ไม่ใช่การแจ้งเหตุไฟป่า\nสร้างเมื่อ: '
+        'message': '✅ ทดสอบแจ้งเตือนทาง LINE สำเร็จ ข้อความถึงแล้ว!\nนี่เป็นแค่การทดสอบ ไม่ใช่การแจ้งเหตุไฟป่า\n🕒 ส่งเมื่อ '
                    + stamp(datetime.now(timezone.utc).isoformat())})
     return rows[0]['id']
 
