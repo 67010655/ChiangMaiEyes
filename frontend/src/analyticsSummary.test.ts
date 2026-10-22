@@ -210,3 +210,15 @@ it('keeps fire and dust apart, and explains a clean long average next to many ho
   expect(el.querySelector('.as-why')).toBeNull();
   dom.window.close();
 });
+
+it('24 h bars run oldest to newest and each readout names the date and hour range', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const hist = Array.from({ length: 24 }, (_, i) => (i === 14 ? 3 : 0));
+  w.CmeAnalyticsSummary.render(el, { days: 1, analytics: { ...history.analytics, total: 3, hour_histogram: hist } }, {});
+  const reads = [...el.querySelectorAll('.as-hot [data-read]')].map((r: any) => r.getAttribute('data-read'));
+  expect(reads).toHaveLength(24);
+  expect(reads.every((r: string) => /\d+ [ก-๙.]+ \d\d:00–\d\d:59 น\./.test(r))).toBe(true);
+  expect(reads.find((r: string) => r.includes('14:00–14:59'))).toContain('3 จุด');
+  expect(el.querySelector('.as-hot .as-axis').textContent).toContain('ตอนนี้');
+  dom.window.close();
+});

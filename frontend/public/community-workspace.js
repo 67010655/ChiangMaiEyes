@@ -14,6 +14,11 @@
   const esc=value=>E().escapeHtml(value);
   const date=value=>E().stamp(value);
   const badge=status=>`<span class="cw-status ${esc(status)}">${esc(statusNames[status]||status)}</span>`;
+  const ago=value=>{const t=Date.parse(value);if(!Number.isFinite(t))return '';const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<1?'เมื่อสักครู่':m<60?m+' นาทีที่แล้ว':m<1440?Math.round(m/60)+' ชม.ที่แล้ว':Math.round(m/1440)+' วันที่แล้ว';};
+  const nextStep={pending:'ตรวจว่าเกิดเหตุจริงไหม แล้วยืนยันหรือยกเลิก',confirmed:'หาคนรับประสาน แล้วอัปเดตการดำเนินงาน',coordinating:'บันทึกความคืบหน้า และชวนป่าข้างเคียงถ้าจำเป็น',controlled:'ตรวจผลอีกครั้ง แล้วบันทึกเหตุผลก่อนปิดเหตุ',closed:'ปิดแล้ว เปิดใหม่ได้ถ้ามีหลักฐานเพิ่ม',cancelled:'ยกเลิกแล้ว ดูเหตุผลในประวัติ'};
+  const STEPS=['pending','confirmed','coordinating','controlled','closed'];
+  const stepper=status=>{if(status==='cancelled')return '<div class="cw-steps cancelled"><span class="on">ยกเลิกเหตุ</span></div>';const at=STEPS.indexOf(status);return `<ol class="cw-steps" aria-label="ขั้นของเหตุ">${STEPS.map((st,n)=>`<li class="${n<at?'done':n===at?'on':''}"${n===at?' aria-current="step"':''}><span>${esc(statusNames[st])}</span></li>`).join('')}</ol>`;};
+  const obsLabel=o=>o==='fire'?'🔥 เห็นเปลวไฟ':o==='smoke'?'💨 เห็นควัน':'';
   const button=(label,action,extra='',primary=false)=>`<button type="button" class="cw-btn${primary?' primary':''}" data-cw="${action}" ${extra}>${label}</button>`;
   const options=(forests,selected='')=>forests.map(f=>{const duplicated=state.catalog.filter(x=>x.name===f.name&&x.amphoe===f.amphoe).length>1;return `<option value="${esc(f.forest_id)}" ${f.forest_id===selected?'selected':''}>${esc(f.name)} · ${esc(f.amphoe)}${duplicated?' · '+esc(f.tambon||'')+' · '+esc(f.forest_id):''}</option>`;}).join('');
   const isOpen=()=>container&&container.classList.contains('open');
@@ -91,7 +96,7 @@
     if(!state.session)return '';
     const n=pendingRequests().length;
     const entries=[['forest',adminOverview()?'ภาพรวม':'ป่าของฉัน'],['incidents','เหตุทั้งหมด']];
-    if(state.me?.is_admin)entries.push(['review','ตรวจคำขอ'+(n?` (${n})`:'')]);
+    if(state.me?.is_admin)entries.push(['review','ตรวจคำขอ'+(n?`<span class="cw-tab-n">${n}</span>`:'')]);
     entries.push(['preferences','การแจ้งเตือน']);
     if(state.tab==='practice')entries.push(['practice','ซ้อมใช้งาน']);
     return `<div class="cw-tabs" role="tablist" aria-label="พื้นที่ชุมชน">${entries.map(([id,label])=>`<button role="tab" aria-selected="${state.tab===id}" data-cw="tab" data-tab="${id}">${label}</button>`).join('')}</div>`;
@@ -121,7 +126,18 @@
     const windTo=wind?.wind_direction_deg!=null?directions[Math.round(((wind.wind_direction_deg+180)%360)/45)%8]:null;
     return `<div class="cw-summary"><div><small>จุดความร้อนในขอบเขตป่า</small><strong>${rows===null?'รอข้อมูล':rows.length+' จุด'}</strong><small>24 ชม. · ${date(q.hotspots?.latest_update)}</small></div><div><small>ฝุ่นจากสถานีในขอบเขตป่า</small><strong>${pm===null?'ไม่มีสถานีที่ใช้ได้':pm+' µg/m³'}</strong><small>${stations.length?'ค่ารอบปัจจุบัน · '+date(q.pm25?.latest_update):'ไม่ใช้ค่าเฉลี่ยจังหวัดแทน'}</small></div><div><small>ลมอ้างอิงระดับจังหวัด</small><strong>${wind?Math.round(wind.wind_speed_kmh)+' กม./ชม.':'รอข้อมูล'}</strong><small>${windTo?'พัดไป'+windTo+' · ':''}${wind?esc(wind.source)+' · '+date(q.weather?.latest_update):'ยังไม่มีข้อมูลที่ใช้ได้'}</small></div></div>`;
   }
-  function incidentRows(rows,publicView=false){return rows.length?rows.map(i=>`<article class="cw-row"><div><h3>${esc(i.forest_name||state.catalog.find(f=>f.forest_id===i.forest_id)?.name||'ป่าชุมชน')}</h3>${badge(i.status)}<p>พบเหตุ ${date(i.observed_at)} · อัปเดต ${date(i.updated_at)}</p>${!publicView?`<p>${i.coordinator_id?'ผู้รับประสาน: '+esc(i.coordinator_name||'ตัวแทนที่รับเรื่อง'):'ยังไม่มีผู้รับประสานในระบบ'}</p>`:''}</div>${!publicView?button('ดูประวัติเหตุ','detail',`data-id="${esc(i.id)}"`):''}</article>`).join(''):`<div class="cw-empty"><h3>${publicView?'ยังไม่มีเหตุที่อนุมัติให้เผยแพร่':'ยังไม่มีเหตุในรายการนี้'}</h3><p>การไม่มีรายการในระบบไม่ได้ยืนยันว่าไม่มีไฟในพื้นที่</p></div>`;}
+  function incidentRows(rows,publicView=false){
+    if(!rows.length)return `<div class="cw-empty cw-empty-card"><span class="cw-empty-ic" aria-hidden="true">🌿</span><h3>${publicView?'ยังไม่มีเหตุที่อนุมัติให้เผยแพร่':'ยังไม่มีเหตุในรายการนี้'}</h3><p>การไม่มีรายการในระบบไม่ได้ยืนยันว่าไม่มีไฟในพื้นที่</p></div>`;
+    return `<div class="cw-incs">${rows.map(i=>{
+      const name=i.forest_name||state.catalog.find(f=>f.forest_id===i.forest_id)?.name||'ป่าชุมชน';
+      const who=publicView?'':i.coordinator_id?`<p class="cw-inc-who">👤 ผู้รับประสาน: <b>${esc(i.coordinator_name||'ตัวแทนที่รับเรื่อง')}</b></p>`:`<p class="cw-inc-who none">⚠️ ยังไม่มีผู้รับประสานในระบบ</p>`;
+      return `<article class="cw-inc s-${esc(i.status)}"><div class="cw-inc-main">
+        <div class="cw-inc-top">${badge(i.status)}${obsLabel(i.observation)?`<span class="cw-inc-obs">${obsLabel(i.observation)}</span>`:''}</div>
+        <h3>${esc(name)}</h3>
+        <p class="cw-inc-meta">พบเหตุ ${date(i.observed_at)} <span>· ${esc(ago(i.observed_at))}</span> · อัปเดต ${date(i.updated_at)}</p>
+        ${who}${publicView?'':`<p class="cw-inc-next">ต่อไป: ${esc(nextStep[i.status]||'อ่านประวัติเพื่อติดตาม')}</p>`}
+      </div>${publicView?'':button('เปิดดูเหตุ →','detail',`data-id="${esc(i.id)}"`)}</article>`;}).join('')}</div>`;
+  }
   function createForm(){
     const d=state.draft||newDraft(),allowed=state.me?.is_admin&&!adminOverview()?myForests():allowedForests();state.draft=d;
     const chosen=allowed.find(f=>f.forest_id===d.forest_id);
@@ -184,13 +200,15 @@
   }
   function adminView(){
     const pend=pendingRequests(),open=state.incidents.filter(i=>!['closed','cancelled'].includes(i.status));
+    const noCoord=open.filter(i=>!i.coordinator_id).length;
     const P=root.CmeForestPublic;
+    const headline=pend.length||open.length?`มีงานรอคุณ ${[pend.length?pend.length+' คำขอ':'',open.length?open.length+' เหตุที่ยังไม่ปิด':''].filter(Boolean).join(' และ ')}`:'ตอนนี้ไม่มีงานค้าง 🎉';
     return `<div class="rp">
-      <section class="rp-head"><p class="fp-kicker">ผู้ดูแลระบบ</p><h2>ภาพรวมทุกป่า</h2><p class="fp-meta">คุณไม่ได้เป็นตัวแทนของป่าใด หน้านี้สรุปงานที่รอคุณ</p></section>
+      <section class="rp-head adm-head"><p class="fp-kicker">ผู้ดูแลระบบ</p><h2>ภาพรวมทุกป่า</h2><p class="adm-headline">${esc(headline)}</p><p class="fp-meta">คุณไม่ได้เป็นตัวแทนของป่าใด หน้านี้สรุปงานที่รอคุณ</p></section>
       <div class="adm-stats">
-        <button type="button" class="adm-stat${pend.length?' warn':''}" data-cw="tab" data-tab="review"><b>${pend.length}</b><span>คำขอรอตรวจ</span></button>
-        <button type="button" class="adm-stat${open.length?' alert':''}" data-cw="all-incidents"><b>${open.length}</b><span>เหตุที่ยังไม่ปิด</span></button>
-        <div class="adm-stat"><b>${state.catalog.length.toLocaleString('th-TH')}</b><span>ป่าในระบบ</span></div>
+        <button type="button" class="adm-stat${pend.length?' warn':''}" data-cw="tab" data-tab="review"><span class="adm-ic" aria-hidden="true">📝</span><b>${pend.length}</b><span>คำขอรอตรวจ</span><small>${pend.length?'กดเพื่อตรวจ':'ไม่มีค้าง'}</small></button>
+        <button type="button" class="adm-stat${open.length?' alert':''}" data-cw="all-incidents"><span class="adm-ic" aria-hidden="true">🔥</span><b>${open.length}</b><span>เหตุที่ยังไม่ปิด</span><small>${noCoord?noCoord+' เหตุยังไม่มีผู้รับประสาน':open.length?'มีผู้รับประสานครบ':'ไม่มีเหตุเปิดอยู่'}</small></button>
+        <div class="adm-stat"><span class="adm-ic" aria-hidden="true">🌳</span><b>${state.catalog.length.toLocaleString('th-TH')}</b><span>ป่าในระบบ</span><small>ขอบเขตจาก RECOFTC</small></div>
       </div>
       ${open.length?`<section class="rp-section"><h2>เหตุที่ยังไม่ปิด</h2>${incidentRows(open.slice(0,5))}${open.length>5?`<div class="cw-actions">${button('ดูทั้งหมด','all-incidents')}</div>`:''}</section>`:''}
       ${P?`<section class="rp-section"><h2>ดูป่าใดก็ได้</h2><p class="cw-help">ค้นหาชื่อป่าเพื่อดูสถานการณ์แบบเดียวกับที่คนทั่วไปเห็น</p>${P.html({forests:state.catalog,dashboard:context.dashboard(),selectedId:state.publicForest??P.recall(),showRep:false,showList:false})}</section>`:''}
@@ -216,8 +234,12 @@
     const d=state.detail,i=d.incident,name=state.catalog.find(f=>f.forest_id===i.forest_id)?.name||'ป่าชุมชน';
     const invites=d.partners.filter(p=>p.status==='invited'&&(state.me.is_admin||allowedForests().some(f=>f.forest_id===p.forest_id)));
     const coor=state.incidents.find(x=>x.id===i.id)?.coordinator_name;
-    return `<div class="cw-actions">${button('กลับรายการเหตุ','back-list')}${button('ดูตำแหน่งบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</div><div class="cw-layout"><section class="cw-section"><h2>${esc(name)}</h2>${badge(i.status)}<p class="cw-help">พบ${i.observation==='fire'?'เปลวไฟ':'ควัน'} ${date(i.observed_at)} · รับรายงาน ${date(i.created_at)}<br>พิกัด ${i.latitude.toFixed(5)}, ${i.longitude.toFixed(5)}</p><p class="cw-description">${esc(i.description||'ยังไม่มีรายละเอียดเพิ่มเติม')}</p><p>ผู้รับประสาน: ${i.coordinator_id?esc(i.coordinator_id===state.session.user.id?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):'ยังไม่มีผู้รับประสานในระบบ'}</p>
-      <p class="cw-next">ขั้นตอนถัดไป: ${esc({pending:'ผู้รับผิดชอบตรวจสอบรายงานและบันทึกผล',confirmed:'ระบุผู้รับประสานและอัปเดตการดำเนินงาน',coordinating:'บันทึกความคืบหน้าและชุมชนที่ร่วมประสาน',controlled:'ตรวจผลและบันทึกเหตุผลก่อนปิดเหตุ',closed:'เหตุปิดแล้ว เปิดใหม่เมื่อมีหลักฐานเพิ่มเติม',cancelled:'อ่านเหตุผลที่ยกเลิกในประวัติ'}[i.status]||'อ่านประวัติเพื่อติดตามความคืบหน้า')}</p><details class="fp-who cw-who"><summary>📞 ใครดูแลพื้นที่นี้ · เบอร์หน่วยงาน</summary>${root.CmeCoordination?.html(i.latitude,i.longitude,{myForestId:state.forestId})||''}</details>
+    const coordText=i.coordinator_id?esc(i.coordinator_id===state.session.user.id?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):'ยังไม่มีผู้รับประสานในระบบ';
+    return `<div class="cw-actions cw-detail-nav">${button('← กลับรายการเหตุ','back-list')}${button('📍 ดูตำแหน่งบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</div>
+      <section class="cw-detail-head s-${esc(i.status)}"><div class="cw-inc-top">${badge(i.status)}<span class="cw-inc-obs">${obsLabel(i.observation)}</span></div><h2>${esc(name)}</h2>${stepper(i.status)}
+        <dl class="cw-facts"><div><dt>พบเหตุ</dt><dd>${date(i.observed_at)}<small>${esc(ago(i.observed_at))}</small></dd></div><div><dt>รับรายงาน</dt><dd>${date(i.created_at)}</dd></div><div><dt>ผู้รับประสาน</dt><dd class="${i.coordinator_id?'':'none'}">${coordText}</dd></div><div><dt>พิกัด</dt><dd>${i.latitude.toFixed(5)}, ${i.longitude.toFixed(5)}</dd></div></dl>
+        <p class="cw-next">👉 ขั้นตอนถัดไป: ${esc(nextStep[i.status]||'อ่านประวัติเพื่อติดตามความคืบหน้า')}</p></section>
+      <div class="cw-layout"><section class="cw-section"><h3>สิ่งที่ผู้แจ้งเห็น</h3><p class="cw-description">${esc(i.description||'ยังไม่มีรายละเอียดเพิ่มเติม')}</p><details class="fp-who cw-who"><summary>📞 ใครดูแลพื้นที่นี้ · เบอร์หน่วยงาน</summary>${root.CmeCoordination?.html(i.latitude,i.longitude,{myForestId:state.forestId})||''}</details>
       ${d.can_manage&&!i.coordinator_id?button('รับเป็นผู้ประสานเหตุ','claim','',true):''}
       ${invites.map(p=>`<div class="cw-alert">คำขอร่วมประสานสำหรับ ${esc(p.name)}<div class="cw-actions">${button('รับร่วมประสาน','accept',`data-forest="${esc(p.forest_id)}"`,true)}${button('ไม่รับคำขอ','decline',`data-forest="${esc(p.forest_id)}"`)}</div></div>`).join('')}
       ${i.linked_incident_id?`<div class="cw-alert">รายงานนี้เชื่อมกับเหตุหลักแล้ว ประวัติเดิมยังอยู่ ${button('เปิดเหตุหลัก','detail',`data-id="${esc(i.linked_incident_id)}"`)}</div>`:''}<h3>ชุมชนที่ขอร่วมประสาน</h3>${d.partners.length?d.partners.map(p=>`<div class="cw-row"><span>${esc(p.name)}</span>${badge(p.status)}</div>`).join(''):'<p class="cw-help">ยังไม่มีคำขอร่วมประสาน</p>'}
@@ -236,10 +258,10 @@
     if(!l)return '<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p class="cw-help" role="status">กำลังตรวจการเชื่อม LINE…</p></section>';
     if(!l.available)return '<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p class="cw-help">ยังไม่ได้เปิดใช้การแจ้งเตือนทาง LINE ในระบบนี้</p></section>';
     const scope=state.me.memberships?.some(m=>m.status==='approved')?'':'<div class="cw-alert">จะเริ่มได้รับแจ้งเตือนหลังผู้ดูแลอนุมัติคุณเป็นตัวแทนป่า</div>';
-    if(l.linked)return `<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p><strong>ผูก LINE แล้ว</strong> · ตั้งแต่ ${date(l.linked_at)}</p>${scope}
+    if(l.linked)return `<section class="cw-line"><h2>💬 แจ้งเตือนทาง LINE</h2><p class="cw-chip ok"><strong>ผูก LINE แล้ว</strong> · ตั้งแต่ ${date(l.linked_at)}</p>${scope}
       <p class="cw-help">ส่งเมื่อพบจุดความร้อนใหม่ในป่าที่ได้รับอนุมัติ หรือมีการอัปเดตการประสานเหตุ ช่วงพักการส่งด้านล่างใช้กับ LINE ด้วย สรุปรายวันส่งทางอีเมลเท่านั้น</p>
       <div class="cw-actions">${admin?button('ส่ง LINE ทดสอบ','line-test'):''}${button('ยกเลิกการผูก LINE','line-unlink')}</div></section>`;
-    return `<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p class="cw-help">รับแจ้งเมื่อพบจุดความร้อนใหม่ในป่าที่คุณดูแล ผ่านบัญชี LINE ทางการ ${esc(l.basic_id)} ไม่ต้องสมัครบัญชีใหม่</p>${scope}
+    return `<section class="cw-line"><h2>💬 แจ้งเตือนทาง LINE</h2><p class="cw-chip">ยังไม่ได้ผูก</p><p class="cw-help">รับแจ้งเมื่อพบจุดความร้อนใหม่ในป่าที่คุณดูแล ผ่านบัญชี LINE ทางการ ${esc(l.basic_id)} ไม่ต้องสมัครบัญชีใหม่</p>${scope}
       ${code?`<ol class="cw-line-steps"><li>${link(code.add_friend_url,'1. เพิ่มเพื่อน '+esc(l.basic_id))}</li><li>${link(code.chat_url,'2. เปิดแชทแล้วกดส่งรหัส',true)}</li></ol>
         <p class="cw-help">รหัส <strong>${esc(code.code)}</strong> ใช้ได้ครั้งเดียว ถึง ${date(code.expires_at)} ถ้าเปิดลิงก์ไม่ได้ ให้พิมพ์รหัสนี้ส่งในแชทเอง</p>
         <div class="cw-actions">${button('ส่งรหัสแล้ว ตรวจสถานะ','line-refresh',  '',true)}${button('ขอรหัสใหม่','line-link')}</div>`
@@ -248,9 +270,9 @@
   function preferencesView(){
     const p=state.me.preferences,admin=state.me.is_admin,mail=state.mailStatus||[];
     const hours=value=>Array.from({length:24},(_,h)=>`<option value="${h}" ${h===value?'selected':''}>${h.toString().padStart(2,'0')}:00 น.</option>`).join('');
-    return `<div class="rp-practice"><div><b>ซ้อมใช้งานก่อนฤดูไฟ</b><small>ลองบันทึกเหตุและรับแจ้งเตือนแบบทดสอบ ข้อมูลซ้อมไม่ถูกส่งจริง</small></div>${button('เริ่มซ้อม','tab','data-tab="practice"')}</div><section class="cw-section">${admin?'<div class="cw-layout cw-preferences-layout"><div>':''}
-      ${lineView()}
-      <h2>อีเมลของพื้นที่ที่คุณติดตาม</h2><p class="cw-help">ส่งถึงอีเมลที่ยืนยันของบัญชีนี้ เฉพาะป่าที่ได้รับอนุมัติ เมื่อข้อมูลใหม่เข้ามาหรือมีการประสานเหตุ</p>
+    return `<section class="cw-section cw-prefs"><h2>การแจ้งเตือน</h2><p class="cw-help">เลือกช่องทางที่สะดวก ส่งเฉพาะป่าที่คุณได้รับอนุมัติ</p>
+      <div class="cw-pref-card">${lineView()}</div>
+      <div class="cw-pref-card"><h2>📧 อีเมลของพื้นที่ที่คุณติดตาม</h2><p class="cw-help">ส่งถึงอีเมลที่ยืนยันของบัญชีนี้ เฉพาะป่าที่ได้รับอนุมัติ เมื่อข้อมูลใหม่เข้ามาหรือมีการประสานเหตุ</p>
       ${state.emailMode!=='live'?'<div class="cw-alert">ยังไม่ส่งถึงสมาชิกทั่วไป ขณะนี้ส่งได้เฉพาะอีเมลทดสอบที่กำหนด จะเปิดรับจริงหลังยืนยันโดเมนผู้ส่ง</div>':''}
       <form class="cw-form" id="cwPreferencesForm">
         <label class="cw-checkbox"><input type="checkbox" name="events_enabled" ${p.events_enabled?'checked':''}><span>รับข้อมูลจุดความร้อนใหม่และการประสานเหตุ</span></label>
@@ -258,20 +280,36 @@
         <label class="cw-checkbox"><input type="checkbox" name="quiet_enabled" ${p.quiet_enabled?'checked':''}><span>พักการส่งในช่วงเวลาที่เลือก</span></label>
         <div class="cw-fields"><label>เริ่มพัก<select name="quiet_start">${hours(p.quiet_start)}</select></label><label>กลับมาส่ง<select name="quiet_end">${hours(p.quiet_end)}</select></label></div>
         <button class="cw-btn primary">บันทึกการรับอีเมล</button>
-      </form><p class="cw-help">ยกเลิกรับได้โดยเอาเครื่องหมายออกและบันทึก อีเมลเป็นข้อมูลสำหรับตรวจสอบ ไม่ใช่ช่องทางฉุกเฉิน ข้อมูลดาวเทียมอัปเดตเป็นรอบ</p>
-      ${admin?`</div><div>${jobsView()}<p class="cw-help">ผู้รับทดสอบ: ${esc(state.me.test_recipient||'ยังไม่กำหนด')}</p>
+      </form><p class="cw-help">ยกเลิกรับได้โดยเอาเครื่องหมายออกและบันทึก อีเมลเป็นข้อมูลสำหรับตรวจสอบ ไม่ใช่ช่องทางฉุกเฉิน ข้อมูลดาวเทียมอัปเดตเป็นรอบ</p></div>
+      <div class="rp-practice"><div><b>🧪 ซ้อมใช้งานก่อนฤดูไฟ</b><small>ลองบันทึกเหตุและรับแจ้งเตือนแบบทดสอบ ข้อมูลซ้อมไม่ถูกส่งจริง</small></div>${button('เริ่มซ้อม','tab','data-tab="practice"')}</div>
+      ${admin?`<details class="cw-pref-card cw-admin-tools"><summary><b>🛠 เครื่องมือผู้ดูแลระบบ</b><small>ทดสอบการส่ง · รอบตรวจข้อมูล · ผลการส่งล่าสุด</small></summary>${jobsView()}<p class="cw-help">ผู้รับทดสอบ: ${esc(state.me.test_recipient||'ยังไม่กำหนด')}</p>
         <div class="cw-actions">${button('ส่งอีเมลทดสอบ','test-email')}${button('ตรวจข้อมูลและคิวตอนนี้','run-alerts')}</div>
         <h3>ผลการส่งล่าสุด</h3>${button('อัปเดตผลการส่ง','refresh-mail')}
         ${mail.length?mailRow(mail[0]):state.mailStatus?'<p class="cw-help">ยังไม่มีรายการส่ง</p>':'<p class="cw-help" role="status">กำลังโหลดผลการส่ง…</p>'}
         ${mail.length>1?`<details><summary>ประวัติการส่งก่อนหน้านี้ (${mail.length-1} รายการที่โหลด)</summary>${mail.slice(1).map(mailRow).join('')}</details>`:''}
-      </div></div>`:''}</section>`;
+      </details>`:''}</section>`;
   }
   function jobsView(){
     const job=state.jobsStatus;if(!job)return '<p class="cw-help">กำลังตรวจรอบงาน…</p>';
     const runs=job.runs||[],latest=runs.find(r=>r.completed_at),old=!latest||Date.now()-Date.parse(latest.completed_at)>30*60000;
     return `<section class="cw-jobs"><h3>รอบตรวจข้อมูลและคิวอีเมล</h3><p>${job.scheduler_enabled?'ตั้งงานอัตโนมัติทุก '+job.interval_minutes+' นาทีผ่าน '+esc(job.scheduler_provider):'ยังไม่ได้เปิดงานอัตโนมัติตามรอบ'}</p><p class="cw-help">ตรวจเสร็จล่าสุด: ${latest?date(latest.completed_at):'ยังไม่มีรอบที่ตรวจเสร็จ'}${old?' · ควรตรวจการทำงาน':''}<br>รอบเรียกตรวจไม่ใช่ความถี่ที่ดาวเทียมหรือสถานีส่งข้อมูลใหม่</p><details><summary>ดูผลรอบล่าสุด</summary>${runs.slice(0,5).map(r=>`<p class="cw-help">${date(r.started_at)} · ${r.completed_at?'ตรวจเสร็จ':r.run_status==='failed'?'รอบนี้ไม่สำเร็จ จะตรวจซ้ำ':r.lease_until&&Date.parse(r.lease_until)<Date.now()?'รอบนี้หยุดก่อนเสร็จ รอตรวจซ้ำ':'กำลังตรวจ'}${r.summary?' · เข้าคิว '+Number(r.summary.queued||0)+' · ผู้ให้บริการรับ '+Number(r.summary.provider_accepted||0):''}</p>`).join('')||'<p class="cw-help">ยังไม่มีผลรอบงาน</p>'}</details></section>`;
   }
-  function reviewView(){return `<section class="cw-section"><h2>ตรวจคำขอตัวแทน</h2><p class="cw-help">ตรวจตัวตนและหน้าที่กับผู้ประสานที่เชื่อถือได้ก่อนอนุมัติ การยืนยันอีเมลอย่างเดียวไม่รับรองว่าเป็นตัวแทนป่า</p>${(state.reviewQueue||[]).map(m=>`<article class="cw-row"><div><h3>${esc(m.name)} · ${esc(m.amphoe)}</h3><p>${esc(m.display_name||'ยังไม่ระบุชื่อ')} · ${esc(m.email)}</p><p>${esc(m.request_note)}</p>${badge(m.status)}<div class="cw-actions">${m.status==='pending'?button('อนุมัติพื้นที่','approve',`data-id="${esc(m.id)}"`,true)+button('ไม่อนุมัติ','reject',`data-id="${esc(m.id)}"`):button('ยกเลิกสิทธิ์พื้นที่','revoke',`data-id="${esc(m.id)}"`)}</div></div></article>`).join('')||'<p class="cw-empty">ไม่มีคำขอในรายการนี้</p>'}</section>`;}
+  function reviewCard(m){
+    return `<article class="cw-req s-${esc(m.status)}"><div class="cw-req-top">${badge(m.status)}${m.created_at?`<small>ส่งคำขอ ${date(m.created_at)} · ${esc(ago(m.created_at))}</small>`:''}</div>
+      <h3>🌳 ${esc(m.name)} <span>อ.${esc(String(m.amphoe||'').replace(/^อำเภอ|^อ\./,''))}</span></h3>
+      <p class="cw-req-who">👤 ${esc(m.display_name||'ยังไม่ระบุชื่อ')} · ${esc(m.email)}</p>
+      <blockquote class="cw-req-note">${esc(m.request_note||'ไม่ได้เขียนรายละเอียด')}</blockquote>
+      <div class="cw-actions">${m.status==='pending'?button('✓ อนุมัติพื้นที่','approve',`data-id="${esc(m.id)}"`,true)+button('ไม่อนุมัติ','reject',`data-id="${esc(m.id)}"`):button('ยกเลิกสิทธิ์พื้นที่','revoke',`data-id="${esc(m.id)}"`)}</div></article>`;
+  }
+  function reviewView(){
+    const all=state.reviewQueue||[],pend=all.filter(m=>m.status==='pending'),done=all.filter(m=>m.status!=='pending');
+    return `<section class="cw-section"><h2>ตรวจคำขอตัวแทน</h2>
+      <div class="cw-check"><b>ก่อนกดอนุมัติ เช็ก 3 ข้อนี้</b><ol><li>เป็นคนในชุมชนหรือคณะกรรมการป่านั้นจริง</li><li>โทรหรือถามผู้นำชุมชน / หน่วยงานในพื้นที่ยืนยันแล้ว</li><li>เลือกป่าถูกแห่ง (ดูอำเภอและตำบลให้ตรง)</li></ol><small>การยืนยันอีเมลอย่างเดียวไม่รับรองว่าเป็นตัวแทนป่า</small></div>
+      <h3 class="cw-sub">รอคุณตรวจ <span class="cw-tab-n">${pend.length}</span></h3>
+      ${pend.length?`<div class="cw-reqs">${pend.map(reviewCard).join('')}</div>`:'<div class="cw-empty cw-empty-card"><span class="cw-empty-ic" aria-hidden="true">✅</span><h3>ไม่มีคำขอค้าง</h3><p>คำขอใหม่จะขึ้นที่นี่ และนับในแท็บด้านบน</p></div>'}
+      ${done.length?`<details class="cw-done"><summary>ตัดสินแล้ว (${done.length})</summary><div class="cw-reqs">${done.map(reviewCard).join('')}</div></details>`:''}
+    </section>`;
+  }
   function render(){
     if(!isOpen())return;
     const priorView=body.dataset.viewKey;
@@ -289,11 +327,13 @@
     else if(state.tab==='practice')content='<section id="cwPractice"><p class="cw-loading">กำลังโหลดพื้นที่ซ้อม…</p></section>';
     else if(state.tab==='review')content=reviewView();
     else if(state.tab==='preferences')content=preferencesView();
-    else if(state.tab==='incidents'){const openN=state.incidents.filter(i=>!['closed','cancelled'].includes(i.status)).length;const seg=(id,label,n)=>`<button type="button" class="cw-seg-btn" data-cw="scope" data-scope="${id}" aria-pressed="${state.scope===id}">${label} <span>${n}</span></button>`;content=`<section class="cw-section"><h2>เหตุทั้งหมด</h2><div class="cw-actions"><div class="cw-seg" role="group" aria-label="กรองเหตุ">${seg('active','ยังไม่ปิด',openN)}${seg('all','ทั้งหมด',state.incidents.length)}</div>${allowedForests().length?button('📝 บันทึกเหตุ','create','',true):''}</div>${incidentRows(state.incidents.filter(i=>state.scope==='all'||!['closed','cancelled'].includes(i.status)))}${state.incidentMore?button('โหลดเหตุเก่ากว่านี้','older-incidents'):''}</section>`;}
+    else if(state.tab==='incidents'){const openN=state.incidents.filter(i=>!['closed','cancelled'].includes(i.status)).length;const seg=(id,label,n)=>`<button type="button" class="cw-seg-btn" data-cw="scope" data-scope="${id}" aria-pressed="${state.scope===id}">${label} <span>${n}</span></button>`;content=`<section class="cw-section"><h2>เหตุทั้งหมด</h2><p class="cw-help">เหตุที่ตัวแทนบันทึกไว้ในป่าที่คุณเห็นได้ เรียงจากล่าสุด กดเปิดดูเพื่ออัปเดตสถานะหรือเพิ่มบันทึก</p><div class="cw-actions"><div class="cw-seg" role="group" aria-label="กรองเหตุ">${seg('active','ยังไม่ปิด',openN)}${seg('all','ทั้งหมด',state.incidents.length)}</div>${allowedForests().length?button('📝 บันทึกเหตุ','create','',true):''}</div>${incidentRows(state.incidents.filter(i=>state.scope==='all'||!['closed','cancelled'].includes(i.status)))}${state.incidentMore?button('โหลดเหตุเก่ากว่านี้','older-incidents'):''}</section>`;}
     else content=forestView();
     const head=container.querySelector('.cw-header');
     if(head){const signedIn=!!state.session;head.querySelector('h1').textContent=signedIn?'พื้นที่ป่าชุมชน':'ป่าชุมชน';head.querySelector('p').textContent=signedIn?'สถานการณ์ · บันทึกเหตุ · ประสานงาน':'ดูไฟ ลม และฝุ่นรอบป่า ไม่ต้องสมัคร';}
     body.innerHTML=tabs()+notices+content;
+    // On phones the tab row scrolls; keep the open tab in sight.
+    const tabRow=body.querySelector('.cw-tabs'),on=tabRow?.querySelector('[aria-selected="true"]');if(tabRow&&on)tabRow.scrollLeft=Math.max(0,on.offsetLeft-(tabRow.clientWidth-on.offsetWidth)/2);
     body.dataset.viewKey=state.tab+'/'+(state.detail?.incident?.id||'')+'/'+state.create;
     body.querySelectorAll('details').forEach((d,n)=>{const open=detailsOpen.get(body.dataset.viewKey+'/'+n);if(open!==undefined)d.open=open;});
     restoreForms();

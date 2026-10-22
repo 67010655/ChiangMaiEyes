@@ -55,7 +55,7 @@ describe('representative workspace interaction and evidence boundaries', () => {
   it('an admin who represents no forest gets an overview, not a 677-forest "my forest"', async () => {
     const { dom } = await setup({ signedIn: true, admin: true, publicView: true });
     const doc = dom.window.document;
-    expect([...doc.querySelectorAll('.cw-tabs button')].map((b: any) => b.textContent)).toEqual(['ภาพรวม', 'เหตุทั้งหมด', 'ตรวจคำขอ (1)', 'การแจ้งเตือน']);
+    expect([...doc.querySelectorAll('.cw-tabs button')].map((b: any) => b.textContent)).toEqual(['ภาพรวม', 'เหตุทั้งหมด', 'ตรวจคำขอ1', 'การแจ้งเตือน']);
     expect(doc.querySelector('.adm-stats')?.textContent).toContain('คำขอรอตรวจ');
     expect(doc.getElementById('cwActiveForest')).toBeNull();
     expect(doc.getElementById('fpSearch')).not.toBeNull();

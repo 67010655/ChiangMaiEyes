@@ -11,6 +11,10 @@
   const weekday=d=>new Intl.DateTimeFormat('th-TH',{...tz,weekday:'short'}).format(Date.parse(d+'T12:00:00+07:00'));
   const fmt1=n=>Number(n).toLocaleString('th-TH',{maximumFractionDigits:1});
   const todayBkk=()=>new Intl.DateTimeFormat('sv-SE',tz).format(new Date());
+  const hourBkk=()=>Number(new Intl.DateTimeFormat('en-GB',{...tz,hour:'2-digit',hourCycle:'h23'}).format(new Date()));
+  const dayBefore=d=>new Date(Date.parse(d+'T12:00:00+07:00')-864e5).toISOString().slice(0,10);
+  // Readout name for one day: today is still filling up, so say so.
+  const dayRead=d=>d===todayBkk()?`วันนี้ ${dayLabel(d)} (ถึงตอนนี้)`:`${weekday(d)} ${dayLabel(d)}`;
   const reduced=()=>!!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const U=()=>root.CmeUx;
   // Chiang Mai open-burning control period, from the province announcement
@@ -46,10 +50,11 @@
         if(!Number.isFinite(it.v))return `<rect class="as-gap" x="${i*w+w*gap}" y="42" width="${w*(1-2*gap)}" height="2" data-read="${esc(read)}"><title>${esc(read)}</title></rect>`;
         const h=Math.max(2,it.v/max*40);
         return `<rect class="as-bar${it.hi?' hi':''}${it.model?' model':''}" style="--i:${(i*Math.min(1,30/n)).toFixed(1)}" x="${i*w+w*gap}" y="${44-h}" width="${w*(1-2*gap)}" height="${h}" rx="0.8" fill="${color(it,i)}" data-read="${esc(read)}"><title>${esc(read)}</title></rect>`;
-      }).join('')+`</svg><p class="as-readout" aria-live="polite"></p>`;
+      }).join('')+`</svg><p class="as-readout" aria-live="polite">แตะแท่งกราฟเพื่อดูวันและค่า</p>`;
   }
   function axis(labels,dates){
     if(!labels.length)return '';
+    if(labels.length===3&&!dates)return `<div class="as-axis">${labels.map(l=>`<span>${esc(l)}</span>`).join('')}</div>`;
     if(dates&&dates[dates.length-1]===todayBkk())labels=[...labels.slice(0,-1),'วันนี้'];
     const pick=labels.length<=2?labels:[labels[0],labels[Math.floor((labels.length-1)/2)],labels[labels.length-1]];
     return `<div class="as-axis">${pick.map(l=>`<span>${esc(l)}</span>`).join('')}</div>`;
@@ -127,13 +132,19 @@
     const days=a.hotspots||[];
     let items, labels, title;
     if(h.days===1&&Array.isArray(a.hour_histogram)){
-      title='จุดความร้อนตามชั่วโมง';
-      items=a.hour_histogram.map((v,i)=>({v,label:`${String(i).padStart(2,'0')}:00 น.`}));
-      labels=['00:00','12:00','23:00'];
+      title='จุดความร้อนตามชั่วโมง · 24 ชม. ล่าสุด';
+      // The archive bins the last 24 h by Bangkok hour of day, so an hour after
+      // the current one belongs to yesterday.
+      const today=todayBkk(), now=hourBkk(), yday=dayBefore(today);
+      const order=Array.from({length:24},(_,k)=>(now+1+k)%24);
+      const hh=n=>String(n).padStart(2,'0');
+      items=order.map(hr=>{const d=hr>now?yday:today;return {v:a.hour_histogram[hr],label:`${dayLabel(d)} ${hh(hr)}:00–${hh(hr)}:59 น.`};});
+      const tag=hr=>`${dayLabel(hr>now?yday:today)} ${hh(hr)}:00`;
+      labels=[tag(order[0]),tag(order[12]),'ตอนนี้'];
     }else{
       title=`จุดความร้อนรายวัน`;
       const peakV=Math.max(0,...days.map(d=>d.count).filter(Number.isFinite));
-      items=days.map(d=>({v:d.count,label:dayLabel(d.date),hi:Number.isFinite(d.count)&&d.count===peakV&&peakV>0,gap:!d.partial_day&&!d.source_requests_complete,ban:!!inBan(d.date)}));
+      items=days.map(d=>({v:d.count,label:dayRead(d.date),hi:Number.isFinite(d.count)&&d.count===peakV&&peakV>0,gap:!d.partial_day&&!d.source_requests_complete,ban:!!inBan(d.date)}));
       labels=days.map(d=>dayLabel(d.date));
     }
     const known=days.filter(d=>Number.isFinite(d.count));
@@ -157,14 +168,14 @@
       <ul>${pm.levels.filter(l=>l.n).map(l=>`<li><i style="background:var(${l.token})"></i>${esc(l.label)} <b>${esc(l.n)}</b> วัน</li>`).join('')}</ul></div>`;
   }
   function pmCard(h,a,pm){
-    const items=pm.series.map(x=>({v:x.v,label:dayLabel(x.date),model:x.kind==='model',ban:!!inBan(x.date)}));
+    const items=pm.series.map(x=>({v:x.v,label:dayRead(x.date)+(x.kind==='model'?' · แบบจำลอง CAMS':x.kind==='measured'?' · เฉลี่ยสถานี':''),model:x.kind==='model',ban:!!inBan(x.date)}));
     const span=h.days===1?'24 ชม.':h.days+' วัน';
     return `<article class="as-card as-pm" aria-labelledby="asPmT">
       <header class="as-head"><span class="as-ic pm" aria-hidden="true">≋</span><h3 id="asPmT" class="as-k">ฝุ่น PM2.5 ย้อนหลัง ${esc(span)}${focusArea||focusDistrict?'<small class="as-scope">ภาพรวมจังหวัด</small>':''}</h3></header>
       ${pm.avg!==null?`<p class="as-v">${num(pm.avg,1)} <span>µg/m³</span> ${U()?U().pmChipHtml(pm.avg):''}</p>
         <p class="as-sub">เฉลี่ยรายวัน ${esc(pm.fullDays)} วันเต็มในช่วงนี้${pm.modelDays>pm.stationDays?' (ส่วนใหญ่จากแบบจำลอง)':''}${pm.latest?` · ล่าสุด ${esc(fmt1(pm.latest.v))} (${esc(dayLabel(pm.latest.date))})`:''}</p>${levelStrip(pm)}`
         :'<p class="as-v as-empty">ยังไม่มีค่าเฉลี่ยรายวันในช่วงนี้</p>'}
-      ${bars(items,{label:'ฝุ่น PM2.5 รายวัน',unit:'µg/m³',color:it=>`var(${pmToken(it.v)})`})}${axis(items.map(i=>i.label),pm.series.map(x=>x.date))}
+      ${bars(items,{label:'ฝุ่น PM2.5 รายวัน',unit:'µg/m³',color:it=>`var(${pmToken(it.v)})`})}${axis(pm.series.map(x=>dayLabel(x.date)),pm.series.map(x=>x.date))}
       <p class="as-s">${pm.peak?`วันที่ฝุ่นสูงสุด <b>${esc(dayLabel(pm.peak.date))}</b> · ${esc(fmt1(pm.peak.v))} µg/m³`:''}</p>
       <p class="as-compare" data-compare="pm" aria-live="polite"></p>
       <p class="as-note">${pm.modelDays?`แท่งจาง = แบบจำลอง CAMS (${esc(pm.modelDays)} วันที่ไม่มีค่าสถานี) · `:''}สีตามเกณฑ์ค่าเฉลี่ย 24 ชม. กรมควบคุมมลพิษ</p>

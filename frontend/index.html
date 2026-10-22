@@ -3422,7 +3422,8 @@ function renderTileViz(){
   const hv=(hot7||[]).filter(Number.isFinite);
   if(hv.length>=2){
     const max=Math.max(1,...hv),w=100/hv.length;
-    put('publicFireSignal',`<svg viewBox="0 0 100 42" preserveAspectRatio="none">${hv.map((v,i)=>{const h=Math.max(2,v/max*40);return `<rect class="bar${i===hv.length-1?' today':''}" x="${(i*w+w*.18).toFixed(1)}" y="${(42-h).toFixed(1)}" width="${(w*.64).toFixed(1)}" height="${h.toFixed(1)}" rx="1.5"/>`;}).join('')}</svg><small>${hv.length} วันล่าสุด</small>`);
+    const dayName=i=>{const back=hv.length-1-i;return back?new Date(Date.now()-back*864e5).toLocaleDateString('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short'}):'วันนี้';};
+    put('publicFireSignal',`<svg viewBox="0 0 100 42" preserveAspectRatio="none">${hv.map((v,i)=>{const h=Math.max(2,v/max*40);return `<rect class="bar${i===hv.length-1?' today':''}" x="${(i*w+w*.18).toFixed(1)}" y="${(42-h).toFixed(1)}" width="${(w*.64).toFixed(1)}" height="${h.toFixed(1)}" rx="1.5"><title>${dayName(i)} · ${v} จุด</title></rect>`;}).join('')}</svg><small>${hv.length} วันล่าสุด</small>`);
   }else put('publicFireSignal','');
   const pv=(pm24||[]).filter(Number.isFinite);
   if(pv.length>=3){
@@ -3637,33 +3638,80 @@ syncMapViewport();
 // "Fire near me": marker + nearest satellite detection. The position stays in
 // this browser (never sent to the backend or put in a URL).
 let myLocationLayer=null;
-function myLocationPopupHtml(lat,lon){
-  const e=CmeEvidence.escapeHtml, r=CmePublicGuidance.nearMe({lat,lon},hotspots);
-  const where=districtForPoint(lat,lon)?'':'<p class="evidence-note">ตำแหน่งของคุณอยู่นอกจังหวัดเชียงใหม่ ระบบแสดงเฉพาะจุดในเชียงใหม่</p>';
-  const row=(x,fresh)=>`<p><b>${fresh?'จุดความร้อนใน 24 ชม. ที่ใกล้ที่สุด':'จุดความร้อนที่ใกล้ที่สุด (เก่ากว่า 24 ชม.)'}</b><br>ห่างราว ${x.km.toFixed(1)} กม. ไปทาง${_degToCompass(x.deg)} · ตรวจพบ ${e(formatAge(x.ageHours*60))} ที่แล้ว</p>`;
-  const body=r.nearestFresh?row(r.nearestFresh,true)+`<p>ในรัศมี ${r.radiusKm} กม. มี ${r.freshWithin} จุดใน 24 ชม.</p>`
-    : r.nearestAny?'<p>ไม่พบจุดความร้อนใน 24 ชม. ที่ระบบมี</p>'+row(r.nearestAny,false)
-    : '<p>ระบบยังไม่มีจุดความร้อนให้เทียบ</p>';
-  return `<div class="my-location-popup"><b>คุณอยู่ที่นี่</b>${where}${body}<p class="evidence-note">ระยะเส้นตรงจากจุดดาวเทียม ไม่ยืนยันว่าไฟยังไหม้ และการไม่พบจุดไม่ได้ยืนยันว่าไม่มีไฟ</p>${CmeEvidence.fireHelpHtml()}</div>`;
+// City centre, used only to say how far away someone outside the province is.
+const CM_CITY={lat:18.7883,lon:98.9853};
+function myLocationHtml(lat,lon,accuracy){
+  const e=CmeEvidence.escapeHtml, r=CmePublicGuidance.nearMe({lat,lon},hotspots,{radiusKm:10});
+  const amphoe=districtForPoint(lat,lon), tb=amphoe&&_tambonFeatures.length?tambonForPoint(lat,lon):null;
+  const fuzzy=accuracy>1500?`<p class="ml-note">ตำแหน่งจากเครื่องคลาดเคลื่อนได้ราว ${e((accuracy/1000).toFixed(1))} กม.</p>`:'';
+  if(!amphoe&&_districtFeatures.length){
+    const far=CmePublicGuidance.nearMe({lat,lon},[{lat:CM_CITY.lat,lon:CM_CITY.lon,detected_at:new Date().toISOString()}]).nearestAny;
+    const km=far?Math.round(far.km):null;
+    return `<div class="ml-card ml-away">
+      <div class="ml-emoji" aria-hidden="true">🧭</div>
+      <h3>อ้าว คุณไม่ได้อยู่เชียงใหม่นี่นา?</h3>
+      <p>${km!=null?`ตอนนี้คุณอยู่ห่างตัวเมืองเชียงใหม่ราว <b>${e(km.toLocaleString('th-TH'))} กม.</b> `:''}เว็บนี้เฝ้าดูไฟ ฝุ่น และลมเฉพาะจังหวัดเชียงใหม่ จุดรอบตัวคุณจึงยังไม่มีให้ดู</p>
+      <p class="ml-tip">💡 ถ้ามีญาติหรือบ้านอยู่เชียงใหม่ พิมพ์ชื่ออำเภอในช่องค้นหาได้เลย</p>
+      <div class="ml-actions"><button type="button" class="ml-btn primary" data-ml="province">✈️ พาไปดูเชียงใหม่</button></div>${fuzzy}
+    </div>`;
+  }
+  const where=amphoe?`อ.${e(amphoe)}${tb?.tambon?' · ต.'+e(tb.tambon):''}`:'กำลังโหลดขอบเขตอำเภอ…';
+  const near=r.nearestFresh;
+  let tone,head,detail;
+  if(near&&r.freshWithin>0){tone='warn';head=`มีจุดความร้อน ${r.freshWithin} จุด ในรัศมี ${r.radiusKm} กม.`;}
+  else if(near){tone='ok';head=`ไม่มีจุดความร้อนในรัศมี ${r.radiusKm} กม.`;}
+  else{tone='ok';head='ยังไม่พบจุดความร้อนใน 24 ชม.';}
+  detail=near?`ใกล้ที่สุด <b>${e(near.km.toFixed(1))} กม.</b> ไปทางทิศ${_degToCompass(near.deg)} · พบ ${e(formatAge(near.ageHours*60))} ที่แล้ว`
+    :r.nearestAny?`จุดเก่าที่ใกล้ที่สุดอยู่ห่าง ${e(r.nearestAny.km.toFixed(1))} กม.`:'';
+  const tip=tone==='warn'?'💡 ถ้าเห็นควันหรือได้กลิ่นไหม้ ปิดหน้าต่าง และอย่าเข้าไปดับไฟคนเดียว':'💡 ไม่พบจุดไม่ได้แปลว่าไม่มีไฟ ถ้าเห็นควันจริงให้เชื่อสิ่งที่เห็น';
+  return `<div class="ml-card">
+    <p class="ml-kicker">📍 คุณอยู่ที่</p><h3>${where}</h3>
+    <div class="ml-status ${tone}"><span aria-hidden="true">${tone==='warn'?'🔥':'🌿'}</span><div><b>${head}</b>${detail?`<small>${detail}</small>`:''}</div></div>
+    <p class="ml-tip">${tip}</p>
+    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<a class="ml-btn call" href="tel:1362">📞 โทร 1362</a></div>
+    <p class="ml-note">ระยะเส้นตรงจากจุดที่ดาวเทียมเห็น ตำแหน่งของคุณอยู่ในเครื่องนี้เท่านั้น ไม่ได้ส่งไปที่ไหน</p>${fuzzy}
+  </div>`;
 }
 function showMyLocation(lat,lon,accuracy){
   // Kept in the browser only, so hotspot popups can say how far away they are.
   window.CmeMyLocation={lat,lon};
   if(myLocationLayer) map.removeLayer(myLocationLayer);
+  const inside=!_districtFeatures.length||!!districtForPoint(lat,lon);
+  const dot=L.circleMarker([lat,lon],{radius:8,color:'#fff',weight:2,fillColor:'#3b82f6',fillOpacity:1});
   myLocationLayer=L.layerGroup([
-    L.circle([lat,lon],{radius:Math.min(accuracy||0,2000),color:'#3b82f6',weight:1,fillOpacity:.08,interactive:false}),
-    L.circleMarker([lat,lon],{radius:8,color:'#fff',weight:2,fillColor:'#3b82f6',fillOpacity:1})
-      .bindPopup(()=>myLocationPopupHtml(lat,lon),{maxWidth:300})
+    L.circle([lat,lon],{radius:Math.min(accuracy||0,2000),color:'#3b82f6',weight:1,fillOpacity:.08,interactive:false}),dot
   ]).addTo(map);
-  map.flyTo([lat,lon],12,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
-  map.once('moveend',()=>myLocationLayer?.getLayers()[1]?.openPopup());
+  const open=()=>{
+    const html=myLocationHtml(lat,lon,accuracy);
+    let host;
+    if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();CmeHotspotSheet.openPanel({kicker:'ตำแหน่งของฉัน',title:inside?'รอบตัวคุณตอนนี้':'นอกเขตเชียงใหม่',html});host=document.querySelector('#hotspotSheet .hs-sheet-body');}
+    else{dot.bindPopup(html,{maxWidth:320,className:'ml-popup'}).openPopup();host=dot.getPopup()?.getElement();}
+    if(!host||host.dataset.mlWired)return;host.dataset.mlWired='1';
+    host.addEventListener('click',ev=>{
+      const b=ev.target.closest?.('[data-ml]');if(!b)return;
+      const me=window.CmeMyLocation;if(!me)return;
+      if(b.dataset.ml==='province'){CmeHotspotSheet?.close?.();map.closePopup();map.flyToBounds([[17.24,98.0],[20.15,99.57]],{duration:motionDuration(1200)/1000,animate:motionDuration(1200)>0});}
+      if(b.dataset.ml==='nearest'){const n=CmePublicGuidance.nearMe(me,hotspots,{radiusKm:10}).nearestFresh;if(n){CmeHotspotSheet?.close?.();map.closePopup();openHotspotAt(n.h);}}
+    });
+  };
+  dot.on('click',open);
+  // Open once the map arrives, or after a moment if it never reports arriving.
+  let shown=false;const first=()=>{if(shown)return;shown=true;open();};
+  map.once('moveend',first);setTimeout(first,1200);
+  if(inside)map.flyTo([lat,lon],12,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
+  else map.setView([lat,lon],Math.min(map.getZoom(),7),{animate:false});
+}
+function openHotspotAt(h){
+  map.setView([h.lat,h.lon],13,{animate:false});
+  setTimeout(()=>{let m;layers.hotspots.eachLayer(l=>{const p=l.getLatLng?.();if(p&&Math.abs(p.lat-h.lat)<1e-9&&Math.abs(p.lng-h.lon)<1e-9)m=l;});m?.fire('click');},120);
 }
 document.getElementById('mobileLocateBtn').onclick=()=>{
-  if(!navigator.geolocation){ toast('เบราว์เซอร์นี้ไม่รองรับตำแหน่งปัจจุบัน'); return; }
+  if(!navigator.geolocation){ toast('เบราว์เซอร์นี้หาตำแหน่งไม่ได้ ลองพิมพ์ชื่ออำเภอในช่องค้นหาแทน'); return; }
+  toast('📍 กำลังหาตำแหน่งของคุณ…');
   navigator.geolocation.getCurrentPosition(
     pos=>showMyLocation(pos.coords.latitude,pos.coords.longitude,pos.coords.accuracy),
-    ()=>toast('ไม่สามารถเข้าถึงตำแหน่งปัจจุบันได้ — ตรวจสอบสิทธิ์ตำแหน่งของเบราว์เซอร์'),
-    {timeout:8000}
+    err=>toast(err&&err.code===1?'🙈 ยังไม่ได้อนุญาตให้ใช้ตำแหน่ง เปิดสิทธิ์ในเบราว์เซอร์ หรือพิมพ์ชื่ออำเภอในช่องค้นหาแทน':'หาตำแหน่งไม่ทัน ลองกดอีกครั้งในที่โล่ง หรือพิมพ์ชื่ออำเภอแทน'),
+    {timeout:10000,maximumAge:60000}
   );
 };
 

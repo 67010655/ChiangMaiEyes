@@ -317,3 +317,27 @@ body.light-mode .workspace-links button[aria-current="page"]{color:#15803d!impor
 
 /* 3D legend stays out of the way of the hotspot sheet on phones. */
 body:has(#hotspotSheet:not([hidden])) .threedview .td-legend{display:none}
+
+/* My location card (popup on desktop, sheet on phones). */
+.ml-card{font:14px/1.55 var(--font);color:var(--txt)}
+.ml-card h3{margin:0 0 10px;font:700 18px/1.35 var(--font);color:var(--txt)}
+.ml-kicker{margin:0;font-size:13px;color:var(--muted)}
+.ml-status{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2)}
+.ml-status span{font-size:20px;line-height:1.2}
+.ml-status b{display:block;font-size:15px}
+.ml-status small{display:block;margin-top:2px;font-size:13px;color:var(--muted)}
+.ml-status small b{display:inline;font-size:13px;color:var(--txt)}
+.ml-status.warn{border-color:rgba(249,115,22,.55);background:rgba(249,115,22,.10)}
+.ml-status.ok{border-color:rgba(67,176,95,.45);background:rgba(67,176,95,.10)}
+.ml-tip{margin:10px 0 0;font-size:13.5px;color:var(--txt)}
+.ml-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ml-btn{flex:1 1 140px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2);color:var(--txt)!important;font:600 14px var(--font);text-decoration:none;cursor:pointer}
+.ml-btn.primary{background:var(--green);border-color:var(--green);color:#06140b!important}
+.ml-btn.call{background:#dc2626;border-color:#dc2626;color:#fff!important}
+.ml-note{margin:10px 0 0;font-size:12px;color:var(--muted)}
+.ml-away{text-align:center}
+.ml-away .ml-emoji{font-size:40px;line-height:1;margin:4px 0 6px;animation:mlWobble 1.6s ease-in-out 1}
+.ml-away p{margin:0 0 8px}
+@keyframes mlWobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-6deg)}}
+@media(prefers-reduced-motion:reduce){.ml-away .ml-emoji{animation:none}}
+.ml-popup .leaflet-popup-content{margin:14px 16px;min-width:250px}
