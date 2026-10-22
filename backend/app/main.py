@@ -43,7 +43,12 @@ from app.services import (
     get_weather,
 )
 
-app = FastAPI(title="ChiangMaiEyes API", version="0.1.0")
+# The interactive docs list every route, admin ones included; keep them for
+# local development only (Vercel sets VERCEL in its runtime).
+_ON_VERCEL = bool(__import__("os").environ.get("VERCEL"))
+app = FastAPI(title="ChiangMaiEyes API", version="0.1.0",
+              docs_url=None if _ON_VERCEL else "/docs", redoc_url=None if _ON_VERCEL else "/redoc",
+              openapi_url=None if _ON_VERCEL else "/openapi.json")
 from app.spread_scenario import router as spread_router
 app.include_router(spread_router)
 from app.season_hindcast import router as hindcast_router
