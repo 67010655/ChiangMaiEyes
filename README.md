@@ -94,11 +94,19 @@ cd frontend && npm install && npm run dev
 npx vitest run --maxWorkers=2
 ```
 
+เทสต์ backend ใช้ virtual env แยกที่มีไลบรารีแผนที่ครบ (`rasterio`, `pyproj`, `shapely`, `eccodes`) ทำครั้งเดียว:
+
 ```bash
-python -m pytest -q
+cd backend && python -m venv .venv && .venv/Scripts/python -m pip install -r requirements-dev.txt
 ```
 
-(เทสต์ backend 4 ข้อจะล้มบนเครื่องที่ไม่มี `eccodes` / `rasterio` เป็นเรื่องปกติ)
+แล้วรันเทสต์ (บน macOS/Linux ใช้ `.venv/bin/python`):
+
+```bash
+cd backend && .venv/Scripts/python -m pytest -q
+```
+
+ถ้ารันด้วย Python ที่ไม่มีไลบรารีเหล่านี้ เทสต์ GFS และภูมิประเทศราว 4–5 ข้อจะล้ม ไม่ใช่บั๊กของโค้ด
 
 **เทสต์ที่ห้ามแก้ให้หลวมลง:** landContext, popupPresentation, spreadHint, publicGuidance, navigationUi, lineLink, liveRefresh
 

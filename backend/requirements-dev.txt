@@ -1,0 +1,9 @@
+# Local test environment: the production requirements plus the libraries the
+# offline terrain scripts and their tests use. Not deployed to Vercel.
+#   python -m venv .venv
+#   .venv\Scripts\python -m pip install -r requirements-dev.txt   (Windows)
+#   .venv/bin/python -m pip install -r requirements-dev.txt       (macOS/Linux)
+-r requirements.txt
+rasterio==1.5.2
+pyproj==3.8.0
+shapely==2.2.0
