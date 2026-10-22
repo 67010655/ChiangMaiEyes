@@ -288,3 +288,14 @@ body.light-mode .ms-list{box-shadow:0 14px 36px rgba(15,26,42,.16)}
 .hs-actions .hs-3d{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .hs-actions .hs-3d svg{width:18px;height:18px;color:var(--wind)}
 body:has(#threedview.open) .hs-3d{display:none}
+
+/* Says the streaks are model wind, unlike the station value in the top tile. */
+.legend-wind{display:inline-flex;align-items:center;gap:5px;color:var(--txt)}
+.legend-wind svg{width:18px;height:8px;fill:none;stroke:#37d1d6;stroke-width:1.8;stroke-linecap:round}
+body.light-mode .legend-wind svg{stroke:#0e7490}
+
+/* On phones the wind label wraps the legend to a second line: lift the replay button clear of it. */
+@media(max-width:820px){
+  body:has(#windModelChip:not([hidden])) .hs-replay{bottom:128px}
+  .legend-wind{flex-basis:100%}
+}

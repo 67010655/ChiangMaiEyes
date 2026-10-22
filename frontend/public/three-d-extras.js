@@ -83,7 +83,7 @@
       // Fade old trails.
       ctx.globalCompositeOperation='destination-in';ctx.fillStyle='rgba(0,0,0,0.9)';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.globalCompositeOperation='source-over';
-      const z=map.getZoom(), step=0.0009*Math.pow(2,9-z);   // degrees per (m/s) per frame, constant on screen
+      const z=map.getZoom(), step=0.0006*Math.pow(2,9-z);   // degrees per (m/s) per frame, constant on screen
       ctx.lineWidth=1.6;ctx.lineCap='round';
       for(const p of parts){
         const uv=sample(p.lon,p.lat);

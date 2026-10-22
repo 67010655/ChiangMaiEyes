@@ -38,7 +38,7 @@
 <meta name="twitter:title" content="ChiangMaiEyes — ศูนย์เฝ้าระวังไฟป่าและคุณภาพอากาศเชียงใหม่" />
 <meta name="twitter:description" content="จุดความร้อน PM2.5 ทิศทางลม และป่าชุมชนเชียงใหม่ แบบเรียลไทม์" />
 <meta name="twitter:image" content="https://chiangmaieyes.vercel.app/og-image.png" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb" crossorigin="anonymous" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
@@ -532,8 +532,8 @@
   #map{position:absolute;inset:0;background:#070a0e}
   .leaflet-container{background:#070a0e;font-family:var(--mono)}
   .leaflet-control-zoom a{background:#11161d!important;color:#e6edf3!important;border-color:#222b36!important}
-  .leaflet-control-attribution{background:rgba(11,14,19,.8)!important;color:#5c6675!important;font-size:12px!important}
-  .leaflet-control-attribution a{color:#8b97a7!important}
+  .leaflet-control-attribution{background:rgba(11,14,19,.8)!important;color:#9aa5b4!important;font-size:12px!important}
+  .leaflet-control-attribution a{color:#c2cbd6!important}
 
   .map-overlay{position:absolute;z-index:600;pointer-events:none}
   .basemap-toggle{
@@ -1605,7 +1605,7 @@
       <div id="mapRenderStatus" class="map-render-status" role="status" aria-live="polite" hidden>รับข้อมูลได้ แต่แผนที่แสดงผลไม่ครบ<button type="button" onclick="goLive(true)">ลองอีกครั้ง</button></div>
 <div class="map-view-actions" aria-label="มุมมองสถานการณ์" hidden><span>แผนที่ 2D</span></div>
       <div id="map" role="application" aria-label="แผนที่จุดความร้อน คุณภาพอากาศ และทิศทางลมจังหวัดเชียงใหม่ (โต้ตอบได้)"></div>
-      <div class="map-time-note" title="กดหมุดเพื่อดูเวลา จุดความร้อนยังไม่ยืนยันว่าไฟกำลังไหม้"><span class="legend-item"><span class="hs-dot-pin age-new"></span>ไม่เกิน 6 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-old"></span>เก่ากว่า</span></div>
+      <div class="map-time-note" title="กดหมุดเพื่อดูเวลา จุดความร้อนยังไม่ยืนยันว่าไฟกำลังไหม้"><span class="legend-item"><span class="hs-dot-pin age-new"></span>ไม่เกิน 6 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-old"></span>เก่ากว่า</span><span class="legend-item legend-wind" id="windModelChip" hidden title="เส้นลมบนแผนที่มาจากแบบจำลอง Open-Meteo ส่วนช่องลมด้านบนเป็นค่าสถานี สองค่าจึงต่างกันได้"></span></div>
       <div id="hsReplay" class="hs-replay" hidden></div>
       <button type="button" class="map-3d-btn" data-open-view="threed" aria-label="ดูภูเขา 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20 9 7l4 7 3-4 6 10z"/></svg><span>3D</span></button>
       <div class="map-overlay basemap-toggle">
@@ -1978,13 +1978,13 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js" integrity="sha384-eXVCORTRlv4FUUgS/xmOyr66XBVraen8ATNLMESp92FKXLAMiKkerixTiBvXriZr" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js" integrity="sha384-mFKkGiGvT5vo1fEyGCD3hshDdKmW3wzXW/x+fWriYJArD0R3gawT6lMvLboM22c0" crossorigin="anonymous"></script>
 <script type="module" src="/src/maplibre-global.ts"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet-velocity@2.1.4/dist/leaflet-velocity.min.js" integrity="sha384-b85lDC0R/ZnDE6BRX2EtR/xRZkf9gN3t4x9Y63gB7Z+zJpZjgoa/9LEiMSVSVpAe" crossorigin="anonymous"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
 <script src="/decision-support.js"></script>
 <script src="/report.js"></script>
 <link rel="stylesheet" href="/forest-coordination.css">
@@ -2507,8 +2507,8 @@ document.addEventListener('click',e=>{const b=e.target.closest?.('.hs-spread-btn
 
 function hotspotPopupHtml(h){
   return `<div class="hs-pop">`+CmeEvidence.observationTimeHtml(h.detected_at,'ดาวเทียม')+CmeLandContext.summary(h)+popupWhereHtml(h.lat,h.lon,h.subdistrict||h.tambon,h.district)+popupActionsHtml(h.lat,h.lon)+(window.CmeHotspotSpread?.buttonHtml(h)||'')+
-    `<details class="land-context-details"><summary>รายละเอียดและที่มาของข้อมูล</summary>${CmeCoordination.html(h.lat,h.lon)}${CmeLandContext.details(h)}<b>${h.id}</b> · ${h.district}<br>`+
-    `ต.${h.subdistrict||h.tambon||'—'}<br>`+
+    `<details class="land-context-details"><summary>รายละเอียดและที่มาของข้อมูล</summary>${CmeCoordination.html(h.lat,h.lon)}${CmeLandContext.details(h)}<b>${CmeEvidence.escapeHtml(h.id)}</b> · ${CmeEvidence.escapeHtml(h.district||'')}<br>`+
+    `ต.${CmeEvidence.escapeHtml(h.subdistrict||h.tambon||'—')}<br>`+
     `${fmtFrp(h)} · ความเชื่อมั่น ${CmeEvidence.confidenceLabel(h.conf)}<br>`+
     `<small>ระดับคุณภาพการตรวจพบจากต้นทาง ไม่ใช่โอกาสเกิดไฟหรือความแม่นยำของระบบ</small><br>`+
     (h.confSource ? `<small>แหล่งระดับความเชื่อมั่น: ${CmeEvidence.escapeHtml(h.confSource)}</small><br>` : '')+
@@ -2518,9 +2518,10 @@ function manualReportPopupHtml(r){
   const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
   return `<div class="hs-pop">`+CmeEvidence.observationTimeHtml(r.observed_at||r.reported_at,'รายงานโดยผู้ใช้')+CmeLandContext.summary(r,{report:true})+popupWhereHtml(r.latitude,r.longitude,r.tambon,r.amphoe)+popupActionsHtml(r.latitude,r.longitude)+
     `<details class="land-context-details"><summary>รายละเอียดและที่มาของข้อมูล</summary>${CmeCoordination.html(r.latitude,r.longitude)}${CmeLandContext.details(r)}<b style="color:var(--ember)">🔥 รายงานโดยผู้ใช้ (ยังไม่ยืนยัน)</b><br>`+
-    `อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}<br>`+
-    `${(r.description||'').replace(/</g,'&lt;')}<br>`+
-    `<span style="color:var(--muted)">โดย ${r.reporter_name} · ${when}</span><br></details></div>`;
+    // Every field here was typed by a person: escape all of it.
+    `อ.${CmeEvidence.escapeHtml(r.amphoe||'—')}${r.tambon?(' · ต.'+CmeEvidence.escapeHtml(r.tambon)):''}<br>`+
+    `${CmeEvidence.escapeHtml(r.description||'')}<br>`+
+    `<span style="color:var(--muted)">โดย ${CmeEvidence.escapeHtml(r.reporter_name||'ผู้ใช้')} · ${CmeEvidence.escapeHtml(when)}</span><br></details></div>`;
 }
 // Sizing/intensity scalar: real FRP if present, else a confidence-based proxy so
 // markers still have a sensible radius (never shown as MW).
@@ -2699,6 +2700,10 @@ async function fetchWindGridUncached(){
   const hdr={parameterCategory:2,parameterUnit:'m.s-1',nx:NX,ny:NY,lo1:WEST,la1:NORTH,lo2:EAST,la2:SOUTH,dx:STEP,dy:STEP,refTime:times[hi]+'+07:00',scanMode:0};
   document.getElementById('windLayerNote').textContent='Open-Meteo · ลมเหนือพื้นดิน 10 เมตร · '+CmeEvidence.stamp(times[hi]+'+07:00')+' · กริดตัวอย่าง 25 จุด ลมเคลื่อนไหวและลูกศรใช้ข้อมูลชุดเดียวกัน';
   _windCacheField=[{header:{...hdr,parameterNumber:2},data:uD},{header:{...hdr,parameterNumber:3},data:vD}];
+  // The streaks are model wind; the top tile is the station. Say which is which.
+  const near=_windGridSamples.filter(p=>p.lat>=18.1&&p.lat<=19.9&&p.lon>=98.3&&p.lon<=99.2);
+  const chip=document.getElementById('windModelChip');
+  if(chip&&near.length){chip.hidden=false;chip.innerHTML=`<svg viewBox="0 0 24 10" aria-hidden="true"><path d="M1 3h14M5 7h18"/></svg>เส้นลม: แบบจำลอง ~${Math.round(near.reduce((t,p)=>t+p.kmh,0)/near.length)} กม./ชม.`;}
   _windCacheMs=Date.now();
   return _windCacheField;
 }
@@ -2717,7 +2722,7 @@ function _applyVelocityLayer(field){
     displayValues:false,
     data:field, maxVelocity:6,
     colorScale:light?['rgba(14,116,144,.5)','rgba(14,116,144,.62)','rgba(14,116,144,.74)','rgba(21,94,117,.86)']:['rgba(55,209,214,.42)','rgba(55,209,214,.54)','rgba(80,220,225,.66)','rgba(150,240,244,.8)'],
-    velocityScale:0.03, opacity:0.9, particleAge:120, lineWidth:1.6,
+    velocityScale:0.018, opacity:0.9, particleAge:80, lineWidth:1.6,
     particleMultiplier:isMobileViewport()?1/650:1/450, frameRate:24
   }).addTo(map);
 }
@@ -3272,6 +3277,9 @@ function barChart(id,data,labels,{w=300,h=86}){
 }
 
 async function fetchWindRose(){
+  // Called on every dashboard update (several at start-up); the hourly data changes slowly.
+  if(globalThis.__cmeRoseAt&&Date.now()-globalThis.__cmeRoseAt<600000)return;
+  globalThis.__cmeRoseAt=Date.now();
   try{
     // Open-Meteo: hourly wind for past 24h at CM centroid
     const url='https://api.open-meteo.com/v1/forecast?latitude=18.79&longitude=98.99'+
@@ -4956,9 +4964,14 @@ async function fetchAirQualityHourly(){
     + `?latitude=${lat}&longitude=${lon}&hourly=pm2_5`
     + `&timezone=Asia%2FBangkok&past_days=1&forecast_days=0`;
   try {
-    const r = await fetch(url, {signal: AbortSignal.timeout(10000)});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const d = await r.json();
+    // Every dashboard update calls this (several at start-up); fetch at most
+    // once per 10 minutes and reapply the same hourly data the rest of the time.
+    const c=globalThis.__cmeAq;
+    if(!c||Date.now()-c.at>600000){
+      globalThis.__cmeAq={at:Date.now(),p:fetch(url,{signal:AbortSignal.timeout(10000)}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})};
+      globalThis.__cmeAq.p.catch(()=>{globalThis.__cmeAq=null;});
+    }
+    const d = await globalThis.__cmeAq.p;
     const vals = (d.hourly && d.hourly.pm2_5) || [];
     const times = (d.hourly && d.hourly.time) || [];
     // Filter to last 24 hours of non-null readings
@@ -5056,10 +5069,10 @@ function renderPhasePanel(){
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">
         ${manualReports.map(r=>`
           <div style="background:var(--panel-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;cursor:pointer"
-               onclick="map.flyTo([${r.latitude},${r.longitude}],14,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});closeAllOverlays();">
-            <div style="font-size:12px;color:var(--ember)">🔥 อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:3px">${(r.description||'').replace(/</g,'&lt;')}</div>
-            <div style="font-size:12px;color:var(--dim);margin-top:5px">โดย ${r.reporter_name} · ${formatAge(Math.round((Date.now()-new Date(r.reported_at).getTime())/60000))} ที่แล้ว</div>
+               onclick="map.flyTo([${Number(r.latitude)},${Number(r.longitude)}],14,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});closeAllOverlays();">
+            <div style="font-size:12px;color:var(--ember)">🔥 อ.${CmeEvidence.escapeHtml(r.amphoe||'—')}${r.tambon?(' · ต.'+CmeEvidence.escapeHtml(r.tambon)):''}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">${CmeEvidence.escapeHtml(r.description||'')}</div>
+            <div style="font-size:12px;color:var(--dim);margin-top:5px">โดย ${CmeEvidence.escapeHtml(r.reporter_name||'ผู้ใช้')} · ${formatAge(Math.round((Date.now()-new Date(r.reported_at).getTime())/60000))} ที่แล้ว</div>
           </div>
         `).join('')}
       </div>
@@ -5507,7 +5520,7 @@ function renderFreshness(){
     const q=liveDataQ[k], col=MODE_COLOR[q.source_mode]||'#8b97a7';
     const age=q.age_minutes==null?'':` ${q.age_minutes}m`;
     const stale=q.is_stale?' ⚠':'';
-    return `<span class="src-pill" title="${q.source}\n${q.note||''}"><span style="color:${col}">●</span> ${q.label} ${q.source_mode}${age}${stale}</span>`;
+    const e=CmeEvidence.escapeHtml;return `<span class="src-pill" title="${e(q.source)}\n${e(q.note||'')}"><span style="color:${col}">●</span> ${e(q.label)} ${e(q.source_mode)}${age}${stale}</span>`;
   }).join('');
   el.innerHTML=pills; el.style.display='block';
 }
@@ -5964,7 +5977,7 @@ function initMapLibre3D(){
     function _showFuelPopup(f){
       new maplibregl.Popup({closeButton:true,maxWidth:'200px'})
         .setLngLat(f.geometry.coordinates)
-        .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3">⛽ <b style="color:#f5640a">${f.properties.name||'ปั๊มน้ำมัน'}</b><br>สิ่งปลูกสร้างเสี่ยงใกล้ไฟป่า</div>`)
+        .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3">⛽ <b style="color:#f5640a">${CmeEvidence.escapeHtml(f.properties.name||'ปั๊มน้ำมัน')}</b><br>สิ่งปลูกสร้างเสี่ยงใกล้ไฟป่า</div>`)
         .addTo(mlMap);
     }
     mlMap.on('mouseenter','fuel-3d-circle',()=>{mlMap.getCanvas().style.cursor='pointer';});
@@ -6405,7 +6418,7 @@ function _showBuildingPopup(props, lngLat, fromVectorTiles=false){
   const height=Number(fromVectorTiles?props.height:props.height_m);
   new maplibregl.Popup({closeButton:true,maxWidth:'210px'})
     .setLngLat(lngLat)
-    .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3"><b style="color:#8b97a7">${props.name||typeLabel}</b>${props.name?`<br><span style="color:#8b97a7">${typeLabel}</span>`:''}<br>ความสูงประมาณ ${Math.round(height>0?height:9)} เมตร<br><span style="color:#8b97a7;font-size:12px">${fromVectorTiles?'ข้อมูลอาคารจาก MapTiler / OpenStreetMap':'ข้อมูลอาคารจาก OpenStreetMap'}</span></div>`)
+    .setHTML(`<div style="font-family:var(--mono);font-size:12px;color:#e6edf3"><b style="color:#8b97a7">${CmeEvidence.escapeHtml(props.name||typeLabel)}</b>${props.name?`<br><span style="color:#8b97a7">${CmeEvidence.escapeHtml(typeLabel)}</span>`:''}<br>ความสูงประมาณ ${Math.round(height>0?height:9)} เมตร<br><span style="color:#8b97a7;font-size:12px">${fromVectorTiles?'ข้อมูลอาคารจาก MapTiler / OpenStreetMap':'ข้อมูลอาคารจาก OpenStreetMap'}</span></div>`)
     .addTo(mlMap);
 }
 

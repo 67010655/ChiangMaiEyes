@@ -88,7 +88,7 @@
     const fire=!a.total?`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา ดาวเทียมไม่พบจุดความร้อน${where}`
       :`${h.days===1?'24 ชั่วโมง':h.days+' วัน'}ที่ผ่านมา พบจุดความร้อน${focusArea?'ในขอบเขตป่า':focusDistrict?'ใน อ.'+esc(focusDistrict):''} <b>${esc(Number(a.total).toLocaleString('th-TH'))}</b> จุด${top?` มากที่สุดที่ <b>อ.${esc(top.name)}</b>`:''}`;
     const lv=pm.avg!==null?root.CmePublicGuidance?.pmLevel(pm.avg):null;
-    const dust=lv?`ฝุ่นเฉลี่ยช่วงนี้ระดับ <b style="color:var(${pmToken(pm.avg)})">${esc(lv.label)}</b> <span class="as-hl-num">${esc(fmt1(pm.avg))} µg/m³</span>`:'';
+    const dust=lv?`ฝุ่นเฉลี่ยช่วงนี้ระดับ <b class="as-lv" style="--lv:var(${pmToken(pm.avg)})">${esc(lv.label)}</b> <span class="as-hl-num">${esc(fmt1(pm.avg))} µg/m³</span>`:'';
     return {fire,dust};
   }
   function headline(h,a,pm){const p=headlineParts(h,a,pm);return [p.fire,p.dust].filter(Boolean).join(' · ');}
@@ -113,7 +113,7 @@
     const peakLv=pm.peak?root.CmePublicGuidance?.pmLevel(pm.peak.v):null;
     const near=pm.peak?(a.hotspots||[]).filter(d=>Number.isFinite(d.count)&&Math.abs(Date.parse(d.date)-Date.parse(pm.peak.date))<=3*864e5).reduce((t,d)=>t+d.count,0):0;
     const why=h.days>=30&&a.total>=50&&pm.avg!==null&&pm.avg<=25&&pm.peak&&pm.peak.v>37.5
-      ?`<p class="as-why"><b>ทำไมไฟเยอะ แต่ฝุ่นเฉลี่ยดี?</b> ค่าเฉลี่ย ${esc(span)} รวมวันที่อากาศดีจำนวนมาก วันที่ฝุ่นสูงสุด ${esc(dayLabel(pm.peak.date))} วัดได้ <b style="color:var(${pmToken(pm.peak.v)})">${esc(fmt1(pm.peak.v))} µg/m³ (${esc(peakLv?.label||'')})</b> สัปดาห์นั้นพบจุดความร้อน <b>${esc(near.toLocaleString('th-TH'))}</b> จุด · จุดความร้อนนับทั้งพื้นที่ ส่วนฝุ่นมาจาก${esc(source)} สองค่านี้วัดคนละที่</p>`
+      ?`<p class="as-why"><b>ทำไมไฟเยอะ แต่ฝุ่นเฉลี่ยดี?</b> ค่าเฉลี่ย ${esc(span)} รวมวันที่อากาศดีจำนวนมาก วันที่ฝุ่นสูงสุด ${esc(dayLabel(pm.peak.date))} วัดได้ <b class="as-lv" style="--lv:var(${pmToken(pm.peak.v)})">${esc(fmt1(pm.peak.v))} µg/m³ (${esc(peakLv?.label||'')})</b> สัปดาห์นั้นพบจุดความร้อน <b>${esc(near.toLocaleString('th-TH'))}</b> จุด · จุดความร้อนนับทั้งพื้นที่ ส่วนฝุ่นมาจาก${esc(source)} สองค่านี้วัดคนละที่</p>`
       :'';
     return `<div class="as-hero as-hero2">
       <div class="as-hl fire"><span class="as-hl-ic" aria-hidden="true"><span class="hs-dot-pin age-new"></span></span><div>
@@ -426,7 +426,7 @@
     const missing=selected&&!pick?`<p class="as-s">อ.${esc(selected)} ยังมีเซนเซอร์ที่ส่งข้อมูลไม่ถึง ${min} จุด จึงยังรับแจ้งเตือนไม่ได้</p>`:'';
     return `<section class="as-card as-line" aria-labelledby="asLineT">
       <header class="as-head"><span class="as-ic line" aria-hidden="true">💬</span><h3 id="asLineT" class="as-k">รับแจ้งเตือนฝุ่นทาง LINE</h3></header>
-      <p class="as-s">แจ้งเมื่อเซนเซอร์วัดฝุ่นในอำเภอของคุณวัดดัชนี AQI ของ PM2.5 ได้ระดับ <b style="color:var(--pm-unhealthy)">เริ่มมีผลต่อกลุ่มเสี่ยง</b> (101) ขึ้นไป ต่อเนื่องอย่างน้อย 1 ชม. ไม่ต้องสมัครสมาชิก</p>
+      <p class="as-s">แจ้งเมื่อเซนเซอร์วัดฝุ่นในอำเภอของคุณวัดดัชนี AQI ของ PM2.5 ได้ระดับ <b class="as-lv" style="--lv:var(--pm-unhealthy)">เริ่มมีผลต่อกลุ่มเสี่ยง</b> (101) ขึ้นไป ต่อเนื่องอย่างน้อย 1 ชม. ไม่ต้องสมัครสมาชิก</p>
       ${missing}<p class="as-s">ตอนนี้เปิดให้ ${list.length} อำเภอที่มีเซนเซอร์ส่งข้อมูลอย่างน้อย ${min} จุด</p>
       <div class="as-line-row"><label class="as-line-pick"><span>อำเภอ</span>
         <select data-line-district aria-label="เลือกอำเภอที่ต้องการรับแจ้งเตือน"><option value="">เลือกอำเภอ</option>${list.map(n=>`<option value="${esc(n)}"${n===pick?' selected':''}>อ.${esc(n)}</option>`).join('')}</select></label>

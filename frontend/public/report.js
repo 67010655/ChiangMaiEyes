@@ -14,6 +14,8 @@
   const AGE=[{max:6,label:'ไม่เกิน 6 ชม.',color:'#dc2626'},{max:24,label:'6–24 ชม.',color:'#f59e0b'},{max:Infinity,label:'เก่ากว่า 24 ชม.',color:'#94a3b8'}];
   const ageOf=(h,now)=>{const a=(now-Date.parse(h.detected_at))/36e5;return AGE.find(x=>a<x.max)||AGE[2];};
   const PM_COLORS=['#3b82f6','#22c55e','#eab308','#f97316','#dc2626'];
+  // Same levels, dark enough to read as text on white paper.
+  const PM_INK=['#1d4ed8','#15803d','#a16207','#c2410c','#b91c1c'];
 
   // Counts by district (whole province) or by tambon (one forest or one point).
   function byArea(rows,scope,now){
@@ -69,10 +71,11 @@
     const areas=byArea(rows,o.scope,now), newest=rows.reduce((m,h)=>Math.max(m,Date.parse(h.detected_at)||0),0);
     const pm=o.air?o.pm:null, lvIdx=pm?.level?(root.CmePublicGuidance?.PM_LEVELS||[]).findIndex(l=>l.label===pm.level.label):-1;
     const pmColor=lvIdx>=0?PM_COLORS[lvIdx]:'#64748b';
+    const pmInk=lvIdx>=0?PM_INK[lvIdx]:'#475569';
     const fireLine=rows.length
       ?`ดาวเทียมตรวจพบจุดความร้อน <b>${num(rows.length)} จุด</b> ใน${esc(area)} ช่วง ${o.hours} ชั่วโมงล่าสุด${o.scope==='province'&&areas[0]?` พบมากที่สุดที่ <b>อ.${esc(areas[0].name)}</b> ${num(areas[0].n)} จุด`:''} จุดล่าสุดตรวจพบเมื่อ ${esc(shortStamp(newest))}`
       :`ช่วง ${o.hours} ชั่วโมงล่าสุด ดาวเทียมไม่พบจุดความร้อนใน${esc(area)} ทั้งนี้ไม่ได้ยืนยันว่าไม่มีไฟ`;
-    const dustLine=!o.air?'':pm?`ฝุ่น PM2.5 รอบล่าสุด <b>${esc(pm.value)} ไมโครกรัมต่อลูกบาศก์เมตร</b> อยู่ในระดับ <b style="color:${pmColor}">${esc(pm.level?.label||'')}</b> ${pm.level?.advice?esc(pm.level.advice):''}`:'ยังไม่มีค่าฝุ่นที่ใช้ได้จากสถานีวัดในพื้นที่ที่เลือก';
+    const dustLine=!o.air?'':pm?`ฝุ่น PM2.5 รอบล่าสุด <b>${esc(pm.value)} ไมโครกรัมต่อลูกบาศก์เมตร</b> อยู่ในระดับ <b style="color:${pmInk}">${esc(pm.level?.label||'')}</b> ${pm.level?.advice?esc(pm.level.advice):''}`:'ยังไม่มีค่าฝุ่นที่ใช้ได้จากสถานีวัดในพื้นที่ที่เลือก';
     const windLine=!o.air?'':o.wind?`ลมพัดไปทางทิศ${esc(o.wind.dir)} ความเร็ว ${esc(o.wind.kmh)} กม./ชม. ไฟมักลามตามทิศที่ลมพัดไป`:'';
     const fig=(k,v,u,sub,color)=>`<div class="rp-fig"${color?` style="--c:${color}"`:''}><div class="k">${k}</div><div class="v">${v}<small>${u}</small></div><div class="s">${sub}</div></div>`;
     let n=0;const h2=t=>`<h2><span>${++n}</span>${t}</h2>`;
