@@ -291,6 +291,9 @@ body:has(#threedview.open) .hs-3d{display:none}
 
 /* Says the streaks are model wind, unlike the station value in the top tile. */
 .legend-wind{display:inline-flex;align-items:center;gap:5px;color:var(--txt)}
+/* Next satellite pass: its own line, so an empty map is not read as "no fire". */
+.legend-sat{flex-basis:100%;color:var(--txt)}
+.legend-sat[hidden]{display:none}
 .legend-wind svg{width:18px;height:8px;fill:none;stroke:#37d1d6;stroke-width:1.8;stroke-linecap:round}
 body.light-mode .legend-wind svg{stroke:#0e7490}
 

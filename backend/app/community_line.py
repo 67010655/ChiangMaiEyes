@@ -30,6 +30,9 @@ CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 CODE_PATTERN = re.compile(r'CME-([A-HJ-NP-Z2-9]{8})')
 CODE_MINUTES = 10
 HOTLINE = '🔥 เห็นไฟหรือควันจริง โทรสายด่วนไฟป่า 1362 ได้เลย'
+# VIIRS crosses Chiang Mai twice a day and FIRMS adds ~3 h; say so, or an empty
+# evening map reads as "no fire" (times as in frontend/public/satellite-passes.js).
+SAT_GAP = '🛰️ ดาวเทียมผ่านเชียงใหม่วันละ 2 ช่วง ราว 01:00–02:30 และ 13:00–14:30 น. ไฟที่เริ่มหลังรอบบ่ายจะขึ้นแผนที่ราวตีห้า ถ้าเห็นควันอย่ารอแผนที่'
 SITE = 'https://chiangmaieyes.vercel.app'
 # Two audiences share the account: anyone who added it (dust, the map) and
 # forest reps who linked it from the website (hotspots in their forests).
@@ -41,6 +44,7 @@ HELP_PUBLIC = '\n'.join([
     '',
     '🗺️ ดูจุดไฟและค่าฝุ่นตอนนี้',
     SITE,
+    SAT_GAP,
     '',
     HOTLINE,
     '',
@@ -54,6 +58,7 @@ HELP_REP = '\n'.join([
     '',
     '💡 ดูป่าของคุณและบันทึกเหตุได้ที่',
     SITE + '/#community',
+    SAT_GAP,
     '',
     '🌫️ อยากรับเตือนฝุ่นด้วย พิมพ์ "แจ้งเตือนฝุ่น ชื่ออำเภอ"',
     HOTLINE,

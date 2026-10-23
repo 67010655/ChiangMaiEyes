@@ -209,6 +209,8 @@ def test_help_reply_speaks_to_a_linked_rep_or_to_the_public():
     assert 'ตัวแทนป่าชุมชน' in rep and '/#community' in rep
     assert 'แจ้งเตือนฝุ่น' in public and 'ตัวแทนป่าชุมชน' not in public
     assert '1362' in rep and '1362' in public
+    # Both say when the satellites pass, so an empty evening map is not read as no fire.
+    assert '13:00–14:30' in rep and '13:00–14:30' in public
 
 
 def test_hotspot_text_lists_what_to_do_next():
