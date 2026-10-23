@@ -47,12 +47,7 @@ class Settings(BaseSettings):
     supabase_url: str | None = None
     supabase_service_role_key: str | None = None
     supabase_anon_key: str | None = None
-    resend_api_key: str | None = None
-    resend_from_email: str | None = None
-    resend_webhook_secret: str | None = None
     # Real community delivery stays disabled until a sender domain is verified.
-    community_email_enabled: bool = False
-    community_email_test_recipient: str | None = None
     community_job_secret: str | None = None
     # LINE Official Account (Messaging API). Alerts stay off until both are set.
     line_channel_secret: str | None = None

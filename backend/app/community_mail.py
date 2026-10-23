@@ -1,24 +1,14 @@
-"""Opt-in email delivery with a persistent outbox and verified Resend callbacks.
+"""The community alert job: queues LINE messages for new hotspots and incident events, runs the
+pin reminders and the public dust alerts, and sends the LINE outbox.
 
-Reference contracts:
-https://resend.com/docs/api-reference/emails/send-email
-https://resend.com/docs/dashboard/emails/idempotency-keys
-https://docs.svix.com/receiving/verifying-payloads/how-manual
+Email is not used for alerts. It only carries account messages (confirm address, reset password),
+which Supabase Auth sends itself.
 """
 from __future__ import annotations
 
-import base64
 import hashlib
-import hmac
-import html
-import json
 import logging
-import time
 from datetime import datetime, timedelta, timezone
-from uuid import uuid4
-
-import httpx
-from fastapi import HTTPException
 
 from app.community_store import CommunityStore
 
@@ -76,113 +66,13 @@ def next_delivery(preferences: dict, now: datetime) -> datetime:
     return release.astimezone(timezone.utc)
 
 
-def email_body(store, title, paragraphs, *, incident_id=None):
-    origin = store.settings.community_site_url.rstrip('/')
-    url = origin + '/#community' + ('/incident/' + str(incident_id) if incident_id else '')
-    content = ''.join('<p>' + html.escape(str(p)) + '</p>' for p in paragraphs)
-    return f'''<html lang="th"><body style="font-family:Arial,sans-serif;color:#172d24;line-height:1.65;max-width:620px;margin:24px auto;padding:20px">
-      <h1 style="font-size:22px;color:#14743a">{html.escape(title)}</h1>{content}
-      <p><a href="{html.escape(url, quote=True)}">เปิดข้อมูลพื้นที่และประวัติใน ChiangMaiEyes</a></p>
-      <hr><p style="font-size:13px">ข้อมูลดาวเทียมยังต้องตรวจสอบภาคสนาม การรับประสานในระบบไม่ใช่การแต่งตั้งผู้สั่งการตามกฎหมาย</p>
-      <p style="font-size:13px">ปรับหรือหยุดรับอีเมลได้ในหน้า “ป่าของฉัน” → การแจ้งเตือน</p>
-      <p style="font-size:13px">ที่มา: <a href="https://firms.modaps.eosdis.nasa.gov/">NASA FIRMS</a> ·
-        <a href="https://dnp.gistda.or.th/">GISTDA</a> · ขอบเขต RECOFTC 677 แห่ง</p>
-      </body></html>'''
 
 
-def queue_test_email(store: CommunityStore, user: dict):
-    recipient = user['email'] if store.settings.community_email_enabled else store.settings.community_email_test_recipient
-    if not recipient:
-        raise HTTPException(503, 'ยังไม่ได้กำหนดอีเมลรับทดสอบ')
-    rows = store.insert('cme_email_outbox', {
-        'dedup_key': 'test/' + user['id'] + '/' + str(uuid4()), 'user_id': user['id'], 'category': 'test',
-        'recipient': recipient, 'subject': 'ทดสอบระบบอีเมล ChiangMaiEyes',
-        'body_html': email_body(store, 'ทดสอบระบบอีเมลสำเร็จ', [
-            'นี่เป็นอีเมลทดสอบการเชื่อมต่อ Resend ตามคำขอของผู้ดูแล ไม่ใช่การแจ้งเหตุไฟป่า',
-            'เวลาที่สร้างข้อความ: ' + stamp(datetime.now(timezone.utc).isoformat()),
-        ]),
-    })
-    return rows[0]['id']
-
-
-def _still_subscribed(store, row):
-    users = store.call('GET', '/auth/v1/admin/users/' + row['user_id'])
-    if not users.get('email_confirmed_at'):
-        return False
-    if row['category'] == 'test':
-        return bool(store.rows('cme_admins', select='user_id', user_id='eq.' + row['user_id']))
-    if users.get('email', '').lower() != row['recipient'].lower():
-        return False
-    prefs = store.rows('cme_notification_preferences', select='*', user_id='eq.' + row['user_id'])
-    field = 'daily_enabled' if row['category'] == 'daily' else 'events_enabled'
-    return bool(prefs and prefs[0].get(field) and store.rows('cme_memberships', select='id',
-        user_id='eq.' + row['user_id'], forest_id='eq.' + row['forest_id'], status='eq.approved'))
-
-
-def process_outbox(store: CommunityStore, limit=2, only_id=None):
-    settings = store.settings
-    if not settings.resend_api_key or not (settings.community_email_enabled or settings.community_email_test_recipient):
-        return {'provider_accepted': 0, 'failed': 0, 'suppressed': 0, 'email_mode': 'unavailable'}
-    rows = store.call('POST', '/rest/v1/rpc/cme_claim_one_email' if only_id else '/rest/v1/rpc/cme_claim_emails',
-                      json={'p_id': only_id} if only_id else {'p_limit': limit})
-    result = {'provider_accepted': 0, 'failed': 0, 'suppressed': 0,
-              'email_mode': 'live' if settings.community_email_enabled else 'test'}
-    for row in rows:
-        now = datetime.now(timezone.utc)
-        try:
-            permitted = settings.community_email_enabled or row['recipient'].lower() == settings.community_email_test_recipient.lower()
-            if not permitted or not _still_subscribed(store, row):
-                store.patch('cme_email_outbox', row['id'], {'status': 'suppressed', 'lease_until': None,
-                                                          'last_error': 'Subscription, membership or sender eligibility changed'})
-                result['suppressed'] += 1
-                continue
-            preferences = store.rows('cme_notification_preferences', select='*', user_id='eq.' + row['user_id'])
-            release = next_delivery(preferences[0] if preferences else {}, now) if row['category'] != 'test' else now
-            if release > now:
-                # Quiet-hours checks occur before delivery, including retries.
-                store.patch('cme_email_outbox', row['id'], {'status': 'pending', 'available_at': release.isoformat(),
-                    'attempts': max(0, row['attempts']-1), 'lease_until': None})
-                continue
-            first = parse_time(row.get('first_attempt_at'))
-            if first and now-first > timedelta(hours=23):
-                store.patch('cme_email_outbox', row['id'], {'status': 'failed', 'lease_until': None,
-                    'last_error': 'Provider idempotency window elapsed; review delivery before retry'})
-                result['failed'] += 1
-                continue
-            if first is None:
-                store.patch('cme_email_outbox',row['id'],{'first_attempt_at':now.isoformat()})
-            sender = settings.resend_from_email if settings.community_email_enabled else 'ChiangMaiEyes <onboarding@resend.dev>'
-            response = store.client.post('https://api.resend.com/emails', headers={
-                'Authorization': 'Bearer ' + settings.resend_api_key,
-                'Idempotency-Key': 'cme/' + row['id'],
-            }, json={'from': sender, 'to': [row['recipient']], 'subject': row['subject'], 'html': row['body_html']}, timeout=8.0)
-            if response.status_code >= 400:
-                if response.status_code not in (408, 429) and response.status_code < 500:
-                    store.patch('cme_email_outbox', row['id'], {'status': 'failed', 'lease_until': None,
-                        'last_error': 'Resend HTTP ' + str(response.status_code) + '; sender or payload needs correction'})
-                    result['failed'] += 1
-                    continue
-                # Provider response bodies may contain personal data. Store only the status.
-                raise ValueError('Resend HTTP ' + str(response.status_code))
-            provider_id = response.json().get('id')
-            if not provider_id:
-                raise ValueError('Resend did not return a message identifier')
-            store.patch('cme_email_outbox', row['id'], {'status': 'sent', 'provider_id': provider_id,
-                'sent_at': now.isoformat(), 'lease_until': None, 'last_error': None, 'delivery_status': 'provider_accepted'})
-            result['provider_accepted'] += 1
-        except (httpx.HTTPError, HTTPException, ValueError) as error:
-            code = str(error) if isinstance(error, ValueError) else 'Delivery interrupted; retry with the same idempotency key'
-            failed = row['attempts'] >= 5
-            store.patch('cme_email_outbox', row['id'], {'status': 'failed' if failed else 'pending',
-                'available_at': (now + timedelta(minutes=min(30, 2 ** row['attempts']))).isoformat(),
-                'lease_until': None, 'last_error': code[:180]})
-            result['failed'] += 1
-    return result
 
 
 def alerts_configured(settings) -> bool:
     from app.community_line import enabled
-    return bool(settings.community_email_enabled or settings.community_email_test_recipient or enabled(settings))
+    return enabled(settings)
 
 
 def queue_incident_events(store: CommunityStore, now: datetime):
@@ -190,8 +80,6 @@ def queue_incident_events(store: CommunityStore, now: datetime):
     line_users = linked_users(store)
     since = (now-timedelta(hours=24)).isoformat()
     memberships = store.rows('cme_memberships', select='user_id,forest_id', status='eq.approved')
-    preferences = {p['user_id']: p for p in store.rows('cme_notification_preferences', select='*', events_enabled='eq.true')}
-    users = {}
     events = store.rows('cme_incident_events', select='*', created_at='gte.' + since, order='created_at.asc', limit='500')
     incidents = {i['id']: i for i in store.rows('cme_incidents', select='*', updated_at='gte.' + since, limit='500')}
     forests = {f['forest_id']: f for f in store.rows('cme_forests', select='forest_id,name')}
@@ -209,31 +97,12 @@ def queue_incident_events(store: CommunityStore, now: datetime):
             if event['kind'] == 'created' and event.get('actor_id') == uid:
                 continue  # the reporter does not need a message about their own report
             status_text = STATUS.get(event.get('status_to') or incident['status'], 'อัปเดตการประสานงาน')
-            if uid in line_users:
-                inserted = store.insert('cme_line_outbox', {'dedup_key': f"incident/{event['id']}/{uid}/{membership['forest_id']}",
-                    'user_id': uid, 'forest_id': membership['forest_id'], 'category': 'incident',
-                    'message': incident_text(store, forests[incident['forest_id']]['name'], status_text,
-                                             incident['observed_at'], event['created_at'], incident['id'])}, dedup=True)
-                count += len(inserted or [])
-            if uid not in preferences:
+            if uid not in line_users:
                 continue
-            if uid not in users:
-                users[uid] = store.call('GET', '/auth/v1/admin/users/' + uid)
-            user = users[uid]
-            if not user.get('email_confirmed_at') or not user.get('email'):
-                continue
-            if not store.settings.community_email_enabled and user['email'].lower() != (store.settings.community_email_test_recipient or '').lower():
-                continue
-            title = 'อัปเดตการประสานเหตุ: ' + forests[incident['forest_id']]['name']
-            body = email_body(store, title, [
-                'สถานะในระบบ: ' + status_text,
-                'เวลาที่พบเหตุ: ' + stamp(incident['observed_at']),
-                'เวลาบันทึกความเปลี่ยนแปลง: ' + stamp(event['created_at']),
-                'ข้อมูลจากรายงานชุมชน เปิดประวัติเพื่อดูผลการตรวจสอบและผู้รับประสาน',
-            ], incident_id=incident['id'])
-            inserted = store.insert('cme_email_outbox', {'dedup_key': f"incident/{event['id']}/{uid}/{membership['forest_id']}",
-                'user_id': uid, 'forest_id': membership['forest_id'], 'category': 'incident', 'recipient': user['email'],
-                'subject': title, 'body_html': body, 'available_at': next_delivery(preferences[uid], now).isoformat()}, dedup=True)
+            inserted = store.insert('cme_line_outbox', {'dedup_key': f"incident/{event['id']}/{uid}/{membership['forest_id']}",
+                'user_id': uid, 'forest_id': membership['forest_id'], 'category': 'incident',
+                'message': incident_text(store, forests[incident['forest_id']]['name'], status_text,
+                                         incident['observed_at'], event['created_at'], incident['id'])}, dedup=True)
             count += len(inserted or [])
     return count
 
@@ -242,16 +111,14 @@ def queue_environment(store: CommunityStore, dashboard, now: datetime):
     from app.providers.community_forest_provider import _official_forests
     forests = {f.forest_id: f for f in _official_forests}
     members = store.rows('cme_memberships', select='user_id,forest_id', status='eq.approved')
-    prefs = {p['user_id']: p for p in store.rows('cme_notification_preferences', select='*')}
     from app.community_line import hotspot_text, linked_users
     line_users = linked_users(store)
-    by_forest = {m['forest_id'] for m in members if prefs.get(m['user_id'], {}).get('events_enabled') or m['user_id'] in line_users}
     line_forests = {m['forest_id'] for m in members if m['user_id'] in line_users}
     quality = dashboard.data_quality.get('hotspots')
     source_ready = quality is not None and not quality.is_stale and quality.source_mode in ('LIVE','SNAPSHOT')
     queued = 0
     if source_ready:
-        for forest_id in by_forest:
+        for forest_id in line_forests:
             forest = forests.get(forest_id)
             if not forest:
                 continue
@@ -264,44 +131,10 @@ def queue_environment(store: CommunityStore, dashboard, now: datetime):
                     key = hashlib.sha256(f'{h.latitude:.4f},{h.longitude:.4f}/{observed.isoformat()}'.encode()).hexdigest()
                     observations.append({'event_key': key, 'observed_at': observed.isoformat()})
             if observations:
-                title = 'พบข้อมูลจุดความร้อนในพื้นที่: ' + forest.name
-                body = email_body(store, title, [
-                    f'มีจุดความร้อนจากดาวเทียม {len(observations)} จุดในขอบเขตป่า จากข้อมูล 24 ชั่วโมงที่ระบบได้รับ',
-                    'จุดความร้อนยังไม่ใช่เหตุไฟที่ยืนยันแล้ว กรุณาตรวจสอบข้อมูลและประสานผู้รับผิดชอบ',
-                    'ตรวจพบล่าสุด: ' + stamp(max(o['observed_at'] for o in observations)),
-                    'แหล่งข้อมูล: ' + dashboard.hotspots.source,
-                    'เวลาของชุดข้อมูล: ' + stamp(dashboard.hotspots.latest_update),
-                ])
                 line_text = hotspot_text(store, forest.name, len(observations), max(o['observed_at'] for o in observations),
-                                         dashboard.hotspots.source, dashboard.hotspots.latest_update) if forest_id in line_forests else None
+                                         dashboard.hotspots.source, dashboard.hotspots.latest_update)
                 queued += store.call('POST','/rest/v1/rpc/cme_enqueue_hotspots',json={'p_forest':forest_id,'p_observations':observations,
-                    'p_subject':title,'p_html':body,'p_line_text':line_text})
-    if now.astimezone(ICT).hour < 8:
-        return queued
-    users = {}
-    for member in members:
-        preference = prefs.get(member['user_id'],{})
-        forest = forests.get(member['forest_id'])
-        if not preference.get('daily_enabled') or not forest:
-            continue
-        uid = member['user_id']
-        if uid not in users:
-            users[uid] = store.call('GET','/auth/v1/admin/users/'+uid)
-        user = users[uid]
-        if not user.get('email_confirmed_at') or not user.get('email'):
-            continue
-        if not store.settings.community_email_enabled and user['email'].lower() != (store.settings.community_email_test_recipient or '').lower():
-            continue
-        stations = [s for s in dashboard.pm25.stations if s.pm25 is not None and point_in_boundary(s.latitude,s.longitude,forest.boundary)]
-        pm_text = ('ฝุ่นรอบปัจจุบันเฉลี่ยจากสถานีในพื้นที่: '+str(round(sum(s.pm25 for s in stations)/len(stations),1))+' µg/m³') if stations else 'ยังไม่มีค่าฝุ่นจากสถานีในขอบเขตป่านี้ ไม่ใช้ค่าเฉลี่ยจังหวัดแทน'
-        title = 'สรุปประจำวัน: '+forest.name
-        body = email_body(store,title,[pm_text,'เวลาของชุดข้อมูลฝุ่น: '+stamp(dashboard.pm25.latest_update),
-            'ตรวจสอบจุดความร้อน ลม และเวลารายชุดในหน้าเว็บก่อนตัดสินใจ',
-            'สรุปสร้างเมื่อ: '+stamp(now.isoformat())])
-        inserted = store.insert('cme_email_outbox',{'dedup_key':f"daily/{now.astimezone(ICT).date()}/{member['forest_id']}/{uid}",
-            'user_id':uid,'forest_id':member['forest_id'],'category':'daily','recipient':user['email'],'subject':title,'body_html':body,
-            'available_at':next_delivery(preference,now).isoformat()},dedup=True)
-        queued += len(inserted or [])
+                    'p_subject':'','p_html':'','p_line_text':line_text})
     return queued
 
 
@@ -314,11 +147,11 @@ def claim_job(store: CommunityStore, source):
 
 def run_jobs(store: CommunityStore, dashboard=None, *, source='manual', claimed_key=None):
     if not alerts_configured(store.settings):
-        return {'queued':0,'provider_accepted':0,'email_mode':'unavailable'}
+        return {'queued':0,'line_mode':'unavailable'}
     now = datetime.now(timezone.utc)
     job_key = claimed_key or claim_job(store,source)
     if not job_key:
-        return {'queued':0,'provider_accepted':0,'already_checked':True}
+        return {'queued':0,'already_checked':True}
     def finish(data):
         store.call('PATCH','/rest/v1/cme_job_runs',params={'job_key':'eq.'+job_key},json=data)
     try:
@@ -335,7 +168,7 @@ def run_jobs(store: CommunityStore, dashboard=None, *, source='manual', claimed_
         except Exception:
             log.warning('Pin reminders and expiry did not run')
         from app.community_line import process_outbox as process_line
-        result = {'queued':queued,**pins,**process_outbox(store),**process_line(store)}
+        result = {'queued':queued,**pins,**process_line(store)}
         try:
             from app.line_dust import run_dust_alerts
             result.update(run_dust_alerts(store, now))
@@ -358,28 +191,5 @@ def background_jobs(settings, dashboard=None, source='dashboard', claimed_key=No
         run_jobs(CommunityStore(settings),dashboard,source=source,claimed_key=claimed_key)
     except Exception:
         # No private payload, token or provider response is written to public logs.
-        log.warning('Community email worker did not finish; persistent outbox will retry')
+        log.warning('Community alert worker did not finish; persistent outbox will retry')
 
-
-def verify_webhook(payload: bytes, headers: dict, secret: str, *, now=None):
-    try:
-        message_id, timestamp = headers['svix-id'], headers['svix-timestamp']
-        if len(message_id)>200 or len(headers['svix-signature'])>2048 or abs((now or time.time())-int(timestamp))>300:
-            raise ValueError()
-        key = base64.b64decode(secret.removeprefix('whsec_'), validate=True)
-        expected = base64.b64encode(hmac.new(key,(message_id+'.'+timestamp+'.').encode()+payload,hashlib.sha256).digest()).decode()
-        if not any(part.startswith('v1,') and hmac.compare_digest(part[3:],expected) for part in headers['svix-signature'].split()):
-            raise ValueError()
-        return json.loads(payload)
-    except (KeyError, ValueError, TypeError, UnicodeDecodeError):
-        raise HTTPException(400,'Invalid webhook signature') from None
-
-
-def handle_webhook(store, payload, headers):
-    data = verify_webhook(payload,headers,store.settings.resend_webhook_secret)
-    status = {'email.delivered':'delivered','email.bounced':'bounced','email.complained':'complained','email.failed':'failed'}.get(data.get('type'))
-    if not status or not isinstance(data.get('data',{}).get('email_id'),str):
-        return {'processed':False}
-    processed = store.call('POST','/rest/v1/rpc/cme_receive_delivery',json={
-        'p_receipt':headers['svix-id'],'p_provider_id':data['data']['email_id'],'p_status':status})
-    return {'processed':processed}

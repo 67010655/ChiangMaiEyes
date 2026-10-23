@@ -178,10 +178,10 @@ def test_migration_keeps_line_ids_private_and_queues_both_channels_atomically():
     assert body.index('cme_hotspot_seen') < body.index('cme_email_outbox') < body.index('cme_line_outbox')
 
 
-def test_incident_update_queues_line_for_a_linked_member_without_email_opt_in():
+def test_incident_update_queues_line_for_a_linked_member():
     from app.community_mail import queue_incident_events
     class Store:
-        settings = settings(community_email_test_recipient='fixture@example.test')
+        settings = settings()
         inserted = []
         def rows(self, table, **kw):
             return {'cme_memberships': [{'user_id': 'user-1', 'forest_id': 'forest-A'}],

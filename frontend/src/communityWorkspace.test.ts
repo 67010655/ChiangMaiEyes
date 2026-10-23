@@ -21,7 +21,7 @@ async function setup({ signedIn = false, approved = false, failCreate = false, o
     if (offline) throw new Error('Fixture connection lost');
     const path = url.replace('/api/community', '');
     calls.push({ path, ...request });
-    const data = path === '/status' ? { ready: true, email_mode: 'test' }
+    const data = path === '/status' ? { ready: true }
       : path === '/me' ? { is_admin: admin, memberships: approved ? [{ ...f, status: 'approved' }] : [], preferences: { events_enabled: false, quiet_start: 21, quiet_end: 7 } }
       : path === '/incidents' && request.method === 'POST' ? { detail: 'Fixture network failure' }
       : path === '/review-queue' ? [{ id: 'm1', name: 'ป่าคำขอ', amphoe: 'อ', status: 'pending', request_note: 'x', email: 'fixture@example.test' }]

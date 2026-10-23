@@ -66,7 +66,7 @@ class IncidentClose(StrictModel):
 
 
 class NotificationPreferences(StrictModel):
-    events_enabled: bool = False
+    events_enabled: bool = False  # accepted so an open older page still saves; alerts go by LINE only, so it is stored as off
     daily_enabled: bool = False
     quiet_enabled: bool = False
     quiet_start: int = Field(default=21, ge=0, le=23)
@@ -89,9 +89,8 @@ def community_status(settings: Settings = Depends(get_settings)):
         ready = True
     except HTTPException:
         ready = False
-    mode = 'live' if settings.community_email_enabled else 'test' if settings.community_email_test_recipient else 'unavailable'
     from app.community_line import enabled
-    return {'ready': ready, 'email_mode': mode, 'line_available': enabled(settings), 'private_records': True}
+    return {'ready': ready, 'line_available': enabled(settings), 'private_records': True}
 
 
 @router.get('/public-incidents')
@@ -103,7 +102,7 @@ def public_incidents(settings: Settings = Depends(get_settings)):
 def me(ctx=Depends(session)):
     store, token, user = ctx
     data = store.rpc('me', {}, token)
-    return {**data, 'user_id': user['id'], 'test_recipient': store.settings.community_email_test_recipient if data['is_admin'] else None}
+    return {**data, 'user_id': user['id']}
 
 
 def contact_forest_ids(forest_ids: list[str] = Query(min_length=1, max_length=3)):
@@ -154,7 +153,7 @@ def review_membership(membership_id: UUID, payload: ReviewMembership, ctx=Depend
 @router.put('/preferences')
 def preferences(payload: NotificationPreferences, ctx=Depends(session)):
     store, token, _ = ctx
-    return store.rpc('preferences', payload.model_dump(), token)
+    return store.rpc('preferences', {**payload.model_dump(), 'events_enabled': False, 'daily_enabled': False}, token)
 
 
 @router.get('/incidents')
@@ -257,17 +256,6 @@ def cancel_report(report_id: UUID, ctx=Depends(session)):
     return store.rpc('cancel_legacy', {'id': str(report_id)}, token)
 
 
-@router.post('/test-email')
-def test_email(ctx=Depends(session)):
-    from app.community_mail import queue_test_email, process_outbox
-    store, token, user = ctx
-    if not store.rpc('me', {}, token)['is_admin']:
-        raise HTTPException(403, 'สำหรับผู้ดูแลระบบ')
-    queued = queue_test_email(store, user)
-    result = process_outbox(store, limit=1, only_id=queued)
-    return {'queued_id': queued, **result}
-
-
 @router.post('/run-alerts')
 def run_alerts(ctx=Depends(session)):
     from app.community_mail import run_jobs
@@ -285,20 +273,12 @@ def request_alert_check(background_tasks: BackgroundTasks, ctx=Depends(session))
         raise HTTPException(403, 'สำหรับผู้ดูแลระบบ')
     from app.community_mail import alerts_configured
     if not alerts_configured(store.settings):
-        raise HTTPException(503, 'ยังไม่ได้กำหนดการส่งอีเมลหรือ LINE')
+        raise HTTPException(503, 'ยังไม่ได้เปิดการแจ้งเตือนทาง LINE')
     job_key = claim_job(store,'manual')
     if not job_key:
         return {'accepted':False,'already_checked':True}
     background_tasks.add_task(background_jobs,store.settings,None,'manual',job_key)
     return {'accepted':True}
-
-
-@router.get('/mail-status')
-def mail_status(ctx=Depends(session)):
-    store, token, _ = ctx
-    if not store.rpc('me', {}, token)['is_admin']:
-        raise HTTPException(403, 'สำหรับผู้ดูแลระบบ')
-    return store.rows('cme_email_outbox', select='id,category,status,delivery_status,attempts,created_at,sent_at,last_error', order='created_at.desc', limit='20')
 
 
 @router.get('/jobs/alerts')
@@ -321,25 +301,6 @@ def jobs_status(ctx=Depends(session)):
         'runs': store.rows('cme_job_runs', select='started_at,completed_at,source,run_status,lease_until,summary,last_error',
                            order='started_at.desc', limit='20'),
     }
-
-
-@router.post('/resend-webhook')
-async def resend_webhook(request: Request, settings: Settings = Depends(get_settings)):
-    from app.community_mail import handle_webhook
-    if not settings.resend_webhook_secret:
-        raise HTTPException(503, 'Webhook not configured')
-    length = request.headers.get('content-length') or '0'
-    if not length.isdecimal():
-        raise HTTPException(400, 'Invalid content length')
-    if int(length) > 65536:
-        raise HTTPException(413, 'Payload too large')
-    payload = bytearray()
-    async for chunk in request.stream():
-        payload.extend(chunk)
-        if len(payload) > 65536:
-            raise HTTPException(413, 'Payload too large')
-    payload = bytes(payload)
-    return handle_webhook(CommunityStore(settings), payload, dict(request.headers))
 
 
 @router.get('/line')

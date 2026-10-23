@@ -9,7 +9,7 @@
   const checkRequests=new Map(),detailsOpen=new Map();
   const fieldChecks=new Map();
   const formDrafts=new Map();
-  const state={tab:'forest',me:null,session:null,catalog:[],incidents:[],publicIncidents:[],detail:null,forestId:'',error:'',notice:'',busy:false,ready:null,emailMode:'unavailable',create:false,scope:'active',draft:null};
+  const state={tab:'forest',me:null,session:null,catalog:[],incidents:[],publicIncidents:[],detail:null,forestId:'',error:'',notice:'',busy:false,ready:null,create:false,scope:'active',draft:null};
   const E=()=>root.CmeEvidence;
   const pinsChanged=()=>{try{root.dispatchEvent(new CustomEvent('cme:pins-changed'));}catch{}};
   const esc=value=>E().escapeHtml(value);
@@ -109,7 +109,7 @@
     const id=state.publicForest??P.recall();state.publicForest=id;
     return P.html({forests:state.catalog,dashboard:context.dashboard(),selectedId:id,hasIncidents:!!state.publicIncidents?.length,incidentsHtml:state.publicIncidents?.length?incidentRows(state.publicIncidents,true):''});
   }
-  function loginView(){return `<div class="cw-empty"><h2>พื้นที่สำหรับตัวแทนป่าชุมชน</h2><p>เข้าสู่ระบบเพื่อขอสิทธิ์พื้นที่ เมื่อผู้ดูแลยืนยันแล้ว คุณจะบันทึกเหตุ ร่วมประสานงาน และตั้งค่าอีเมลของป่าที่รับผิดชอบได้</p><p>ยังไม่มีบัญชี? เลือกสมัครสมาชิกในหน้าบัญชี แล้วจึงขอสิทธิ์พื้นที่</p>${button('เข้าสู่ระบบ / สมัครสมาชิก','signin','',true)} ${button('ดูเหตุที่เผยแพร่','public')}${E().fireHelpHtml()}</div>`;}
+  function loginView(){return `<div class="cw-empty"><h2>พื้นที่สำหรับตัวแทนป่าชุมชน</h2><p>เข้าสู่ระบบเพื่อขอสิทธิ์พื้นที่ เมื่อผู้ดูแลยืนยันแล้ว คุณจะบันทึกเหตุ ร่วมประสานงาน และรับแจ้งเตือนทาง LINE ได้</p><p>ยังไม่มีบัญชี? เลือกสมัครสมาชิกในหน้าบัญชี แล้วจึงขอสิทธิ์พื้นที่</p>${button('เข้าสู่ระบบ / สมัครสมาชิก','signin','',true)} ${button('ดูเหตุที่เผยแพร่','public')}${E().fireHelpHtml()}</div>`;}
   function membershipView(){
     const requests=state.me?.memberships||[];
     return `<section class="cw-section"><h2>ขอสิทธิ์ตัวแทนป่าชุมชน</h2><p class="cw-help">เลือกป่าจากขอบเขตที่ได้รับจาก RECOFTC และระบุหน้าที่หรือช่องทางให้ผู้ดูแลตรวจสอบ การเลือกชื่อป่ายังไม่ถือว่าได้รับสิทธิ์</p>
@@ -198,7 +198,7 @@
     const steps={
       alert:['ดูตำแหน่งจุดบนแผนที่ด้านล่างว่าอยู่ตรงไหนของป่า','ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a> และแจ้งหน่วยงานในพื้นที่ (ดู "ใครดูแลพื้นที่นี้")','อย่าเข้าพื้นที่คนเดียว ประสานทีมและป่าข้างเคียงก่อน','กลับมาแล้ว กด "บันทึกเหตุ" ใส่ตำแหน่ง รูป และผล'],
       watch:[toward?'<b>ลมพัดจากจุดความร้อนเข้าหาป่า</b> เฝ้าระวังเป็นพิเศษ':'ดูทิศลม ตอนนี้ไม่ได้พัดจากจุดความร้อนเข้าหาป่า','ถามป่าข้างเคียงหรือหน่วยงานว่ามีคนไปตรวจจุดนี้แล้วหรือยัง','ถ้าเห็นควันในป่า กด "บันทึกเหตุ"'],
-      calm:['ไม่มีจุดความร้อนในหรือรอบป่าใน 24 ชม. ล่าสุด','ตรวจว่าเปิดรับแจ้งเตือน LINE หรืออีเมลไว้แล้ว '+button('ตั้งค่าแจ้งเตือน','tab','data-tab="preferences"')],
+      calm:['ไม่มีจุดความร้อนในหรือรอบป่าใน 24 ชม. ล่าสุด','ตรวจว่าผูก LINE ไว้แล้ว เพื่อให้ได้รับแจ้งเตือน '+button('ตั้งค่าแจ้งเตือน','tab','data-tab="preferences"')],
       unknown:['ข้อมูลดาวเทียมยังไม่พร้อม ยังสรุปไม่ได้ว่าปลอดภัย','ถ้าเห็นควันหรือไฟ โทร <a href="tel:1362">1362</a> แล้วกด "บันทึกเหตุ"'],
     }[sit.status]||[];
     return `<section class="rp-todo"><h2>ต้องทำอะไรตอนนี้</h2><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol></section>`;
@@ -333,16 +333,13 @@
     const checks=fieldChecks.get(d.incident.id);
     return `<details class="cw-field-checks"><summary>ผลตรวจภาคสนามและเวลาแจ้งเตือน</summary><p class="cw-help">เก็บหลักฐานเพื่อเทียบข้อมูลภายหลัง ยังไม่มีการคำนวณเปอร์เซ็นต์ความแม่นยำ</p><div class="cw-actions">${button('โหลดผลตรวจภาคสนาม','load-checks')}${checks?.length?button('ส่งออกผลตรวจ CSV','export-checks'):''}</div>${checks?root.CmeField.list(checks):'<p class="cw-help">กดโหลดผลตรวจเพื่อดูรายการที่บันทึกไว้</p>'}${d.can_note?root.CmeField.form('cwFieldCheckForm',checks||[]):'<p class="cw-help">รับร่วมประสานก่อนเพิ่มผลตรวจ</p>'}</details>`;
   }
-  function mailRow(m){
-    return `<article class="cw-row"><div><strong>${esc({test:'อีเมลทดสอบ',daily:'สรุปรายวัน',incident:'การประสานเหตุ',hotspot:'จุดความร้อนใหม่'}[m.category]||m.category)}</strong><p>${date(m.created_at)} · ${esc({pending:'รอส่ง',processing:'กำลังส่ง',sent:'ผู้ให้บริการรับแล้ว',failed:'ส่งไม่สำเร็จ',suppressed:'ระงับการส่ง'}[m.status]||m.status)} · ${esc({provider_accepted:'รอยืนยันการนำส่ง',delivered:'ส่งถึงระบบอีเมลผู้รับแล้ว',bounced:'อีเมลตีกลับ',complained:'ผู้รับแจ้งร้องเรียน',failed:'นำส่งไม่สำเร็จ'}[m.delivery_status]||m.delivery_status||'ยังไม่มีผลนำส่ง')}</p>${m.last_error?`<small>${esc(m.last_error)}</small>`:''}</div></article>`;
-  }
   function lineView(){
     const l=state.line,admin=state.me.is_admin,code=state.lineCode,link=(href,label,primary)=>`<a class="cw-btn${primary?' primary':''}" href="${esc(href)}" target="_blank" rel="noopener">${label}</a>`;
     if(!l)return '<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p class="cw-help" role="status">กำลังตรวจการเชื่อม LINE…</p></section>';
     if(!l.available)return '<section class="cw-line"><h2>แจ้งเตือนทาง LINE</h2><p class="cw-help">ยังไม่ได้เปิดใช้การแจ้งเตือนทาง LINE ในระบบนี้</p></section>';
     const scope=state.me.memberships?.some(m=>m.status==='approved')?'':'<div class="cw-alert">จะเริ่มได้รับแจ้งเตือนหลังผู้ดูแลอนุมัติคุณเป็นตัวแทนป่า</div>';
     if(l.linked)return `<section class="cw-line"><h2>💬 แจ้งเตือนทาง LINE</h2><p class="cw-chip ok"><strong>ผูก LINE แล้ว</strong> · ตั้งแต่ ${date(l.linked_at)}</p>${scope}
-      <p class="cw-help">ส่งเมื่อพบจุดความร้อนใหม่ในป่าที่ได้รับอนุมัติ หรือมีการอัปเดตการประสานเหตุ ช่วงพักการส่งด้านล่างใช้กับ LINE ด้วย สรุปรายวันส่งทางอีเมลเท่านั้น</p>
+      <p class="cw-help">ส่งเมื่อพบจุดความร้อนใหม่ในป่าที่ได้รับอนุมัติ หรือมีการอัปเดตการประสานเหตุ ช่วงพักการส่งด้านล่างใช้กับข้อความ LINE ทุกชนิด</p>
       <div class="cw-actions">${admin?button('ส่ง LINE ทดสอบ','line-test'):''}${button('ยกเลิกการผูก LINE','line-unlink')}</div></section>`;
     return `<section class="cw-line"><h2>💬 แจ้งเตือนทาง LINE</h2><p class="cw-chip">ยังไม่ได้ผูก</p><p class="cw-help">รับแจ้งเมื่อพบจุดความร้อนใหม่ในป่าที่คุณดูแล ผ่านบัญชี LINE ทางการ ${esc(l.basic_id)} ไม่ต้องสมัครบัญชีใหม่</p>${scope}
       ${code?`<ol class="cw-line-steps"><li>${link(code.add_friend_url,'1. เพิ่มเพื่อน '+esc(l.basic_id))}</li><li>${link(code.chat_url,'2. เปิดแชทแล้วกดส่งรหัส',true)}</li></ol>
@@ -351,30 +348,23 @@
       :`<div class="cw-actions">${button('รับแจ้งเตือนทาง LINE','line-link','',true)}</div>`}</section>`;
   }
   function preferencesView(){
-    const p=state.me.preferences,admin=state.me.is_admin,mail=state.mailStatus||[];
+    const p=state.me.preferences,admin=state.me.is_admin;
     const hours=value=>Array.from({length:24},(_,h)=>`<option value="${h}" ${h===value?'selected':''}>${h.toString().padStart(2,'0')}:00 น.</option>`).join('');
-    return `<section class="cw-section cw-prefs"><h2>การแจ้งเตือน</h2><p class="cw-help">เลือกช่องทางที่สะดวก ส่งเฉพาะป่าที่คุณได้รับอนุมัติ</p>
+    return `<section class="cw-section cw-prefs"><h2>การแจ้งเตือน</h2><p class="cw-help">เตือนไฟ หมุดเหตุ และการอัปเดตส่งทาง <b>LINE</b> อย่างเดียว ส่งเฉพาะป่าที่คุณได้รับอนุมัติ อีเมลใช้เฉพาะยืนยันบัญชีและเปลี่ยนรหัสผ่าน</p>
       <div class="cw-pref-card">${lineView()}</div>
-      <div class="cw-pref-card"><h2>📧 อีเมลของพื้นที่ที่คุณติดตาม</h2><p class="cw-help">ส่งถึงอีเมลที่ยืนยันของบัญชีนี้ เฉพาะป่าที่ได้รับอนุมัติ เมื่อข้อมูลใหม่เข้ามาหรือมีการประสานเหตุ</p>
-      ${state.emailMode!=='live'?'<div class="cw-alert">ยังไม่ส่งถึงสมาชิกทั่วไป ขณะนี้ส่งได้เฉพาะอีเมลทดสอบที่กำหนด จะเปิดรับจริงหลังยืนยันโดเมนผู้ส่ง</div>':''}
+      <div class="cw-pref-card"><h2>🌙 ช่วงพักการส่ง LINE</h2><p class="cw-help">เลือกเวลาที่ไม่ต้องการให้ LINE ดัง ข้อความที่ติดช่วงพักจะรอส่งตอนสิ้นสุด <b>รวมข้อความเตือนไฟด้วย</b> ถ้าอยากได้ยินตลอดให้ปิดการพัก</p>
       <form class="cw-form" id="cwPreferencesForm">
-        <label class="cw-checkbox"><input type="checkbox" name="events_enabled" ${p.events_enabled?'checked':''}><span>รับข้อมูลจุดความร้อนใหม่และการประสานเหตุ</span></label>
-        <label class="cw-checkbox"><input type="checkbox" name="daily_enabled" ${p.daily_enabled?'checked':''}><span>รับสรุปประจำวัน ตั้งแต่ 08:00 น. ตามรอบตรวจข้อมูล</span></label>
         <label class="cw-checkbox"><input type="checkbox" name="quiet_enabled" ${p.quiet_enabled?'checked':''}><span>พักการส่งในช่วงเวลาที่เลือก</span></label>
         <div class="cw-fields"><label>เริ่มพัก<select name="quiet_start">${hours(p.quiet_start)}</select></label><label>กลับมาส่ง<select name="quiet_end">${hours(p.quiet_end)}</select></label></div>
-        <button class="cw-btn primary">บันทึกการรับอีเมล</button>
-      </form><p class="cw-help">ยกเลิกรับได้โดยเอาเครื่องหมายออกและบันทึก อีเมลเป็นข้อมูลสำหรับตรวจสอบ ไม่ใช่ช่องทางฉุกเฉิน ข้อมูลดาวเทียมอัปเดตเป็นรอบ</p></div>
-      ${admin?`<details class="cw-pref-card cw-admin-tools"><summary><b>🛠 เครื่องมือผู้ดูแลระบบ</b><small>ทดสอบการส่ง · รอบตรวจข้อมูล · ผลการส่งล่าสุด</small></summary>${jobsView()}<p class="cw-help">ผู้รับทดสอบ: ${esc(state.me.test_recipient||'ยังไม่กำหนด')}</p>
-        <div class="cw-actions">${button('ส่งอีเมลทดสอบ','test-email')}${button('ตรวจข้อมูลและคิวตอนนี้','run-alerts')}</div>
-        <h3>ผลการส่งล่าสุด</h3>${button('อัปเดตผลการส่ง','refresh-mail')}
-        ${mail.length?mailRow(mail[0]):state.mailStatus?'<p class="cw-help">ยังไม่มีรายการส่ง</p>':'<p class="cw-help" role="status">กำลังโหลดผลการส่ง…</p>'}
-        ${mail.length>1?`<details><summary>ประวัติการส่งก่อนหน้านี้ (${mail.length-1} รายการที่โหลด)</summary>${mail.slice(1).map(mailRow).join('')}</details>`:''}
+        <button class="cw-btn primary">บันทึกช่วงพัก</button>
+      </form></div>
+      ${admin?`<details class="cw-pref-card cw-admin-tools"><summary><b>🛠 เครื่องมือผู้ดูแลระบบ</b><small>รอบตรวจข้อมูล · ทดสอบ LINE อยู่ในการ์ด LINE</small></summary>${jobsView()}<div class="cw-actions">${button('ตรวจข้อมูลและคิวตอนนี้','run-alerts')}${button('อัปเดตรอบตรวจ','refresh-mail')}</div>
       </details>`:''}</section>`;
   }
   function jobsView(){
     const job=state.jobsStatus;if(!job)return '<p class="cw-help">กำลังตรวจรอบงาน…</p>';
     const runs=job.runs||[],latest=runs.find(r=>r.completed_at),old=!latest||Date.now()-Date.parse(latest.completed_at)>30*60000;
-    return `<section class="cw-jobs"><h3>รอบตรวจข้อมูลและคิวอีเมล</h3><p>${job.scheduler_enabled?'ตั้งงานอัตโนมัติทุก '+job.interval_minutes+' นาทีผ่าน '+esc(job.scheduler_provider):'ยังไม่ได้เปิดงานอัตโนมัติตามรอบ'}</p><p class="cw-help">ตรวจเสร็จล่าสุด: ${latest?date(latest.completed_at):'ยังไม่มีรอบที่ตรวจเสร็จ'}${old?' · ควรตรวจการทำงาน':''}<br>รอบเรียกตรวจไม่ใช่ความถี่ที่ดาวเทียมหรือสถานีส่งข้อมูลใหม่</p><details><summary>ดูผลรอบล่าสุด</summary>${runs.slice(0,5).map(r=>`<p class="cw-help">${date(r.started_at)} · ${r.completed_at?'ตรวจเสร็จ':r.run_status==='failed'?'รอบนี้ไม่สำเร็จ จะตรวจซ้ำ':r.lease_until&&Date.parse(r.lease_until)<Date.now()?'รอบนี้หยุดก่อนเสร็จ รอตรวจซ้ำ':'กำลังตรวจ'}${r.summary?' · เข้าคิว '+Number(r.summary.queued||0)+' · ผู้ให้บริการรับ '+Number(r.summary.provider_accepted||0):''}</p>`).join('')||'<p class="cw-help">ยังไม่มีผลรอบงาน</p>'}</details></section>`;
+    return `<section class="cw-jobs"><h3>รอบตรวจข้อมูลและคิว LINE</h3><p>${job.scheduler_enabled?'ตั้งงานอัตโนมัติทุก '+job.interval_minutes+' นาทีผ่าน '+esc(job.scheduler_provider):'ยังไม่ได้เปิดงานอัตโนมัติตามรอบ'}</p><p class="cw-help">ตรวจเสร็จล่าสุด: ${latest?date(latest.completed_at):'ยังไม่มีรอบที่ตรวจเสร็จ'}${old?' · ควรตรวจการทำงาน':''}<br>รอบเรียกตรวจไม่ใช่ความถี่ที่ดาวเทียมหรือสถานีส่งข้อมูลใหม่</p><details><summary>ดูผลรอบล่าสุด</summary>${runs.slice(0,5).map(r=>`<p class="cw-help">${date(r.started_at)} · ${r.completed_at?'ตรวจเสร็จ':r.run_status==='failed'?'รอบนี้ไม่สำเร็จ จะตรวจซ้ำ':r.lease_until&&Date.parse(r.lease_until)<Date.now()?'รอบนี้หยุดก่อนเสร็จ รอตรวจซ้ำ':'กำลังตรวจ'}${r.summary?' · เข้าคิว '+Number(r.summary.queued||0)+' · ผู้ให้บริการรับ '+Number(r.summary.provider_accepted||0):''}</p>`).join('')||'<p class="cw-help">ยังไม่มีผลรอบงาน</p>'}</details></section>`;
   }
   function reviewCard(m){
     return `<article class="cw-req s-${esc(m.status)}"><div class="cw-req-top">${badge(m.status)}${m.created_at?`<small>ส่งคำขอ ${date(m.created_at)} · ${esc(ago(m.created_at))}</small>`:''}</div>
@@ -437,7 +427,7 @@
       try{
         const [status,session]=await Promise.all([api('/status',{publicOnly:true}),context.session()]);
         if(version!==sequence)return;
-        state.ready=status.ready;state.emailMode=status.email_mode;state.session=session;
+        state.ready=status.ready;state.session=session;
         if(!state.catalog.length){state.catalog=context.forests();if(!state.catalog.length){const result=await context.catalog();state.catalog=result.forests||[];}}
         if(!session){state.me=null;state.incidents=[];state.publicIncidents=await api('/public-incidents',{publicOnly:true});}
         else{
@@ -453,7 +443,7 @@
             if(pins)state.nearPins=pins;
           }
           if(state.tab==='preferences'){state.line=await api('/line').catch(()=>({available:false}));if(state.line.linked)state.lineCode=null;}
-          if(state.tab==='preferences'&&me.is_admin)[state.mailStatus,state.jobsStatus]=await Promise.all([api('/mail-status'),api('/jobs-status')]);
+          if(state.tab==='preferences'&&me.is_admin)state.jobsStatus=await api('/jobs-status');
           if(state.detail?.incident?.id){state.eventMore=true;state.detail=await api('/incidents/'+state.detail.incident.id);}
         }
         if(version!==sequence)return;
@@ -508,13 +498,12 @@
       else if(a==='publish')await updateIncident('publish_summary',{published:!state.detail.incident.published});
       else if(a==='accept'||a==='decline')await updateIncident('respond_partner',{forest_id:b.dataset.forest,status:a==='accept'?'accepted':'declined'});
       else if(['approve','reject','revoke'].includes(a)){await api('/memberships/'+b.dataset.id,{method:'PATCH',data:{status:{approve:'approved',reject:'rejected',revoke:'revoked'}[a]}});state.notice='บันทึกผลตรวจสิทธิ์แล้ว';await load();}
-      else if(a==='test-email'){const result=await api('/test-email',{method:'POST'});state.notice=result.provider_accepted?'Resend รับอีเมลทดสอบแล้ว กรุณาตรวจกล่องจดหมายและจดหมายขยะ':result.failed?'ยังส่งไม่สำเร็จ ตรวจผลการส่งล่าสุด':'เก็บอีเมลเข้าคิวแล้ว';await load();}
-      else if(a==='run-alerts'){const result=await api('/request-alert-check',{method:'POST'});state.notice=result.already_checked?'ตรวจในรอบนี้แล้ว หรือมีงานกำลังตรวจอยู่ จะตรวจอีกครั้งในรอบถัดไป':result.accepted?'รับคำขอตรวจแล้ว งานจะทำต่อเบื้องหลัง กดอัปเดตผลการส่งเพื่อดูผลล่าสุด':`ตรวจข้อมูลและคิวแล้ว · Resend รับ ${result.provider_accepted||0} ข้อความ`;[state.mailStatus,state.jobsStatus]=await Promise.all([api('/mail-status'),api('/jobs-status')]);}
+      else if(a==='run-alerts'){const result=await api('/request-alert-check',{method:'POST'});state.notice=result.already_checked?'ตรวจในรอบนี้แล้ว หรือมีงานกำลังตรวจอยู่ จะตรวจอีกครั้งในรอบถัดไป':result.accepted?'รับคำขอตรวจแล้ว งานจะทำต่อเบื้องหลัง กดอัปเดตผลการส่งเพื่อดูผลล่าสุด':`ตรวจข้อมูลและคิวแล้ว · Resend รับ ${result.provider_accepted||0} ข้อความ`;state.jobsStatus=await api('/jobs-status');}
       else if(a==='line-link'){state.lineCode=await api('/line/link-code',{method:'POST'});state.notice='เพิ่มเพื่อนแล้วกดส่งรหัสในแชท LINE จากนั้นกลับมากดตรวจสถานะ';}
       else if(a==='line-refresh'){state.line=await api('/line');if(state.line.linked){state.lineCode=null;state.notice='ผูก LINE สำเร็จแล้ว';}else state.notice='ยังไม่พบการผูก ตรวจว่ากดส่งรหัสในแชทแล้ว และรหัสยังไม่หมดอายุ';}
       else if(a==='line-unlink'){if(!root.confirm('ยกเลิกการผูก LINE? จะไม่ได้รับแจ้งเตือนทาง LINE อีก'))return;await api('/line/link',{method:'DELETE'});state.line=await api('/line');state.notice='ยกเลิกการผูก LINE แล้ว';}
       else if(a==='line-test'){const result=await api('/line/test',{method:'POST'});state.notice=result.line_accepted?'LINE รับข้อความทดสอบแล้ว ตรวจในแชท LINE ของคุณ':result.line_quota_reached?'โควตาข้อความ LINE ของเดือนนี้หมดแล้ว':'ยังส่งไม่สำเร็จ ลองอีกครั้งภายหลัง';}
-      else if(a==='refresh-mail')[state.mailStatus,state.jobsStatus]=await Promise.all([api('/mail-status'),api('/jobs-status')]);
+      else if(a==='refresh-mail')state.jobsStatus=await api('/jobs-status');
       else if(a==='load-checks')fieldChecks.set(state.detail.incident.id,await api('/incidents/'+state.detail.incident.id+'/field-checks'));
       else if(a==='export-checks')root.CmeField.download(root.CmeField.csv(fieldChecks.get(state.detail.incident.id)||[],state.detail.incident),'chiangmaieyes-field-checks-'+state.detail.incident.id+'.csv');
     });
@@ -541,7 +530,7 @@
       else if(form.id==='cwStatusForm'){await api('/incidents/'+state.detail.incident.id+'/close',{method:'POST',data:{outcome:values.status,note:values.note||''}});state.notice='บันทึกแล้ว หมุดหายจากแผนที่';await load();pinsChanged();}
       else if(form.id==='cwNoteForm')await updateIncident('add_note',{note:values.note});
       else if(form.id==='cwPartnerForm')await updateIncident('invite_partner',{forest_id:values.forest_id});
-      else if(form.id==='cwPreferencesForm'){await api('/preferences',{method:'PUT',data:{events_enabled:form.elements.events_enabled.checked,daily_enabled:form.elements.daily_enabled.checked,quiet_enabled:form.elements.quiet_enabled.checked,quiet_start:Number(values.quiet_start),quiet_end:Number(values.quiet_end)}});state.notice='บันทึกการรับอีเมลแล้ว';await load();}
+      else if(form.id==='cwPreferencesForm'){await api('/preferences',{method:'PUT',data:{quiet_enabled:form.elements.quiet_enabled.checked,quiet_start:Number(values.quiet_start),quiet_end:Number(values.quiet_end)}});state.notice='บันทึกช่วงพักการส่งแล้ว';await load();}
       formDrafts.delete(snapshotKey);
     });
   }
@@ -552,7 +541,7 @@
     if(event.target.closest('#cwIncidentForm')&&event.target.name){if(!state.draft)state.draft=newDraft();state.draft[event.target.name]=event.target.value;saveDraft();}
     if(event.target.id==='cwActiveForest'){state.forestId=event.target.value;render();}
   }
-  function authChanged(){sequence++;loading=null;formDrafts.clear();checkRequests.clear();fieldChecks.clear();detailsOpen.clear();root.CmePractice?.reset();clearPhotos();destroyMap();if(body)body.replaceChildren();state.me=null;state.session=null;state.incidents=[];state.detail=null;state.reviewQueue=[];state.mailStatus=[];state.jobsStatus=null;state.draft=null;state.create=false;state.notice='';render();if(isOpen())load();}
+  function authChanged(){sequence++;loading=null;formDrafts.clear();checkRequests.clear();fieldChecks.clear();detailsOpen.clear();root.CmePractice?.reset();clearPhotos();destroyMap();if(body)body.replaceChildren();state.me=null;state.session=null;state.incidents=[];state.detail=null;state.reviewQueue=[];state.jobsStatus=null;state.draft=null;state.create=false;state.notice='';render();if(isOpen())load();}
   // Shared forest links: #community/forest/<forest_id> opens that forest's card.
   function forestLink(){const m=location.hash.match(/^#community\/forest\/([A-Za-z0-9_-]{1,64})$/);return m?m[1]:null;}
   async function openForestLink(id){

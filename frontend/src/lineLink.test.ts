@@ -21,9 +21,9 @@ async function setup({ available = true, approved = false } = {}) {
   const user = { id: 'fixture-user' };
   w.fetch = async (url: string, request: any) => {
     const path = url.replace('/api/community', '');
-    calls.push({ path, method: request.method || 'GET' });
+    calls.push({ path, method: request.method || 'GET', body: request.body });
     if (path === '/line/link-code') linked = false;
-    const data = path === '/status' ? { ready: true, email_mode: 'test' }
+    const data = path === '/status' ? { ready: true }
       : path === '/me' ? { is_admin: false, memberships: approved ? [{ ...f, status: 'approved' }] : [], preferences: { events_enabled: false, quiet_start: 21, quiet_end: 7 } }
       : path === '/line' ? { available, linked, linked_at: linked ? '2026-10-19T03:05:00+00:00' : null, basic_id: '@241mevgs', add_friend_url: code.add_friend_url }
       : path === '/line/link-code' ? code
@@ -66,4 +66,19 @@ it('says alerts start only after approval, and hides the button when LINE is not
   expect(s.w.document.querySelector('[data-cw="line-link"]')).toBeNull();
   expect(s.w.document.body.textContent).toContain('ยังไม่ได้เปิดใช้การแจ้งเตือนทาง LINE');
   s.dom.window.close();
+});
+
+it('notifications page is LINE only: no email switches or email test, just LINE and quiet hours', async () => {
+  const { dom, w, calls } = await setup({ approved: true });
+  const doc = w.document;
+  expect(doc.body.textContent).toContain('ช่วงพักการส่ง LINE');
+  expect(doc.body.textContent).toContain('อีเมลใช้เฉพาะยืนยันบัญชีและเปลี่ยนรหัสผ่าน');
+  expect(doc.querySelector('[name="events_enabled"], [name="daily_enabled"], [data-cw="test-email"]')).toBeNull();
+  expect(doc.body.textContent).not.toContain('Resend');
+  doc.querySelector('#cwPreferencesForm').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+  await tick(); await tick();
+  const saved = calls.find(c => c.path === '/preferences' && c.method === 'PUT');
+  expect(JSON.parse(saved.body)).toEqual({ quiet_enabled: false, quiet_start: 21, quiet_end: 7 });
+  expect(calls.some(c => c.path === '/mail-status' || c.path === '/test-email')).toBe(false);
+  dom.window.close();
 });
