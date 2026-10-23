@@ -105,6 +105,7 @@ begin
   end if;
   return new;
 end $$;
+revoke all on function public.cme_limit_incident_rate() from public,anon,authenticated;
 drop trigger if exists cme_incident_rate on public.cme_incidents;
 create trigger cme_incident_rate before insert on public.cme_incidents for each row execute function public.cme_limit_incident_rate();
 
