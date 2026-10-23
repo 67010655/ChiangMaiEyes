@@ -97,7 +97,8 @@ def pin_alert_text(store: CommunityStore, incident: dict, reporter_name: str, ro
     direction = bearing_text(row['lat'], row['lon'], incident['latitude'], incident['longitude'])
     lines = [
         f'🚨 มีรายงานไฟใกล้ป่าชุมชนของคุณ',
-        f'👁️ ตัวแทนป่า {incident["forest_name"]} เห็น{what} ห่างขอบเขตป่า {row["name"]} ประมาณ {row["km"]:.1f} กม. ทางทิศ{direction}',
+        f'👁️ ตัวแทน{incident["forest_name"]} เห็น{what}',
+        f'📏 อยู่ภายในขอบเขต{row["name"]}' if row['km'] == 0 else f'📏 อยู่ห่างขอบเขต{row["name"]} ประมาณ {row["km"]:.1f} กม. ทางทิศ{direction}ของป่านั้น',
         f'👤 แจ้งโดย {reporter_name} · 🕒 พบเมื่อ {stamp(incident["observed_at"])}',
     ]
     if incident.get('contact_phone'):

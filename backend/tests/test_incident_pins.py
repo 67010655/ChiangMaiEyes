@@ -67,7 +67,8 @@ def test_alert_text_says_who_where_how_far_and_links_to_the_pin():
     store = SimpleNamespace(settings=Settings(community_site_url='https://site.example'))
     row = {'name': 'ป่าชุมชนบ้านบี', 'km': 2.3, 'lat': 18.81, 'lon': 98.95}
     text = pins.pin_alert_text(store, INCIDENT, 'สมชาย', row)
-    assert 'ป่าชุมชนบ้านเอ' in text and 'เห็นเปลวไฟ' in text and '2.3 กม.' in text and 'ทิศตะวันตก' in text
+    assert 'ตัวแทนป่าชุมชนบ้านเอ เห็นเปลวไฟ' in text and 'อยู่ห่างขอบเขตป่าชุมชนบ้านบี ประมาณ 2.3 กม. ทางทิศตะวันตกของป่านั้น' in text
+    assert 'อยู่ภายในขอบเขตป่าชุมชนบ้านบี' in pins.pin_alert_text(store, INCIDENT, 'สมชาย', {**row, 'km': 0})
     assert 'สมชาย' in text and '081-234-5678' in text and 'โทร 1362' in text
     assert text.endswith('ยังไม่ใช่การยืนยันจากหน่วยงาน') and 'https://site.example/#pin/inc-1' in text
 
