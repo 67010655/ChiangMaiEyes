@@ -1,0 +1,53 @@
+/* Community tab, restyled to match the analytics tab (docs: user feedback 24 Oct 2026):
+   same header (title with a green word), same full-width tab bar, cards with a thin colour line on top,
+   icon chip + title headers, and a two-column page on wide screens. Loaded after the tab's own CSS. */
+
+/* Header, like .an-head */
+.cw-header{padding:16px 26px!important;background:rgba(13,18,24,.95)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+body.light-mode .cw-header{background:#f0f5f1!important}
+.cw-header .cw-ttl{font-size:20px!important;font-weight:700}
+.cw-header .cw-ttl b{color:var(--green)}
+.cw-header p{font-size:13px}
+
+/* Page width and tab bar, like the analytics section tabs */
+.cw-body{max-width:1320px;margin:0 auto;padding:20px 26px 40px!important}
+.cw-tabs{display:grid!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:100%;max-width:none!important;gap:0!important;padding:0!important;margin:0 0 18px!important;border:1px solid var(--line)!important;border-radius:12px!important;overflow:hidden;background:var(--panel-2)!important}
+.cw-tabs button{border:0!important;border-radius:0!important;background:transparent!important;color:var(--muted)!important;font:600 14px/1.4 var(--disp)!important;min-height:46px;justify-content:center;box-shadow:none!important;transform:none!important}
+.cw-tabs button+button{border-left:1px solid var(--line)!important}
+.cw-tabs button[aria-selected=true]{background:rgba(67,176,95,.16)!important;color:var(--green)!important}
+body.light-mode .cw-tabs button[aria-selected=true]{background:rgba(22,101,52,.1)!important;color:#166534!important}
+.cw-tabs button:hover{color:var(--txt)!important;background:var(--panel)!important}
+
+/* Cards, like .as-card */
+.rp-card,.communityview .cw-section{position:relative;padding:18px!important;border:1px solid var(--line)!important;border-radius:16px!important;background:var(--panel)!important;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden}
+body.light-mode .rp-card,body.light-mode .communityview .cw-section{box-shadow:0 6px 18px rgba(15,23,42,.06)}
+.rp-card::before,.communityview .cw-section::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--rp-accent,linear-gradient(90deg,#43b05f,#37d1d6))}
+.rp-head{--rp-accent:linear-gradient(90deg,#43b05f,#37d1d6);background:var(--panel)!important}
+.rp-line{--rp-accent:linear-gradient(90deg,#f97316,#f59e0b);border-color:rgba(249,115,22,.55)!important;background:linear-gradient(135deg,rgba(249,115,22,.10),transparent 60%),var(--panel)!important}
+.rp-pins{--rp-accent:linear-gradient(90deg,#8b5cf6,#ec4899);background:var(--panel)!important}
+.rp-now-card{--rp-accent:linear-gradient(90deg,#ef4444,#f59e0b)}
+.rp-todo{--rp-accent:linear-gradient(90deg,#38bdf8,#818cf8);background:var(--panel)!important}
+.rp-map-card{--rp-accent:linear-gradient(90deg,#43b05f,#a3e635)}
+.as-ic.pin{background:rgba(139,92,246,.16);color:#a78bfa}
+.rp-card>.as-head{margin-bottom:12px}
+.rp-card>.as-head .rp-count{margin-left:auto}
+.rp-card h2.as-k{font-size:16px!important}
+
+/* Two columns on wide screens; one column on phones (same order as before) */
+.rp.rp-grid{max-width:none!important;display:grid;gap:14px;padding-bottom:24px}
+.rp-main,.rp-side{display:grid;gap:14px;align-content:start;min-width:0}
+@media(min-width:1000px){.rp.rp-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}}
+.rp-head h2{font-size:22px!important}
+.rp-head .rp-cta{margin-top:14px}
+.rp-now-card .rp-now{display:grid;gap:10px}
+.rp-side .cw-map{height:320px}
+.rp-side details.rp-card>summary{font-weight:600;color:var(--txt)}
+
+/* Other sub-views use the same width and cards */
+.communityview .cw-layout{gap:14px}
+.communityview .cw-section h2{font-size:17px}
+/* Notifications: centred like the incident page; LINE and quiet hours side by side on wide screens */
+.communityview .cw-section.cw-prefs{max-width:1100px!important;margin-left:auto!important;margin-right:auto!important;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.cw-prefs>h2,.cw-prefs>.cw-help,.cw-prefs>.cw-admin-tools{grid-column:1/-1}
+.cw-prefs>.cw-pref-card{margin:0!important}
+@media(max-width:900px){.communityview .cw-section.cw-prefs{grid-template-columns:1fr}}

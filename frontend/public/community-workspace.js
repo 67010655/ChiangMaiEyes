@@ -201,7 +201,7 @@
       calm:['ไม่มีจุดความร้อนในหรือรอบป่าใน 24 ชม. ล่าสุด','ตรวจว่าผูก LINE ไว้แล้ว เพื่อให้ได้รับแจ้งเตือน '+button('ตั้งค่าแจ้งเตือน','tab','data-tab="preferences"')],
       unknown:['ข้อมูลดาวเทียมยังไม่พร้อม ยังสรุปไม่ได้ว่าปลอดภัย','ถ้าเห็นควันหรือไฟ โทร <a href="tel:1362">1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small> แล้วกด "บันทึกเหตุ"'],
     }[sit.status]||[];
-    return `<section class="rp-todo"><h2>ต้องทำอะไรตอนนี้</h2><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol></section>`;
+    return `<section class="rp-todo rp-card"><header class="as-head"><span class="as-ic wx" aria-hidden="true">✅</span><h2 class="as-k">ต้องทำอะไรตอนนี้</h2></header><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol></section>`;
   }
   // Until LINE is linked a rep hears about nothing near their forest unless the site is open.
   function lineBanner(){
@@ -229,7 +229,7 @@
         <div class="rp-pin-act">${button('ดูบนแผนที่','show-pin',`data-pin="${esc(pin.id)}"`)}${pin.contact_phone?`<a class="cw-btn" href="tel:${esc(String(pin.contact_phone).replace(/[^0-9+]/g,''))}">☎️ โทรหาผู้แจ้ง</a>`:''}</div></li>`;
     };
     const shown=rows.slice(0,5);
-    return `<section class="rp-pins" role="region" aria-label="หมุดเหตุใกล้ป่าของคุณ"><h2>👁 มีรายงานไฟใกล้ป่าคุณ <span class="rp-count">${rows.length}</span></h2>
+    return `<section class="rp-pins rp-card" role="region" aria-label="หมุดเหตุใกล้ป่าของคุณ"><header class="as-head"><span class="as-ic pin" aria-hidden="true">👁</span><h2 class="as-k">มีรายงานไฟใกล้ป่าคุณ</h2><span class="rp-count">${rows.length}</span></header>
       <ul>${shown.map(item).join('')}</ul>${rows.length>shown.length?`<p class="cw-help">และอีก ${rows.length-shown.length} หมุด ดูได้บนแผนที่หลัก</p>`:''}
       <p class="cw-help">ตัวแทนป่าอื่นรายงานไว้ ยังไม่ใช่การยืนยันจากหน่วยงาน โทรคุยกันเองได้ ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></p></section>`;
   }
@@ -237,20 +237,25 @@
     const P=root.CmeForestPublic,{sit,html}=P.repSummaryHtml(selected,context.dashboard()),c=P.centre(selected);
     const open=related.filter(i=>!['closed','cancelled'].includes(i.status));
     const meta=[selected.tambon?'ต.'+selected.tambon:'',selected.amphoe?'อ.'+selected.amphoe:''].filter(Boolean).join(' · ');
-    return `<div class="rp">
-      <section class="rp-head"><p class="fp-kicker">${state.me.is_admin?'ผู้ดูแลระบบ · เลือกพื้นที่':'ป่าที่คุณดูแล'}</p>
+    const head=(icon,cls,title,extra='')=>`<header class="as-head"><span class="as-ic ${cls}" aria-hidden="true">${icon}</span><h2 class="as-k">${title}</h2>${extra}</header>`;
+    return `<div class="rp rp-grid">
+      <div class="rp-main">
+      <section class="rp-head rp-card"><p class="fp-kicker">${state.me.is_admin?'ผู้ดูแลระบบ · เลือกพื้นที่':'ป่าที่คุณดูแล'}</p>
         ${allowed.length>1?`<label class="sr-only" for="cwActiveForest">เลือกป่า</label><select class="cw-select" id="cwActiveForest">${options(allowed,selected.forest_id)}</select>`:`<h2>${esc(selected.name)}</h2>`}
-        <p class="fp-meta">${esc(meta)}</p></section>
+        <p class="fp-meta">${esc(meta)}</p>
+        <div class="rp-cta">${button('📝 บันทึกเหตุ','create','',true)}${c?`${button('ดูบนแผนที่หลัก','locate',`data-lat="${c.lat}" data-lon="${c.lon}"`)}`:''}${button('ประวัติเหตุ','all-incidents')}</div></section>
       ${selected.boundary_quality==='needs_review'?`<p class="cw-help" role="status"><b>ขอบเขตนี้ต้องตรวจทบทวน</b><br>${esc(selected.boundary_note)} · ระยะใช้จุดอ้างอิงป่าแทน</p>`:''}
       ${lineBanner()}${nearPinsCard(selected)}
-      <section class="rp-now" data-rp-now>${html}</section>
-      <div class="rp-cta">${button('📝 บันทึกเหตุ','create','',true)}${c?`${button('ดูบนแผนที่หลัก','locate',`data-lat="${c.lat}" data-lon="${c.lon}"`)}`:''}${button('ประวัติเหตุ','all-incidents')}</div>
+      <section class="rp-card rp-now-card">${head('🛰️','hot','สถานการณ์รอบป่า · 24 ชม.')}<div class="rp-now" data-rp-now>${html}</div></section>
       ${todoHtml(sit)}
-      ${open.length?`<section class="rp-section"><h2>เหตุที่ยังไม่ปิด <span class="rp-count">${open.length}</span></h2>${incidentRows(open)}</section>`:''}
-      <section class="rp-section"><h2>แผนที่ป่า</h2><div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">กดจุดบนแผนที่เพื่อดูว่าใครควรดูแล</p>${protectedNearbyView(selected)}${crossDistrictView(selected)}<div class="cw-actions">${button('ส่งออกรายงานพื้นที่นี้','export')}</div></section>
-      <details class="rp-section rp-who fp-who"><summary>📞 ติดต่อใคร · หน่วยงานในพื้นที่ · ป่าข้างเคียง</summary>${c&&root.CmeCoordination?root.CmeCoordination.html(c.lat,c.lon,{myForestId:selected.forest_id}):''}<p class="cw-help"><a href="tel:052081758">052-081758</a> สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่) · <a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a> · ตรวจ 9 ต.ค. 2026</p></details>
+      </div>
+      <div class="rp-side">
+      ${open.length?`<section class="rp-section rp-card">${head('📋','dist','เหตุที่ยังไม่ปิด',`<span class="rp-count">${open.length}</span>`)}${incidentRows(open)}</section>`:''}
+      <section class="rp-section rp-card rp-map-card">${head('🗺️','forest','แผนที่ป่า')}<div id="cwMap" class="cw-map" aria-label="ขอบเขตป่าที่เลือกและจุดความร้อน 24 ชั่วโมง"></div><p class="cw-help">กดจุดบนแผนที่เพื่อดูว่าใครดูแล</p>${protectedNearbyView(selected)}${crossDistrictView(selected)}<div class="cw-actions">${button('ส่งออกรายงานพื้นที่นี้','export')}</div></section>
+      <details class="rp-section rp-card rp-who fp-who"><summary>📞 ติดต่อใคร · หน่วยงานในพื้นที่ · ป่าข้างเคียง</summary>${c&&root.CmeCoordination?root.CmeCoordination.html(c.lat,c.lon,{myForestId:selected.forest_id}):''}<p class="cw-help"><a href="tel:052081758">052-081758</a> สำนักจัดการทรัพยากรป่าไม้ที่ 1 (เชียงใหม่) · <a href="https://forestinfo.forest.go.th/telephone_region.aspx" target="_blank" rel="noopener">บัญชีโทรศัพท์กรมป่าไม้</a> · ตรวจ 9 ต.ค. 2026</p></details>
+      ${state.me.is_admin?'':`<details class="rp-section rp-card"><summary>🌳 ดูแลป่าอื่นด้วย? ส่งคำขอ (รอผู้ดูแลอนุมัติ)</summary>${membershipView()}</details>`}
       ${root.CmeForestPublic.limitsHtml()}
-      ${state.me.is_admin?'':`<details class="rp-section"><summary>ดูแลป่าอื่นด้วย? ส่งคำขอ (รอผู้ดูแลอนุมัติ)</summary>${membershipView()}</details>`}
+      </div>
     </div>`;
   }
   function adminView(){
@@ -420,7 +425,7 @@
     else if(state.tab==='incidents'){const openN=state.incidents.filter(i=>!['closed','cancelled'].includes(i.status)).length;const seg=(id,label,n)=>`<button type="button" class="cw-seg-btn" data-cw="scope" data-scope="${id}" aria-pressed="${state.scope===id}">${label} <span>${n}</span></button>`;content=`<section class="cw-section"><h2>เหตุทั้งหมด</h2><p class="cw-help">เหตุที่ตัวแทนบันทึกไว้ในป่าที่คุณเห็นได้ เรียงจากล่าสุด กดเปิดดูเพื่ออัปเดตสถานะหรือเพิ่มบันทึก</p><div class="cw-actions"><div class="cw-seg" role="group" aria-label="กรองเหตุ">${seg('active','ยังไม่ปิด',openN)}${seg('all','ทั้งหมด',state.incidents.length)}</div>${allowedForests().length?button('📝 บันทึกเหตุ','create','',true):''}</div>${incidentRows(state.incidents.filter(i=>state.scope==='all'||!['closed','cancelled'].includes(i.status)))}${state.incidentMore?button('โหลดเหตุเก่ากว่านี้','older-incidents'):''}</section>`;}
     else content=forestView();
     const head=container.querySelector('.cw-header');
-    if(head){const signedIn=!!state.session;head.querySelector('h1').textContent=signedIn?'พื้นที่ป่าชุมชน':'ป่าชุมชน';head.querySelector('p').textContent=signedIn?'สถานการณ์ · บันทึกเหตุ · ประสานงาน':'ดูไฟ ลม และฝุ่นรอบป่า ไม่ต้องสมัคร';}
+    if(head){const signedIn=!!state.session;head.querySelector('h1').innerHTML=signedIn?'พื้นที่<b>ป่าชุมชน</b>':'<b>ป่าชุมชน</b>';head.querySelector('p').textContent=signedIn?'ดูป่าของคุณ · แจ้งเหตุ · รับแจ้งเตือนทาง LINE':'ดูไฟ ลม และฝุ่นรอบป่า ไม่ต้องสมัคร';}
     body.innerHTML=tabs()+notices+content;
     // On phones the tab row scrolls; keep the open tab in sight.
     const tabRow=body.querySelector('.cw-tabs'),on=tabRow?.querySelector('[aria-selected="true"]');if(tabRow&&on)tabRow.scrollLeft=Math.max(0,on.offsetLeft-(tabRow.clientWidth-on.offsetWidth)/2);
