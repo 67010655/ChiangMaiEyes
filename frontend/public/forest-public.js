@@ -196,7 +196,7 @@ ${shareUrl(f)}`;
     return `<ul class="fp-list">${rows.slice(0,LIST_MAX).map(r=>`<li><button type="button" data-fp="pick" data-id="${esc(r.forest.forest_id)}" class="${r.forest.forest_id===selectedId?'on':''}"><span class="fp-li-ic ${r.inside?'alert':'watch'}" aria-hidden="true">${r.inside?'🔥':'👀'}</span><span class="fp-li-t"><b>${esc(label(r.forest))}</b><small>อ.${esc(r.forest.amphoe||'')} · ${r.inside?`${r.inside} จุดในป่า`:''}${r.inside&&r.near?' · ':''}${r.near?`${r.near} จุดรอบป่า`:''}</small></span><span class="fp-li-time">${esc(E().stamp(new Date(r.latest).toISOString()))}</span></button></li>`).join('')}</ul>
       ${rows.length>LIST_MAX?`<p class="cw-help">และอีก ${rows.length-LIST_MAX} ป่า · ค้นหาชื่อป่าด้านบนเพื่อดู</p>`:''}<p class="as-note">เรียงตามเวลาที่ตรวจพบล่าสุด ไม่ใช่การจัดอันดับ</p>`;
   }
-  const repHtml=()=>`<section class="fp-rep" aria-label="สำหรับตัวแทนป่าชุมชน"><span aria-hidden="true">🌳</span><p><b>เป็นตัวแทนป่าชุมชน?</b><small>รับแจ้งเตือน LINE/อีเมล บันทึกเหตุ และประสานป่าข้างเคียง</small></p><button type="button" class="cw-btn primary" data-cw="signin">เข้าสู่ระบบ</button></section>`;
+  const repHtml=()=>`<section class="fp-rep" aria-label="สำหรับตัวแทนป่าชุมชน"><span aria-hidden="true">🌳</span><p><b>เป็นตัวแทนป่าชุมชน?</b><small>รับแจ้งเตือนทาง LINE แจ้งเหตุ และดูหมุดเหตุของป่าข้างเคียง</small></p><button type="button" class="cw-btn primary" data-cw="signin">เข้าสู่ระบบ</button></section>`;
 
   // Names repeat (same name and district several times): add tambon, then
   // area, so each choice can be told apart without an internal ID.
