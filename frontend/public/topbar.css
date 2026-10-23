@@ -112,3 +112,36 @@ body.light-mode .public-signal{background:var(--panel)!important;border-color:va
   .public-signal>svg{width:24px!important;height:24px!important;padding:5px;border-radius:8px;align-self:start}
   .public-signal .label{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.25!important;font-size:12px!important;align-self:center}
 }
+
+/* Account + theme: two boxed controls side by side, same height, both themes.
+   Signed in: avatar + first name + caret in one chip; phones show the avatar only. */
+.topbar .auth-btn,.topbar #themeToggle{border:1px solid var(--line)!important;background:var(--panel-2)!important;color:var(--txt)!important;border-radius:12px!important;transition:background .15s,border-color .15s}
+.topbar .auth-btn:hover,.topbar #themeToggle:hover{border-color:var(--muted)!important;background:var(--panel)!important}
+.topbar .auth-btn:focus-visible,.topbar #themeToggle:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.topbar .auth-wrap{margin-right:6px}
+.topbar .auth-btn.logged-in{width:auto!important;min-width:44px;gap:8px;padding:0 10px 0 5px!important;background:var(--panel-2)!important;color:var(--txt)!important}
+.auth-av{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;flex:none;
+  background:linear-gradient(135deg,var(--green),var(--green-deep,#15803d));color:#fff;font:700 15px/1 var(--font);letter-spacing:0}
+.auth-av.lg{width:42px;height:42px;font-size:18px}
+.auth-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 14px var(--font)}
+.auth-caret{color:var(--muted);flex:none;transition:transform .15s}
+.auth-wrap:has(.auth-dropdown.open) .auth-caret{transform:rotate(180deg)}
+@media(max-width:820px){.auth-name,.auth-caret{display:none}.topbar .auth-btn.logged-in{padding:0!important;width:44px!important;justify-content:center}}
+
+.auth-dropdown{top:52px!important;min-width:260px!important;max-width:min(320px,calc(100vw - 24px));padding:8px!important;border-radius:14px!important;border-color:var(--line)!important;background:var(--panel)!important;box-shadow:0 14px 34px rgba(0,0,0,.35)!important}
+body.light-mode .auth-dropdown{box-shadow:0 14px 34px rgba(15,23,42,.14)!important}
+.auth-dropdown .who{display:flex!important;align-items:center;gap:12px;padding:8px 8px 12px!important;margin-bottom:6px!important;word-break:normal!important}
+.auth-who-text{display:grid;min-width:0;gap:2px}
+.auth-who-text b{font-size:15px;color:var(--txt);overflow-wrap:anywhere;line-height:1.35}
+.auth-who-text small{font-size:13px!important;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0!important}
+.auth-dropdown button{display:flex!important;align-items:center;gap:10px;min-height:44px;padding:8px 10px!important;font:500 14px var(--font)!important;border-radius:10px!important}
+.auth-dropdown button span[aria-hidden]{width:20px;text-align:center}
+.auth-dropdown button.signout{margin-top:4px;border-top:1px solid var(--line-soft)!important;border-radius:0 0 10px 10px!important;color:var(--danger)}
+
+/* "1362" always says what it is (สายด่วนกรมอุทยานฯ). Quieter than the number itself. */
+.hotline-what{font-size:.85em;font-weight:400;opacity:.85;white-space:normal}
+.call-fab .hotline-what{display:block;font-size:11px;line-height:1.2;opacity:.9;white-space:nowrap}
+.call-fab>span{display:flex;flex-direction:column;align-items:flex-start;white-space:nowrap;line-height:1.25;text-align:left}
+.map-locate-group .map-fab.call-fab{width:auto!important;height:auto!important;min-height:48px;padding:6px 12px!important}
+@media(max-width:820px){.map-locate-group .map-fab.call-fab{height:auto!important;min-height:48px}}
+.auth-av.lg svg{width:22px;height:22px}

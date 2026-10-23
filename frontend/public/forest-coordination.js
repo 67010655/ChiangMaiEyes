@@ -149,7 +149,7 @@
       `<div class="coordination-agency" data-agency-slot>${agencyHtml(lat,lon,{includeEmergency:!protectedLead})}</div>`;
   }
   function html(lat,lon,{myForestId=''}={}){
-    if(!valid(lat,lon))return '<section class="coordination-card"><h3>ใครควรดูแลจุดนี้</h3><p>ยังไม่มีพิกัดที่ใช้ระบุพื้นที่ได้ · พบไฟ โทร <a href="tel:1362">1362</a></p></section>';
+    if(!valid(lat,lon))return '<section class="coordination-card"><h3>ใครควรดูแลจุดนี้</h3><p>ยังไม่มีพิกัดที่ใช้ระบุพื้นที่ได้ · พบไฟ โทร <a href="tel:1362">1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></p></section>';
     return `<section class="coordination-card" data-coordination-lat="${Number(lat)}" data-coordination-lon="${Number(lon)}" data-my-forest="${esc(myForestId)}">${content(lat,lon,myForestId)}</section>`;
   }
   function cards(scope){return [...(scope.matches?.('.coordination-card')?[scope]:[]),...scope.querySelectorAll('.coordination-card[data-coordination-lat]')];}

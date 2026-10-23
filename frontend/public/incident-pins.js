@@ -62,7 +62,7 @@
       ${latestNoteHtml(pin)}
       ${phone}
       ${nearbyHtml(pin,fallback)}
-      <p class="pin-note">ประสานงานกันเองได้เลย หมุดจะหายเมื่อผู้แจ้งกดจบงาน หรืออีก ${esc(leftText(pin,now))} · ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a></p>
+      <p class="pin-note">ประสานงานกันเองได้เลย หมุดจะหายเมื่อผู้แจ้งกดจบงาน หรืออีก ${esc(leftText(pin,now))} · ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></p>
       ${actions?`<div class="pin-actions">${actions}</div>`:''}
       ${coordination?`<details class="pin-more"><summary>📞 ติดต่อป่าและหน่วยงานใกล้จุดนี้</summary>${coordination}</details>`:''}
     </div>`;

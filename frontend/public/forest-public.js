@@ -166,7 +166,7 @@ ${shareUrl(f)}`;
       ${statusHtml(sit)}
       ${mapSvg(f,sit)}
       ${factsHtml(sit)}
-      <div class="fp-actions">${c?`<button type="button" class="cw-btn primary" data-fp="map" data-lat="${c.lat}" data-lon="${c.lon}">ดูป่านี้บนแผนที่</button>`:''}<a class="cw-btn fp-call" href="tel:1362">📞 เห็นไฟ โทร 1362</a></div>
+      <div class="fp-actions">${c?`<button type="button" class="cw-btn primary" data-fp="map" data-lat="${c.lat}" data-lon="${c.lon}">ดูป่านี้บนแผนที่</button>`:''}<a class="cw-btn fp-call" href="tel:1362">📞 เห็นไฟ โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></div>
       ${shareHtml(f)}
       ${whoHtml(f,c)}
       ${limitsHtml()}
@@ -235,7 +235,7 @@ ${shareUrl(f)}`;
       ${showList?`<section class="fp-section"><h2>ป่าที่มีจุดความร้อนใกล้ · 24 ชม.</h2>${listHtml(rows,selectedId,label)}</section>`:''}
       ${hasIncidents?`<section class="fp-section"><h2>เหตุที่ชุมชนยืนยันแล้ว</h2>${incidentsHtml}</section>`:''}
       ${showRep?repHtml():''}
-      ${!showRep||f?'':`<p class="fp-line fp-call-line">🔥 เห็นไฟหรือควัน <a href="tel:1362">โทร 1362</a> ได้เลย ไม่ต้องสมัคร</p>`}
+      ${!showRep||f?'':`<p class="fp-line fp-call-line">🔥 เห็นไฟหรือควัน <a href="tel:1362">โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small> ได้เลย ไม่ต้องสมัคร</p>`}
     </div>`;
   }
   function nearMeHtml(rows,label){

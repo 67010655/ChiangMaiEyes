@@ -1309,7 +1309,7 @@
     </ul>
     <div class="splash-loading"><span class="splash-spinner"></span><span id="splashMsg">กำลังโหลดแผนที่และข้อมูลสด…</span></div>
     <div class="splash-bar" aria-hidden="true"><i></i></div>
-    <p class="splash-sos">เห็นไฟหรือควัน โทร <b>1362</b> ได้เลย · <span class="splash-skip">แตะเพื่อเข้าแผนที่</span></p>
+    <p class="splash-sos">เห็นไฟหรือควัน โทร <b>1362</b> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small> ได้เลย · <span class="splash-skip">แตะเพื่อเข้าแผนที่</span></p>
   </div>
 </div>
 
@@ -1359,7 +1359,7 @@
         <button type="button" class="ghost auth-resend" onclick="CmeAuth.resendConfirmation('su')">ส่งอีเมลยืนยันบัญชีอีกครั้ง</button>
       </details>
     </form>
-    <p class="fire-help auth-fire">🔥 เห็นไฟหรือควันตอนนี้? <a href="tel:1362">โทร 1362</a> ได้เลย ไม่ต้องสมัคร · <a href="https://news.dnp.go.th/news/36837" target="_blank" rel="noopener">กรมอุทยานฯ</a></p>
+    <p class="fire-help auth-fire">🔥 เห็นไฟหรือควันตอนนี้? <a href="tel:1362">โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small> ได้เลย ไม่ต้องสมัคร · <a href="https://news.dnp.go.th/news/36837" target="_blank" rel="noopener">กรมอุทยานฯ</a></p>
   </div>
 </div>
 <!-- Manual hotspot report modal -->
@@ -1439,8 +1439,10 @@
       </button>
       <div class="auth-dropdown" id="authDropdown">
         <div class="who" id="authWhoText"></div>
-        <button class="neutral" onclick="openMyReportsModal()">📋 ประวัติการรายงานของฉัน</button>
-        <button onclick="doSignOut()">ออกจากระบบ</button>
+        <button class="neutral" onclick="document.getElementById('authDropdown').classList.remove('open');CmeCommunity.open('forest')"><span aria-hidden="true">🌳</span> ป่าของฉัน</button>
+        <button class="neutral" onclick="document.getElementById('authDropdown').classList.remove('open');CmeCommunity.open('preferences')"><span aria-hidden="true">🔔</span> การแจ้งเตือน LINE</button>
+        <button class="neutral" onclick="openMyReportsModal()"><span aria-hidden="true">📋</span> รายงานจุดไฟแบบเดิม</button>
+        <button class="signout" onclick="doSignOut()"><span aria-hidden="true">↩</span> ออกจากระบบ</button>
       </div>
     </div>
     <button id="themeToggle" onclick="toggleTheme()" title="สลับ Dark / Light mode"
@@ -1647,7 +1649,7 @@
           <span>ตำแหน่งฉัน</span>
         </button>
         <a class="map-fab call-fab" id="callFireHotlineBtn" href="tel:1362" aria-label="เห็นไฟป่า โทรสายด่วนพิทักษ์ป่า 1362 ได้โดยไม่ต้องสมัครสมาชิก" title="สายด่วนพิทักษ์ป่า กรมอุทยานฯ">
-          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span>เห็นไฟ โทร 1362</span>
+          <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span>เห็นไฟ โทร 1362<small class="hotline-what">สายด่วนกรมอุทยานฯ</small></span>
         </a>
         <button class="map-fab report-fab" id="reportHotspotBtn" aria-label="รายงานจุดความร้อน" title="รายงานจุดความร้อนด้วยตนเอง (ต้องเข้าสู่ระบบ)">
           <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>แจ้งไฟ</span>
@@ -1840,7 +1842,7 @@
           <li><span class="gd-n" aria-hidden="true">1</span><div><div class="gd-step-top"><h3>ดูไฟรอบตัว</h3><button type="button" class="gc-try" data-guide-try="near">ลองเลย</button></div><p>กด “ดูไฟรอบตัวฉัน” แผนที่จะซูมไปที่คุณ จุดสีคือที่ดาวเทียมเห็นความร้อน ยังไม่ใช่ไฟที่ยืนยันแล้ว</p></div></li>
           <li><span class="gd-n" aria-hidden="true">2</span><div><div class="gd-step-top"><h3>ดูฝุ่นและลม</h3><button type="button" class="gc-try" data-guide-try="dust">ลองเลย</button></div><p>ช่องฝุ่นบนสุดคือค่าสถานีกรมควบคุมมลพิษ ป้ายตัวเลขสี่เหลี่ยมคือเซนเซอร์ใกล้บ้าน เส้นที่วิ่งบนแผนที่คือทางที่ลมพัดไป</p></div></li>
           <li><span class="gd-n" aria-hidden="true">3</span><div><div class="gd-step-top"><h3>เลือกป่าของคุณ</h3><button type="button" class="gc-try" data-open-view="community">ลองเลย</button></div><p>ในแท็บ “ป่าชุมชน” พิมพ์ชื่อป่า ดูจุดในป่าและรอบ 5 กม. ลม และเบอร์หน่วยงาน แชร์ให้คนในหมู่บ้านทาง LINE ได้</p></div></li>
-          <li><span class="gd-n" aria-hidden="true">4</span><div><div class="gd-step-top"><h3>ถ้าเห็นไฟจริง</h3><a class="gc-try" href="tel:1362">โทร 1362</a></div><p>โทร 1362 และแจ้งหน่วยงานในพื้นที่ (ดู “ติดต่อใคร” ในการ์ดป่า) อย่าเข้าไปดับคนเดียว ตัวแทนป่าบันทึกเหตุในเว็บหลังดับเสร็จ</p></div></li>
+          <li><span class="gd-n" aria-hidden="true">4</span><div><div class="gd-step-top"><h3>ถ้าเห็นไฟจริง</h3><a class="gc-try" href="tel:1362">โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></div><p>โทร 1362 และแจ้งหน่วยงานในพื้นที่ (ดู “ติดต่อใคร” ในการ์ดป่า) อย่าเข้าไปดับคนเดียว ตัวแทนป่าบันทึกเหตุในเว็บหลังดับเสร็จ</p></div></li>
         </ol>
       </section>
 
@@ -1872,7 +1874,7 @@
       <section class="gd-sec" aria-labelledby="gdFaq">
         <h2 class="gd-h" id="gdFaq">คำถามที่พบบ่อย</h2>
         <div class="gd-faq">
-          <details><summary>ไม่มีจุดบนแผนที่ แปลว่าไม่มีไฟใช่ไหม</summary><p>ไม่ใช่ การไม่พบหมุดก็ยังสรุปว่าไม่มีไฟไม่ได้ ดาวเทียมอาจไม่เห็นไฟเล็ก ไฟใต้เรือนยอด หรือช่วงที่มีเมฆ ถ้าเห็นควันให้เชื่อสิ่งที่เห็นและโทร 1362</p></details>
+          <details><summary>ไม่มีจุดบนแผนที่ แปลว่าไม่มีไฟใช่ไหม</summary><p>ไม่ใช่ การไม่พบหมุดก็ยังสรุปว่าไม่มีไฟไม่ได้ ดาวเทียมอาจไม่เห็นไฟเล็ก ไฟใต้เรือนยอด หรือช่วงที่มีเมฆ ถ้าเห็นควันให้เชื่อสิ่งที่เห็นและโทร 1362 <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></p></details>
           <details><summary>จุดความร้อนกับไฟป่าต่างกันอย่างไร</summary><p>จุดความร้อนคือพิกเซลที่ดาวเทียมวัดความร้อนได้สูงผิดปกติ อาจเป็นไฟป่า การเผาในไร่ หรือแหล่งความร้อนอื่น ต้องมีคนในพื้นที่ยืนยันก่อนจึงเป็นเหตุไฟ จุดจางคือข้อมูลเกิน 24 ชม. ไม่ได้แปลว่ายังไหม้อยู่</p></details>
           <details><summary>ข้อมูลเก่าแค่ไหน</summary><p>ทุกตัวเลขมีเวลาของข้อมูลกำกับ จุดความร้อนมาจากดาวเทียม VIIRS (ผ่านเชียงใหม่ราว 01:00–02:30 และ 13:00–14:30 น.) และ MODIS (ราว 09:00–09:30, 15:00–16:30 และ 20:30–21:00 น.) แล้วข้อมูลของ NASA FIRMS มาถึงเว็บช้าอีกราว 2–5 ชม. ช่วงที่ว่างนานที่สุดคือหลังตีสองครึ่งถึงราวเก้าโมงเช้า และไฟที่เผาสั้น ๆ ระหว่างรอบอาจไม่ขึ้นเลย ถ้าขึ้นว่า “ไม่มีข้อมูล” หรือ “ข้อมูลเก่า” แปลว่าระบบยังไม่ได้ค่าที่ใช้ได้ ไม่ได้แปลว่าฝุ่นเป็นศูนย์หรือปลอดภัย</p></details>
           <details><summary>ทำไมบางอำเภอไม่มีค่าฝุ่น</summary><p>สถานีกรมควบคุมมลพิษในเชียงใหม่ที่เราได้ข้อมูลมี 2 แห่ง อยู่ใน อ.เมืองทั้งคู่ ค่ารายอำเภอจึงมาจากเซนเซอร์ของ World Air Quality Index Project ซึ่งต้องมีอย่างน้อย 2 จุดที่ส่งข้อมูลใน 3 ชม. อำเภอที่ไม่ถึงเกณฑ์จะไม่แสดงค่า แทนที่จะเดา</p></details>
@@ -2461,7 +2463,7 @@ function popupActionsHtml(lat,lon){
   // Safety-relevant: a park or sanctuary needs its officers before anyone goes in.
   const pa=window.CmeProtectedAreas?.query(Number(lat),Number(lon));
   const chip=pa&&['inside','near'].includes(pa.status)?`<p class="hs-chip">${pa.status==='inside'?'อยู่ในเขตพื้นที่อนุรักษ์':'ใกล้เขตพื้นที่อนุรักษ์'} · ประสานเจ้าหน้าที่ก่อนเข้าพื้นที่</p>`:'';
-  return chip+`<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a><button type="button" class="hs-3d" data-open3d="${Number(lat)},${Number(lon)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 19 9.5 8l4 6.5L16 11l5 8Z"/><path d="m8 10.6 1.5 1.4 1.4-1.2"/></svg>ดูใน 3D</button></div>`;
+  return chip+`<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a><button type="button" class="hs-3d" data-open3d="${Number(lat)},${Number(lon)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 19 9.5 8l4 6.5L16 11l5 8Z"/><path d="m8 10.6 1.5 1.4 1.4-1.2"/></svg>ดูใน 3D</button></div>`;
 }
 // ---- Experimental spread outline for one tapped point (2D and 3D) ----
 const SPREAD_SIM_STYLE={3:{color:'#ef4444',fill:.2},6:{color:'#f97316',fill:.1}};
@@ -2962,9 +2964,17 @@ function updateAuthUI(){
     btn.classList.add('logged-in');
     btn.title = name;
     btn.setAttribute('aria-label','บัญชีของ '+name);
-    btn.innerHTML = (name||'?').trim().charAt(0).toUpperCase();
-    who.textContent = name;
-    const accountEmail=document.createElement('small');accountEmail.textContent=currentUser.email;who.append(accountEmail);
+    btn.replaceChildren();
+    const av=document.createElement('span');av.className='auth-av';av.innerHTML=AVATAR_ICON;
+    const nm=document.createElement('span');nm.className='auth-name';nm.textContent=String(name||'').trim().split(/\s+/)[0];
+    btn.append(av,nm);
+    btn.insertAdjacentHTML('beforeend','<svg class="auth-caret" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+    who.replaceChildren();
+    const big=document.createElement('span');big.className='auth-av lg';big.innerHTML=AVATAR_ICON;
+    const text=document.createElement('span');text.className='auth-who-text';
+    const strong=document.createElement('b');strong.textContent=name;
+    const accountEmail=document.createElement('small');accountEmail.textContent=currentUser.email;
+    text.append(strong,accountEmail);who.append(big,text);
   } else {
     btn.classList.remove('logged-in');
     btn.title = 'เข้าสู่ระบบหรือสมัครสมาชิก';
@@ -2973,6 +2983,8 @@ function updateAuthUI(){
     document.getElementById('authDropdown').classList.remove('open');
   }
 }
+// A person icon, not an initial: in the site's loopless Thai font a lone "พ" reads as a Latin "w".
+const AVATAR_ICON='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 function onAuthBtnClick(){
   if(currentUser){
     document.getElementById('authDropdown').classList.toggle('open');
@@ -3836,7 +3848,7 @@ function myLocationHtml(lat,lon,accuracy){
     <p class="ml-kicker">📍 คุณอยู่ที่</p><h3>${where}</h3>
     <div class="ml-status ${tone}"><span aria-hidden="true">${tone==='warn'?'🔥':'🌿'}</span><div><b>${head}</b>${detail?`<small>${detail}</small>`:''}</div></div>
     <p class="ml-tip">${tip}</p>
-    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<a class="ml-btn call" href="tel:1362">📞 โทร 1362</a></div>
+    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<a class="ml-btn call" href="tel:1362">📞 โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></div>
     <p class="ml-note">ระยะเส้นตรงจากจุดที่ดาวเทียมเห็น ตำแหน่งของคุณอยู่ในเครื่องนี้เท่านั้น ไม่ได้ส่งไปที่ไหน</p>${fuzzy}
   </div>`;
 }
@@ -4480,7 +4492,7 @@ function districtSummaryHtml(distNorm,{withTitle=false}={}){
     <div class="ds-aqi-slot loading" data-ds-aqi="${esc(distNorm)}"><span class="ds-aqi-t">กำลังดูเซนเซอร์วัดฝุ่นในอำเภอ…</span></div>
     ${tambons.length?`<p class="ds-sub">ตำบลที่มีจุดมาก</p><ol class="ds-tambon">${tambons.map(([t,n])=>`<li><span>ต.${esc(t)}</span><b>${n} จุด</b></li>`).join('')}</ol>`:`<p class="ds-note">ไม่พบจุดความร้อนในอำเภอนี้ช่วงที่แสดง ไม่ได้แปลว่าไม่มีไฟ</p>`}
     ${distHs.length&&pm!==null&&pm>37.5?'<p class="ds-note">พบทั้งจุดความร้อนและฝุ่นสูง ยังไม่ยืนยันว่าเป็นเหตุเดียวกัน</p>':''}
-    <div class="ds-actions"><button type="button" class="ds-btn" data-open-view="threed">⛰ ดูภูเขา 3D</button><a class="ds-btn ghost" href="tel:1362">📞 1362</a></div>
+    <div class="ds-actions"><button type="button" class="ds-btn" data-open-view="threed">⛰ ดูภูเขา 3D</button><a class="ds-btn ghost" href="tel:1362">📞 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></div>
   </div>`;
 }
 function selectDistrict(nameTh, layer){

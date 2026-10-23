@@ -196,10 +196,10 @@
   function todoHtml(sit){
     const toward=sit.wind?.toward===true;
     const steps={
-      alert:['ดูตำแหน่งจุดบนแผนที่ด้านล่างว่าอยู่ตรงไหนของป่า','ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a> และแจ้งหน่วยงานในพื้นที่ (ดู "ใครดูแลพื้นที่นี้")','อย่าเข้าพื้นที่คนเดียว ประสานทีมและป่าข้างเคียงก่อน','กลับมาแล้ว กด "บันทึกเหตุ" ใส่ตำแหน่ง รูป และผล'],
+      alert:['ดูตำแหน่งจุดบนแผนที่ด้านล่างว่าอยู่ตรงไหนของป่า','ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small> และแจ้งหน่วยงานในพื้นที่ (ดู "ใครดูแลพื้นที่นี้")','อย่าเข้าพื้นที่คนเดียว ประสานทีมและป่าข้างเคียงก่อน','กลับมาแล้ว กด "บันทึกเหตุ" ใส่ตำแหน่ง รูป และผล'],
       watch:[toward?'<b>ลมพัดจากจุดความร้อนเข้าหาป่า</b> เฝ้าระวังเป็นพิเศษ':'ดูทิศลม ตอนนี้ไม่ได้พัดจากจุดความร้อนเข้าหาป่า','ถามป่าข้างเคียงหรือหน่วยงานว่ามีคนไปตรวจจุดนี้แล้วหรือยัง','ถ้าเห็นควันในป่า กด "บันทึกเหตุ"'],
       calm:['ไม่มีจุดความร้อนในหรือรอบป่าใน 24 ชม. ล่าสุด','ตรวจว่าผูก LINE ไว้แล้ว เพื่อให้ได้รับแจ้งเตือน '+button('ตั้งค่าแจ้งเตือน','tab','data-tab="preferences"')],
-      unknown:['ข้อมูลดาวเทียมยังไม่พร้อม ยังสรุปไม่ได้ว่าปลอดภัย','ถ้าเห็นควันหรือไฟ โทร <a href="tel:1362">1362</a> แล้วกด "บันทึกเหตุ"'],
+      unknown:['ข้อมูลดาวเทียมยังไม่พร้อม ยังสรุปไม่ได้ว่าปลอดภัย','ถ้าเห็นควันหรือไฟ โทร <a href="tel:1362">1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small> แล้วกด "บันทึกเหตุ"'],
     }[sit.status]||[];
     return `<section class="rp-todo"><h2>ต้องทำอะไรตอนนี้</h2><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol></section>`;
   }
@@ -231,7 +231,7 @@
     const shown=rows.slice(0,5);
     return `<section class="rp-pins" role="region" aria-label="หมุดเหตุใกล้ป่าของคุณ"><h2>👁 มีรายงานไฟใกล้ป่าคุณ <span class="rp-count">${rows.length}</span></h2>
       <ul>${shown.map(item).join('')}</ul>${rows.length>shown.length?`<p class="cw-help">และอีก ${rows.length-shown.length} หมุด ดูได้บนแผนที่หลัก</p>`:''}
-      <p class="cw-help">ตัวแทนป่าอื่นรายงานไว้ ยังไม่ใช่การยืนยันจากหน่วยงาน โทรคุยกันเองได้ ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a></p></section>`;
+      <p class="cw-help">ตัวแทนป่าอื่นรายงานไว้ ยังไม่ใช่การยืนยันจากหน่วยงาน โทรคุยกันเองได้ ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></p></section>`;
   }
   function repForestView(selected,allowed,related){
     const P=root.CmeForestPublic,{sit,html}=P.repSummaryHtml(selected,context.dashboard()),c=P.centre(selected);
@@ -304,7 +304,7 @@
     const canClose=isOpen_&&(mine||state.me.is_admin);
     const picks=canClose?['closed','cancelled'].map((k,n)=>{const c=PICK[k];return `<button type="button" class="cw-pick${n===0?' is-main':''}" aria-pressed="false" data-cw="pick-status" data-status="${k}" data-ask="${esc(c.ask)}" data-ph="${esc(c.ph)}" data-go="${esc(c.go)}" data-title="${esc(c.icon+' '+c.label)}"><span aria-hidden="true">${c.icon}</span>${esc(c.label)}</button>`;}).join(''):'';
     const lead=isOpen_?(canClose?'หมุดนี้ยังอยู่บนแผนที่ของตัวแทนป่าทุกคน':'หมุดนี้ยังเปิดอยู่ ผู้แจ้งเป็นคนกดจบงาน'):i.status==='closed'?'จบงานแล้ว หมุดหายจากแผนที่แล้ว':'บันทึกแล้วว่าไม่ใช่ไฟ หมุดหายจากแผนที่แล้ว';
-    const hint=isOpen_?`<p class="cw-sos">🔥 ถ้าเห็นไฟจริง <a href="tel:1362">โทร 1362</a> ก่อนเสมอ · หมุดจะหายเองในอีก ${esc(leftText(i))}</p>`:'';
+    const hint=isOpen_?`<p class="cw-sos">🔥 ถ้าเห็นไฟจริง <a href="tel:1362">โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small> ก่อนเสมอ · หมุดจะหายเองในอีก ${esc(leftText(i))}</p>`:'';
     const act=canClose?`<div class="cw-picks" role="group" aria-label="จบเหตุนี้">${picks}</div>
         <form class="cw-form cw-pick-form" id="cwStatusForm" hidden><input type="hidden" name="status"><p class="cw-pick-title" id="cwPickTitle" aria-live="polite"></p>
           <label><span id="cwPickAsk">สรุปสั้นๆ</span><textarea name="note" maxlength="2000"></textarea></label>
