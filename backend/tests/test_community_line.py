@@ -211,6 +211,7 @@ def test_help_reply_speaks_to_a_linked_rep_or_to_the_public():
     assert '1362' in rep and '1362' in public
     # Both say when the satellites pass, so an empty evening map is not read as no fire.
     assert '13:00–14:30' in rep and '13:00–14:30' in public
+    assert '2–5 ชม.' in rep and '3 ชม.' not in public
 
 
 def test_hotspot_text_lists_what_to_do_next():

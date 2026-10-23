@@ -30,9 +30,9 @@ CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 CODE_PATTERN = re.compile(r'CME-([A-HJ-NP-Z2-9]{8})')
 CODE_MINUTES = 10
 HOTLINE = '🔥 เห็นไฟหรือควันจริง โทรสายด่วนไฟป่า 1362 ได้เลย'
-# VIIRS and MODIS cross Chiang Mai 5 times a day and FIRMS adds ~3 h; say so, or an empty
+# VIIRS and MODIS cross Chiang Mai 5 times a day and points reach us 2-5 h later; say so, or an empty
 # evening map reads as "no fire" (times as in frontend/public/satellite-passes.js).
-SAT_GAP = '🛰️ ดาวเทียมผ่านเชียงใหม่วันละ 5 ช่วง ราว 01:00–02:30, 09:00–09:30, 13:00–14:30, 15:00–16:30 และ 20:30–21:00 น. แล้วขึ้นแผนที่ช้าอีกราว 3 ชม. ถ้าเห็นควันอย่ารอแผนที่'
+SAT_GAP = '🛰️ ดาวเทียมผ่านเชียงใหม่วันละ 5 ช่วง ราว 01:00–02:30, 09:00–09:30, 13:00–14:30, 15:00–16:30 และ 20:30–21:00 น. แล้วขึ้นแผนที่ช้าอีกราว 2–5 ชม. ถ้าเห็นควันอย่ารอแผนที่'
 SITE = 'https://chiangmaieyes.vercel.app'
 # Two audiences share the account: anyone who added it (dust, the map) and
 # forest reps who linked it from the website (hotspots in their forests).
