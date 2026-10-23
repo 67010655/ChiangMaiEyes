@@ -4910,7 +4910,9 @@ function rerenderAll(){
   runMapRenderTask('3d-hotspots',_sync3DHotspots);
   runMapRenderTask('heat',()=>{
     map.removeLayer(layers.heat); layers.heat=buildHeat();
-    if(document.querySelector('.layer[data-layer="heat"]').classList.contains('on')) map.addLayer(layers.heat);
+    // The heat canvas can't draw at size 0 (map hidden behind another view): add it once the map has a size again.
+    const heatOn=()=>document.querySelector('.layer[data-layer="heat"]').classList.contains('on');
+    if(heatOn()){const sz=map.getSize();if(sz.x>0&&sz.y>0)map.addLayer(layers.heat);else map.once('resize',()=>{if(heatOn()&&!map.hasLayer(layers.heat))map.addLayer(layers.heat);});}
   });
   syncPublicMapLayers();
 }
