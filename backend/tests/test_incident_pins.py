@@ -79,14 +79,20 @@ class FakeStore:
                                  line_channel_access_token='t', community_site_url='https://site.example')
         self.members, self.linked, self.inserts, self.stale = members, linked, [], list(stale)
         self.expired = []
+        self.outbox = []
+        self.incident = None
 
     def rows(self, table, **kw):
         if table == 'cme_memberships':
             return self.members
         if table == 'cme_line_links':
             return [{'user_id': u} for u in self.linked]
+        if table == 'cme_line_outbox':
+            return self.outbox
+        if table == 'cme_forests':
+            return [{'name': 'ป่าชุมชนบ้านเอ'}]
         if table == 'cme_incidents':
-            return self.stale
+            return [self.incident] if self.incident and 'id' in kw else self.stale
         return []
 
     def call(self, method, path, **kw):
@@ -157,6 +163,55 @@ def test_closing_after_3_days_tells_the_reporter_once():
     store.expired = [{'id': 'inc-9', 'forest_id': 'A', 'created_by': 'rep-a'}]
     assert pins.run_pin_maintenance(store, NOW)['pins_expired'] == 1
     assert store.inserts[0][1]['dedup_key'] == 'pin-expired/inc-9' and 'ครบ 3 วัน' in store.inserts[0][1]['message']
+
+
+def closed_incident(status):
+    return {'id': 'inc-1', 'forest_id': 'A', 'observation': 'fire', 'observed_at': NOW.isoformat(), 'created_by': 'rep-a', 'status': status}
+
+
+def test_closing_a_pin_tells_the_forests_that_got_the_alert_but_not_the_reporter():
+    store = FakeStore(members=[], linked=set())
+    store.incident = closed_incident('closed')
+    store.outbox = [
+        {'user_id': 'rep-b', 'forest_id': 'B', 'status': 'sent'},
+        {'user_id': 'rep-c', 'forest_id': 'C', 'status': 'suppressed'},   # never got the alert: nothing to take back
+        {'user_id': 'rep-d', 'forest_id': 'D', 'status': 'failed'},
+        {'user_id': 'rep-a', 'forest_id': 'A', 'status': 'sent'},          # the reporter closed it themselves
+    ]
+    store.settings = Settings(supabase_url='https://x.supabase.co', supabase_service_role_key='k', line_channel_secret='s',
+                              line_channel_access_token='t', community_site_url='https://site.example')
+    assert pins.queue_pin_closed(store, {**store.incident, 'forest_name': 'ป่าชุมชนบ้านเอ'}, 'closed') == 1
+    table, row = store.inserts[0]
+    assert (table, row['user_id'], row['forest_id'], row['category']) == ('cme_line_outbox', 'rep-b', 'B', 'incident')
+    assert row['dedup_key'] == 'pin-closed/inc-1/rep-b' and 'จบงานแล้ว' in row['message'] and 'ป่าชุมชนบ้านเอ' in row['message']
+    assert pins.queue_pin_closed(store, {**store.incident, 'forest_name': 'x'}, 'closed') == 0   # same pin, same person: once
+
+
+def test_closed_notice_wording_per_outcome():
+    incident = {**closed_incident('closed'), 'forest_name': 'ป่าชุมชนบ้านเอ'}
+    assert 'ไม่ใช่ไฟ' in pins.pin_closed_text(incident, 'cancelled')
+    expired = pins.pin_closed_text(incident, 'expired')
+    assert 'ครบ 3 วัน' in expired and 'ไม่ได้แปลว่าไฟดับ' in expired and 'โทร 1362' in expired
+
+
+def test_no_closed_notice_when_line_is_off_or_the_pin_is_still_open():
+    store = FakeStore(members=[], linked=set())
+    store.outbox = [{'user_id': 'rep-b', 'forest_id': 'B', 'status': 'sent'}]
+    store.settings = Settings(supabase_url='https://x.supabase.co', supabase_service_role_key='k')
+    assert pins.queue_pin_closed(store, {**closed_incident('closed'), 'forest_name': 'x'}, 'closed') == 0
+    store.incident = closed_incident('pending')
+    assert pins.notify_pin_closed(store, 'inc-1') == {'queued': 0}
+
+
+def test_three_day_expiry_also_tells_the_alerted_forests():
+    store = FakeStore(members=[], linked={'rep-a'})
+    store.expired = [{'id': 'inc-9', 'forest_id': 'A', 'created_by': 'rep-a'}]
+    store.incident = {**closed_incident('closed'), 'id': 'inc-9'}
+    store.outbox = [{'user_id': 'rep-b', 'forest_id': 'B', 'status': 'sent'}]
+    result = pins.run_pin_maintenance(store, NOW)
+    assert result['pin_closed_notices'] == 1
+    keys = [row['dedup_key'] for _, row in store.inserts]
+    assert 'pin-closed/inc-9/rep-b' in keys and 'pin-expired/inc-9' in keys
 
 
 def test_routes_pass_the_caller_token_and_keep_the_phone_out_of_the_idempotent_payload():

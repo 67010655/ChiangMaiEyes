@@ -189,6 +189,15 @@ def _notify_pin(settings, incident_id: str):
         logging.getLogger(__name__).warning('Pin alerts did not finish')
 
 
+def _notify_pin_closed(settings, incident_id: str):
+    import logging
+    from app.incident_pins import notify_pin_closed
+    try:
+        notify_pin_closed(CommunityStore(settings), incident_id)
+    except Exception:  # noqa: BLE001 — the pin is already closed; a missed courtesy notice is only logged
+        logging.getLogger(__name__).warning('Pin-closed notices did not finish')
+
+
 @router.get('/pins')
 def pins(response: Response, ctx=Depends(session)):
     store, token, _ = ctx
@@ -198,10 +207,12 @@ def pins(response: Response, ctx=Depends(session)):
 
 
 @router.post('/incidents/{incident_id}/close')
-def close_incident(incident_id: UUID, payload: IncidentClose, ctx=Depends(session)):
+def close_incident(incident_id: UUID, payload: IncidentClose, background_tasks: BackgroundTasks, ctx=Depends(session)):
     store, token, _ = ctx
-    return store.call('POST', '/rest/v1/rpc/cme_close_incident', token=token,
-                      json={'p_id': str(incident_id), 'p_outcome': payload.outcome, 'p_note': payload.note})
+    result = store.call('POST', '/rest/v1/rpc/cme_close_incident', token=token,
+                        json={'p_id': str(incident_id), 'p_outcome': payload.outcome, 'p_note': payload.note})
+    background_tasks.add_task(_notify_pin_closed, store.settings, str(incident_id))
+    return result
 
 
 @router.get('/incidents/{incident_id}')

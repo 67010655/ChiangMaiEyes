@@ -138,6 +138,66 @@ def expired_text(store: CommunityStore, incident_id: str) -> str:
     ])[:4000]
 
 
+CLOSED_HEAD = {
+    'closed': '✅ หมุดไฟใกล้ป่าคุณ จบงานแล้ว',
+    'cancelled': '❌ หมุดไฟใกล้ป่าคุณ ถูกบันทึกว่าไม่ใช่ไฟ',
+    'expired': '📌 หมุดไฟใกล้ป่าคุณ ถูกปิดอัตโนมัติ (ครบ 3 วัน)',
+}
+CLOSED_BODY = {
+    'closed': 'หมุดนี้ถูกปิดว่าจบงานแล้ว และหายจากแผนที่แล้ว',
+    'cancelled': 'หมุดนี้ถูกปิดว่าไม่ใช่ไฟ และหายจากแผนที่แล้ว',
+    'expired': 'ไม่มีใครกดจบงานภายใน 3 วัน ระบบจึงปิดให้เอง ไม่ได้แปลว่าไฟดับ',
+}
+
+
+def pin_closed_text(incident: dict, outcome: str) -> str:
+    """Short notice to the forests that were told about a pin: it is gone from the map."""
+    what = 'เปลวไฟ' if incident.get('observation') == 'fire' else 'ควัน'
+    return '\n'.join([
+        CLOSED_HEAD[outcome],
+        f'👁️ รายงานของตัวแทน{incident.get("forest_name") or "ป่าชุมชน"} ({what} พบเมื่อ {stamp(incident["observed_at"])})',
+        CLOSED_BODY[outcome],
+        '',
+        'ℹ️ ถ้ายังเห็นไฟหรือควันใกล้ป่าคุณ โทร 1362 ได้เลย',
+    ])[:4000]
+
+
+def queue_pin_closed(store: CommunityStore, incident: dict, outcome: str) -> int:
+    """Tell everyone who got the new-pin LINE (and still has it) that the pin is closed. The reporter is not told."""
+    from app.community_line import enabled
+    if not enabled(store.settings) or outcome not in CLOSED_HEAD:
+        return 0
+    told = store.rows('cme_line_outbox', select='user_id,forest_id,status', dedup_key=f'like.pin/{incident["id"]}/*') or []
+    message = pin_closed_text(incident, outcome)
+    queued = 0
+    for row in told:
+        if row.get('status') != 'sent' or row['user_id'] == incident['created_by']:
+            continue
+        inserted = store.insert('cme_line_outbox', {
+            'dedup_key': f'pin-closed/{incident["id"]}/{row["user_id"]}', 'user_id': row['user_id'], 'forest_id': row['forest_id'],
+            'category': 'incident', 'message': message}, dedup=True)
+        queued += len(inserted or [])
+    return queued
+
+
+def _incident_for_notice(store: CommunityStore, incident_id: str) -> dict | None:
+    found = store.rows('cme_incidents', select='id,forest_id,observation,observed_at,created_by,status', id='eq.' + incident_id)
+    if not found:
+        return None
+    forest = store.rows('cme_forests', select='name', forest_id='eq.' + found[0]['forest_id'])
+    return {**found[0], 'forest_name': forest[0]['name'] if forest else 'ป่าชุมชน'}
+
+
+def notify_pin_closed(store: CommunityStore, incident_id: str) -> dict:
+    """After the reporter or an admin closes a pin: LINE the forests that were alerted, and send now."""
+    incident = _incident_for_notice(store, incident_id)
+    if not incident or incident['status'] not in ('closed', 'cancelled'):
+        return {'queued': 0}
+    queued = queue_pin_closed(store, incident, incident['status'])
+    from app.community_line import process_outbox
+    return {'queued': queued, **process_outbox(store)}
+
+
 def save_nearby(store: CommunityStore, incident: dict) -> list[dict]:
     rows = nearby_forests(incident['latitude'], incident['longitude'], incident['forest_id'])
     stored = [{k: v for k, v in r.items() if k not in ('lat', 'lon')} for r in rows]
@@ -196,13 +256,19 @@ def notify_new_pin(store: CommunityStore, incident_id: str) -> dict:
 def run_pin_maintenance(store: CommunityStore, now: datetime) -> dict:
     """Close pins after 3 days, and remind reporters once per Bangkok day while a pin is open."""
     from app.community_line import enabled, linked_users
-    result = {'pins_expired': 0, 'pin_reminders': 0}
+    result = {'pins_expired': 0, 'pin_reminders': 0, 'pin_closed_notices': 0}
     expired = store.call('POST', '/rest/v1/rpc/cme_expire_incidents', json={}) or []
     result['pins_expired'] = len(expired)
     if not enabled(store.settings):
         return result
     linked = linked_users(store)
     for item in expired:
+        try:
+            gone = _incident_for_notice(store, item['id'])
+            if gone:
+                result['pin_closed_notices'] += queue_pin_closed(store, gone, 'expired')
+        except Exception:  # noqa: BLE001 — the reporter notice below must not depend on this
+            log.warning('Pin-closed notices did not finish')
         if item['created_by'] in linked:
             store.insert('cme_line_outbox', {'dedup_key': f'pin-expired/{item["id"]}', 'user_id': item['created_by'],
                 'forest_id': item['forest_id'], 'category': 'incident', 'message': expired_text(store, item['id'])}, dedup=True)

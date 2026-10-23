@@ -3303,15 +3303,19 @@ function openPin(id,{fly=true}={}){
   map.once('popupclose',onClose);
 }
 // A link from LINE (#pin/<id>): fly to the pin and open it once the pins are loaded.
-function openPinFromLink(){
-  const id=pinTarget();if(!id)return;
-  if(!_pinsEligible){toast('หมุดนี้เห็นได้เฉพาะตัวแทนป่าที่ได้รับอนุมัติแล้ว');history.replaceState(null,'',location.pathname+location.search);return;}
+function showPinOnMap(id){
   const pin=incidentPins.find(x=>x.id===id);
-  history.replaceState(null,'',location.pathname+location.search);
-  if(!pin){toast('หมุดนี้ปิดไปแล้ว หรือหมดอายุแล้ว');return;}
+  if(!pin){toast('หมุดนี้ปิดไปแล้ว หรือหมดอายุแล้ว');return false;}
   if(!pinsOn()){const row=pinsRow();row?.classList.add('on');map.addLayer(layers.pins);}
   closeAllOverlays?.();
   setTimeout(()=>openPin(id),200);
+  return true;
+}
+function openPinFromLink(){
+  const id=pinTarget();if(!id)return;
+  if(!_pinsEligible){toast('หมุดนี้เห็นได้เฉพาะตัวแทนป่าที่ได้รับอนุมัติแล้ว');history.replaceState(null,'',location.pathname+location.search);return;}
+  history.replaceState(null,'',location.pathname+location.search);
+  showPinOnMap(id);
 }
 function pinOpenIncident(btn){
   const id=btn.dataset.pinOpen;
@@ -6903,6 +6907,7 @@ CmeCommunity.init({
   signin:openAuthModal,
   pick:()=>{closeAllOverlays();startPickLocation();},
   locate:(lat,lon)=>{closeAllOverlays();map.flyTo([lat,lon],14,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});},
+  showPin:id=>{showPinOnMap(id);},
   legacyPhase:()=>{closeAllOverlays();openPhasePanel();},
   exportForest:id=>{CmeNavigation.open('report');document.getElementById('exportScope').value='forest';document.getElementById('exportForest').value=id;buildReport();}
 });

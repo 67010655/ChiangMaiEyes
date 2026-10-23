@@ -39,6 +39,7 @@ describe('incident pins: visible to approved reps, ended only by the reporter or
     await db.exec(mig('20261009190000_community_coordination.sql'));
     await db.exec(mig('20261009195000_evidence_and_mail_claim.sql'));
     await db.exec(mig('20261023100000_incident_pins.sql'));
+    await db.exec(mig('20261023140000_pin_latest_note.sql'));
     await db.exec(`insert into public.cme_forests(forest_id,name,amphoe) values('pin-A','Forest A','X'),('pin-B','Forest B','X');
       insert into public.cme_admins(user_id) values('${admin}');
       insert into public.cme_memberships(user_id,forest_id,status) values('${alice}','pin-A','approved'),('${bob}','pin-B','approved'),('${carol}','pin-B','pending');`);
@@ -52,7 +53,7 @@ describe('incident pins: visible to approved reps, ended only by the reporter or
     const list = await pins();
     expect(list).toHaveLength(1);
     expect(list[0]).toMatchObject({ id: pin, forest_name: 'Forest A', reporter_name: 'Alice', mine: false, can_close: false, can_open: false, observation: 'smoke' });
-    expect(Object.keys(list[0]).sort()).toEqual(['amphoe', 'can_close', 'can_open', 'contact_phone', 'created_at', 'description', 'expires_at', 'forest_id', 'forest_name', 'id', 'latitude', 'longitude', 'mine', 'nearby', 'observation', 'observed_at', 'reporter_name', 'status']);
+    expect(Object.keys(list[0]).sort()).toEqual(['amphoe', 'can_close', 'can_open', 'contact_phone', 'created_at', 'description', 'expires_at', 'forest_id', 'forest_name', 'id', 'latest_note', 'latitude', 'longitude', 'mine', 'nearby', 'observation', 'observed_at', 'reporter_name', 'status']);
     // The widening is only the pin list: the incident itself stays private to its forest.
     expect(await action('list_incidents')).toEqual([]);
     expect((await db.query('select * from public.cme_incidents')).rows).toEqual([]);
@@ -136,5 +137,24 @@ describe('incident pins: visible to approved reps, ended only by the reporter or
     await db.exec(`update public.cme_incidents set created_at=now()-interval '4 days' where id='20000000-0000-4000-8000-000000000005'`);
     await as(alice);
     expect((await pins()).map((p: any) => p.id)).not.toContain('20000000-0000-4000-8000-000000000005');
+  });
+  it('shows other reps only the newest note (cut short), with its author, and nothing else from the incident', async () => {
+    const id = '20000000-0000-4000-8000-0000000000a1';
+    await as(bob);
+    await action('create_incident', report(id, { forest_id: 'pin-B', description: 'Fixture note pin' }));
+    await as(alice);
+    expect((await pins()).find((p: any) => p.id === id).latest_note).toBeNull();
+    await as(bob);
+    await action('add_note', { id, note: 'ไฟเริ่มลาม' });
+    await action('add_note', { id, note: 'x'.repeat(900) });
+    await as(alice);
+    const seen = (await pins()).find((p: any) => p.id === id);
+    expect(seen.latest_note).toMatchObject({ by: 'Bob' });
+    expect(seen.latest_note.text).toHaveLength(300);
+    expect(seen.latest_note.at).toBeTruthy();
+    expect(Object.keys(seen.latest_note).sort()).toEqual(['at', 'by', 'text']);
+    // Reading the note through the pin list does not open the incident or its history.
+    expect((await action('list_incidents')).map((r: any) => r.id)).not.toContain(id);
+    await expect(action('incident_events', { id })).rejects.toThrow();
   });
 });

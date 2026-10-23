@@ -40,6 +40,13 @@
     const items=rows.map(r=>`<li class="${r.risk?'risk':''}"><strong>${esc(r.name)}</strong> <span>${esc(kmText(r.km))}</span> ${r.reporter?'<em>ป่าของผู้แจ้ง</em>':r.risk?'<em class="warn">เสี่ยง · ใกล้ไม่เกิน 5 กม.</em>':''}</li>`).join('');
     return `<h4>ป่าชุมชนใกล้จุดนี้</h4><ul class="pin-near">${items}</ul>`;
   }
+  // The newest progress note from the reporter's forest ("fire spreading", "mostly out"), cut short by the server.
+  function latestNoteHtml(pin){
+    const n=pin.latest_note,text=n&&String(n.text||'').trim();
+    if(!text)return '';
+    const when=n.at&&Number.isFinite(ms(n.at))?clock(n.at):'';
+    return `<p class="pin-latest"><b>ความคืบหน้าล่าสุด</b> <small>${esc([when,n.by].filter(Boolean).join(' · '))}</small></p><blockquote class="pin-latest-q">${esc(text)}</blockquote>`;
+  }
   function popupHtml(pin,{now=Date.now(),fallback=null,coordination=''}={}){
     const desc=String(pin.description||'').trim();
     const phone=pin.contact_phone?`<p class="pin-phone">☎️ <a href="${esc(phoneHref(pin.contact_phone))}">${esc(pin.contact_phone)}</a> <small>(ผู้แจ้งให้ติดต่อ)</small></p>`:'';
@@ -52,6 +59,7 @@
       <h3>เห็น${what(pin)}ที่ ${esc(pin.forest_name)}${pin.amphoe?` <small>อ.${esc(String(pin.amphoe).replace(/^(อำเภอ|อ\.)\s*/,''))}</small>`:''}</h3>
       <p class="pin-who">แจ้งโดย <b>${esc(pin.reporter_name)}</b>${pin.mine?' (คุณ)':''} · พบเมื่อ ${esc(clock(pin.observed_at))} · แจ้ง${esc(agoText(pin,now))}</p>
       ${desc?`<blockquote>${esc(desc)}</blockquote>`:'<p class="pin-none">ผู้แจ้งไม่ได้เขียนรายละเอียดเพิ่ม</p>'}
+      ${latestNoteHtml(pin)}
       ${phone}
       ${nearbyHtml(pin,fallback)}
       <p class="pin-note">ประสานงานกันเองได้เลย หมุดจะหายเมื่อผู้แจ้งกดจบงาน หรืออีก ${esc(leftText(pin,now))} · ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a></p>
@@ -59,5 +67,5 @@
       ${coordination?`<details class="pin-more"><summary>📞 ติดต่อป่าและหน่วยงานใกล้จุดนี้</summary>${coordination}</details>`:''}
     </div>`;
   }
-  root.CmeIncidentPins={tone,agoText,leftText,iconHtml,nearbyRows,nearbyHtml,popupHtml,RISK_KM};
+  root.CmeIncidentPins={latestNoteHtml,tone,agoText,leftText,iconHtml,nearbyRows,nearbyHtml,popupHtml,RISK_KM};
 })(window);

@@ -69,3 +69,13 @@ it('pins fade as they age so a forgotten one is easy to tell from a new report',
   expect(P.leftText(pin({ expires_at: '2026-10-23T12:30:00+07:00' }), NOW)).toBe('1 ชม.');
   expect(P.leftText(pin({ expires_at: '2026-10-23T11:00:00+07:00' }), NOW)).toBe('ใกล้ปิดอัตโนมัติ');
 });
+
+it('the popup shows the newest note with its author, escaped, and nothing when there is none', () => {
+  const d = html(pin({ latest_note: { text: 'ไฟลามไปทางสันเขา <img src=x onerror=alert(1)>', at: '2026-10-23T11:30:00+07:00', by: 'สมศรี' } }));
+  expect(d.querySelector('.pin-latest')!.textContent).toContain('ความคืบหน้าล่าสุด');
+  expect(d.querySelector('.pin-latest small')!.textContent).toContain('สมศรี');
+  expect(d.querySelector('.pin-latest-q')!.textContent).toBe('ไฟลามไปทางสันเขา <img src=x onerror=alert(1)>');
+  expect(d.querySelector('.pin-latest-q img')).toBeNull();
+  expect(html(pin({ latest_note: null })).querySelector('.pin-latest')).toBeNull();
+  expect(html(pin({ latest_note: { text: '  ', at: null, by: 'x' } })).querySelector('.pin-latest')).toBeNull();
+});
