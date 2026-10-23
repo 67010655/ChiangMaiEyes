@@ -8,7 +8,7 @@ const user = { id: 'u1' };
 const incident = (over: any = {}) => ({
   id: 'inc-1', forest_id: 'f1', status: 'pending', observation: 'fire', latitude: 18.83114, longitude: 98.92345,
   observed_at: new Date(Date.now() - 14 * 864e5).toISOString(), created_at: new Date(Date.now() - 14 * 864e5 + 3 * 36e5).toISOString(),
-  description: '', version: 1, coordinator_id: null, published: false, ...over,
+  description: '', version: 1, coordinator_id: null, created_by: 'u9', published: false, ...over,
 });
 
 // Run only the incident-page view from the source, with small stand-ins for the app's helpers.
@@ -46,7 +46,7 @@ it('leads with the question and the action buttons, in plain words', () => {
   // The question and buttons come before every detail.
   const order = [...d.querySelectorAll('.cw-todo, .cw-info, .cw-timeline, .cw-more')].map(e => e.className.split(' ')[0]);
   expect(order).toEqual(['cw-todo', 'cw-info', 'cw-timeline', 'cw-more']);
-  expect(d.querySelector('.cw-claim')!.textContent).toContain('ยังไม่มีใครตามเรื่องนี้');
+  expect(d.querySelector('.cw-claim')!.textContent).toContain('จะตามเรื่องนี้ต่อแทนคนแจ้งไหม');
   expect(d.body.textContent).not.toContain('ผู้รับประสาน');
   // The status form exists for the buttons to fill in, hidden until one is picked.
   expect((d.getElementById('cwStatusForm') as HTMLFormElement).hidden).toBe(true);
@@ -73,4 +73,17 @@ it('smoke reads as smoke, and the web-submit time shows only when it differs by 
   expect(same.querySelector('h2')!.textContent).toContain('💨 ควัน');
   expect(same.body.textContent).not.toContain('ส่งเข้าเว็บ');
   expect(doc(view().render(st(incident()))).body.textContent).toContain('ส่งเข้าเว็บ');
+});
+
+it('the person who reported it follows it by default; nobody has to claim it', () => {
+  const view_ = view();
+  const mine = doc(view_.render(st(incident({ created_by: 'u1' }))));
+  expect(mine.querySelector('.cw-claim')).toBeNull();
+  expect(mine.querySelector('.cw-info')!.textContent).toContain('คุณ (คนแจ้ง)');
+  const other = st(incident(), { events: [{ kind: 'created', actor_name: 'สมชาย', note: '', created_at: new Date().toISOString() }] });
+  const o = doc(view_.render(other));
+  expect(o.querySelector('.cw-info')!.textContent).toContain('สมชาย (คนแจ้ง)');
+  expect(o.querySelector('.cw-claim')).not.toBeNull();
+  const taken = doc(view_.render(st(incident({ coordinator_id: 'u9' }))));
+  expect(taken.querySelector('.cw-claim')).toBeNull();
 });

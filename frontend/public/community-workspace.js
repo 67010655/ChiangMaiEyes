@@ -130,7 +130,7 @@
     if(!rows.length)return `<div class="cw-empty cw-empty-card"><span class="cw-empty-ic" aria-hidden="true">🌿</span><h3>${publicView?'ยังไม่มีเหตุที่อนุมัติให้เผยแพร่':'ยังไม่มีเหตุในรายการนี้'}</h3><p>การไม่มีรายการในระบบไม่ได้ยืนยันว่าไม่มีไฟในพื้นที่</p></div>`;
     return `<div class="cw-incs">${rows.map(i=>{
       const name=i.forest_name||state.catalog.find(f=>f.forest_id===i.forest_id)?.name||'ป่าชุมชน';
-      const who=publicView?'':i.coordinator_id?`<p class="cw-inc-who">👤 คนตามเรื่องนี้: <b>${esc(i.coordinator_name||'ตัวแทนที่รับเรื่อง')}</b></p>`:`<p class="cw-inc-who none">⚠️ ยังไม่มีใครตามเรื่องนี้</p>`;
+      const who=publicView?'':i.coordinator_id?`<p class="cw-inc-who">👤 คนตามเรื่องนี้: <b>${esc(i.coordinator_name||'ตัวแทนที่รับเรื่อง')}</b></p>`:'';
       return `<article class="cw-inc s-${esc(i.status)}"><div class="cw-inc-main">
         <div class="cw-inc-top">${badge(i.status)}${obsLabel(i.observation)?`<span class="cw-inc-obs">${obsLabel(i.observation)}</span>`:''}</div>
         <h3>${esc(name)}</h3>
@@ -248,7 +248,10 @@
     const invites=d.partners.filter(p=>p.status==='invited'&&(state.me.is_admin||allowedForests().some(f=>f.forest_id===p.forest_id)));
     const coor=state.incidents.find(x=>x.id===i.id)?.coordinator_name;
     const mine=i.coordinator_id&&i.coordinator_id===state.session.user.id;
-    const who=i.coordinator_id?esc(mine?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):null;
+    // Nobody has to "claim" an incident: whoever reported it follows it until someone else takes over.
+    const mineReport=!!i.created_by&&i.created_by===state.session.user.id;
+    const reporter=d.events.find(e=>e.kind==='created')?.actor_name;
+    const who=i.coordinator_id?esc(mine?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):mineReport?'คุณ (คนแจ้ง)':reporter?esc(reporter)+' (คนแจ้ง)':null;
     const stillOpen=!['closed','cancelled'].includes(i.status);
     const days=Math.floor((Date.now()-Date.parse(i.observed_at))/864e5);
     const stale=i.status==='pending'&&days>=1;
@@ -258,7 +261,7 @@
         <form class="cw-form cw-pick-form" id="cwStatusForm" hidden><input type="hidden" name="status"><p class="cw-pick-title" id="cwPickTitle" aria-live="polite"></p>
           <label><span id="cwPickAsk">เล่าสั้นๆ</span><textarea name="note" required maxlength="2000"></textarea></label>
           <div class="cw-actions"><button class="cw-btn primary" id="cwPickGo">บันทึก</button>${button('เปลี่ยนใจ','unpick-status')}</div></form>
-        ${!i.coordinator_id&&stillOpen?`<div class="cw-claim"><p><b>ยังไม่มีใครตามเรื่องนี้</b><br><small>กด "ฉันรับเรื่องนี้" คือคุณจะเป็นคนตามต่อ โทรหน่วยงาน และอัปเดตความคืบหน้า</small></p>${button('🙋 ฉันรับเรื่องนี้','claim','',true)}</div>`:''}`
+        ${!i.coordinator_id&&stillOpen&&!mineReport?`<div class="cw-claim"><p><b>จะตามเรื่องนี้ต่อแทนคนแจ้งไหม?</b><br><small>ตอนนี้คนแจ้งเป็นคนตามเรื่องอยู่ กดปุ่มนี้ถ้าคุณจะรับช่วงต่อ คนอื่นในป่าจะได้รู้ว่ามีคนดูแลแล้ว ไม่ต้องโทรซ้ำ</small></p>${button('🙋 ฉันตามต่อเอง','claim')}</div>`:''}`
       :'<p class="cw-help">คุณดูเหตุนี้ได้ แต่ต้องเป็นผู้ที่ได้รับสิทธิ์จัดการเหตุจึงจะเปลี่ยนสถานะได้</p>';
     const invite=invites.map(p=>`<div class="cw-alert">คำขอให้ช่วยจาก ${esc(p.name)}<div class="cw-actions">${button('รับช่วง','accept',`data-forest="${esc(p.forest_id)}"`,true)}${button('ไม่รับ','decline',`data-forest="${esc(p.forest_id)}"`)}</div></div>`).join('');
     const partnerList=d.partners.length?d.partners.map(p=>`<div class="cw-row"><span>${esc(p.name)}</span>${badge(p.status)}</div>`).join(''):'<p class="cw-help">ยังไม่ได้ขอให้ป่าอื่นช่วย</p>';
