@@ -1392,17 +1392,6 @@
   </div>
 </div>
 
-<!-- My-report-history modal (auth dropdown → ประวัติการรายงานของฉัน) -->
-<div class="cme-modal-backdrop" id="myReportsModalBackdrop">
-  <div class="cme-modal" style="max-width:480px">
-    <button class="close-x" onclick="closeMyReportsModal()">&times;</button>
-    <h3>รายงานจุดไฟแบบเดิม</h3>
-    <p class="hint">รายการที่ส่งจากปุ่ม "รายงานจุดความร้อน" แบบเดิม (ก่อนมีหมุดเหตุ ต.ค. 2569) ตอนนี้การแจ้งเหตุทั้งหมดอยู่ที่ <b>ป่าชุมชน → ประวัติเหตุ</b></p>
-    <p style="margin:0 0 10px"><button type="button" class="cw-btn primary" onclick="closeMyReportsModal();CmeCommunity.open('incidents')">ดูเหตุที่แจ้งในป่าชุมชน →</button></p>
-    <div id="myReportsList" style="max-height:50vh;overflow-y:auto"></div>
-  </div>
-</div>
-
 <!-- Pick-location hint banner (shown while placing a manual hotspot) -->
 <div class="pick-hint" id="pickHint">
   <span>แตะบนแผนที่เพื่อเลือกตำแหน่งจุดไฟ</span>
@@ -1443,7 +1432,6 @@
         <div class="who" id="authWhoText"></div>
         <button class="neutral" onclick="document.getElementById('authDropdown').classList.remove('open');CmeCommunity.open('forest')"><span aria-hidden="true">🌳</span> ป่าของฉัน</button>
         <button class="neutral" onclick="document.getElementById('authDropdown').classList.remove('open');CmeCommunity.open('preferences')"><span aria-hidden="true">🔔</span> การแจ้งเตือน LINE</button>
-        <button class="neutral" onclick="openMyReportsModal()"><span aria-hidden="true">📋</span> รายงานจุดไฟแบบเดิม</button>
         <button class="signout" onclick="doSignOut()"><span aria-hidden="true">↩</span> ออกจากระบบ</button>
       </div>
     </div>
@@ -3154,11 +3142,6 @@ async function deleteManualReport(id){
     await CmeCommunity.cancelLegacy(id);
     map.closePopup();
     await fetchManualReports();
-    // Keep the history modal in sync too if it's open when a delete happens
-    // from there (not just from a map popup).
-    if(document.getElementById('myReportsModalBackdrop')?.classList.contains('open')){
-      await renderMyReportsList();
-    }
   } catch(err){
     toast(err.message || 'ลบรายงานไม่สำเร็จ กรุณาลองใหม่');
   }
@@ -3173,48 +3156,9 @@ function isManualReportFresh(r){
   return ageMs <= MANUAL_REPORT_MAX_AGE_DAYS * 86400000;
 }
 
-// ---- My report history (all of the logged-in user's own reports, no age
-// cutoff — the live map/during-fire list only ever shows the last
-// MANUAL_REPORT_MAX_AGE_DAYS, this is where older ones remain visible). ----
-function openMyReportsModal(){
-  if(!currentUser){ toast('เข้าสู่ระบบก่อนถึงจะดูประวัติได้'); return; }
-  document.getElementById('authDropdown').classList.remove('open');
-  document.getElementById('myReportsModalBackdrop').classList.add('open');
-  renderMyReportsList();
-}
-function closeMyReportsModal(){
-  document.getElementById('myReportsModalBackdrop').classList.remove('open');
-}
-async function renderMyReportsList(){
-  const el = document.getElementById('myReportsList');
-  el.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:12px">กำลังโหลด…</div>';
-  try{
-    const data = await CmeCommunity.myReports();
-    if(!data || !data.length){
-      el.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:12px">ไม่มีรายงานแบบเดิม</div>';
-      return;
-    }
-    el.innerHTML = data.map(r=>{
-      const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});
-      const fresh = isManualReportFresh(r);
-      return `<div style="border-bottom:1px solid var(--line-soft);padding:9px 0">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
-          <b style="font-size:12px">อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}</b>
-          <span style="font-size:12px;white-space:nowrap;color:${r.cancelled_at?'var(--dim)':fresh?'var(--good)':'var(--dim)'}">${r.cancelled_at?'✕ ยกเลิกแล้ว':fresh?'● แสดงบนแผนที่อยู่':'○ พ้น 3 วันแล้ว'}</span>
-        </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px">${(r.description||'').replace(/</g,'&lt;')}</div>
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px">
-          <span style="font-size:12px;color:var(--dim)">${when}</span>
-          ${r.cancelled_at?'':`<button type="button" class="ghost" style="min-height:36px;color:var(--danger);font-size:12px" onclick="deleteManualReport('${r.id}')">ยกเลิกรายงาน</button>`}
-        </div>
-      </div>`;
-    }).join('');
-  } catch(err){
-    el.innerHTML = `<div style="padding:20px 0;text-align:center;color:var(--danger);font-size:12px">โหลดไม่สำเร็จ: ${err.message||'ลองใหม่อีกครั้ง'}</div>`;
-  }
-}
+// The pre-pin manual-report system is retired (24 Oct 2026): reports now live in ป่าชุมชน → ประวัติเหตุ.
 async function fetchManualReports(){
-  if(!currentUser){manualReports=[];renderManualReports();return;}
+  manualReports=[];renderManualReports();return;
   try{
     const data = await CmeCommunity.myReports();
     manualReports = (data || []).filter(r=>!r.cancelled_at&&isManualReportFresh(r));

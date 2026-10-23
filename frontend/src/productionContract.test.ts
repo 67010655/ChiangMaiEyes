@@ -50,8 +50,8 @@ describe('production deployment contract', () => {
     expect(html.slice(0, 2500)).not.toContain('เธ');
   });
 
-  it('preserves production report history, forest proximity, and tablet controls', () => {
-    expect(html).toContain('myReportsModalBackdrop');
+  it('keeps forest proximity and tablet controls; the old report history is retired (24 Oct 2026)', () => {
+    expect(html).not.toContain('myReportsModalBackdrop');
     expect(html).toContain('showForestProximity(');
     expect(html).toContain('show3DForestProximity(');
     expect(html).toContain('tabletInsightsBtn');
