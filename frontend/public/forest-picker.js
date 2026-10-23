@@ -18,7 +18,15 @@
     if(sel.id)input.setAttribute('aria-controls',sel.id);
     const status=document.createElement('span');status.className='forest-picker-count';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
     wrap.append(input,status);sel.before(wrap);
-    const snapshot=()=>{all=[...sel.options].map(o=>({value:o.value,text:o.textContent}));};
+    // Keep each option's <optgroup>: other scripts check for the groups and rebuild the list
+    // (wiping what the person typed) when they are missing.
+    const snapshot=()=>{all=[...sel.options].map(o=>({value:o.value,text:o.textContent,group:o.parentElement?.tagName==='OPTGROUP'?o.parentElement.label:null}));};
+    const rebuild=keep=>{
+      const out=[],groups=new Map();
+      for(const o of all){if(o.group!==null&&!groups.has(o.group)){const g=document.createElement('optgroup');g.label=o.group;groups.set(o.group,g);out.push(g);}}
+      const top=[];keep.forEach(o=>{const opt=new Option(o.text,o.value);if(o.group===null)top.push(opt);else groups.get(o.group).append(opt);});
+      sel.replaceChildren(...top,...out);
+    };
     const sync=()=>{wrap.hidden=sel.options.length<MIN_OPTIONS&&!input.value;};
     // Other scripts rebuild the list (data arrives, theme of the page changes): start fresh.
     new MutationObserver(()=>{if(filtering)return;snapshot();input.value='';status.textContent='';sync();}).observe(sel,{childList:true});
@@ -27,7 +35,7 @@
       const q=norm(input.value), current=sel.value;
       const keep=q?all.filter(o=>!o.value||o.value===current||norm(o.text).includes(q)):all;
       filtering=true;
-      sel.replaceChildren(...keep.map(o=>new Option(o.text,o.value)));
+      rebuild(keep);
       sel.value=current;
       // One match: pick it, the same as choosing it in the list.
       const real=keep.filter(o=>o.value);

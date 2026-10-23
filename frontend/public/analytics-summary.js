@@ -7,7 +7,9 @@
   'use strict';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const tz={timeZone:'Asia/Bangkok'};
-  const dayLabel=d=>new Intl.DateTimeFormat('th-TH',{...tz,day:'numeric',month:'short'}).format(Date.parse(d+'T12:00:00+07:00'));
+  // Long ranges cross a year end, so their dates carry a short Buddhist-era year ("24 ต.ค. 68").
+  let withYear=false;
+  const dayLabel=d=>new Intl.DateTimeFormat('th-TH',{...tz,day:'numeric',month:'short',...(withYear?{year:'2-digit'}:{})}).format(Date.parse(d+'T12:00:00+07:00'));
   const weekday=d=>new Intl.DateTimeFormat('th-TH',{...tz,weekday:'short'}).format(Date.parse(d+'T12:00:00+07:00'));
   const fmt1=n=>Number(n).toLocaleString('th-TH',{maximumFractionDigits:1});
   const todayBkk=()=>new Intl.DateTimeFormat('sv-SE',tz).format(new Date());
@@ -56,7 +58,8 @@
     if(!labels.length)return '';
     if(labels.length===3&&!dates)return `<div class="as-axis">${labels.map(l=>`<span>${esc(l)}</span>`).join('')}</div>`;
     if(dates&&dates[dates.length-1]===todayBkk())labels=[...labels.slice(0,-1),'วันนี้'];
-    const pick=labels.length<=2?labels:[labels[0],labels[Math.floor((labels.length-1)/2)],labels[labels.length-1]];
+    const n=labels.length>120?5:3;
+    const pick=labels.length<=2?labels:Array.from({length:n},(_,k)=>labels[Math.round(k*(labels.length-1)/(n-1))]);
     return `<div class="as-axis">${pick.map(l=>`<span>${esc(l)}</span>`).join('')}</div>`;
   }
   const num=(v,d=0)=>`<b class="as-num" data-count-to="${Number(v)}" data-dec="${d}">${esc(d?fmt1(v):Number(v).toLocaleString('th-TH'))}</b>`;
@@ -389,6 +392,7 @@
     if(!a){el.innerHTML='<div class="as-skeleton" role="status" aria-label="กำลังโหลดข้อมูลย้อนหลัง"><i></i><i></i><i></i></div>';return;}
     const pm=pmSeries(a,(a.hotspots||[]).map(d=>d.date)), norm=opts.norm||(s=>String(s||'').replace(/^อำเภอ|^อ\./,'').trim());
     const span=history.days===1?'24 ชั่วโมง':history.days+' วัน';
+    withYear=history.days>=180;
     focusArea=opts.forest||null; focusDistrict=focusArea?null:(opts.district||null);
     const tail=focusArea?forestFocusCard(focusArea,a)
       :focusDistrict?`${districtFocusCard(a,opts.shapes,focusDistrict)}${forestCard(a,opts,history)}`
