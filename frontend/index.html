@@ -2107,8 +2107,9 @@ function normalizeSatelliteProduct(raw){
   if(s==='N21'||s.includes('NOAA-21'))return {product:'viirs',label:'NOAA-21 VIIRS'};
   if(s==='N'||s.includes('SNPP')||s.includes('SUOMI'))return {product:'viirs',label:'Suomi NPP VIIRS'};
   if(s.includes('VIIRS'))return {product:'viirs',label:'VIIRS (ไม่ระบุดวง)'};
-  if(s==='T')return {product:'modis',label:'Terra MODIS'};
-  if(s==='A')return {product:'modis',label:'Aqua MODIS'};
+  // The FIRMS area API writes Terra/Aqua; its CSV files write T/A.
+  if(s==='T'||s==='TERRA')return {product:'modis',label:'Terra MODIS'};
+  if(s==='A'||s==='AQUA')return {product:'modis',label:'Aqua MODIS'};
   if(s.includes('MODIS')||s.includes('MOD')||s.includes('MYD')||s.includes('TERRA')||s.includes('AQUA'))return {product:'modis',label:'MODIS Terra/Aqua'};
   return {product:'unknown',label:'VIIRS (ไม่ระบุดวง)'};
 }

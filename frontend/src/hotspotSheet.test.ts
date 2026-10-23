@@ -32,3 +32,15 @@ it('opens with the place as title, copyable coordinates, and closes back to the 
   expect(sheet.hidden).toBe(true); expect(closed).toBe(1); expect(w.document.activeElement).toBe(opener);
   dom.window.close();
 });
+
+it('names the satellite whether FIRMS sends a code or the full name', () => {
+  const { dom, w, S } = setup();
+  const sat = (code: string) => {
+    S.open({ lat: 18.8, lon: 98.9, sat: code, detected_at: '2026-10-19T07:14:00Z' }, '<div class="hs-pop">x</div>', {});
+    return w.document.getElementById('hotspotSheet').textContent;
+  };
+  expect(sat('Aqua')).toContain('Aqua (MODIS)');
+  expect(sat('T')).toContain('Terra (MODIS)');
+  expect(sat('N')).toContain('Suomi NPP (VIIRS)');
+  dom.window.close();
+});
