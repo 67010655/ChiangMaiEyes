@@ -54,3 +54,17 @@
 .leaflet-popup:has(.hs-pop) .leaflet-popup-content{max-height:min(560px,62dvh)!important}
 .leaflet-popup-content .hs-pop b{color:inherit}
 .hs-chip{margin:8px 0 0;padding:6px 10px;border-radius:8px;border:1px solid #f59e0b88;background:rgba(245,158,11,.12);font-size:12px;font-weight:600}
+
+/* Short card: headings, one line per forest, caveats folded away. */
+.coordination-card .coordination-sub{margin:10px 0 4px;font:700 12px/1.4 var(--disp,sans-serif);letter-spacing:.02em;opacity:.8;text-transform:none}
+.coordination-forests{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.coordination-forests .coordination-forest{border:0;padding:6px 8px;border-radius:8px;background:rgba(127,127,127,.08)}
+.cf-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.cf-km{flex:none;font-size:12px;font-weight:700;opacity:.85}
+.cf-sub{display:block;font-size:12px;opacity:.8;line-height:1.45}
+.cf-sub [data-contact-forest]{display:inline}
+.coordination-office small.cf-src{display:block;font-size:11px;opacity:.75}
+.coordination-more{margin-top:8px;border-top:1px solid #557c6c44;padding-top:6px}
+.coordination-more summary{cursor:pointer;font-size:12px;opacity:.85;min-height:32px;display:flex;align-items:center}
+.coordination-card .coordination-lead{font-size:14px}
+.coordination-agency .coordination-note,.coordination-office .coordination-note{font-size:11px!important;line-height:1.45;margin:2px 0!important;opacity:.7}

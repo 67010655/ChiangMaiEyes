@@ -25,7 +25,8 @@ it('finds forests across district lines by edge distance and leads with boundary
   expect(rows[0].km).toBeCloseTo(.105,2);
   expect(c.administrativeArea(18.8,98.901)).toEqual({status:'matched',tambon:'บ้านปง',district:'หางดง'});
   const html=c.html(18.8,98.901,{myForestId:'doi-pui'});
-  expect(html).toContain('จุดนี้อยู่ ต.บ้านปง อ.หางดง · ป่าชุมชนที่ใกล้ที่สุด: ดอยปุย');
+  expect(html).toContain('📍 จุดนี้อยู่ ต.บ้านปง อ.หางดง</p>');
+  expect(html).toMatch(/ป่าชุมชนที่ใกล้ที่สุด:<\/h4><ul class="coordination-forests"><li class="coordination-forest"><span class="cf-top"><strong>ดอยปุย/);
   expect(html).toContain('อยู่นอกเขตอำเภอ แต่ป่าเราใกล้ที่สุด');
   expect(html).toContain('ป่าข้างเคียง: บ้านปง, อีกป่า');
   expect(html).toContain('ระยะเส้นตรง ไม่ใช่ระยะเดินทาง');

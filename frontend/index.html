@@ -1843,7 +1843,7 @@
           <li><span class="gd-n" aria-hidden="true">1</span><div><div class="gd-step-top"><h3>ดูไฟรอบตัว</h3><button type="button" class="gc-try" data-guide-try="near">ลองเลย</button></div><p>กด “ดูไฟรอบตัวฉัน” แผนที่จะซูมไปที่คุณ จุดสีคือที่ดาวเทียมเห็นความร้อน ยังไม่ใช่ไฟที่ยืนยันแล้ว</p></div></li>
           <li><span class="gd-n" aria-hidden="true">2</span><div><div class="gd-step-top"><h3>ดูฝุ่นและลม</h3><button type="button" class="gc-try" data-guide-try="dust">ลองเลย</button></div><p>ช่องฝุ่นบนสุดคือค่าสถานีกรมควบคุมมลพิษ ป้ายตัวเลขสี่เหลี่ยมคือเซนเซอร์ใกล้บ้าน เส้นที่วิ่งบนแผนที่คือทางที่ลมพัดไป</p></div></li>
           <li><span class="gd-n" aria-hidden="true">3</span><div><div class="gd-step-top"><h3>เลือกป่าของคุณ</h3><button type="button" class="gc-try" data-open-view="community">ลองเลย</button></div><p>ในแท็บ “ป่าชุมชน” พิมพ์ชื่อป่า ดูจุดในป่าและรอบ 5 กม. ลม และเบอร์หน่วยงาน แชร์ให้คนในหมู่บ้านทาง LINE ได้</p></div></li>
-          <li><span class="gd-n" aria-hidden="true">4</span><div><div class="gd-step-top"><h3>ถ้าเห็นไฟจริง</h3><a class="gc-try" href="tel:1362">โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></div><p>โทร 1362 และแจ้งหน่วยงานในพื้นที่ (ดู “ติดต่อใคร” ในการ์ดป่า) อย่าเข้าไปดับคนเดียว ตัวแทนป่าบันทึกเหตุในเว็บหลังดับเสร็จ</p></div></li>
+          <li><span class="gd-n" aria-hidden="true">4</span><div><div class="gd-step-top"><h3>ถ้าเห็นไฟจริง</h3><a class="gc-try" href="tel:1362">โทร 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a></div><p>โทร 1362 และแจ้งหน่วยงานในพื้นที่ (ดู “ติดต่อใคร” ในการ์ดป่า) อย่าเข้าไปดับคนเดียว ตัวแทนป่าบันทึกเหตุในเว็บหลังดับเสร็จ</p></div></li>
         </ol>
       </section>
 
@@ -2464,7 +2464,7 @@ function popupActionsHtml(lat,lon){
   // Safety-relevant: a park or sanctuary needs its officers before anyone goes in.
   const pa=window.CmeProtectedAreas?.query(Number(lat),Number(lon));
   const chip=pa&&['inside','near'].includes(pa.status)?`<p class="hs-chip">${pa.status==='inside'?'อยู่ในเขตพื้นที่อนุรักษ์':'ใกล้เขตพื้นที่อนุรักษ์'} · ประสานเจ้าหน้าที่ก่อนเข้าพื้นที่</p>`:'';
-  return chip+`<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a><button type="button" class="hs-3d" data-open3d="${Number(lat)},${Number(lon)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 19 9.5 8l4 6.5L16 11l5 8Z"/><path d="m8 10.6 1.5 1.4 1.4-1.2"/></svg>ดูใน 3D</button></div>`;
+  return chip+`<div class="hs-actions"><a class="hs-call" href="tel:1362">📞 โทร 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a><a class="hs-nav" href="https://www.google.com/maps/dir/?api=1&destination=${Number(lat)},${Number(lon)}" target="_blank" rel="noopener">นำทาง</a><button type="button" class="hs-3d" data-open3d="${Number(lat)},${Number(lon)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 19 9.5 8l4 6.5L16 11l5 8Z"/><path d="m8 10.6 1.5 1.4 1.4-1.2"/></svg>ดูใน 3D</button></div>`;
 }
 // ---- Experimental spread outline for one tapped point (2D and 3D) ----
 const SPREAD_SIM_STYLE={3:{color:'#ef4444',fill:.2},6:{color:'#f97316',fill:.1}};
@@ -3855,7 +3855,7 @@ function myLocationHtml(lat,lon,accuracy){
     <p class="ml-kicker">📍 คุณอยู่ที่</p><h3>${where}</h3>
     <div class="ml-status ${tone}"><span aria-hidden="true">${tone==='warn'?'🔥':'🌿'}</span><div><b>${head}</b>${detail?`<small>${detail}</small>`:''}</div></div>
     <p class="ml-tip">${tip}</p>
-    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<a class="ml-btn call" href="tel:1362">📞 โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></div>
+    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<a class="ml-btn call" href="tel:1362">📞 โทร 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a></div>
     <p class="ml-note">ระยะเส้นตรงจากจุดที่ดาวเทียมเห็น ตำแหน่งของคุณอยู่ในเครื่องนี้เท่านั้น ไม่ได้ส่งไปที่ไหน</p>${fuzzy}
   </div>`;
 }
@@ -4499,7 +4499,7 @@ function districtSummaryHtml(distNorm,{withTitle=false}={}){
     <div class="ds-aqi-slot loading" data-ds-aqi="${esc(distNorm)}"><span class="ds-aqi-t">กำลังดูเซนเซอร์วัดฝุ่นในอำเภอ…</span></div>
     ${tambons.length?`<p class="ds-sub">ตำบลที่มีจุดมาก</p><ol class="ds-tambon">${tambons.map(([t,n])=>`<li><span>ต.${esc(t)}</span><b>${n} จุด</b></li>`).join('')}</ol>`:`<p class="ds-note">ไม่พบจุดความร้อนในอำเภอนี้ช่วงที่แสดง ไม่ได้แปลว่าไม่มีไฟ</p>`}
     ${distHs.length&&pm!==null&&pm>37.5?'<p class="ds-note">พบทั้งจุดความร้อนและฝุ่นสูง ยังไม่ยืนยันว่าเป็นเหตุเดียวกัน</p>':''}
-    <div class="ds-actions"><button type="button" class="ds-btn" data-open-view="threed">⛰ ดูภูเขา 3D</button><a class="ds-btn ghost" href="tel:1362">📞 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></div>
+    <div class="ds-actions"><button type="button" class="ds-btn" data-open-view="threed">⛰ ดูภูเขา 3D</button><a class="ds-btn ghost" href="tel:1362">📞 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a></div>
   </div>`;
 }
 function selectDistrict(nameTh, layer){

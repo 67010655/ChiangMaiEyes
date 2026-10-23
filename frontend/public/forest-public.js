@@ -166,7 +166,7 @@ ${shareUrl(f)}`;
       ${statusHtml(sit)}
       ${mapSvg(f,sit)}
       ${factsHtml(sit)}
-      <div class="fp-actions">${c?`<button type="button" class="cw-btn primary" data-fp="map" data-lat="${c.lat}" data-lon="${c.lon}">ดูป่านี้บนแผนที่</button>`:''}<a class="cw-btn fp-call" href="tel:1362">📞 เห็นไฟ โทร 1362</a> <small class="hotline-what">(สายด่วนกรมอุทยานฯ แจ้งไฟป่า)</small></div>
+      <div class="fp-actions">${c?`<button type="button" class="cw-btn primary" data-fp="map" data-lat="${c.lat}" data-lon="${c.lon}">ดูป่านี้บนแผนที่</button>`:''}<a class="cw-btn fp-call" href="tel:1362">📞 เห็นไฟ โทร 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a></div>
       ${shareHtml(f)}
       ${whoHtml(f,c)}
       ${limitsHtml()}

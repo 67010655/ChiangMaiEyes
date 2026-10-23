@@ -21,7 +21,7 @@ it('identifies the real Hang Dong side of Doi Suthep-Pui and puts the park befor
   const {dom,c,p}=await setup();
   expect(p.query(point.lat,point.lon).rows.map((r:any)=>r.area.id)).toContain('1024');
   const host=dom.window.document.getElementById('host')!;host.innerHTML=c.html(point.lat,point.lon);
-  expect(host.querySelector('.coordination-lead')!.textContent).toBe('จุดนี้อยู่ในเขตอุทยานแห่งชาติดอยสุเทพ-ปุย (กรมอุทยานฯ) · ต.บ้านปง อ.หางดง');
+  expect(host.querySelector('.coordination-lead')!.textContent).toBe('📍 จุดนี้อยู่ในเขตอุทยานแห่งชาติดอยสุเทพ-ปุย (กรมอุทยานฯ) · ต.บ้านปง อ.หางดง');
   expect(host.textContent).toContain('ป่าชุมชนใกล้เคียง:');
   expect(host.textContent).toContain('ขอบเขตจาก GISTDA 2017 ใช้อ้างอิง ไม่ใช่แนวเขตทางกฎหมาย');
   expect(host.querySelectorAll('a[href="tel:1362"]')).toHaveLength(1);
@@ -49,7 +49,7 @@ it('includes the non-hunting area 3003 as well as national parks, using actual p
 it.each([[18.75,98.97],[18.78,99.03]])('does not claim a park match more than 3 km away (%s,%s)',async(lat,lon)=>{
   const {dom,c,p}=await setup();expect(p.query(lat,lon).status).toBe('outside');
   const host=dom.window.document.getElementById('host')!;host.innerHTML=c.html(lat,lon);
-  expect(host.querySelector('.coordination-lead')!.textContent).toContain('ป่าชุมชนที่ใกล้ที่สุด:');
+  expect(host.querySelector('.coordination-sub')!.textContent).toBe('ป่าชุมชนที่ใกล้ที่สุด:');
   expect(host.textContent).toContain('ไม่ได้ยืนยันว่าอยู่นอกพื้นที่อนุรักษ์ทุกแห่ง');expect(host.querySelectorAll('a[href="tel:1362"]')).toHaveLength(1);dom.window.close();
 });
 it('shows the representative warning and includes same-district park detections near the selected forest',async()=>{

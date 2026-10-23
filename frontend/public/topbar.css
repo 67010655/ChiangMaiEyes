@@ -160,3 +160,5 @@ body.light-mode .public-brief-details:not([hidden]){box-shadow:0 14px 34px rgba(
 .public-brief-details .pbd-item .pbd-src{font-size:12px!important;color:var(--muted)!important;line-height:1.5;margin-top:2px!important}
 .public-brief-details .pbd-src:empty{display:none}
 .public-brief-details .pbd-note{margin:10px 0 0!important;padding:8px 0 0!important;border-top:1px solid var(--line-soft)!important;font-size:12px!important;color:var(--muted)!important}
+.hotline-what.in-btn{display:block;font-size:11px;line-height:1.2;opacity:.9;font-weight:500}
+a:has(>.hotline-what.in-btn){display:inline-flex!important;flex-direction:column!important;align-items:center;justify-content:center;line-height:1.2;gap:1px}
