@@ -1395,8 +1395,9 @@
 <div class="cme-modal-backdrop" id="myReportsModalBackdrop">
   <div class="cme-modal" style="max-width:480px">
     <button class="close-x" onclick="closeMyReportsModal()">&times;</button>
-    <h3>ประวัติการรายงานของฉัน</h3>
-    <p class="hint">รายงานทั้งหมดที่คุณเคยส่ง รวมถึงรายการที่เกิน 3 วันแล้วและไม่แสดงบนแผนที่/แท็บระหว่างไฟอีกต่อไป — ยังเก็บไว้ที่นี่เป็นประวัติเสมอ ไม่ถูกลบ</p>
+    <h3>รายงานจุดไฟแบบเดิม</h3>
+    <p class="hint">รายการที่ส่งจากปุ่ม "รายงานจุดความร้อน" แบบเดิม (ก่อนมีหมุดเหตุ ต.ค. 2569) ตอนนี้การแจ้งเหตุทั้งหมดอยู่ที่ <b>ป่าชุมชน → ประวัติเหตุ</b></p>
+    <p style="margin:0 0 10px"><button type="button" class="cw-btn primary" onclick="closeMyReportsModal();CmeCommunity.open('incidents')">ดูเหตุที่แจ้งในป่าชุมชน →</button></p>
     <div id="myReportsList" style="max-height:50vh;overflow-y:auto"></div>
   </div>
 </div>
@@ -3189,7 +3190,7 @@ async function renderMyReportsList(){
   try{
     const data = await CmeCommunity.myReports();
     if(!data || !data.length){
-      el.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:12px">คุณยังไม่เคยส่งรายงานเลย</div>';
+      el.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:12px">ไม่มีรายงานแบบเดิม</div>';
       return;
     }
     el.innerHTML = data.map(r=>{
@@ -3198,12 +3199,12 @@ async function renderMyReportsList(){
       return `<div style="border-bottom:1px solid var(--line-soft);padding:9px 0">
         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
           <b style="font-size:12px">อ.${r.amphoe||'—'}${r.tambon?(' · ต.'+r.tambon):''}</b>
-          <span style="font-size:12px;white-space:nowrap;color:${fresh?'var(--good)':'var(--dim)'}">${fresh?'● แสดงบนแผนที่อยู่':'○ พ้น 3 วันแล้ว'}</span>
+          <span style="font-size:12px;white-space:nowrap;color:${r.cancelled_at?'var(--dim)':fresh?'var(--good)':'var(--dim)'}">${r.cancelled_at?'✕ ยกเลิกแล้ว':fresh?'● แสดงบนแผนที่อยู่':'○ พ้น 3 วันแล้ว'}</span>
         </div>
         <div style="font-size:12px;color:var(--muted);margin-top:3px">${(r.description||'').replace(/</g,'&lt;')}</div>
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px">
           <span style="font-size:12px;color:var(--dim)">${when}</span>
-          <span style="cursor:pointer;color:var(--danger);font-size:12px;text-decoration:underline" onclick="deleteManualReport('${r.id}')">🗑 ลบ</span>
+          ${r.cancelled_at?'':`<button type="button" class="ghost" style="min-height:36px;color:var(--danger);font-size:12px" onclick="deleteManualReport('${r.id}')">ยกเลิกรายงาน</button>`}
         </div>
       </div>`;
     }).join('');
