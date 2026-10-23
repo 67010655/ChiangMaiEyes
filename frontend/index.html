@@ -1478,12 +1478,13 @@
       <div class="copy"><span class="label"><span class="brief-label-full">ลมสถานี พัดไป</span><span class="brief-label-short">ลมพัดไป</span></span><span class="value" id="publicWindValue">กำลังโหลด</span><span class="meaning" id="publicWindMeta">รอเวลาและแหล่งข้อมูลลม</span></div>
     </div>
     <div class="public-brief-details" id="publicBriefDetails" role="region" aria-label="แหล่งข้อมูลและเวลาอัปเดต" tabindex="0" hidden>
+      <p class="pbd-title">ข้อมูลบนหน้านี้มาจากไหน</p>
       <dl>
-        <div><dt>จุดความร้อน · 24 ชั่วโมง</dt><dd id="publicFireSourceDetail">กำลังรับข้อมูลดาวเทียม</dd></div>
-        <div><dt>ฝุ่น PM2.5 · µg/m³</dt><dd id="publicPmSourceDetail">กำลังรับข้อมูลจากสถานี</dd></div>
-        <div><dt>ลม · ลูกศรชี้ทิศที่พัดไป</dt><dd id="publicWindSourceDetail">กำลังรับข้อมูลลม</dd></div>
+        <div class="pbd-item fire"><dt>🔥 จุดความร้อน</dt><dd class="pbd-when" id="publicFireSourceDetail">กำลังรับข้อมูลดาวเทียม</dd><dd class="pbd-src" id="publicFireSourceNote"></dd></div>
+        <div class="pbd-item pm"><dt>😷 ฝุ่น PM2.5</dt><dd class="pbd-when" id="publicPmSourceDetail">กำลังรับข้อมูลจากสถานี</dd><dd class="pbd-src" id="publicPmSourceNote"></dd></div>
+        <div class="pbd-item air"><dt>🧭 ลม</dt><dd class="pbd-when" id="publicWindSourceDetail">กำลังรับข้อมูลลม</dd><dd class="pbd-src" id="publicWindSourceNote"></dd></div>
       </dl>
-      <p>จุดดาวเทียมต้องตรวจสอบกับคนในพื้นที่ การไม่พบจุดไม่ได้ยืนยันว่าไม่มีไฟ</p>
+      <p class="pbd-note">จุดจากดาวเทียมยังต้องมีคนไปดู · ไม่พบจุด ไม่ได้แปลว่าไม่มีไฟ</p>
     </div>
   </section>
 
@@ -3667,10 +3668,16 @@ function updatePublicBrief({hotspotReady,pmReady,activeCount,pmAvg}){
   document.getElementById('publicWindMeta').textContent=windReady?(modelWind?'เหนือพื้นดิน 10 ม. · ':'สถานี ไม่ระบุความสูง · ')+CmeEvidence.stamp(liveDataQ?.weather?.latest_update):'รอข้อมูลลมที่ใช้ได้';
   document.getElementById('publicWindSignal').title=sourceLabel('weather')+' · ลูกศรชี้ทิศที่ลมพัดไป · '+(modelWind?'แบบจำลองเหนือพื้นดิน 10 เมตร':'ระดับความสูงของสถานี: feed ยังไม่ระบุ');
   document.getElementById('publicBriefFreshness').textContent=freshnessText();
-  document.getElementById('publicFireSourceDetail').textContent=sourceLabel('hotspots')+' · '+document.getElementById('publicFireMeta').textContent;
-  document.getElementById('publicPmSourceDetail').textContent=document.getElementById('publicPmMeta').textContent+(pmReady?' · ค่าเฉลี่ยจากสถานีที่มีข้อมูล ไม่ใช่ค่าที่วัดได้ทุกพื้นที่':'')+
-    (pmLv?` · ระดับ${pmLv.label}: ${pmLv.advice} · เทียบ${pmLv.source} ค่าที่แสดงเป็นค่าล่าสุด ไม่ใช่ค่าเฉลี่ย 24 ชม.`:'');
-  document.getElementById('publicWindSourceDetail').textContent=(windReady?'พัดไปทาง'+_degToCompass(blowTo)+' · ':'')+sourceLabel('weather')+' · '+document.getElementById('publicWindMeta').textContent;
+  // The (i) panel: when and from where, in two short lines per tile. Long caveats stay in the guide.
+  const setText=(id,text)=>{const el=document.getElementById(id);if(el)el.textContent=text;};
+  const shortSources=label=>{const names=[];if(/GISTDA/i.test(label))names.push('GISTDA');if(/FIRMS/i.test(label))names.push('NASA FIRMS');return names.length?names.join(' + '):label;};
+  const fireLabel=sourceLabel('hotspots');
+  setText('publicFireSourceDetail',document.getElementById('publicFireMeta').textContent);
+  setText('publicFireSourceNote','ดาวเทียม VIIRS และ MODIS · '+shortSources(fireLabel));
+  setText('publicPmSourceDetail',document.getElementById('publicPmMeta').textContent);
+  setText('publicPmSourceNote',pmReady?(pmLv?`ค่าล่าสุดเฉลี่ยจากสถานี · ${String(pmLv.source).replace(/^เกณฑ์/,'เกณฑ์').replace(/\s*\(.*\)\s*$/,'')}`:'ค่าล่าสุดเฉลี่ยจากสถานีที่มีข้อมูล'):'ยังไม่มีค่าจากสถานี');
+  setText('publicWindSourceDetail',(windReady?'พัดไปทาง'+_degToCompass(blowTo)+' · ':'')+document.getElementById('publicWindMeta').textContent);
+  setText('publicWindSourceNote',sourceLabel('weather'));
   const freshFire=newest&&Date.now()-Date.parse(newest)<=6*36e5;
   document.getElementById('publicFireSignal').classList.toggle('fresh',!!freshFire);
   renderTileViz();

@@ -145,3 +145,18 @@ body.light-mode .auth-dropdown{box-shadow:0 14px 34px rgba(15,23,42,.14)!importa
 .map-locate-group .map-fab.call-fab{width:auto!important;height:auto!important;min-height:48px;padding:6px 12px!important}
 @media(max-width:820px){.map-locate-group .map-fab.call-fab{height:auto!important;min-height:48px}}
 .auth-av.lg svg{width:22px;height:22px}
+
+/* (i) "where does this come from" panel: a card that starts right of the nav rail (it used to slide
+   under it on desktop), three short items side by side on wide screens, stacked on phones. */
+.public-brief-details:not([hidden]){left:12px!important;right:12px!important;top:calc(100% + 6px)!important;padding:14px 16px!important;border:1px solid var(--line)!important;border-radius:14px!important;background:var(--panel)!important;box-shadow:0 14px 34px rgba(0,0,0,.35)!important;max-height:min(60dvh,420px)!important}
+body.light-mode .public-brief-details:not([hidden]){box-shadow:0 14px 34px rgba(15,23,42,.14)!important}
+@media(min-width:821px){.public-brief-details:not([hidden]){left:78px!important;max-width:980px}}
+.public-brief-details .pbd-title{margin:0 0 10px!important;padding:0!important;border:0!important;font:700 15px var(--font)!important;color:var(--txt)!important}
+.public-brief-details dl{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px!important}
+@media(max-width:820px){.public-brief-details dl{grid-template-columns:1fr}}
+.pbd-item{padding:10px 12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line-soft);min-width:0}
+.public-brief-details .pbd-item dt{font-size:14px!important;font-weight:700;color:var(--txt);margin:0 0 4px!important}
+.public-brief-details .pbd-item .pbd-when{font-size:13px!important;color:var(--txt)!important;line-height:1.5}
+.public-brief-details .pbd-item .pbd-src{font-size:12px!important;color:var(--muted)!important;line-height:1.5;margin-top:2px!important}
+.public-brief-details .pbd-src:empty{display:none}
+.public-brief-details .pbd-note{margin:10px 0 0!important;padding:8px 0 0!important;border-top:1px solid var(--line-soft)!important;font-size:12px!important;color:var(--muted)!important}
