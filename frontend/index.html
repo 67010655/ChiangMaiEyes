@@ -1737,6 +1737,7 @@
         <button data-r="30d">30 วัน</button>
         <button data-r="90d">90 วัน</button>
         <button data-r="180d">180 วัน</button>
+        <button data-r="365d">1 ปี</button>
         <button data-r="season" style="display:none" hidden>ทั้งฤดู</button>
       </div></div>
       <button class="an-close" id="anClose" aria-label="ปิดหน้านี้และกลับหน้าหลัก" title="กลับหน้าหลัก">✕</button>
@@ -1922,6 +1923,7 @@
           <button type="button" data-archive-days="30" aria-pressed="false">30 วัน</button>
           <button type="button" data-archive-days="90" aria-pressed="false">90 วัน</button>
           <button type="button" data-archive-days="180" aria-pressed="false">180 วัน</button>
+          <button type="button" data-archive-days="365" aria-pressed="false">1 ปี</button>
           </div>
           <label for="archiveKind" class="sr-only">ชนิดข้อมูล</label>
           <select id="archiveKind"><option value="all">ทุกชนิดข้อมูล</option><option value="hotspot">จุดความร้อน</option><option value="pm25">PM2.5 สถานีวัด</option><option value="pm25_model">PM2.5 แบบจำลอง</option><option value="weather">ลมและอากาศ</option></select>
@@ -4145,7 +4147,7 @@ function analyticsScope(v){
   return v?{forest:v}:{};
 }
 const analyticsCache=new Map();
-const analyticsDays=r=>r==='24h'?1:({ '7d':7,'30d':30,'90d':90,'180d':180 }[r]||7);
+const analyticsDays=r=>r==='24h'?1:({ '7d':7,'30d':30,'90d':90,'180d':180,'365d':365 }[r]||7);
 function clearAnalytics(){
   selectedHistory=null;
 }

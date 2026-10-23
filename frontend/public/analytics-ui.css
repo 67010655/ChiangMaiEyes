@@ -230,3 +230,21 @@ body.light-mode .analytics .an-head{background:#f0f5f1!important}
 /* Level words in the level colour; darker in light mode so they read on white. */
 .as-lv{color:var(--lv)}
 body.light-mode .as-lv{color:color-mix(in srgb,var(--lv) 45%,#000)}
+
+/* Wind card, second half: time of day and strength, so the card is as useful as it is tall. */
+.as-wind-extra{display:grid;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.as-k2{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--txt)}
+.as-wind-hours{width:100%;height:56px;display:block}
+.as-wh{fill:rgba(56,189,248,.35)}.as-wh.hot{fill:#38bdf8}
+.as-wind-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px}
+.as-wind-cls{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--panel-2)}
+.as-wind-cls i,.as-wind-key i{display:block}
+.as-wind-cls .c0,.as-wind-key .c0{background:#94a3b8}.as-wind-cls .c1,.as-wind-key .c1{background:#7dd3fc}
+.as-wind-cls .c2,.as-wind-key .c2{background:#38bdf8}.as-wind-cls .c3,.as-wind-key .c3{background:#0369a1}
+.as-wind-key{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px;font-size:12px;color:var(--txt)}
+.as-wind-key li{display:flex;align-items:center;gap:6px}
+.as-wind-key i{width:10px;height:10px;border-radius:3px;flex:none}
+.as-wind-key small{color:var(--muted)}.as-wind-key b{margin-left:auto;font-variant-numeric:tabular-nums}
+.as-more{margin-top:6px;align-self:flex-start;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--txt);font:600 13px var(--font);cursor:pointer}
+.as-more:hover{border-color:#43b05f}
+.as-archive-start{margin:0 0 12px;padding:10px 14px;border-radius:12px;border:1px dashed var(--line);background:var(--panel-2);font-size:13px;color:var(--txt)}

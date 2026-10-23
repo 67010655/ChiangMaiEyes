@@ -103,6 +103,15 @@
   // Fire and dust as two separate readings. A long average folds the rainy
   // months in with the burning ones, so the dust line also gives the worst
   // day and how many days reached the health-effect levels.
+  // The archive started on a known day. On long ranges say so, so empty early months are not read as "no fire".
+  function archiveStartNote(h,a){
+    const days=a.hotspots||[];if(h.days<90||!days.length)return '';
+    const first=days.find(d=>Number(d.count)>0||d.source_requests_complete);
+    if(!first||first===days[0])return '';
+    const gap=(Date.parse(first.date)-Date.parse(days[0].date))/864e5;if(!(gap>7))return '';
+    const day=new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Bangkok'}).format(new Date(first.date+'T12:00:00+07:00'));
+    return `<p class="as-archive-start" role="note">📦 คลังข้อมูลเริ่มเก็บตั้งแต่ <b>${esc(day)}</b> ช่วงก่อนหน้านั้นยังไม่มีข้อมูล (แท่งสีเทา) ไม่ได้แปลว่าไม่มีไฟ</p>`;
+  }
   function heroHtml(h,a,pm){
     const p=headlineParts(h,a,pm), month=busiestMonth(h,a), span=h.days===1?'24 ชม.':h.days+' วัน';
     const badDays=pm.levels.slice(3).reduce((t,l)=>t+l.n,0);
@@ -221,6 +230,36 @@
       <circle cx="50" cy="50" r="46" class="as-rose-ring"/><circle cx="50" cy="50" r="28" class="as-rose-ring"/>${petals}
       <text x="50" y="8" class="as-rose-n">N</text><circle cx="50" cy="50" r="9" class="as-rose-hub"/></svg>`;
   }
+  // When in the day the wind is strongest (local hour) and how strong it usually is: fire spreads fastest then.
+  function windHours(w){
+    const sum=new Array(24).fill(0),n=new Array(24).fill(0);
+    w.hours.forEach(x=>{const hh=Number(String(x.t||'').slice(11,13));if(Number.isInteger(hh)&&hh>=0&&hh<24){sum[hh]+=x.spd;n[hh]++;}});
+    const avg=sum.map((s,i)=>n[i]?s/n[i]:null);
+    if(avg.filter(v=>v!==null).length<12)return null;
+    let best=0,bestV=-1;for(let i=0;i<24;i++){const v=[0,1,2].map(k=>avg[(i+k)%24]).filter(x=>x!==null);const m=v.length?v.reduce((a,b)=>a+b,0)/v.length:-1;if(m>bestV){bestV=m;best=i;}}
+    return {avg,best,bestV};
+  }
+  function windClasses(w){
+    const c=[0,0,0,0];w.hours.forEach(x=>{c[x.spd<5?0:x.spd<12?1:x.spd<20?2:3]++;});
+    const n=w.hours.length||1;return c.map(v=>v/n*100);
+  }
+  function windExtra(w){
+    const hrs=windHours(w),cls=windClasses(w);
+    const max=hrs?Math.max(1,...hrs.avg.filter(v=>v!==null)):1;
+    const bars=hrs?hrs.avg.map((v,i)=>{const hgt=v===null?0:Math.max(2,v/max*40);const hot=i>=hrs.best&&i<hrs.best+3||i+24<hrs.best+3;
+      return `<rect x="${i*10+1}" y="${44-hgt}" width="8" height="${hgt}" rx="2" class="as-wh${hot?' hot':''}"><title>${String(i).padStart(2,'0')}:00 น. เฉลี่ย ${v===null?'-':v.toFixed(1)} กม./ชม.</title></rect>`;}).join(''):'';
+    const pad=x=>String(x%24).padStart(2,'0')+':00';
+    const names=['เบามาก','เบา','ปานกลาง','แรง'],tips=['ต่ำกว่า 5','5–12','12–20','20 ขึ้นไป'];
+    return `<div class="as-wind-extra">
+      ${hrs?`<div class="as-wind-part"><p class="as-k2">ลมแรงช่วงไหนของวัน</p>
+        <svg class="as-wind-hours" viewBox="0 0 240 46" preserveAspectRatio="none" role="img" aria-label="ความเร็วลมเฉลี่ยรายชั่วโมงของวัน">${bars}</svg>
+        <div class="as-wind-axis" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>23 น.</span></div>
+        <p class="as-sub">แรงสุดราว <b>${pad(hrs.best)}–${pad(hrs.best+3)} น.</b> เฉลี่ย ${esc(hrs.bestV.toFixed(1))} กม./ชม. · ไฟมักลามเร็วกว่าช่วงอื่นของวัน</p></div>`:''}
+      <div class="as-wind-part"><p class="as-k2">ความแรงของลมตลอดช่วง</p>
+        <div class="as-wind-cls" role="img" aria-label="${names.map((x,i)=>x+' '+cls[i].toFixed(0)+'%').join(' ')}">${cls.map((p,i)=>p>0?`<i class="c${i}" style="flex:${p.toFixed(2)}"></i>`:'').join('')}</div>
+        <ul class="as-wind-key">${names.map((x,i)=>`<li><i class="c${i}"></i>${x} <small>${tips[i]} กม./ชม.</small> <b>${cls[i].toFixed(0)}%</b></li>`).join('')}</ul></div>
+    </div>`;
+  }
   function windCard(h,w,err){
     const span=h.days===1?'24 ชม.':h.days+' วัน';
     const head=`<header class="as-head"><span class="as-ic wind" aria-hidden="true">➶</span><h3 id="asWindT" class="as-k">ลมย้อนหลัง ${esc(span)}${focusArea||focusDistrict?'<small class="as-scope">ภาพรวมจังหวัด</small>':''}</h3></header>`;
@@ -231,6 +270,7 @@
         <p class="as-v">${num(st.avg,1)} <span>กม./ชม. เฉลี่ย</span></p>
         <p class="as-s">${st.moving?`ส่วนใหญ่ลมพัดไปทาง<b>${esc(DIR8[st.top])}</b> (${esc(st.topPct.toFixed(0))}% ของเวลาที่มีลม)`:'ลมเบามากเกือบตลอดช่วง'}</p>
         <p class="as-sub">ลมเบามาก (ต่ำกว่า 5 กม./ชม.) ${esc(st.calmPct.toFixed(0))}% ของเวลา</p></div></div>
+      ${windExtra(w)}
       <p class="as-note">ไฟมักลามตามทิศที่ลมพัดไป · ${esc(w.source)} ลม 10 เมตร รายชั่วโมง ${esc(st.n.toLocaleString('th-TH'))} ชม. ที่จุดอ้างอิงเมืองเชียงใหม่ ไม่ใช่ลมในป่าแต่ละแห่ง</p>`;
   }
 
@@ -267,7 +307,7 @@
       <p class="as-note">กดอำเภอเพื่อดูบนแผนที่ · ชื่ออำเภอในคลังบางจุดประมาณจากตำแหน่ง</p>
     </article>`;
   }
-  function forestCard(a,{forestInfo}){
+  function forestCard(a,{forestInfo},h){
     const rows=(a.forests||[]).filter(f=>f.count>0).map(f=>({...f,info:forestInfo?.(f.forest_id)})).sort((x,y)=>y.count-x.count);
     const top=rows.slice(0,5);
     return `<article class="as-card as-forest" aria-labelledby="asForT">
@@ -275,7 +315,9 @@
       ${top.length?`<p class="as-v">${num(rows.length)} <span>ป่า</span></p><ul class="as-forests">${top.map(f=>`<li><button type="button" data-as-forest="${esc(f.forest_id)}">
           <span><b>${esc(f.info?.name||'ป่าชุมชน '+f.forest_id)}</b><small>${f.info?.amphoe?'อ.'+esc(f.info.amphoe):''}</small></span><em>${esc(f.count)} จุด</em></button></li>`).join('')}</ul>
         ${rows.length>top.length?`<p class="as-note">และอีก ${esc(rows.length-top.length)} ป่า</p>`:''}`
-        :'<p class="as-s as-good">ไม่พบจุดความร้อนในขอบเขตป่าชุมชนช่วงนี้</p><p class="as-note">ไม่ได้แปลว่าไม่มีไฟ ดาวเทียมอาจมองไม่เห็นไฟเล็กหรือใต้เรือนยอด</p>'}
+        :`<p class="as-s as-good">ช่วง${h&&h.days===1?' 24 ชม.':h?` ${esc(h.days)} วัน`:'นี้'}นี้ ไม่มีจุดความร้อนตกในขอบเขตป่าชุมชน</p>
+          <p class="as-note">การ์ดนี้นับเฉพาะจุดจากดาวเทียมที่อยู่ <b>ในเขต</b> ป่าชุมชน 677 แห่ง ${a.total?`(ช่วงนี้มี ${esc(a.total)} จุดทั้งจังหวัด แต่อยู่นอกป่าทั้งหมด)`:''} · ไม่พบจุด ไม่ได้แปลว่าไม่มีไฟ ดาวเทียมอาจมองไม่เห็นไฟเล็กหรือไฟใต้เรือนยอด</p>
+          ${h&&h.days<180?`<button type="button" class="as-more" data-as-range="${h.days<90?'90d':'180d'}">ดูช่วง ${h.days<90?'90':'180'} วันแทน</button>`:''}`}
       <p class="as-note">นับเฉพาะจุดที่อยู่ในขอบเขตป่า RECOFTC · ยังไม่ใช่เหตุไฟที่ยืนยันแล้ว</p>
     </article>`;
   }
@@ -349,10 +391,10 @@
     const span=history.days===1?'24 ชั่วโมง':history.days+' วัน';
     focusArea=opts.forest||null; focusDistrict=focusArea?null:(opts.district||null);
     const tail=focusArea?forestFocusCard(focusArea,a)
-      :focusDistrict?`${districtFocusCard(a,opts.shapes,focusDistrict)}${forestCard(a,opts)}`
-      :`${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts)}`;
+      :focusDistrict?`${districtFocusCard(a,opts.shapes,focusDistrict)}${forestCard(a,opts,history)}`
+      :`${districtCard(a,{shapes:opts.shapes,norm})}${forestCard(a,opts,history)}`;
     el.innerHTML=`<h2 class="as-section past"><span class="as-badge">ย้อนหลัง</span>${esc(span)}ที่ผ่านมา · ข้อมูลที่เกิดขึ้นแล้ว</h2>
-      ${heroHtml(history,a,pm)}
+      ${archiveStartNote(history,a)}${heroHtml(history,a,pm)}
       ${banStatus()}
       <div class="as-grid">${hotspotCard(history,a,opts)}${pmCard(history,a,pm)}<article class="as-card as-wind" aria-labelledby="asWindT">${windCard(history,null)}</article>${tail}</div>
       <h2 class="as-section future"><span class="as-badge">พยากรณ์</span>ข้างหน้า · สิ่งที่คาดว่าจะเกิด ยังไม่เกิดขึ้น</h2>
@@ -363,6 +405,7 @@
       </div>
       <div data-line-slot></div>`;
     wire(el);wireLine(el);countUp(el);
+    el.querySelectorAll('[data-as-range]').forEach(b=>b.addEventListener('click',()=>root.document?.querySelector(`#anRange [data-r="${b.dataset.asRange}"]`)?.click()));
     fillLine(el,focusDistrict||String(focusArea?.amphoe||'').replace(/^อำเภอ|^อ\./,'').trim(),opts.fetcher||root.fetch?.bind(root));
     loadFuture(el,history,opts);
     const want=history.days, card=el.querySelector('.as-wind');

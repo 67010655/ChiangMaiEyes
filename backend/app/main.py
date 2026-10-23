@@ -176,7 +176,7 @@ def hotspots_history(settings: Settings = Depends(get_settings)) -> HotspotHisto
 
 @app.get("/api/history", response_model=HistoryResponse)
 def history(
-    days: Annotated[int, Query(ge=1, le=180)] = 30,
+    days: Annotated[int, Query(ge=1, le=366)] = 30,
     end: Annotated[str | None, Query(max_length=40)] = None,
     as_of: Annotated[str | None, Query(max_length=40)] = None,
     forest_id: Annotated[str | None, Query(max_length=100)] = None,

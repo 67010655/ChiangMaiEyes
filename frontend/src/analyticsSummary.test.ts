@@ -236,3 +236,40 @@ it('24 h card explains when the live home count is ahead of the archive', () => 
   expect(el.querySelector('.as-lag')).toBeNull();
   dom.window.close();
 });
+
+it('forest card says what it counts when no point fell inside a forest, and offers a longer range', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  w.CmeAnalyticsSummary.render(el, { days: 1, analytics: { total: 7, hotspots: [], pm25: [], districts: [], forests: [] } }, {});
+  const card = el.querySelector('.as-forest');
+  expect(card.textContent).toContain('677 แห่ง');
+  expect(card.textContent).toContain('มี 7 จุดทั้งจังหวัด แต่อยู่นอกป่าทั้งหมด');
+  expect(card.querySelector('[data-as-range]').getAttribute('data-as-range')).toBe('90d');
+  dom.window.close();
+});
+
+it('a one-year view says when the archive starts, so empty early months are not read as no fire', () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const day = (d: string, count: number | null, done: boolean) => ({ date: d, count, source_requests_complete: done, partial_day: false });
+  const hotspots = [day('2025-10-24', null, false), day('2026-01-01', null, false), day('2026-04-13', 40, true), day('2026-10-23', 3, true)];
+  w.CmeAnalyticsSummary.render(el, { days: 365, analytics: { total: 43, hotspots, pm25: [], districts: [], forests: [] } }, {});
+  const note = el.querySelector('.as-archive-start');
+  expect(note.textContent).toContain('13 เม.ย. 2569');
+  expect(note.textContent).toContain('ไม่ได้แปลว่าไม่มีไฟ');
+  w.CmeAnalyticsSummary.render(el, { days: 7, analytics: { total: 3, hotspots: hotspots.slice(2), pm25: [], districts: [], forests: [] } }, {});
+  expect(el.querySelector('.as-archive-start')).toBeNull();
+  dom.window.close();
+});
+
+it('wind card adds the windiest time of day and how strong the wind was', async () => {
+  const { dom, w } = setup(); const el = w.document.getElementById('top');
+  const time: string[] = [], spd: number[] = [], dir: number[] = [];
+  for (let d = 1; d <= 2; d++) for (let hr = 0; hr < 24; hr++) { time.push(`2026-10-0${d}T${String(hr).padStart(2, '0')}:00`); spd.push(hr >= 13 && hr <= 15 ? 22 : 4); dir.push(45); }
+  const fetcher = async () => ({ ok: true, json: async () => ({ hourly: { time, wind_speed_10m: spd, wind_direction_10m: dir } }) });
+  w.CmeAnalyticsSummary.render(el, { days: 2, analytics: { total: 0, hotspots: [], pm25: [], districts: [], forests: [] } }, { fetcher });
+  for (let i = 0; i < 20 && !el.querySelector('.as-wind-extra'); i++) await new Promise(r => setTimeout(r, 10));
+  const extra = el.querySelector('.as-wind-extra');
+  expect(extra.querySelectorAll('.as-wind-hours rect')).toHaveLength(24);
+  expect(extra.textContent).toContain('แรงสุดราว 13:00–16:00 น.');
+  expect(extra.textContent).toMatch(/แรง 20 ขึ้นไป กม\.\/ชม\. 13%/);
+  dom.window.close();
+});

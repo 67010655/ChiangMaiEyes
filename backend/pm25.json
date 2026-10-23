@@ -1,0 +1,39 @@
+{
+  "current_pm25": 17.2,
+  "category": "ดี",
+  "color": "green",
+  "trend": "stable",
+  "latest_update": "2026-10-24T01:00:00+07:00",
+  "source": "Air4Thai PCD",
+  "stations": [
+    {
+      "id": "CM-35T",
+      "name": "ศูนย์ราชการจังหวัดเชียงใหม่ ",
+      "district": "Meuang",
+      "latitude": 18.840732,
+      "longitude": 98.96978,
+      "pm25": 19.6,
+      "trend": "stable",
+      "updated_at": "2026-10-24T01:00:00+07:00",
+      "measurement_kind": "measured",
+      "source": "Air4Thai PCD",
+      "retrieved_at": "2026-10-23T18:26:16.316638+00:00"
+    },
+    {
+      "id": "CM-36T",
+      "name": "โรงเรียนยุพราชวิทยาลัย ",
+      "district": "Meuang",
+      "latitude": 18.7909333,
+      "longitude": 98.99,
+      "pm25": 14.9,
+      "trend": "stable",
+      "updated_at": "2026-10-24T01:00:00+07:00",
+      "measurement_kind": "measured",
+      "source": "Air4Thai PCD",
+      "retrieved_at": "2026-10-23T18:26:16.316638+00:00"
+    }
+  ],
+  "retrieved_at": "2026-10-24T01:26:16.316638+07:00",
+  "measurement_kind": "measured",
+  "note": "ค่าเฉลี่ยจากสถานีที่มีข้อมูลในรอบนี้ ไม่ใช่ค่าเฉลี่ยทั้งจังหวัดหรือค่าเฉลี่ย 24 ชั่วโมง"
+}

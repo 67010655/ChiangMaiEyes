@@ -168,7 +168,7 @@ def read_archive(days: int = Query(7, ge=1, le=366), kind: str = Query('all', pa
 
 
 @router.post('/backfill',status_code=202)
-def backfill(days: int = Query(30, ge=1, le=180), models: bool = True, ctx=Depends(session)):
+def backfill(days: int = Query(30, ge=1, le=366), models: bool = True, ctx=Depends(session)):
     store, token, _ = ctx
     if not store.rpc('me', {}, token)['is_admin']:
         raise HTTPException(403, 'ให้ผู้ดูแลนำเข้าข้อมูลย้อนหลัง')

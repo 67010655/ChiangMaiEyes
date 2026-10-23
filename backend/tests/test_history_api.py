@@ -32,7 +32,8 @@ def test_history_route_bounds_and_replay_arguments(monkeypatch):
         assert client.get('/api/history?days=180&end=2026-10-10T00:00:00Z&as_of=2026-10-10T00:00:00Z').status_code==200
         assert calls[0]['end']==calls[0]['as_of']=='2026-10-10T00:00:00Z'
         assert client.get('/api/history?days=0').status_code==422
-        assert client.get('/api/history?days=181').status_code==422
+        assert client.get('/api/history?days=366').status_code==200
+        assert client.get('/api/history?days=367').status_code==422
     finally: app.dependency_overrides.clear()
 
 def test_archive_failure_is_unavailable_not_fake_zero(monkeypatch):
