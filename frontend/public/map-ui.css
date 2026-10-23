@@ -289,16 +289,21 @@ body.light-mode .ms-list{box-shadow:0 14px 36px rgba(15,26,42,.16)}
 .hs-actions .hs-3d svg{width:18px;height:18px;color:var(--wind)}
 body:has(#threedview.open) .hs-3d{display:none}
 
-/* Says the streaks are model wind, unlike the station value in the top tile. */
-.legend-wind{display:inline-flex;align-items:center;gap:5px;color:var(--txt)}
-/* Next satellite pass: its own line, so an empty map is not read as "no fire". */
-.legend-sat{flex-basis:100%;color:var(--txt)}
+/* Legend: one line plus an (i) button; details open above the line on demand. */
+.map-time-note{flex-direction:column;align-items:stretch}
+@media(min-width:821px){.map-time-note{max-width:min(440px,calc(100% - 180px))!important}}
+.map-time-note .legend-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px}
+.legend-sat{color:var(--txt);font-variant-numeric:tabular-nums;white-space:nowrap}
 .legend-sat[hidden]{display:none}
-.legend-wind svg{width:18px;height:8px;fill:none;stroke:#37d1d6;stroke-width:1.8;stroke-linecap:round}
-body.light-mode .legend-wind svg{stroke:#0e7490}
+.legend-info{pointer-events:auto;flex:none;margin-left:auto;width:28px;height:28px;margin-block:-4px;display:inline-grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--muted);cursor:pointer}
+.legend-info svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.legend-info:hover,.legend-info[aria-expanded="true"]{color:var(--txt);background:var(--panel-2)}
+.legend-info:focus-visible{outline:2px solid var(--wind,#38bdf8);outline-offset:1px}
+.legend-more{pointer-events:auto;max-height:min(46vh,320px);overflow:auto;margin:0 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line);color:var(--txt);font-size:13px;line-height:1.55}
+.legend-more[hidden]{display:none}
+.legend-more p{margin:0 0 6px}.legend-more p:last-child{margin:0;color:var(--muted)}
 
-/* On phones the wind label wraps the legend to a second line: lift the replay button clear of it. */
+/* Phones: the pill legend becomes a card while its details are open. */
 @media(max-width:820px){
-  body:has(#windModelChip:not([hidden])) .hs-replay{bottom:128px}
-  .legend-wind{flex-basis:100%}
+  .map-time-note.open{border-radius:14px!important;padding:10px 12px!important}
 }

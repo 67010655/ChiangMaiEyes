@@ -1606,7 +1606,7 @@
       <div id="mapRenderStatus" class="map-render-status" role="status" aria-live="polite" hidden>รับข้อมูลได้ แต่แผนที่แสดงผลไม่ครบ<button type="button" onclick="goLive(true)">ลองอีกครั้ง</button></div>
 <div class="map-view-actions" aria-label="มุมมองสถานการณ์" hidden><span>แผนที่ 2D</span></div>
       <div id="map" role="application" aria-label="แผนที่จุดความร้อน คุณภาพอากาศ และทิศทางลมจังหวัดเชียงใหม่ (โต้ตอบได้)"></div>
-      <div class="map-time-note" title="กดหมุดเพื่อดูเวลา จุดความร้อนยังไม่ยืนยันว่าไฟกำลังไหม้"><span class="legend-item"><span class="hs-dot-pin age-new"></span>ไม่เกิน 6 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-old"></span>เก่ากว่า</span><span class="legend-item legend-sat" id="satPassChip" hidden></span><span class="legend-item legend-wind" id="windModelChip" hidden title="เส้นลมบนแผนที่มาจากแบบจำลอง Open-Meteo ส่วนช่องลมด้านบนเป็นค่าสถานี สองค่าจึงต่างกันได้"></span></div>
+      <div class="map-time-note"><div class="legend-more" id="legendMore" hidden></div><div class="legend-row"><span class="legend-item"><span class="hs-dot-pin age-new"></span>ไม่เกิน 6 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span class="legend-item"><span class="hs-dot-pin age-old"></span>เก่ากว่า</span><span class="legend-item legend-sat" id="satPassChip" hidden></span><button type="button" class="legend-info" id="legendInfo" aria-expanded="false" aria-controls="legendMore" aria-label="อธิบายจุดความร้อน เวลาดาวเทียม และเส้นลม"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button></div></div>
       <div id="hsReplay" class="hs-replay" hidden></div>
       <button type="button" class="map-3d-btn" data-open-view="threed" aria-label="ดูภูเขา 3D"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20 9 7l4 7 3-4 6 10z"/></svg><span>3D</span></button>
       <div class="map-overlay basemap-toggle">
@@ -2649,6 +2649,7 @@ if(L.CanvasLayer)['_onLayerDidMove','drawLayer'].forEach(k=>{
 });
 let _windCacheMs = 0, _windCacheField = null;
 let _windGridSamples = [];
+let _windModelKmh = null; // average model wind near the city, shown in the legend details
 
 // Uniform field from a single station reading — instant fallback.
 function buildUniformWindField(fromDeg, speedMs){
@@ -2707,18 +2708,42 @@ async function fetchWindGridUncached(){
   _windCacheField=[{header:{...hdr,parameterNumber:2},data:uD},{header:{...hdr,parameterNumber:3},data:vD}];
   // The streaks are model wind; the top tile is the station. Say which is which.
   const near=_windGridSamples.filter(p=>p.lat>=18.1&&p.lat<=19.9&&p.lon>=98.3&&p.lon<=99.2);
-  const chip=document.getElementById('windModelChip');
-  if(chip&&near.length){chip.hidden=false;chip.innerHTML=`<svg viewBox="0 0 24 10" aria-hidden="true"><path d="M1 3h14M5 7h18"/></svg>เส้นลม: แบบจำลอง ~${Math.round(near.reduce((t,p)=>t+p.kmh,0)/near.length)} กม./ชม.`;}
+  _windModelKmh=near.length?Math.round(near.reduce((t,p)=>t+p.kmh,0)/near.length):null;
+  globalThis.CmeLegend?.refresh();
   _windCacheMs=Date.now();
   return _windCacheField;
 }
 
-// Says when the next satellite pass is, so an empty evening map is not read as "no fire".
-(function(){
-  const chip=document.getElementById('satPassChip');
-  if(!chip||!globalThis.CmeSatPasses)return;
-  const paint=()=>{chip.hidden=false;chip.textContent='🛰️ '+CmeSatPasses.short();chip.title=CmeSatPasses.long();};
-  paint();setInterval(paint,60000);
+// Map legend: one line (hotspot age, next satellite pass) and an (i) button
+// for the details, so the legend never covers much of the map.
+// The details say when the satellites pass, so an empty evening map is not
+// read as "no fire", and why the streaks and the wind tile can disagree.
+globalThis.CmeLegend=(function(){
+  const chip=document.getElementById('satPassChip'),btn=document.getElementById('legendInfo'),more=document.getElementById('legendMore');
+  if(!chip||!btn||!more)return null;
+  const e=s=>CmeEvidence.escapeHtml(s);
+  function details(){
+    const w=currentDashboard?.weather, station=Number.isFinite(w?.wind_speed_kmh)?Math.round(w.wind_speed_kmh):null;
+    const n=globalThis.CmeSatPasses?.next();
+    const sat=n?`<p><b>🛰️ ${n.passing?'ดาวเทียมกำลังผ่าน':`ดาวเทียมรอบหน้าราว ${e(n.from)} น.`} · ขึ้นแผนที่ราว ${e(n.onMap)} น.</b><br>ผ่านวันละ 5 รอบ (${e(CmeSatPasses.starts().join(' · '))}) ไฟที่เกิดระหว่างรอบยังไม่ขึ้น เห็นควันจริงให้เชื่อสิ่งที่เห็น</p>`:'';
+    const wind=_windModelKmh!=null?`<p><b>〰️ เส้นลมบนแผนที่ ~${e(_windModelKmh)} กม./ชม.</b> แบบจำลองภาพรวมทั้งจังหวัด`+
+      (station!=null?`<br>ช่องลมด้านบน ${e(station)} กม./ชม. วัดจริงที่สถานีในเมืองจุดเดียว สองค่าจึงต่างกันได้`:'')+`</p>`:'';
+    return sat+wind+'<p>จุดความร้อนยังไม่ยืนยันว่าเป็นไฟ กดหมุดเพื่อดูเวลา</p>';
+  }
+  function refresh(){
+    if(globalThis.CmeSatPasses){const n=CmeSatPasses.next();chip.hidden=false;chip.textContent='🛰️ '+(n.passing?'กำลังผ่าน':n.from);chip.title=CmeSatPasses.short();}
+    if(!more.hidden)more.innerHTML=details();
+  }
+  function toggle(open){
+    more.hidden=!open;btn.setAttribute('aria-expanded',String(open));
+    btn.closest('.map-time-note').classList.toggle('open',open);
+    if(open)more.innerHTML=details();
+  }
+  btn.addEventListener('click',()=>toggle(more.hidden));
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&!more.hidden){toggle(false);btn.focus();}});
+  document.addEventListener('click',ev=>{if(!more.hidden&&!ev.target.closest('.map-time-note'))toggle(false);});
+  refresh();setInterval(refresh,60000);
+  return {refresh,toggle};
 })();
 
 // Keep the replay button just above the legend, however many lines the legend

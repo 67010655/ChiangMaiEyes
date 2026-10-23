@@ -40,5 +40,6 @@
     return `ดาวเทียมที่ใช้ (VIIRS และ MODIS) ผ่านเชียงใหม่วันละ ${WINDOWS.length} ช่วง ราว ${list()} น. แล้วขึ้นแผนที่ช้าอีกราว 3 ชม. `+
       `ไฟที่เริ่มหลังรอบล่าสุดจะยังไม่ขึ้น${n.passing?` จนถึงราว ${n.onMap} น.`:` จนกว่าดาวเทียมรอบหน้าราว ${n.from} น. และขึ้นแผนที่ราว ${n.onMap} น.`} ถ้าเห็นควันจริง เชื่อสิ่งที่เห็นก่อน`;
   }
-  root.CmeSatPasses={next,short,long,WINDOWS};
+  const starts=()=>WINDOWS.map(w=>hhmm(w.from));
+  root.CmeSatPasses={next,short,long,starts,WINDOWS};
 })(globalThis);
