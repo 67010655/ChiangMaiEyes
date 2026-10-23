@@ -29,7 +29,9 @@
     };
     const sync=()=>{wrap.hidden=sel.options.length<MIN_OPTIONS&&!input.value;};
     // Other scripts rebuild the list (data arrives, theme of the page changes): start fresh.
-    new MutationObserver(()=>{if(filtering)return;snapshot();input.value='';status.textContent='';sync();}).observe(sel,{childList:true});
+    // MutationObserver callbacks run later, so our own filtering is dropped with takeRecords() below.
+    const watcher=new MutationObserver(()=>{snapshot();input.value='';status.textContent='';sync();});
+    watcher.observe(sel,{childList:true,subtree:true});
     input.addEventListener('input',()=>{
       if(!all)snapshot();
       const q=norm(input.value), current=sel.value;
@@ -40,7 +42,7 @@
       // One match: pick it, the same as choosing it in the list.
       const real=keep.filter(o=>o.value);
       if(q&&real.length===1&&sel.value!==real[0].value){sel.value=real[0].value;sel.dispatchEvent(new Event('change',{bubbles:true}));}
-      filtering=false;
+      watcher.takeRecords();filtering=false;
       status.textContent=q?`พบ ${real.length} ป่า`:'';
     });
     snapshot();sync();

@@ -276,12 +276,13 @@ it('wind card adds the windiest time of day and how strong the wind was', async 
   dom.window.close();
 });
 
-it('filtering keeps the อำเภอ / ป่าชุมชน groups, so the analytics list is not rebuilt under the typing', () => {
+it('filtering keeps the อำเภอ / ป่าชุมชน groups, so the analytics list is not rebuilt under the typing', async () => {
   const forests = Array.from({ length: 40 }, (_, i) => `<option value="f:${i}">ป่าชุมชนบ้าน${i} · อ.ฝาง</option>`).join('');
   const { dom, w } = setup(`<select id="anForest"><option value="">ทั้งจังหวัดเชียงใหม่</option><optgroup label="อำเภอ"><option value="d:ฝาง">อ.ฝาง (ทั้งอำเภอ)</option></optgroup><optgroup label="ป่าชุมชน">${forests}</optgroup></select>`);
   const sel = w.document.getElementById('anForest');
   const input = sel.previousElementSibling.querySelector('input');
   input.value = 'บ้าน1'; input.dispatchEvent(new w.Event('input'));
+  await new Promise(r => setTimeout(r, 20)); // the picker's own list change must not clear the box
   expect(input.value).toBe('บ้าน1');
   expect(sel.querySelector('optgroup[label="อำเภอ"]')).not.toBeNull();
   expect([...sel.querySelectorAll('optgroup[label="ป่าชุมชน"] option')].length).toBe(11);

@@ -69,3 +69,8 @@ body.light-mode .rp:not(.rp-grid)>.rp-head,body.light-mode .rp:not(.rp-grid)>.rp
   .cw-tabs:has(button:nth-child(4)) button:nth-child(n+3){border-top:1px solid var(--line)!important}
   .cw-tabs button{font-size:13px!important;padding:8px 6px!important;white-space:nowrap}
 }
+.cw-wait-list{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:6px}
+.cw-wait-list li{padding:10px 12px;border-radius:12px;background:var(--panel-2);display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
+.cw-wait-list small{color:var(--muted)}
+.cw-more-req{margin-top:14px}
+.cw-more-req>summary{font-weight:600;color:var(--txt);min-height:44px;display:flex;align-items:center}

@@ -110,11 +110,15 @@
     return P.html({forests:state.catalog,dashboard:context.dashboard(),selectedId:id,hasIncidents:!!state.publicIncidents?.length,incidentsHtml:state.publicIncidents?.length?incidentRows(state.publicIncidents,true):''});
   }
   function loginView(){return `<div class="cw-empty"><h2>พื้นที่สำหรับตัวแทนป่าชุมชน</h2><p>เข้าสู่ระบบเพื่อขอสิทธิ์พื้นที่ เมื่อผู้ดูแลยืนยันแล้ว คุณจะบันทึกเหตุ ร่วมประสานงาน และรับแจ้งเตือนทาง LINE ได้</p><p>ยังไม่มีบัญชี? เลือกสมัครสมาชิกในหน้าบัญชี แล้วจึงขอสิทธิ์พื้นที่</p>${button('เข้าสู่ระบบ / สมัครสมาชิก','signin','',true)} ${button('ดูเหตุที่เผยแพร่','public')}${E().fireHelpHtml()}</div>`;}
+  const MEMBER_WORDS={pending:'⏳ รอผู้ดูแลอนุมัติ',approved:'✅ อนุมัติแล้ว',rejected:'ไม่อนุมัติ',revoked:'ยกเลิกสิทธิ์แล้ว'};
   function membershipView(){
-    const requests=state.me?.memberships||[];
-    return `<section class="cw-section"><h2>ขอสิทธิ์ตัวแทนป่าชุมชน</h2><p class="cw-help">เลือกป่าจากขอบเขตที่ได้รับจาก RECOFTC และระบุหน้าที่หรือช่องทางให้ผู้ดูแลตรวจสอบ การเลือกชื่อป่ายังไม่ถือว่าได้รับสิทธิ์</p>
+    const requests=state.me?.memberships||[],waiting=requests.filter(m=>m.status==='pending');
+    const html=`<section class="cw-section"><h2>ขอสิทธิ์ตัวแทนป่าชุมชน</h2><p class="cw-help">เลือกป่าจากขอบเขตที่ได้รับจาก RECOFTC และระบุหน้าที่หรือช่องทางให้ผู้ดูแลตรวจสอบ การเลือกชื่อป่ายังไม่ถือว่าได้รับสิทธิ์</p>
       <form class="cw-form" id="cwMembershipForm"><label>ค้นหาชื่อป่าหรืออำเภอ<input type="search" id="cwForestSearch" placeholder="พิมพ์ชื่อป่าหรืออำเภอ" autocomplete="off"></label><label>ป่าที่ขอสิทธิ์<select id="cwRequestForest" required data-required-message="เลือกป่าชุมชนก่อน">${options(state.catalog)}</select></label><label>หน้าที่และข้อมูลสำหรับตรวจสอบ<textarea name="note" maxlength="1000" required placeholder="เช่น หน้าที่ในชุมชน และช่องทางตรวจสอบกับหน่วยงาน"></textarea></label><button class="cw-btn primary">ส่งคำขอให้ผู้ดูแล</button></form>
-      ${requests.length?`<h3>คำขอของคุณ</h3>${requests.map(m=>`<div class="cw-row"><div><h3>${esc(m.name)}</h3><p>${date(m.created_at)}</p>${m.review_note?`<p>${esc(m.review_note)}</p>`:''}</div>${badge(m.status)}</div>`).join('')}`:''}</section>`;
+      ${requests.length?`<h3>คำขอของคุณ</h3>${requests.map(m=>`<div class="cw-row"><div><h3>${esc(m.name)}</h3><p>${date(m.created_at)}</p>${m.review_note?`<p>${esc(m.review_note)}</p>`:''}</div><span class="cw-status ${esc(m.status)}">${esc(MEMBER_WORDS[m.status]||m.status)}</span></div>`).join('')}`:''}</section>`;
+    // Someone already waiting sees that first; asking for another forest stays folded below.
+    if(!waiting.length)return html;
+    return `<section class="cw-section cw-wait" role="status"><h2>⏳ รอผู้ดูแลอนุมัติ</h2><p class="cw-help">ผู้ดูแลจะตรวจว่าคุณเป็นคนในชุมชนของป่านั้นจริง เมื่ออนุมัติแล้ว แท็บนี้จะเป็นหน้าป่าของคุณ ระหว่างนี้ผูก LINE ไว้ก่อนได้</p><ul class="cw-wait-list">${waiting.map(m=>`<li><b>${esc(m.name)}</b> <small>ส่งคำขอ ${date(m.created_at)}</small></li>`).join('')}</ul><div class="cw-actions">${button('ผูก LINE ไว้ก่อน','tab','data-tab="preferences"',true)}</div></section><details class="cw-more-req"><summary>ขอสิทธิ์ป่าอื่นเพิ่ม</summary>${html}</details>`;
   }
   function summary(selected){
     if(selected.boundary_quality==='needs_review')return `<p class="cw-help" role="status"><b>ขอบเขตนี้ต้องตรวจทบทวน</b><br>${esc(selected.boundary_note)} · ยังไม่สรุปยอดภายในขอบเขตที่มีส่วนผิดปกติ</p>`;

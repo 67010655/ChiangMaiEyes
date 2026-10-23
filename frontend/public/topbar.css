@@ -163,6 +163,7 @@ body.light-mode .public-brief-details:not([hidden]){box-shadow:0 14px 34px rgba(
 .hotline-what.in-btn{display:block;font-size:11px;line-height:1.2;opacity:.9;font-weight:500}
 a:has(>.hotline-what.in-btn){display:inline-flex!important;flex-direction:column!important;align-items:center;justify-content:center;line-height:1.2;gap:1px}
 /* The account menu must sit above the full-screen views (analytics, community, guide: z-index 1500),
-   but below modals (3000). The top bar itself is position:static, so the wrap carries the layer. */
-.topbar .auth-wrap{position:relative;z-index:2500}
+   but below modals (3000). The top bar makes its own layer (backdrop blur), so the bar carries the z-index. */
+.topbar{position:relative;z-index:1600!important}
+.topbar .auth-wrap{position:relative;z-index:2}
 .auth-dropdown{z-index:2500!important}
