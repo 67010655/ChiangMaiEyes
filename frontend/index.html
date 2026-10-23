@@ -1282,6 +1282,7 @@
 <link rel="stylesheet" href="/ux-foundation.css">
 <link rel="stylesheet" href="/topbar.css">
 <link rel="stylesheet" href="/map-ui.css">
+<link rel="stylesheet" href="/incident-pins.css">
 <link rel="stylesheet" href="/analytics-ui.css">
 <link rel="stylesheet" href="/fire-weather.css">
 <link rel="stylesheet" href="/forest-public.css">
@@ -1541,7 +1542,8 @@
       <div class="block">
         <h2>ชั้นข้อมูลแผนที่</h2>
         <div class="layer on" data-layer="hotspots"><div class="sw"></div><div class="lbl">จุดความร้อนจากดาวเทียม<small>VIIRS / MODIS · NASA FIRMS</small></div><span class="cnt" id="lcHot">0</span></div>
-        <div class="layer on" data-layer="manualReports"><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">จุดไฟที่ผู้ใช้รายงาน<small>ผู้ใช้แจ้ง ยังไม่ยืนยัน</small></div><span class="cnt" id="lcManual">0</span></div>
+        <div class="layer on" data-layer="pins" hidden><div class="sw" style="background:rgba(139,92,246,.22);border-color:var(--pin)"></div><div class="lbl">เหตุที่ตัวแทนป่าชุมชนแจ้ง<small>เห็นเฉพาะตัวแทนที่อนุมัติแล้ว · ยังไม่ใช่การยืนยัน</small></div><span class="cnt" id="lcPins">0</span></div>
+        <div class="layer on" data-layer="manualReports" hidden><div class="sw" style="background:rgba(255,138,61,.2);border-color:var(--ember)"></div><div class="lbl">รายงานเก่าของฉัน<small>รายงานแบบเดิม · เห็นเฉพาะคุณ</small></div><span class="cnt" id="lcManual">0</span></div>
         <div class="layer on" data-layer="spread"><div class="sw"></div><div class="lbl">ภาพประกอบทิศปลายลม<small>จากลมสถานี · ยังไม่ใช่ผลจำลองไฟลาม</small></div><span class="cnt" id="lcSpread">0</span></div>
         <div class="layer wind on" data-layer="wind"><div class="sw"></div><div class="lbl">ลมเคลื่อนไหว 10 เมตร<small>Open-Meteo · แบบจำลอง ไม่ใช่ลมสถานี</small></div><span class="cnt">off</span></div>
         <div class="layer" data-layer="windDistrict"><div class="sw" style="background:rgba(55,209,214,.2);border-color:var(--wind)"></div><div class="lbl">ลูกศรลม 10 เมตร<small>ข้อมูลชุดเดียวกับลมเคลื่อนไหว</small></div><span class="cnt" id="lcWindDist">0</span></div>
@@ -1996,6 +1998,7 @@
 <script src="/spread-hint.js"></script>
 <script src="/land-context.js"></script>
 <script src="/community-workspace.js"></script>
+<script src="/incident-pins.js"></script>
 <script src="/field-checks.js"></script>
 <script src="/practice-workspace.js"></script>
 <script src="/auth-ui.js"></script>
@@ -2352,6 +2355,7 @@ const layers = {
   sensors:  L.layerGroup(),
   forest:   L.layerGroup(),
   protected: L.layerGroup(),
+  pins:     L.layerGroup().addTo(map),
   manualReports: L.layerGroup().addTo(map),
   boundaries: L.layerGroup().addTo(map),
   tambonBoundaries: L.layerGroup().addTo(map),
@@ -2936,6 +2940,7 @@ document.querySelectorAll('.layer').forEach(el=>{
     else map.removeLayer(layers[key]);
     if(key==='forest' && el.classList.contains('on')) renderForestMarkers();
     if(key==='sensors') loadSensorsLayer();
+    if(key==='pins'&&mlMap) _sync3DPins();
     if(key==='windDistrict' && el.classList.contains('on')){
       const other=document.querySelector('.layer[data-layer="wind"]');
       other.classList.remove('on');other.querySelector('.cnt').textContent='off';
@@ -2979,7 +2984,7 @@ document.addEventListener('click', (e)=>{
   const wrap = document.querySelector('.auth-wrap');
   if(wrap && !wrap.contains(e.target)) document.getElementById('authDropdown').classList.remove('open');
 });
-CmeAuth.init({client:sb,openCommunity:target=>{const match=target?.match(/^#community\/incident\/([a-f0-9-]{36})$/i);return CmeCommunity.open(match?'incidents':'forest',match?.[1]||null);}});
+CmeAuth.init({client:sb,openCommunity:target=>{if(/^#pin\//.test(target||'')){history.replaceState(null,'',target);return fetchPins();}const match=target?.match(/^#community\/incident\/([a-f0-9-]{36})$/i);return CmeCommunity.open(match?'incidents':'forest',match?.[1]||null);}});
 function openAuthModal(){if(!document.getElementById('publicBriefDetails').hidden)toggleBriefDetails();CmeAuth.open();}
 function closeAuthModal(){CmeAuth.close();}
 function switchAuthTab(tab){CmeAuth.switchTab(tab);}
@@ -2998,7 +3003,8 @@ if(sb){
     CmeAuth.sessionChanged(session);
     updateAuthUI();
     renderManualReports(); // refresh owner-only delete links for the new session
-    setTimeout(()=>{CmeCommunity.authChanged();fetchManualReports();clearAdminData();if(currentUser&&document.getElementById('dataview')?.classList.contains('open'))loadFieldEvaluation();},0);
+    if(_event==='INITIAL_SESSION'&&!session&&pinTarget())openAuthModal();
+    setTimeout(()=>{CmeCommunity.authChanged();fetchManualReports();fetchPins();clearAdminData();if(currentUser&&document.getElementById('dataview')?.classList.contains('open'))loadFieldEvaluation();},0);
   });
   sb.auth.getSession().then(({data})=>{
     currentUser = data?.session?.user || null;
@@ -3236,9 +3242,97 @@ function renderManualReports(){
     layers.manualReports.addLayer(m);
   });
   document.getElementById('lcManual').textContent = manualReports.length;
+  const legacyRow=document.querySelector('.layer[data-layer="manualReports"]');if(legacyRow)legacyRow.hidden=!manualReports.length;
   if(mlMap) _sync3DManualReports();
 }
 if(sb) fetchManualReports();
+
+// ---- Incident pins: fires that approved community-forest reps reported ----
+// Shown only to approved reps and admins (the API refuses everyone else). The pin stays until
+// the reporter ends it or 3 days pass. See public/incident-pins.js.
+(function(){const q=new URL(location.href).searchParams.get('pin');if(/^[0-9a-f-]{36}$/i.test(q||'')){const u=new URL(location.href);u.searchParams.delete('pin');history.replaceState(null,'',u.pathname+u.search+'#pin/'+q);}})();
+let incidentPins=[],_pinReq=0,_pinsEligible=false,_pinsLoaded=false;
+const pinsRow=()=>document.querySelector('.layer[data-layer="pins"]');
+const pinsOn=()=>!!pinsRow()?.classList.contains('on');
+const pinTarget=()=>{const m=location.hash.match(/^#pin\/([0-9a-f-]{36})$/i);return m?m[1].toLowerCase():null;};
+async function fetchPins(){
+  const req=++_pinReq;
+  if(!currentUser||!window.CmeCommunity){incidentPins=[];_pinsEligible=false;renderPins();return;}
+  try{
+    const data=await CmeCommunity.api('/pins');
+    if(req!==_pinReq)return;
+    incidentPins=Array.isArray(data)?data:[];_pinsEligible=true;
+  }catch(_){
+    if(req!==_pinReq)return;
+    incidentPins=[];_pinsEligible=false;  // not approved yet, or the API is not there: the layer just stays hidden
+  }
+  _pinsLoaded=true;
+  renderPins();openPinFromLink();
+}
+function pinPopupHtml(p){
+  return CmeIncidentPins.popupHtml(p,{fallback:nearestForests(p.latitude,p.longitude,3),coordination:CmeCoordination.html(p.latitude,p.longitude,{myForestId:p.forest_id})});
+}
+function renderPins(){
+  const row=pinsRow();if(row)row.hidden=!_pinsEligible;
+  layers.pins.clearLayers();
+  const now=Date.now();
+  incidentPins.forEach(p=>{
+    const icon=L.divIcon({html:CmeIncidentPins.iconHtml(p,now),className:'',iconSize:[26,26],iconAnchor:[13,26]});
+    const m=L.marker([p.latitude,p.longitude],{icon,zIndexOffset:300,title:'ตัวแทนป่า '+p.forest_name+' แจ้ง'+(p.observation==='fire'?'เปลวไฟ':'ควัน')});
+    m.on('click',()=>openPin(p.id));
+    layers.pins.addLayer(m);
+  });
+  const count=document.getElementById('lcPins');if(count)count.textContent=incidentPins.length;
+  if(mlMap)_sync3DPins();
+}
+function openPin(id,{fly=true}={}){
+  const p=incidentPins.find(x=>x.id===id);if(!p)return;
+  const lat=Number(p.latitude),lon=Number(p.longitude),html=pinPopupHtml(p);
+  const onClose=()=>{clearForestProximity();clearSpreadSim();};
+  if(document.getElementById('threedview')?.classList.contains('open')&&mlMap){_open3DPin(p,html);return;}
+  if(fly)map.flyTo([lat,lon],Math.max(map.getZoom(),12),{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
+  if(isMobileViewport()&&window.CmeHotspotSheet){
+    map.closePopup();
+    CmeHotspotSheet.openPanel({kicker:'ตัวแทนป่าชุมชนแจ้ง',title:p.forest_name,html,onClose});
+    showForestProximity(lat,lon);return;
+  }
+  const popup=L.popup({maxWidth:340,maxHeight:Math.max(180,Math.min(560,window.innerHeight*.62))}).setLatLng([lat,lon]).setContent(html);
+  popup.openOn(map);
+  CmeCoordination.popupOpened(popup);
+  showForestProximity(lat,lon);  // after openOn: opening a popup closes the previous one, which clears the lines
+  map.once('popupclose',onClose);
+}
+// A link from LINE (#pin/<id>): fly to the pin and open it once the pins are loaded.
+function openPinFromLink(){
+  const id=pinTarget();if(!id)return;
+  if(!_pinsEligible){toast('หมุดนี้เห็นได้เฉพาะตัวแทนป่าที่ได้รับอนุมัติแล้ว');history.replaceState(null,'',location.pathname+location.search);return;}
+  const pin=incidentPins.find(x=>x.id===id);
+  history.replaceState(null,'',location.pathname+location.search);
+  if(!pin){toast('หมุดนี้ปิดไปแล้ว หรือหมดอายุแล้ว');return;}
+  if(!pinsOn()){const row=pinsRow();row?.classList.add('on');map.addLayer(layers.pins);}
+  closeAllOverlays?.();
+  setTimeout(()=>openPin(id),200);
+}
+function pinOpenIncident(btn){
+  const id=btn.dataset.pinOpen;
+  map.closePopup();window.CmeHotspotSheet?.close?.();
+  CmeCommunity.open('incidents',id);
+}
+async function pinCloseIncident(btn){
+  const id=btn.dataset.pinClose,outcome=btn.dataset.outcome;
+  const ask=outcome==='closed'?'จบงานนี้? หมุดจะหายจากแผนที่ของทุกคน และเก็บไว้ในประวัติเหตุของป่า':'บันทึกว่า "ไม่ใช่ไฟ"? หมุดจะหายจากแผนที่ของทุกคน';
+  if(!window.confirm(ask))return;
+  btn.disabled=true;
+  try{
+    await CmeCommunity.api('/incidents/'+id+'/close',{method:'POST',data:{outcome}});
+    map.closePopup();window.CmeHotspotSheet?.close?.();_3dPopup?.remove();
+    toast(outcome==='closed'?'จบงานแล้ว หมุดหายจากแผนที่':'บันทึกว่าไม่ใช่ไฟแล้ว หมุดหายจากแผนที่');
+    await fetchPins();
+  }catch(error){btn.disabled=false;toast(error?.message||'ปิดเหตุไม่สำเร็จ ลองใหม่อีกครั้ง');}
+}
+window.addEventListener('cme:pins-changed',()=>fetchPins());
+setInterval(()=>{if(currentUser&&!document.hidden&&_pinsEligible)fetchPins();},150000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&currentUser&&_pinsEligible)fetchPins();});
 
 // Wind toggle: manage velocity layer separately (not in layers.wind group).
 document.querySelector('.layer[data-layer="wind"]').onclick=(function(){
@@ -3662,7 +3756,7 @@ function openMobileDrawer(side,opener=document.activeElement){
   syncQuickLayers();panel.focus({preventScroll:true});
 }
 // Four plain-language switches; each sets the layer rows it stands for.
-const QUICK_LAYERS={fire:['hotspots','manualReports','spread','heat'],dust:['pm','sensors'],wind:['wind'],forest:['forest','protected']};
+const QUICK_LAYERS={fire:['hotspots','pins','manualReports','spread','heat'],dust:['pm','sensors'],wind:['wind'],forest:['forest','protected']};
 function quickRows(group){return QUICK_LAYERS[group].map(k=>document.querySelector(`.layer[data-layer="${k}"]`)).filter(Boolean);}
 function syncQuickLayers(){
   document.querySelectorAll('[data-quick]').forEach(b=>{
@@ -5851,7 +5945,7 @@ async function open3D(){
     }
     catch(e){ toast('ไม่สามารถเปิด 3D ได้ในเบราว์เซอร์นี้'); console.error(e); }
   } else if(mlMap){
-    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); _sync3DSensors(); start3DExtras(); },80);
+    setTimeout(()=>{ mlMap.resize(); _sync3DHotspots(); _sync3DForests(); _sync3DManualReports(); _sync3DPins(); _sync3DSensors(); start3DExtras(); },80);
   }
 }
 
@@ -5982,6 +6076,7 @@ function initMapLibre3D(){
     _sync3DHotspots();
     _sync3DForests();
     _sync3DManualReports();
+    _sync3DPins();
     _sync3DSensors();
     start3DExtras();
 
@@ -6254,6 +6349,32 @@ function _sync3DManualReports(){
     });
     _3dManualMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([r.longitude,r.latitude]).addTo(mlMap));
   });
+}
+
+// Incident pins in 3D: same eye, same popup as the 2D layer.
+let _3dPinMarkers=[];
+function _sync3DPins(){
+  _3dPinMarkers.forEach(m=>m.remove());
+  _3dPinMarkers=[];
+  if(!mlMap||!pinsOn())return;
+  const now=Date.now();
+  incidentPins.forEach(p=>{
+    const el=document.createElement('div');
+    el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label','หมุดตัวแทนป่า '+p.forest_name+' แจ้ง');
+    el.innerHTML=CmeIncidentPins.iconHtml(p,now);
+    const open=e=>{e.stopPropagation();_open3DPin(p,pinPopupHtml(p));};
+    el.addEventListener('click',open);
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open(e);}});
+    _3dPinMarkers.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([p.longitude,p.latitude]).addTo(mlMap));
+  });
+}
+function _open3DPin(p,html){
+  mlMap.flyTo({center:[p.longitude,p.latitude],zoom:Math.max(mlMap.getZoom(),14),duration:motionDuration(900)});
+  show3DForestProximity(Number(p.latitude),Number(p.longitude));
+  if(isMobileViewport()&&window.CmeHotspotSheet){CmeHotspotSheet.openPanel({kicker:'ตัวแทนป่าชุมชนแจ้ง',title:p.forest_name,html,onClose:clear3DForestProximity});return;}
+  _3dPopup?.remove();
+  _3dPopup=new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'340px',className:'coordination-popup'}).setLngLat([p.longitude,p.latitude]).setHTML(html).addTo(mlMap);
+  _3dPopup.on('close',clear3DForestProximity);
 }
 
 // Live dust sensors in 3D: same dots, colours and popup as the 2D layer.

@@ -1,0 +1,33 @@
+/* Incident pins: an eye in violet, so a report from a person never looks like a satellite point. */
+:root{--pin:#8b5cf6}
+body.light-mode{--pin:#6d28d9}
+.layer[hidden]{display:none!important}
+.pin-eye .ring{color:var(--pin);inset:-7px}
+.pin-eye-body{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;box-sizing:border-box;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--pin);border:2px solid #fff;box-shadow:0 0 10px rgba(139,92,246,.85)}
+.pin-eye.mid .pin-eye-body{opacity:.82}
+.pin-eye.old .pin-eye-body{opacity:.55;box-shadow:none}
+.leaflet-marker-icon:focus-visible .pin-eye-body{outline:3px solid var(--wind,#38bdf8);outline-offset:2px}
+
+.pin-pop{font-family:var(--font,system-ui,sans-serif);font-size:14px;line-height:1.55;color:inherit;min-width:240px}
+.pin-pop h3{margin:2px 0 6px;font-size:17px;line-height:1.35}
+.pin-pop h3 small{font-weight:400;opacity:.75;font-size:13px}
+.pin-pop h4{margin:12px 0 4px;font-size:13px;opacity:.8}
+.pin-pop p{margin:0 0 6px}
+.pin-kicker{font-size:12px;font-weight:600;color:var(--pin)}
+.pin-who{opacity:.9}
+.pin-pop blockquote{margin:6px 0 8px;padding:8px 10px;border-left:4px solid var(--pin);background:rgba(139,92,246,.1);border-radius:0 8px 8px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.pin-none{opacity:.65}
+.pin-phone a{font-weight:700;color:inherit}
+.pin-near{list-style:none;margin:0 0 6px;padding:0}
+.pin-near li{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;padding:4px 0;border-bottom:1px solid rgba(148,163,184,.2)}
+.pin-near li span{opacity:.75}
+.pin-near li em{font-style:normal;font-size:12px;padding:1px 8px;border-radius:999px;background:rgba(139,92,246,.18)}
+.pin-near li em.warn{background:rgba(249,115,22,.2);color:#fb923c}
+body.light-mode .pin-near li em.warn{color:#c2410c}
+.pin-note{margin-top:10px;font-size:13px;opacity:.85}
+.pin-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.pin-btn{min-height:44px;padding:0 14px;border:1px solid rgba(148,163,184,.5);border-radius:10px;background:transparent;color:inherit;font:600 14px/1.2 var(--font,system-ui,sans-serif);cursor:pointer}
+.pin-btn.ok{background:#43b05f;border-color:#43b05f;color:#06120a}
+.pin-btn:focus-visible{outline:3px solid var(--wind,#38bdf8);outline-offset:2px}
+.pin-more{margin-top:10px}
+.pin-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:14px}

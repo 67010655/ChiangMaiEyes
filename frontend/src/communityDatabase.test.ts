@@ -9,6 +9,7 @@ const mailSql = readFileSync(resolve(__dirname, '../../supabase/migrations/20261
 const evidenceSql = readFileSync(resolve(__dirname, '../../supabase/migrations/20261009195000_evidence_and_mail_claim.sql'), 'utf8');
 const jobSql = readFileSync(resolve(__dirname, '../../supabase/migrations/20261010020000_community_job_observability.sql'), 'utf8');
 const practiceSql = readFileSync(resolve(__dirname, '../../supabase/migrations/20261010030000_practice_and_field_checks.sql'), 'utf8');
+const pinsSql = readFileSync(resolve(__dirname, '../../supabase/migrations/20261023100000_incident_pins.sql'), 'utf8');
 const archiveSql = readFileSync(resolve(__dirname, '../../supabase/migrations/20261010100000_environment_and_research.sql'), 'utf8');
 const db = new PGlite();
 const owner = '10000000-0000-4000-8000-000000000001';
@@ -55,6 +56,7 @@ describe('community database permissions and transactional workflow', () => {
     await db.exec(jobSql);
     await db.exec(practiceSql);
     await db.exec(archiveSql);
+    await db.exec(pinsSql);
     await db.exec(`insert into public.cme_forests(forest_id,name,amphoe) values('test-A','Fixture A','Fixture'),('test-B','Fixture B','Fixture');`);
     await db.query('insert into public.cme_admins(user_id) values($1)', [owner]);
   }, 30000);

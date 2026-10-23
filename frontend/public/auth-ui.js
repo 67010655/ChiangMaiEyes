@@ -24,6 +24,8 @@
   }
   function requestedTarget(){
     const match=root.location.hash.match(/^#community\/incident\/([a-f0-9-]{36})$/i),id=new URL(root.location.href).searchParams.get('incident');
+    const pin=root.location.hash.match(/^#pin\/([a-f0-9-]{36})$/i)||[null,new URL(root.location.href).searchParams.get('pin')];
+    if(/^[a-f0-9-]{36}$/i.test(pin[1]||''))return '#pin/'+pin[1];
     return match?'#community/incident/'+match[1]:/^[a-f0-9-]{36}$/i.test(id||'')?'#community/incident/'+id:null;
   }
   function open(){returnTarget=requestedTarget()||'#community';clearMessages();el('authModalBackdrop').classList.add('open');switchTab('signin');el('siEmail').focus();}
@@ -45,7 +47,7 @@
     finally{busy=false;buttons.forEach(button=>button.disabled=false);el('authModalBackdrop').removeAttribute('aria-busy');}
   }
   function email(prefix){const input=el(prefix+'Email');return input.reportValidity()?input.value.trim():null;}
-  function redirect(){return returnTarget.startsWith('#community/incident/')?root.location.origin+'/?incident='+returnTarget.split('/').pop():root.location.origin+'/#community';}
+  function redirect(){return returnTarget.startsWith('#pin/')?root.location.origin+'/?pin='+returnTarget.split('/').pop():returnTarget.startsWith('#community/incident/')?root.location.origin+'/?incident='+returnTarget.split('/').pop():root.location.origin+'/#community';}
   function signedIn(){const target=returnTarget;close();setTimeout(()=>context.openCommunity(target),0);}
   async function signIn(event){
     event.preventDefault();const address=email('si');if(!address)return false;

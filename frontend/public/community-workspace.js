@@ -3,7 +3,7 @@
   'use strict';
   const statusNames={pending:'รอตรวจสอบ',confirmed:'ยืนยันเหตุ',coordinating:'กำลังประสาน',controlled:'ควบคุมได้',closed:'ปิดเหตุ',cancelled:'ยกเลิกเหตุ',approved:'อนุมัติแล้ว',rejected:'ไม่อนุมัติ',revoked:'ยกเลิกสิทธิ์',invited:'รอรับคำขอ',accepted:'ร่วมประสาน',declined:'ไม่รับคำขอ'};
   const transitions={pending:['confirmed','cancelled'],confirmed:['coordinating','controlled','cancelled'],coordinating:['controlled','cancelled'],controlled:['coordinating','closed'],closed:['pending'],cancelled:['pending']};
-  const eventNames={created:'แจ้งเหตุ',status:'เปลี่ยนสถานะ',note:'บันทึกเพิ่มเติม',photo:'เพิ่มภาพประกอบ',field_check:'เพิ่มผลตรวจภาคสนาม',merged:'เชื่อมกับเหตุหลัก',linked_report:'เชื่อมรายงานเพิ่มเติม',coordination:'รับเป็นผู้ประสาน',partner_invited:'ขอร่วมประสาน',partner_accepted:'รับร่วมประสาน',partner_declined:'ไม่รับคำขอ',publication:'เปลี่ยนการเผยแพร่'};
+  const eventNames={created:'แจ้งเหตุ',expired:'ปิดอัตโนมัติ',status:'เปลี่ยนสถานะ',note:'บันทึกเพิ่มเติม',photo:'เพิ่มภาพประกอบ',field_check:'เพิ่มผลตรวจภาคสนาม',merged:'เชื่อมกับเหตุหลัก',linked_report:'เชื่อมรายงานเพิ่มเติม',coordination:'รับเป็นผู้ประสาน',partner_invited:'ขอร่วมประสาน',partner_accepted:'รับร่วมประสาน',partner_declined:'ไม่รับคำขอ',publication:'เปลี่ยนการเผยแพร่'};
   let context,container,body,miniMap,loading=null,sequence=0;
   let photoUrls=[],renderVersion=0;
   const checkRequests=new Map(),detailsOpen=new Map();
@@ -11,9 +11,11 @@
   const formDrafts=new Map();
   const state={tab:'forest',me:null,session:null,catalog:[],incidents:[],publicIncidents:[],detail:null,forestId:'',error:'',notice:'',busy:false,ready:null,emailMode:'unavailable',create:false,scope:'active',draft:null};
   const E=()=>root.CmeEvidence;
+  const pinsChanged=()=>{try{root.dispatchEvent(new CustomEvent('cme:pins-changed'));}catch{}};
   const esc=value=>E().escapeHtml(value);
   const date=value=>E().stamp(value);
-  const badge=status=>`<span class="cw-status ${esc(status)}">${esc(statusNames[status]||status)}</span>`;
+  const OPEN_WORDS={pending:'เปิดอยู่',confirmed:'เปิดอยู่',coordinating:'เปิดอยู่',controlled:'เปิดอยู่',closed:'จบงานแล้ว',cancelled:'ไม่ใช่ไฟ'};
+  const badge=status=>`<span class="cw-status ${esc(status)}">${esc(OPEN_WORDS[status]||statusNames[status]||status)}</span>`;
   const ago=value=>{const t=Date.parse(value);if(!Number.isFinite(t))return '';const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<1?'เมื่อสักครู่':m<60?m+' นาทีที่แล้ว':m<1440?Math.round(m/60)+' ชม.ที่แล้ว':Math.round(m/1440)+' วันที่แล้ว';};
   const nextStep={pending:'ตรวจว่าเกิดเหตุจริงไหม แล้วยืนยันหรือยกเลิก',confirmed:'หาคนรับประสาน แล้วอัปเดตการดำเนินงาน',coordinating:'บันทึกความคืบหน้า และชวนป่าข้างเคียงถ้าจำเป็น',controlled:'ตรวจผลอีกครั้ง แล้วบันทึกเหตุผลก่อนปิดเหตุ',closed:'ปิดแล้ว เปิดใหม่ได้ถ้ามีหลักฐานเพิ่ม',cancelled:'ยกเลิกแล้ว ดูเหตุผลในประวัติ'};
   const STEPS=['pending','confirmed','coordinating','controlled','closed'];
@@ -153,9 +155,31 @@
       <p class="cw-label">ตำแหน่งที่พบ</p>
       <div class="cw-actions">${button('📍 ใช้ตำแหน่งฉันตอนนี้','gps','',!d.latitude)} ${button('เลือกบนแผนที่','pick')}</div>
       <div class="cw-fields"><label>ละติจูด<input name="latitude" type="number" step="any" min="-90" max="90" value="${esc(d.latitude)}" required></label><label>ลองจิจูด<input name="longitude" type="number" step="any" min="-180" max="180" value="${esc(d.longitude)}" required></label></div>
-      <label>รายละเอียด (เติมภายหลังได้)<textarea name="description" maxlength="2000" placeholder="สิ่งที่เห็นหรือข้อมูลให้ผู้รับประสานตรวจสอบ">${esc(d.description)}</textarea></label>
+      <label>เล่าสั้นๆ ว่าเห็นอะไร (เติมภายหลังได้)<textarea name="description" maxlength="2000" placeholder="เช่น ไฟกำลังไหม้ใกล้ลำห้วย มีควันหนา">${esc(d.description)}</textarea></label>
+      <label>เบอร์โทรให้ตัวแทนป่าอื่นติดต่อ (ไม่บังคับ)<input name="contact_phone" type="tel" inputmode="tel" maxlength="20" placeholder="เช่น 081-234-5678" value="${esc(d.contact_phone||'')}"></label>
+      <div class="cw-alert warn" id="cwNearPins" role="status" hidden></div>
+      <div class="cw-consent"><b>👁 ก่อนกดส่ง</b> จะมีหมุดตาบนแผนที่ ตัวแทนป่าที่ได้รับอนุมัติทุกคนจะเห็น <b>ชื่อของคุณ ชื่อป่า ตำแหน่ง สิ่งที่เล่า และเบอร์ที่ใส่</b> ระบบจะส่ง LINE แจ้งป่าที่อยู่ห่างไม่เกิน 5 กม. หมุดหายเมื่อคุณกด "จบงาน" หรือครบ 3 วัน (ส่งได้ไม่เกิน 3 หมุดต่อวัน) คนทั่วไปไม่เห็น</div>
       <p class="cw-help" id="cwDraftSaved">${d.saved_at?'ร่างเก็บในเครื่องนี้ · '+date(d.saved_at):'ร่างจะเก็บในเครื่องนี้ระหว่างกรอก ยังไม่ใช่รายงานที่ส่งแล้ว'}</p>
       <div class="cw-actions"><button class="cw-btn primary">ส่งบันทึกเหตุ</button>${button('ยกเลิก','cancel-create')}</div></form></section>`;
+  }
+  // Before sending: warn when someone already pinned a fire close to this point in the last day.
+  async function loadNearPins(){
+    if(state.nearPins!==undefined)return;
+    state.nearPins=[];
+    try{state.nearPins=await api('/pins');}catch{state.nearPins=[];}
+    updateNearPins();
+  }
+  function updateNearPins(){
+    const box=document.getElementById('cwNearPins'),form=document.getElementById('cwIncidentForm');
+    if(!box||!form)return;
+    const lat=Number(form.elements.latitude.value),lon=Number(form.elements.longitude.value);
+    if(form.elements.latitude.value===''||form.elements.longitude.value===''||!Number.isFinite(lat)||!Number.isFinite(lon)||!state.nearPins?.length){box.hidden=true;return;}
+    const now=Date.now();
+    const near=state.nearPins.filter(p=>now-Date.parse(p.created_at)<864e5&&p.id!==state.draft?.id)
+      .map(p=>({p,km:E().distanceKm({lat,lon},{lat:p.latitude,lon:p.longitude})})).filter(r=>r.km<=2).sort((a,b)=>a.km-b.km).slice(0,3);
+    if(!near.length){box.hidden=true;return;}
+    box.hidden=false;
+    box.innerHTML='⚠️ <b>มีหมุดใกล้จุดนี้แล้ว</b><ul>'+near.map(({p,km})=>`<li>${esc(p.forest_name)} ห่างประมาณ ${km.toFixed(1)} กม. · แจ้งโดย ${esc(p.reporter_name)} ${esc(ago(p.created_at))}${p.contact_phone?' · ☎️ '+esc(p.contact_phone):''}</li>`).join('')+'</ul><small>ถ้าเป็นไฟเดียวกัน ลองติดต่อผู้แจ้งก่อน จะได้ไม่แจ้งซ้ำ ถ้าเป็นคนละจุด ส่งต่อได้เลย</small>';
   }
   function forestView(){
     if(state.create)return createForm();
@@ -174,7 +198,7 @@
     const steps={
       alert:['ดูตำแหน่งจุดบนแผนที่ด้านล่างว่าอยู่ตรงไหนของป่า','ถ้าเห็นไฟจริง โทร <a href="tel:1362">1362</a> และแจ้งหน่วยงานในพื้นที่ (ดู "ใครดูแลพื้นที่นี้")','อย่าเข้าพื้นที่คนเดียว ประสานทีมและป่าข้างเคียงก่อน','กลับมาแล้ว กด "บันทึกเหตุ" ใส่ตำแหน่ง รูป และผล'],
       watch:[toward?'<b>ลมพัดจากจุดความร้อนเข้าหาป่า</b> เฝ้าระวังเป็นพิเศษ':'ดูทิศลม ตอนนี้ไม่ได้พัดจากจุดความร้อนเข้าหาป่า','ถามป่าข้างเคียงหรือหน่วยงานว่ามีคนไปตรวจจุดนี้แล้วหรือยัง','ถ้าเห็นควันในป่า กด "บันทึกเหตุ"'],
-      calm:['ไม่มีจุดความร้อนในหรือรอบป่าใน 24 ชม. ล่าสุด','ตรวจว่าเปิดรับแจ้งเตือน LINE หรืออีเมลไว้แล้ว '+button('ตั้งค่าแจ้งเตือน','tab','data-tab="preferences"'),'ลองซ้อมบันทึกเหตุ ข้อมูลซ้อมไม่ถูกส่งจริง '+button('ซ้อมใช้งาน','tab','data-tab="practice"')],
+      calm:['ไม่มีจุดความร้อนในหรือรอบป่าใน 24 ชม. ล่าสุด','ตรวจว่าเปิดรับแจ้งเตือน LINE หรืออีเมลไว้แล้ว '+button('ตั้งค่าแจ้งเตือน','tab','data-tab="preferences"')],
       unknown:['ข้อมูลดาวเทียมยังไม่พร้อม ยังสรุปไม่ได้ว่าปลอดภัย','ถ้าเห็นควันหรือไฟ โทร <a href="tel:1362">1362</a> แล้วกด "บันทึกเหตุ"'],
     }[sit.status]||[];
     return `<section class="rp-todo"><h2>ต้องทำอะไรตอนนี้</h2><ol>${steps.map(x=>`<li>${x}</li>`).join('')}</ol></section>`;
@@ -230,67 +254,48 @@
     if(!rows.length)return '';
     return `<section class="cw-cross-border"><h3>อยู่นอกเขตอำเภอ แต่ป่าเราใกล้ที่สุด</h3><p class="cw-help">${rows.length} จุดใน 24 ชม. · ภายในระยะเส้นตรง 5 กม. จากป่า · ยังไม่ยืนยันเหตุไฟ${rows.length>10?' · แสดง 10 จุดล่าสุด':''}</p>${rows.slice(0,10).map(h=>`<details><summary>จุดใกล้ป่าข้ามเขตอำเภอ · ${date(h.detected_at)}</summary>${root.CmeCoordination.html(h.lat,h.lon,{myForestId:selected.forest_id})}${button('ดูจุดนี้บนแผนที่','locate',`data-lat="${Number(h.lat)}" data-lon="${Number(h.lon)}"`)}</details>`).join('')}</section>`;
   }
-  // What each status means in plain words, and the buttons that move it on.
-  // Each button names what happened, not the system status it leads to.
-  const NOW={pending:'รอคนไปดู: ไฟนี้เป็นของจริงไหม?',confirmed:'ยืนยันแล้วว่าเป็นไฟจริง ตอนนี้ต้องหาคนช่วย',coordinating:'กำลังช่วยกันจัดการไฟนี้',controlled:'คุมไฟได้แล้ว ตรวจอีกรอบแล้วจบเรื่องได้',closed:'จบเรื่องแล้ว',cancelled:'ยกเลิกแล้ว: ไม่ใช่ไฟ'};
+  // The incident page for the pin flow. The site only informs; people coordinate by themselves.
+  // An incident is open until its reporter (or an admin) ends it, or until it expires after 3 days.
+  const OPEN_STATES=['pending','confirmed','coordinating','controlled'];
+  const stateLabel=status=>OPEN_STATES.includes(status)?'เปิดอยู่':status==='closed'?'จบงานแล้ว':status==='cancelled'?'ไม่ใช่ไฟ':(statusNames[status]||status);
   const PICK={
-    confirmed:{icon:'✅',label:'เป็นไฟจริง',ask:'เห็นอะไรที่นั่น?',ph:'เช่น ไฟกำลังไหม้ใกล้ลำห้วย มีควันหนา',go:'ยืนยันว่าเป็นไฟจริง'},
-    cancelled:{icon:'❌',label:'ไม่ใช่ไฟ',ask:'ทำไมถึงไม่ใช่ไฟ?',ph:'เช่น เป็นการเผาขยะที่ดับแล้ว',go:'บันทึกว่าไม่ใช่ไฟ'},
-    coordinating:{icon:'🤝',label:'เริ่มขอความช่วยเหลือ',ask:'ขอใครช่วยบ้าง?',ph:'เช่น โทรหาหัวหน้าหน่วยดับไฟป่าแล้ว',go:'บันทึกการขอความช่วยเหลือ'},
-    controlled:{icon:'🧯',label:'คุมไฟได้แล้ว',ask:'คุมไฟได้อย่างไร และเสียหายแค่ไหน?',ph:'เช่น ดับสนิทแล้ว เสียหายประมาณ 2 ไร่',go:'บันทึกว่าคุมไฟได้'},
-    closed:{icon:'✔️',label:'จบเรื่อง',ask:'สรุปสั้นๆ',ph:'เช่น ตรวจแล้วไม่มีไฟซ้ำ',go:'จบเรื่องนี้'},
-    reopen:{icon:'🔥',label:'ไฟกลับมา',ask:'เกิดอะไรขึ้น?',ph:'เช่น เห็นควันที่เดิมอีกครั้ง',go:'บันทึกว่าไฟกลับมา',to:'coordinating'},
-    pending:{icon:'↩️',label:'เปิดเรื่องนี้ใหม่',ask:'ทำไมต้องเปิดใหม่?',ph:'เช่น มีหลักฐานเพิ่ม',go:'เปิดเรื่องใหม่'},
+    closed:{icon:'✅',label:'จบงาน',ask:'สรุปสั้นๆ (ไม่บังคับ)',ph:'เช่น ไฟดับสนิทแล้ว เสียหายประมาณ 2 ไร่',go:'จบงาน หมุดจะหายจากแผนที่'},
+    cancelled:{icon:'❌',label:'ไม่ใช่ไฟ',ask:'ทำไมถึงไม่ใช่ไฟ? (ไม่บังคับ)',ph:'เช่น เป็นการเผาขยะที่ดับแล้ว',go:'บันทึกว่าไม่ใช่ไฟ'},
   };
-  const PICKS={pending:['confirmed','cancelled'],confirmed:['coordinating','controlled','cancelled'],coordinating:['controlled','cancelled'],controlled:['closed','reopen'],closed:['pending'],cancelled:['pending']};
+  const eventTitle=e=>e.kind==='expired'?'ปิดอัตโนมัติ (ครบ 3 วัน)':e.kind==='status'&&e.status_to==='closed'?'จบงาน':e.kind==='status'&&e.status_to==='cancelled'?'บันทึกว่าไม่ใช่ไฟ':(eventNames[e.kind]||'อัปเดตเหตุ');
+  const leftText=i=>root.CmeIncidentPins?.leftText({expires_at:new Date(Date.parse(i.created_at)+3*864e5).toISOString()})||'';
   function detailView(){
     const d=state.detail,i=d.incident,name=state.catalog.find(f=>f.forest_id===i.forest_id)?.name||'ป่าชุมชน';
-    const invites=d.partners.filter(p=>p.status==='invited'&&(state.me.is_admin||allowedForests().some(f=>f.forest_id===p.forest_id)));
-    const coor=state.incidents.find(x=>x.id===i.id)?.coordinator_name;
-    const mine=i.coordinator_id&&i.coordinator_id===state.session.user.id;
-    // Nobody has to "claim" an incident: whoever reported it follows it until someone else takes over.
-    const mineReport=!!i.created_by&&i.created_by===state.session.user.id;
-    const reporter=d.events.find(e=>e.kind==='created')?.actor_name;
-    const who=i.coordinator_id?esc(mine?'คุณ':coor||'ตัวแทนที่รับเรื่อง'):mineReport?'คุณ (คนแจ้ง)':reporter?esc(reporter)+' (คนแจ้ง)':null;
-    const stillOpen=!['closed','cancelled'].includes(i.status);
-    const days=Math.floor((Date.now()-Date.parse(i.observed_at))/864e5);
-    const stale=i.status==='pending'&&days>=1;
-    const sent=Date.parse(i.created_at)-Date.parse(i.observed_at)>30*60000;
-    const picks=(PICKS[i.status]||[]).map((k,n)=>{const c=PICK[k];return `<button type="button" class="cw-pick${n===0?' is-main':''}" aria-pressed="false" data-cw="pick-status" data-status="${esc(c.to||k)}" data-ask="${esc(c.ask)}" data-ph="${esc(c.ph)}" data-go="${esc(c.go)}" data-title="${esc(c.icon+' '+c.label)}"><span aria-hidden="true">${c.icon}</span>${esc(c.label)}</button>`;}).join('');
-    const act=d.can_manage?`${picks?`<div class="cw-picks" role="group" aria-label="เลือกสิ่งที่เกิดขึ้น">${picks}</div>`:''}
+    const created=d.events.find(e=>e.kind==='created');
+    const mine=!!i.created_by&&i.created_by===state.session.user.id;
+    const reporter=mine?'คุณ':esc(created?.actor_name||'ตัวแทนชุมชน');
+    const isOpen_=OPEN_STATES.includes(i.status);
+    const canClose=isOpen_&&(mine||state.me.is_admin);
+    const picks=canClose?['closed','cancelled'].map((k,n)=>{const c=PICK[k];return `<button type="button" class="cw-pick${n===0?' is-main':''}" aria-pressed="false" data-cw="pick-status" data-status="${k}" data-ask="${esc(c.ask)}" data-ph="${esc(c.ph)}" data-go="${esc(c.go)}" data-title="${esc(c.icon+' '+c.label)}"><span aria-hidden="true">${c.icon}</span>${esc(c.label)}</button>`;}).join(''):'';
+    const lead=isOpen_?(canClose?'หมุดนี้ยังอยู่บนแผนที่ของตัวแทนป่าทุกคน':'หมุดนี้ยังเปิดอยู่ ผู้แจ้งเป็นคนกดจบงาน'):i.status==='closed'?'จบงานแล้ว หมุดหายจากแผนที่แล้ว':'บันทึกแล้วว่าไม่ใช่ไฟ หมุดหายจากแผนที่แล้ว';
+    const hint=isOpen_?`<p class="cw-sos">🔥 ถ้าเห็นไฟจริง <a href="tel:1362">โทร 1362</a> ก่อนเสมอ · หมุดจะหายเองในอีก ${esc(leftText(i))}</p>`:'';
+    const act=canClose?`<div class="cw-picks" role="group" aria-label="จบเหตุนี้">${picks}</div>
         <form class="cw-form cw-pick-form" id="cwStatusForm" hidden><input type="hidden" name="status"><p class="cw-pick-title" id="cwPickTitle" aria-live="polite"></p>
-          <label><span id="cwPickAsk">เล่าสั้นๆ</span><textarea name="note" required maxlength="2000"></textarea></label>
-          <div class="cw-actions"><button class="cw-btn primary" id="cwPickGo">บันทึก</button>${button('เปลี่ยนใจ','unpick-status')}</div></form>
-        ${!i.coordinator_id&&stillOpen&&!mineReport?`<div class="cw-claim"><p><b>จะตามเรื่องนี้ต่อแทนคนแจ้งไหม?</b><br><small>ตอนนี้คนแจ้งเป็นคนตามเรื่องอยู่ กดปุ่มนี้ถ้าคุณจะรับช่วงต่อ คนอื่นในป่าจะได้รู้ว่ามีคนดูแลแล้ว ไม่ต้องโทรซ้ำ</small></p>${button('🙋 ฉันตามต่อเอง','claim')}</div>`:''}`
-      :'<p class="cw-help">คุณดูเหตุนี้ได้ แต่ต้องเป็นผู้ที่ได้รับสิทธิ์จัดการเหตุจึงจะเปลี่ยนสถานะได้</p>';
-    const invite=invites.map(p=>`<div class="cw-alert">คำขอให้ช่วยจาก ${esc(p.name)}<div class="cw-actions">${button('รับช่วง','accept',`data-forest="${esc(p.forest_id)}"`,true)}${button('ไม่รับ','decline',`data-forest="${esc(p.forest_id)}"`)}</div></div>`).join('');
-    const partnerList=d.partners.length?d.partners.map(p=>`<div class="cw-row"><span>${esc(p.name)}</span>${badge(p.status)}</div>`).join(''):'<p class="cw-help">ยังไม่ได้ขอให้ป่าอื่นช่วย</p>';
-    const mergeForm=d.can_manage&&i.status==='pending'&&!i.linked_incident_id?`<details><summary>เรื่องนี้ซ้ำกับเหตุที่แจ้งไว้แล้ว?</summary><form class="cw-form" id="cwMergeForm"><label>เหตุหลัก<select name="target_id" required><option value="">เลือกเหตุที่ยังเปิดอยู่ในป่าเดียวกัน</option>${state.incidents.filter(t=>t.id!==i.id&&t.forest_id===i.forest_id&&!t.linked_incident_id&&!['closed','cancelled'].includes(t.status)).map(t=>`<option value="${esc(t.id)}">${esc(statusNames[t.status])} · ${date(t.observed_at)} · ${esc(t.description.slice(0,60))}</option>`).join('')}</select></label><label>ทำไมถึงเป็นเรื่องเดียวกัน<textarea name="note" required maxlength="2000"></textarea></label><p class="cw-help">รายการนี้จะไม่นับเป็นเหตุแยก และเชื่อมไปยังเหตุหลัก ประวัติและรูปเดิมยังอยู่</p><button class="cw-btn">เชื่อมกับเหตุหลัก</button></form></details>`:'';
-    const partnerForm=d.can_manage&&!i.linked_incident_id?`<details><summary>ขอให้ป่าชุมชนอื่นช่วย</summary><form class="cw-form" id="cwPartnerForm"><label>ขอให้ป่านี้ช่วย<select name="forest_id" required data-required-message="เลือกป่าชุมชนก่อน">${options(state.catalog.filter(f=>f.forest_id!==i.forest_id))}</select></label><p class="cw-help">ตัวแทนที่ได้รับอนุมัติของป่านั้นจะเห็นตำแหน่ง รูป และประวัติของเหตุนี้ เมื่อเขารับช่วงแล้วจึงเพิ่มบันทึกได้</p><button class="cw-btn">ส่งคำขอ</button></form></details>`:'';
-    const publish=d.can_manage&&i.status!=='pending'&&!i.linked_incident_id?`<details><summary>แสดงสรุปให้คนทั่วไปเห็น</summary><div class="cw-pad">${button(i.published?'หยุดแสดงสรุป':'แสดงสรุปชื่อป่าและสถานะ','publish')}<p class="cw-help">คนทั่วไปจะเห็นแค่ชื่อป่า สถานะ และเวลา ไม่เห็นชื่อผู้แจ้ง พิกัดละเอียด หรือบันทึกภายใน</p></div></details>`:'';
+          <label><span id="cwPickAsk">สรุปสั้นๆ</span><textarea name="note" maxlength="2000"></textarea></label>
+          <div class="cw-actions"><button class="cw-btn primary" id="cwPickGo">บันทึก</button>${button('เปลี่ยนใจ','unpick-status')}</div></form>`:'';
+    const nearby=Array.isArray(i.nearby)&&i.nearby.length?`<h3>ป่าใกล้จุดนี้</h3><ul class="pin-near">${i.nearby.map(r=>`<li class="${r.risk?'risk':''}"><strong>${esc(r.name)}</strong> <span>${esc(r.km===0?'อยู่ในขอบเขตป่า':Number(r.km).toFixed(1)+' กม.')}</span> ${r.reporter?'<em>ป่าของผู้แจ้ง</em>':r.risk?'<em class="warn">เสี่ยง · ใกล้ไม่เกิน 5 กม.</em>':''}</li>`).join('')}</ul>`:'';
     return `<div class="cw-detail">
-      <div class="cw-actions cw-detail-nav">${button('← กลับรายการเหตุ','back-list')}</div>
-      <header class="cw-detail-head s-${esc(i.status)}"><div class="cw-inc-top">${badge(i.status)}</div>
+      <div class="cw-actions cw-detail-nav">${button('← กลับรายการเหตุ','back-list')}${button('📍 ดูหมุดบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</div>
+      <header class="cw-detail-head s-${esc(isOpen_?'pending':i.status)}"><div class="cw-inc-top"><span class="cw-status ${isOpen_?'pending':esc(i.status)}">${esc(stateLabel(i.status))}</span></div>
         <h2>${i.observation==='smoke'?'💨 ควัน':'🔥 ไฟ'}ที่${esc(name)}</h2>
         <p class="cw-seen">${i.observation==='smoke'?'เห็นควัน':'เห็นเปลวไฟ'} เมื่อ ${date(i.observed_at)} <span>(${esc(ago(i.observed_at))})</span></p></header>
-      ${stale?`<div class="cw-alert warn" role="status">⏰ เหตุนี้ค้างมา ${days} วันแล้ว ยังไม่มีใครตรวจ ถ้าไม่ใช่เหตุจริงแล้ว กด "ไม่ใช่ไฟ" เพื่อปิดเรื่อง</div>`:''}
-      <section class="cw-todo s-${esc(i.status)}" aria-labelledby="cwNowT"><p class="cw-todo-k">ตอนนี้</p><h3 id="cwNowT">${esc(NOW[i.status]||'')}</h3>
-        ${i.status==='pending'?'<p class="cw-sos">🔥 ถ้าเห็นไฟจริง <a href="tel:1362">โทร 1362</a> ก่อน แล้วค่อยกลับมาบันทึก</p>':''}
-        ${invite}${act}</section>
-      ${i.linked_incident_id?`<div class="cw-alert">รายงานนี้เชื่อมกับเหตุหลักแล้ว ประวัติเดิมยังอยู่ ${button('เปิดเหตุหลัก','detail',`data-id="${esc(i.linked_incident_id)}"`)}</div>`:''}
+      <section class="cw-todo s-${esc(isOpen_?'pending':i.status)}" aria-labelledby="cwNowT"><p class="cw-todo-k">ตอนนี้</p><h3 id="cwNowT">${esc(lead)}</h3>${hint}${act}</section>
       <section class="cw-section"><h3>รายละเอียด</h3>
-        <dl class="cw-info"><div><dt>📍 ที่ไหน</dt><dd>${i.latitude.toFixed(5)}, ${i.longitude.toFixed(5)}<span class="cw-inline">${button('ดูบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</span></dd></div>
-          <div><dt>🙋 คนตามเรื่องนี้</dt><dd class="${who?'':'none'}">${who||'ยังไม่มี'}</dd></div>
+        <dl class="cw-info"><div><dt>👤 ผู้แจ้ง</dt><dd>${reporter}</dd></div>
+          <div><dt>📍 ที่ไหน</dt><dd>${i.latitude.toFixed(5)}, ${i.longitude.toFixed(5)}<span class="cw-inline">${button('ดูบนแผนที่','locate',`data-lat="${i.latitude}" data-lon="${i.longitude}"`)}</span></dd></div>
           <div><dt>📝 ผู้แจ้งเล่าว่า</dt><dd>${esc(i.description||'ไม่ได้เล่ารายละเอียดเพิ่ม')}</dd></div>
-          ${sent?`<div><dt>🕒 ส่งเข้าเว็บ</dt><dd>${date(i.created_at)}</dd></div>`:''}</dl>
+          ${i.contact_phone?`<div><dt>☎️ เบอร์ติดต่อ</dt><dd><a href="tel:${esc(String(i.contact_phone).replace(/[^0-9+]/g,''))}">${esc(i.contact_phone)}</a></dd></div>`:''}</dl>
+        ${nearby}
         <details class="fp-who cw-who"><summary>📞 เบอร์หน่วยงานในพื้นที่</summary>${root.CmeCoordination?.html(i.latitude,i.longitude,{myForestId:state.forestId})||''}</details></section>
       <section class="cw-section"><h3>สิ่งที่เกิดขึ้นแล้ว</h3>
-        <ol class="cw-timeline">${d.events.map(e=>`<li><strong>${esc(eventNames[e.kind]||'อัปเดตเหตุ')}${e.status_to?' · '+esc(statusNames[e.status_to]):''}</strong><p>${esc(e.note)}</p><small>${esc(e.actor_name)} · ${date(e.created_at)}</small></li>`).join('')}</ol>${state.eventMore!==false&&d.events.length>=200?button('โหลดประวัติเก่ากว่านี้','older-events'):''}
-        ${d.can_note?'<form class="cw-form" id="cwNoteForm"><label>เพิ่มความคืบหน้า หรือเล่าเพิ่ม<textarea name="note" required maxlength="2000"></textarea></label><button class="cw-btn">เพิ่มบันทึก</button></form>':''}</section>
-      <section class="cw-section cw-progress-box"><h3>ความคืบหน้า</h3>${stepper(i.status)}</section>
-      <details class="cw-more"><summary>ตัวเลือกอื่น (ขอป่าอื่นช่วย · รูป · ผลตรวจ · แสดงสรุป)</summary><div class="cw-more-body">
-        <h3>ป่าชุมชนอื่นที่ช่วย</h3>${partnerList}${partnerForm}${mergeForm}${publish}${fieldChecksView(d)}${photosView(d)}
-        <p class="cw-help">การรับเรื่องในเว็บไม่ใช่การแต่งตั้งผู้สั่งการตามกฎหมาย</p></div></details>
+        <ol class="cw-timeline">${d.events.map(e=>`<li><strong>${esc(eventTitle(e))}</strong><p>${esc(e.note)}</p><small>${esc(e.actor_name)} · ${date(e.created_at)}</small></li>`).join('')}</ol>${state.eventMore!==false&&d.events.length>=200?button('โหลดประวัติเก่ากว่านี้','older-events'):''}
+        ${d.can_note&&isOpen_?'<form class="cw-form" id="cwNoteForm"><label>เพิ่มความคืบหน้า หรือเล่าเพิ่ม<textarea name="note" required maxlength="2000"></textarea></label><button class="cw-btn">เพิ่มบันทึก</button></form>':''}</section>
+      <details class="cw-more"><summary>รูปภาพและผลตรวจภาคสนาม</summary><div class="cw-more-body">${fieldChecksView(d)}${photosView(d)}</div></details>
     </div>`;
   }
   function fieldChecksView(d){
@@ -328,7 +333,6 @@
         <div class="cw-fields"><label>เริ่มพัก<select name="quiet_start">${hours(p.quiet_start)}</select></label><label>กลับมาส่ง<select name="quiet_end">${hours(p.quiet_end)}</select></label></div>
         <button class="cw-btn primary">บันทึกการรับอีเมล</button>
       </form><p class="cw-help">ยกเลิกรับได้โดยเอาเครื่องหมายออกและบันทึก อีเมลเป็นข้อมูลสำหรับตรวจสอบ ไม่ใช่ช่องทางฉุกเฉิน ข้อมูลดาวเทียมอัปเดตเป็นรอบ</p></div>
-      <div class="rp-practice"><div><b>🧪 ซ้อมใช้งานก่อนฤดูไฟ</b><small>ลองบันทึกเหตุและรับแจ้งเตือนแบบทดสอบ ข้อมูลซ้อมไม่ถูกส่งจริง</small></div>${button('เริ่มซ้อม','tab','data-tab="practice"')}</div>
       ${admin?`<details class="cw-pref-card cw-admin-tools"><summary><b>🛠 เครื่องมือผู้ดูแลระบบ</b><small>ทดสอบการส่ง · รอบตรวจข้อมูล · ผลการส่งล่าสุด</small></summary>${jobsView()}<p class="cw-help">ผู้รับทดสอบ: ${esc(state.me.test_recipient||'ยังไม่กำหนด')}</p>
         <div class="cw-actions">${button('ส่งอีเมลทดสอบ','test-email')}${button('ตรวจข้อมูลและคิวตอนนี้','run-alerts')}</div>
         <h3>ผลการส่งล่าสุด</h3>${button('อัปเดตผลการส่ง','refresh-mail')}
@@ -384,6 +388,7 @@
     body.dataset.viewKey=state.tab+'/'+(state.detail?.incident?.id||'')+'/'+state.create;
     body.querySelectorAll('details').forEach((d,n)=>{const open=detailsOpen.get(body.dataset.viewKey+'/'+n);if(open!==undefined)d.open=open;});
     restoreForms();
+    if(state.create&&state.session&&state.me){loadNearPins();updateNearPins();}
     const pick=body.querySelector('#cwIncidentForm select[name="forest_id"]');if(pick&&pick.options.length>30)root.CmeForestPicker?.enhance(pick);
     if(state.ready&&root.CmeForestPublic&&body.querySelector('.fp')){
       body.dataset.fpDash=context.dashboard()?'1':'';
@@ -440,7 +445,7 @@
     if(a==='scope'){state.scope=b.dataset.scope||(state.scope==='active'?'all':'active');render();return;}
     if(a==='all-incidents'){state.tab='incidents';state.scope='all';render();return;}
     if(a==='back-list'){state.detail=null;state.tab='incidents';render();return;}
-    if(a==='create'){if(!b.closest('.rp-cta')&&myForests().length!==1)state.forestId='';state.create=true;state.tab='forest';state.detail=null;startDraft();render();return;}
+    if(a==='create'){state.nearPins=undefined;if(!b.closest('.rp-cta')&&myForests().length!==1)state.forestId='';state.create=true;state.tab='forest';state.detail=null;startDraft();render();return;}
     if(a==='old-draft-use'){state.draft=state.oldDraft;state.oldDraft=null;saveDraft();render();return;}
     if(a==='old-draft-drop'){state.oldDraft=null;render();return;}
     if(a==='cancel-create'){state.create=false;render();return;}
@@ -484,8 +489,8 @@
       if(form.id==='cwMembershipForm'){await api('/memberships',{method:'POST',data:{forest_id:document.getElementById('cwRequestForest').value,note:values.note}});state.notice='ส่งคำขอแล้ว รอผู้ดูแลตรวจสอบ';await load();}
       else if(form.id==='cwIncidentForm'){
         Object.assign(state.draft,values);saveDraft();const observed=values.observed_local+':00+07:00';
-        const result=await api('/incidents',{method:'POST',data:{id:state.draft.id,forest_id:values.forest_id,observation:values.observation,latitude:Number(values.latitude),longitude:Number(values.longitude),observed_at:observed,description:values.description}});
-        dropDraft();state.create=false;state.tab='incidents';state.notice='บันทึกเหตุสำเร็จแล้ว · รอตรวจสอบ';
+        const phone=String(values.contact_phone||'').trim();if(phone&&!/^[0-9+() \-]{6,20}$/.test(phone))throw new Error('เบอร์โทรใส่ได้เฉพาะตัวเลข เว้นวรรค และ + - ( ) ความยาว 6-20 ตัว');const result=await api('/incidents',{method:'POST',data:{id:state.draft.id,forest_id:values.forest_id,observation:values.observation,latitude:Number(values.latitude),longitude:Number(values.longitude),observed_at:observed,description:values.description,...(String(values.contact_phone||'').trim()?{contact_phone:String(values.contact_phone).trim()}:{})}});
+        dropDraft();state.create=false;state.tab='incidents';state.notice='ส่งแล้ว หมุดขึ้นบนแผนที่ และแจ้ง LINE ถึงป่าที่อยู่ใกล้ (ไม่เกิน 5 กม.) แล้ว';pinsChanged();
         try{state.detail=await api('/incidents/'+result.id);await load();}catch(error){state.detail=null;state.error='บันทึกเหตุสำเร็จ แต่โหลดรายละเอียดไม่สำเร็จ กรุณาโหลดอีกครั้ง';}
       }else if(form.id==='cwPhotoForm'){const file=form.elements.photo.files[0];if(!file||file.size>4*1024*1024)throw new Error('เลือกรูปขนาดไม่เกิน 4 MB');await api('/incidents/'+state.detail.incident.id+'/photo',{method:'POST',raw:file});state.notice='แนบรูปสำเร็จแล้ว';await load();}
       else if(form.id==='cwFieldCheckForm'){
@@ -496,7 +501,7 @@
         try{fieldChecks.set(id,await api('/incidents/'+id+'/field-checks'));await load();}catch{state.error='บันทึกผลตรวจสำเร็จ แต่โหลดรายการล่าสุดไม่ได้ กดโหลดผลตรวจอีกครั้งได้';}
       }
       else if(form.id==='cwMergeForm')await updateIncident('merge_incident',{target_id:values.target_id,note:values.note});
-      else if(form.id==='cwStatusForm')await updateIncident('change_status',{status:values.status,note:values.note});
+      else if(form.id==='cwStatusForm'){await api('/incidents/'+state.detail.incident.id+'/close',{method:'POST',data:{outcome:values.status,note:values.note||''}});state.notice='บันทึกแล้ว หมุดหายจากแผนที่';await load();pinsChanged();}
       else if(form.id==='cwNoteForm')await updateIncident('add_note',{note:values.note});
       else if(form.id==='cwPartnerForm')await updateIncident('invite_partner',{forest_id:values.forest_id});
       else if(form.id==='cwPreferencesForm'){await api('/preferences',{method:'PUT',data:{events_enabled:form.elements.events_enabled.checked,daily_enabled:form.elements.daily_enabled.checked,quiet_enabled:form.elements.quiet_enabled.checked,quiet_start:Number(values.quiet_start),quiet_end:Number(values.quiet_end)}});state.notice='บันทึกการรับอีเมลแล้ว';await load();}
@@ -505,6 +510,7 @@
   }
   function input(event){
     const activeForm=event.target.closest('.cw-form');if(activeForm&&activeForm.id!=='cwIncidentForm')rememberForm(activeForm);
+    if(event.target.closest('#cwIncidentForm')&&['latitude','longitude'].includes(event.target.name))updateNearPins();
     if(event.target.id==='cwForestSearch'){const q=event.target.value.trim();document.getElementById('cwRequestForest').innerHTML=options(state.catalog.filter(f=>(f.name+' '+f.amphoe).includes(q)));}
     if(event.target.closest('#cwIncidentForm')&&event.target.name){if(!state.draft)state.draft=newDraft();state.draft[event.target.name]=event.target.value;saveDraft();}
     if(event.target.id==='cwActiveForest'){state.forestId=event.target.value;render();}

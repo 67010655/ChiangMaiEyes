@@ -37,6 +37,8 @@ class IncidentCreate(StrictModel):
     longitude: float = Field(ge=-180, le=180)
     observed_at: datetime
     description: str = Field(default='', max_length=2000)
+    # Shown to other approved reps so they can call the reporter. Optional.
+    contact_phone: str | None = Field(default=None, max_length=20, pattern=r'^[0-9+()\- ]{6,20}$')
 
     @field_validator('observed_at')
     @classmethod
@@ -56,6 +58,11 @@ class IncidentUpdate(StrictModel):
     forest_id: str | None = Field(default=None, max_length=100)
     note: str = Field(default='', max_length=2000)
     published: bool | None = None
+
+
+class IncidentClose(StrictModel):
+    outcome: Literal['closed', 'cancelled']
+    note: str = Field(default='', max_length=2000)
 
 
 class NotificationPreferences(StrictModel):
@@ -157,12 +164,44 @@ def incidents(forest_id: str | None = None, offset: int = Query(default=0, ge=0,
 
 
 @router.post('/incidents', status_code=201)
-def create_incident(payload: IncidentCreate, ctx=Depends(session)):
+def create_incident(payload: IncidentCreate, background_tasks: BackgroundTasks, ctx=Depends(session)):
     store, token, _ = ctx
-    result = store.rpc('create_incident', payload.model_dump(mode='json'), token)
-    # The persistent outbox is reconstructed by the worker, including after a
-    # transient failure. An email failure never rolls back a saved incident.
+    # The phone is stored separately so a retry sends the same payload as the first try.
+    result = store.rpc('create_incident', payload.model_dump(mode='json', exclude={'contact_phone'}), token)
+    if payload.contact_phone:
+        try:
+            store.call('POST', '/rest/v1/rpc/cme_set_incident_contact', token=token,
+                       json={'p_id': str(payload.id), 'p_phone': payload.contact_phone})
+        except HTTPException:
+            result = {**result, 'contact_saved': False}
+    # The map pin exists as soon as the incident does. Working out the nearby forests and the
+    # LINE alerts must never undo it, so they run afterwards and any failure is only logged.
+    background_tasks.add_task(_notify_pin, store.settings, str(payload.id))
     return result
+
+
+def _notify_pin(settings, incident_id: str):
+    import logging
+    from app.incident_pins import notify_new_pin
+    try:
+        notify_new_pin(CommunityStore(settings), incident_id)
+    except Exception:  # noqa: BLE001 — the outbox and the next job run retry
+        logging.getLogger(__name__).warning('Pin alerts did not finish')
+
+
+@router.get('/pins')
+def pins(response: Response, ctx=Depends(session)):
+    store, token, _ = ctx
+    response.headers['Cache-Control'] = 'private, no-store'
+    response.headers['Vary'] = 'Authorization'
+    return store.call('POST', '/rest/v1/rpc/cme_open_pins', token=token, json={})
+
+
+@router.post('/incidents/{incident_id}/close')
+def close_incident(incident_id: UUID, payload: IncidentClose, ctx=Depends(session)):
+    store, token, _ = ctx
+    return store.call('POST', '/rest/v1/rpc/cme_close_incident', token=token,
+                      json={'p_id': str(incident_id), 'p_outcome': payload.outcome, 'p_note': payload.note})
 
 
 @router.get('/incidents/{incident_id}')

@@ -4,86 +4,85 @@ import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
 
 const pub = (f: string) => readFileSync(resolve(__dirname, '../public', f), 'utf8');
-const user = { id: 'u1' };
-const incident = (over: any = {}) => ({
-  id: 'inc-1', forest_id: 'f1', status: 'pending', observation: 'fire', latitude: 18.83114, longitude: 98.92345,
-  observed_at: new Date(Date.now() - 14 * 864e5).toISOString(), created_at: new Date(Date.now() - 14 * 864e5 + 3 * 36e5).toISOString(),
-  description: '', version: 1, coordinator_id: null, created_by: 'u9', published: false, ...over,
-});
 
-// Run only the incident-page view from the source, with small stand-ins for the app's helpers.
+// Run only the incident page from the source, with small stand-ins for the app's helpers.
 function view() {
   const win = new JSDOM('', { runScripts: 'outside-only' }).window as any;
   win.eval(pub('decision-support.js'));
+  win.eval(pub('incident-pins.js'));
   const src = pub('community-workspace.js');
-  const body = src.slice(src.indexOf('const NOW='), src.indexOf('  function fieldChecksView'));
+  const body = src.slice(src.indexOf('  const OPEN_STATES='), src.indexOf('  function fieldChecksView'));
   return win.eval(`(function(){
     const root=window, E=()=>root.CmeEvidence, esc=v=>E().escapeHtml(v), date=v=>E().stamp(v);
-    const statusNames={pending:'รอตรวจสอบ',confirmed:'ยืนยันเหตุ',coordinating:'กำลังประสาน',controlled:'ควบคุมได้',closed:'ปิดเหตุ',cancelled:'ยกเลิกเหตุ',approved:'a',invited:'b',accepted:'c',declined:'d'};
-    const eventNames={created:'แจ้งเหตุ'};
-    const badge=s=>'<span class="cw-status '+s+'">'+statusNames[s]+'</span>';
-    const ago=()=>'14 วันที่แล้ว';
-    const stepper=()=>'<ol class="cw-steps"></ol>';
+    const statusNames={pending:'รอตรวจสอบ',closed:'ปิดเหตุ',cancelled:'ยกเลิกเหตุ'};
+    const eventNames={created:'แจ้งเหตุ',status:'เปลี่ยนสถานะ',note:'บันทึกเพิ่มเติม',expired:'ปิดอัตโนมัติ'};
+    const ago=()=>'3 ชม.ที่แล้ว';
     const button=(label,action,extra='',primary=false)=>'<button type="button" class="cw-btn'+(primary?' primary':'')+'" data-cw="'+action+'" '+extra+'>'+label+'</button>';
-    const options=()=>'', fieldChecksView=()=>'', photosView=()=>'', allowedForests=()=>[];
+    const fieldChecksView=()=>'<i id="fc"></i>', photosView=()=>'<i id="ph"></i>';
     let state;
     ${body}
     return {render:s=>{state=s;return detailView();}};
   })()`);
 }
-const st = (inc: any, over: any = {}) => ({
-  session: { user }, me: { is_admin: true, memberships: [] }, catalog: [{ forest_id: 'f1', name: 'ป่าชุมชนบ้านทุ่งยาว' }], incidents: [], forestId: 'f1',
-  detail: { incident: inc, events: [], partners: [], photos: [], can_manage: true, can_note: true, ...over },
+const incident = (over: any = {}) => ({
+  id: 'inc-1', forest_id: 'f1', status: 'pending', observation: 'fire', latitude: 18.83114, longitude: 98.92345, created_by: 'u9',
+  observed_at: new Date(Date.now() - 4 * 36e5).toISOString(), created_at: new Date(Date.now() - 3 * 36e5).toISOString(),
+  description: 'ไฟกำลังไหม้ใกล้ลำห้วย', contact_phone: null, nearby: null, ...over,
+});
+const st = (inc: any, { me = 'u1', admin = false, canNote = true, events }: any = {}) => ({
+  session: { user: { id: me } }, me: { is_admin: admin, memberships: [] }, catalog: [{ forest_id: 'f1', name: 'ป่าชุมชนบ้านทดสอบ' }], forestId: 'f1',
+  detail: { incident: inc, can_note: canNote, partners: [], photos: [], events: events ?? [{ kind: 'created', actor_name: 'สมชาย', note: 'x', created_at: inc.created_at }] },
 });
 const doc = (html: string) => new JSDOM(html).window.document;
 
-it('leads with the question and the action buttons, in plain words', () => {
-  const d = doc(view().render(st(incident())));
-  expect(d.querySelector('.cw-todo h3')!.textContent).toBe('รอคนไปดู: ไฟนี้เป็นของจริงไหม?');
-  expect([...d.querySelectorAll('.cw-pick')].map(b => b.textContent!.trim())).toEqual(['✅เป็นไฟจริง', '❌ไม่ใช่ไฟ']);
+it('the reporter sees what the pin means, the two ways to end it, and nothing about coordinating', () => {
+  const d = doc(view().render(st(incident({ created_by: 'u1', contact_phone: '081-234-5678' }), { me: 'u1' })));
+  expect(d.querySelector('.cw-todo h3')!.textContent).toBe('หมุดนี้ยังอยู่บนแผนที่ของตัวแทนป่าทุกคน');
+  expect([...d.querySelectorAll('.cw-pick')].map(b => b.textContent!.trim())).toEqual(['✅จบงาน', '❌ไม่ใช่ไฟ']);
   expect(d.querySelector('.cw-sos a')!.getAttribute('href')).toBe('tel:1362');
-  expect(d.querySelector('.cw-alert.warn')!.textContent).toContain('ค้างมา 14 วัน');
-  // The question and buttons come before every detail.
-  const order = [...d.querySelectorAll('.cw-todo, .cw-info, .cw-timeline, .cw-more')].map(e => e.className.split(' ')[0]);
-  expect(order).toEqual(['cw-todo', 'cw-info', 'cw-timeline', 'cw-more']);
-  expect(d.querySelector('.cw-claim')!.textContent).toContain('จะตามเรื่องนี้ต่อแทนคนแจ้งไหม');
-  expect(d.body.textContent).not.toContain('ผู้รับประสาน');
-  // The status form exists for the buttons to fill in, hidden until one is picked.
-  expect((d.getElementById('cwStatusForm') as HTMLFormElement).hidden).toBe(true);
+  expect(d.querySelector('.cw-sos')!.textContent).toMatch(/หมุดจะหายเองในอีก/);
+  expect(d.querySelector('.cw-info')!.textContent).toContain('คุณ');
+  expect(d.querySelector('.cw-info a')!.getAttribute('href')).toBe('tel:0812345678');
+  // The question and the buttons come before every detail.
+  expect([...d.querySelectorAll('.cw-todo, .cw-info, .cw-timeline, .cw-more')].map(e => e.className.split(' ')[0])).toEqual(['cw-todo', 'cw-info', 'cw-timeline', 'cw-more']);
+  for (const old of ['ผู้รับประสาน', 'รับเรื่อง', 'ขอให้ป่า', 'cw-steps', 'cwPartnerForm', 'cwMergeForm']) expect(d.body.innerHTML).not.toContain(old);
+  // Ending needs no reason: the note box is optional and hidden until a button is pressed.
+  const form = d.getElementById('cwStatusForm') as HTMLFormElement;
+  expect(form.hidden).toBe(true);
+  expect(form.querySelector('textarea')!.hasAttribute('required')).toBe(false);
 });
 
-it('each stage offers only the buttons that make sense, named by what happened', () => {
-  const buttons = (inc: any) => [...doc(view().render(st(inc))).querySelectorAll('.cw-pick')].map(b => b.textContent!.trim());
-  expect(buttons(incident({ status: 'confirmed' }))).toEqual(['🤝เริ่มขอความช่วยเหลือ', '🧯คุมไฟได้แล้ว', '❌ไม่ใช่ไฟ']);
-  const c = doc(view().render(st(incident({ status: 'controlled', coordinator_id: 'u1' }))));
-  expect([...c.querySelectorAll('.cw-pick')].map(b => b.textContent!.trim())).toEqual(['✔️จบเรื่อง', '🔥ไฟกลับมา']);
-  expect((c.querySelectorAll('.cw-pick')[1] as HTMLElement).dataset.status).toBe('coordinating');
-  expect(c.querySelector('.cw-claim')).toBeNull();
-  expect(buttons(incident({ status: 'closed' }))).toEqual(['↩️เปิดเรื่องนี้ใหม่']);
+it('another rep reads the pin but cannot end it; an admin can', () => {
+  const rep = doc(view().render(st(incident(), { me: 'u1' })));
+  expect(rep.querySelector('.cw-pick')).toBeNull();
+  expect(rep.querySelector('.cw-todo h3')!.textContent).toContain('ผู้แจ้งเป็นคนกดจบงาน');
+  expect(rep.querySelector('.cw-info')!.textContent).toContain('สมชาย');
+  const admin = doc(view().render(st(incident(), { me: 'u1', admin: true })));
+  expect(admin.querySelectorAll('.cw-pick')).toHaveLength(2);
 });
 
-it('a viewer without manage rights sees no status buttons and is told why', () => {
-  const d = doc(view().render(st(incident(), { can_manage: false })));
-  expect(d.querySelector('.cw-pick')).toBeNull();
-  expect(d.body.textContent).toContain('ต้องเป็นผู้ที่ได้รับสิทธิ์จัดการเหตุ');
+it('an ended incident says so, offers nothing more, and keeps the history', () => {
+  for (const [status, lead] of [['closed', 'จบงานแล้ว'], ['cancelled', 'ไม่ใช่ไฟ']]) {
+    const d = doc(view().render(st(incident({ status, created_by: 'u1' }), { me: 'u1' })));
+    expect(d.querySelector('.cw-todo h3')!.textContent).toContain(lead);
+    expect(d.querySelector('.cw-pick')).toBeNull();
+    expect(d.getElementById('cwNoteForm')).toBeNull();
+    expect(d.querySelector('.cw-timeline li')).not.toBeNull();
+  }
 });
 
-it('smoke reads as smoke, and the web-submit time shows only when it differs by more than 30 minutes', () => {
-  const same = doc(view().render(st(incident({ observation: 'smoke', created_at: new Date(Date.now() - 14 * 864e5 + 60000).toISOString() }))));
-  expect(same.querySelector('h2')!.textContent).toContain('💨 ควัน');
-  expect(same.body.textContent).not.toContain('ส่งเข้าเว็บ');
-  expect(doc(view().render(st(incident()))).body.textContent).toContain('ส่งเข้าเว็บ');
+it('lists the forests near the point, marks the ones at risk, and names the system when it closes a pin', () => {
+  const nearby = [{ forest_id: 'f1', name: 'ป่าของผู้แจ้ง', km: 0, risk: false, reporter: true }, { forest_id: 'f2', name: 'ป่าเสี่ยง', km: 2.3, risk: true, reporter: false }];
+  const events = [{ kind: 'created', actor_name: 'สมชาย', note: '', created_at: new Date().toISOString() },
+    { kind: 'expired', actor_name: 'ระบบอัตโนมัติ', note: 'ครบ 3 วัน', created_at: new Date().toISOString() }];
+  const d = doc(view().render(st(incident({ nearby, status: 'closed' }), { events })));
+  const rows = [...d.querySelectorAll('.pin-near li')].map(li => li.textContent!.replace(/\s+/g, ' ').trim());
+  expect(rows).toEqual(['ป่าของผู้แจ้ง อยู่ในขอบเขตป่า ป่าของผู้แจ้ง', 'ป่าเสี่ยง 2.3 กม. เสี่ยง · ใกล้ไม่เกิน 5 กม.']);
+  expect([...d.querySelectorAll('.cw-timeline strong')].map(e => e.textContent)).toEqual(['แจ้งเหตุ', 'ปิดอัตโนมัติ (ครบ 3 วัน)']);
 });
 
-it('the person who reported it follows it by default; nobody has to claim it', () => {
-  const view_ = view();
-  const mine = doc(view_.render(st(incident({ created_by: 'u1' }))));
-  expect(mine.querySelector('.cw-claim')).toBeNull();
-  expect(mine.querySelector('.cw-info')!.textContent).toContain('คุณ (คนแจ้ง)');
-  const other = st(incident(), { events: [{ kind: 'created', actor_name: 'สมชาย', note: '', created_at: new Date().toISOString() }] });
-  const o = doc(view_.render(other));
-  expect(o.querySelector('.cw-info')!.textContent).toContain('สมชาย (คนแจ้ง)');
-  expect(o.querySelector('.cw-claim')).not.toBeNull();
-  const taken = doc(view_.render(st(incident({ coordinator_id: 'u9' }))));
-  expect(taken.querySelector('.cw-claim')).toBeNull();
+it('escapes text from other people', () => {
+  const d = doc(view().render(st(incident({ description: '<img src=x onerror=alert(1)>' }), { events: [{ kind: 'created', actor_name: '<b>x</b>', note: '', created_at: new Date().toISOString() }] })));
+  expect(d.querySelector('.cw-info img')).toBeNull();
+  expect(d.querySelector('.cw-info b')).toBeNull();
 });

@@ -24,8 +24,8 @@ from app.community_store import CommunityStore
 
 log = logging.getLogger(__name__)
 ICT = timezone(timedelta(hours=7))
-STATUS = {'pending': 'รอตรวจสอบ', 'confirmed': 'ยืนยันเหตุ', 'coordinating': 'กำลังประสาน',
-          'controlled': 'ควบคุมได้', 'closed': 'ปิดเหตุ', 'cancelled': 'ยกเลิกเหตุ'}
+STATUS = {'pending': 'เปิดอยู่', 'confirmed': 'ยืนยันเหตุ', 'coordinating': 'กำลังประสาน',
+          'controlled': 'ควบคุมได้', 'closed': 'จบงานแล้ว', 'cancelled': 'ไม่ใช่ไฟ'}
 
 
 def parse_time(value):
@@ -206,6 +206,8 @@ def queue_incident_events(store: CommunityStore, now: datetime):
             uid = membership['user_id']
             if membership['forest_id'] not in scopes:
                 continue
+            if event['kind'] == 'created' and event.get('actor_id') == uid:
+                continue  # the reporter does not need a message about their own report
             status_text = STATUS.get(event.get('status_to') or incident['status'], 'อัปเดตการประสานงาน')
             if uid in line_users:
                 inserted = store.insert('cme_line_outbox', {'dedup_key': f"incident/{event['id']}/{uid}/{membership['forest_id']}",
@@ -326,8 +328,14 @@ def run_jobs(store: CommunityStore, dashboard=None, *, source='manual', claimed_
             from app.services import get_dashboard
             dashboard = get_dashboard(store.settings)
         queued = queue_incident_events(store,now) + queue_environment(store,dashboard,now)
+        pins = {}
+        try:
+            from app.incident_pins import run_pin_maintenance
+            pins = run_pin_maintenance(store,now)
+        except Exception:
+            log.warning('Pin reminders and expiry did not run')
         from app.community_line import process_outbox as process_line
-        result = {'queued':queued,**process_outbox(store),**process_line(store)}
+        result = {'queued':queued,**pins,**process_outbox(store),**process_line(store)}
         try:
             from app.line_dust import run_dust_alerts
             result.update(run_dust_alerts(store, now))
