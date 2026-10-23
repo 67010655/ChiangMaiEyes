@@ -44,7 +44,11 @@ it('the reporter sees what the pin means, the two ways to end it, and nothing ab
   expect(d.querySelector('.cw-info')!.textContent).toContain('คุณ');
   expect(d.querySelector('.cw-info a')!.getAttribute('href')).toBe('tel:0812345678');
   // The question and the buttons come before every detail.
-  expect([...d.querySelectorAll('.cw-todo, .cw-info, .cw-timeline, .cw-more')].map(e => e.className.split(' ')[0])).toEqual(['cw-todo', 'cw-info', 'cw-timeline', 'cw-more']);
+  expect([...d.querySelectorAll('.cw-todo, .cw-info, .cw-timeline, .cw-evidence')].map(e => e.classList.contains('cw-evidence') ? 'cw-evidence' : e.className.split(' ')[0])).toEqual(['cw-todo', 'cw-info', 'cw-timeline', 'cw-evidence']);
+  // Photos and field checks are one open section, and the pin's life shows as 4 steps with the current one marked.
+  expect(d.querySelector('.cw-evidence').closest('details')).toBeNull();
+  expect(d.querySelectorAll('.cw-life li')).toHaveLength(4);
+  expect(d.querySelector('.cw-life [aria-current="step"] b').textContent).toBe('ติดตาม / อัปเดต');
   for (const old of ['ผู้รับประสาน', 'รับเรื่อง', 'ขอให้ป่า', 'cw-steps', 'cwPartnerForm', 'cwMergeForm']) expect(d.body.innerHTML).not.toContain(old);
   // Ending needs no reason: the note box is optional and hidden until a button is pressed.
   const form = d.getElementById('cwStatusForm') as HTMLFormElement;

@@ -13,15 +13,15 @@
     ${select('method','ตรวจด้วยวิธีใด',{unavailable:methods.unavailable,on_site:methods.on_site,phone:methods.phone,photo:methods.photo})}
     ${time('checked_at','เวลาที่ตรวจ (ประเทศไทย)',true)}
     <label>หลักฐานและบริบทที่ใช้ตัดสิน<textarea name="note" required minlength="5" maxlength="2000" placeholder="เช่น ใครตรวจ วิธีตรวจ และพื้นที่ที่ตรวจครอบคลุม"></textarea></label>
-    <details><summary>ตำแหน่งที่ตรวจและข้อมูลดาวเทียมที่นำมาเทียบ</summary><p class="cw-help">เว้นค่าที่ไม่ทราบได้ ไม่ใช้พิกัดเหตุแทนตำแหน่งที่ไปตรวจโดยอัตโนมัติ</p>
+    <details><summary>เพิ่มเติม (ไม่บังคับ): ตำแหน่งที่ตรวจและดาวเทียมที่นำมาเทียบ</summary><p class="cw-help">เว้นค่าที่ไม่ทราบได้ ไม่ใช้พิกัดเหตุแทนตำแหน่งที่ไปตรวจโดยอัตโนมัติ</p>
       <div class="cw-fields"><label>ละติจูดที่ตรวจ<input name="latitude" type="number" step="any" min="-90" max="90"></label><label>ลองจิจูดที่ตรวจ<input name="longitude" type="number" step="any" min="-180" max="180"></label></div>
       <label>ความคลาดเคลื่อนตำแหน่ง (เมตร ถ้าทราบ)<input name="position_accuracy_m" type="number" min="0" max="100000" step="any"></label>
       ${select('satellite_match','ผลการเทียบกับดาวเทียม',matches)}
       <label>แหล่งและรายการดาวเทียมที่ตรวจ<input name="satellite_source" maxlength="300" placeholder="ชื่อแหล่ง / ลิงก์ / ช่วงข้อมูลที่ค้น"></label>
       ${time('satellite_detected_at','เวลาที่ดาวเทียมตรวจพบจุดที่เทียบ')}
     </details>
-    <details><summary>เวลาเว็บรับข้อมูล อีเมลนำส่ง และคนเห็นข้อความ</summary><p class="cw-help">กรอกเมื่อมีหลักฐานเวลาเท่านั้น “นำส่งแล้ว” ไม่เท่ากับ “คนอ่านแล้ว”</p>
-      ${time('web_received_at','เวลาที่เว็บได้รับข้อมูลดาวเทียม')}${time('email_delivered_at','เวลานำส่งอีเมลจากผลผู้ให้บริการ')}${time('message_seen_at','เวลาที่คนเห็นข้อความ')}
+    <details><summary>เวลาเว็บรับข้อมูล และเวลาที่คนเห็นข้อความ LINE</summary><p class="cw-help">กรอกเมื่อมีหลักฐานเวลาเท่านั้น “ส่งแล้ว” ไม่เท่ากับ “คนอ่านแล้ว”</p>
+      ${time('web_received_at','เวลาที่เว็บได้รับข้อมูลดาวเทียม')}${time('message_seen_at','เวลาที่คนเห็นข้อความ LINE')}
     </details>
     ${correctable.length?`<label>รายการเดิมที่ต้องการแก้ไข (ถ้ามี)<select name="corrects_id"><option value="">เป็นผลตรวจเพิ่มเติม</option>${correctable.map(c=>`<option value="${esc(c.id)}">${esc(root.CmeEvidence.stamp(c.created_at||c.checked_at))} · ${esc(outcomes[(c.data||c).outcome])}</option>`).join('')}</select></label>`:''}
     <p class="cw-help">บันทึกนี้เก็บผลที่ผู้ตรวจระบุ การไม่พบไฟหลังเหตุสงบแล้ว ยังสรุปว่าดาวเทียมเตือนผิดไม่ได้</p>

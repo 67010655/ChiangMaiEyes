@@ -232,3 +232,19 @@ body.light-mode .cw-pick.is-main{background:rgba(67,176,95,.12)}
   .cw-picks{grid-template-columns:1fr}
   .cw-info>div{grid-template-columns:1fr;gap:2px}
 }
+
+/* Pin life steps under the incident title. */
+.cw-life{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;counter-reset:s}
+.cw-life li{position:relative;display:grid;gap:2px;padding:10px 10px 10px 40px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line-soft);min-width:0}
+.cw-life b{font-size:13px;color:var(--txt);line-height:1.35}
+.cw-life small{font-size:12px;color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
+.cw-step-dot{position:absolute;left:10px;top:10px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 12px/1 var(--font);background:var(--line);color:var(--txt)}
+.cw-life li.done .cw-step-dot{background:#43b05f;color:#fff}
+.cw-life li.now{border-color:#8b5cf6;box-shadow:0 0 0 1px #8b5cf6 inset}
+.cw-life li.now .cw-step-dot{background:#8b5cf6;color:#fff}
+@media(max-width:700px){.cw-life{grid-template-columns:1fr 1fr}}
+@media(max-width:380px){.cw-life{grid-template-columns:1fr}}
+/* Photos + field checks: one open section. */
+.cw-evidence .cw-sub{margin:16px 0 8px;font-size:14px;font-weight:700;color:var(--txt)}
+.cw-photo-add{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.cw-photo-add label{flex:1 1 220px}
