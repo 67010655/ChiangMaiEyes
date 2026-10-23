@@ -1872,7 +1872,7 @@
         <div class="gd-faq">
           <details><summary>ไม่มีจุดบนแผนที่ แปลว่าไม่มีไฟใช่ไหม</summary><p>ไม่ใช่ การไม่พบหมุดก็ยังสรุปว่าไม่มีไฟไม่ได้ ดาวเทียมอาจไม่เห็นไฟเล็ก ไฟใต้เรือนยอด หรือช่วงที่มีเมฆ ถ้าเห็นควันให้เชื่อสิ่งที่เห็นและโทร 1362</p></details>
           <details><summary>จุดความร้อนกับไฟป่าต่างกันอย่างไร</summary><p>จุดความร้อนคือพิกเซลที่ดาวเทียมวัดความร้อนได้สูงผิดปกติ อาจเป็นไฟป่า การเผาในไร่ หรือแหล่งความร้อนอื่น ต้องมีคนในพื้นที่ยืนยันก่อนจึงเป็นเหตุไฟ จุดจางคือข้อมูลเกิน 24 ชม. ไม่ได้แปลว่ายังไหม้อยู่</p></details>
-          <details><summary>ข้อมูลเก่าแค่ไหน</summary><p>ทุกตัวเลขมีเวลาของข้อมูลกำกับ จุดความร้อนมาจากดาวเทียม VIIRS ซึ่งผ่านเชียงใหม่วันละ 2 ช่วง ราว 01:00–02:30 และ 13:00–14:30 น. แล้วข้อมูลของ NASA FIRMS มาถึงช้าอีกราว 3 ชม. ไฟที่เริ่มหลังรอบบ่ายจึงขึ้นแผนที่ราวตีห้า และไฟที่เผาสั้น ๆ ระหว่างรอบอาจไม่ขึ้นเลย ถ้าขึ้นว่า “ไม่มีข้อมูล” หรือ “ข้อมูลเก่า” แปลว่าระบบยังไม่ได้ค่าที่ใช้ได้ ไม่ได้แปลว่าฝุ่นเป็นศูนย์หรือปลอดภัย</p></details>
+          <details><summary>ข้อมูลเก่าแค่ไหน</summary><p>ทุกตัวเลขมีเวลาของข้อมูลกำกับ จุดความร้อนมาจากดาวเทียม VIIRS (ผ่านเชียงใหม่ราว 01:00–02:30 และ 13:00–14:30 น.) และ MODIS (ราว 09:00–09:30, 15:00–16:30 และ 20:30–21:00 น.) แล้วข้อมูลของ NASA FIRMS มาถึงช้าอีกราว 3 ชม. ช่วงที่ว่างนานที่สุดคือหลังตีสองครึ่งถึงราวเก้าโมงเช้า และไฟที่เผาสั้น ๆ ระหว่างรอบอาจไม่ขึ้นเลย ถ้าขึ้นว่า “ไม่มีข้อมูล” หรือ “ข้อมูลเก่า” แปลว่าระบบยังไม่ได้ค่าที่ใช้ได้ ไม่ได้แปลว่าฝุ่นเป็นศูนย์หรือปลอดภัย</p></details>
           <details><summary>ทำไมบางอำเภอไม่มีค่าฝุ่น</summary><p>สถานีกรมควบคุมมลพิษในเชียงใหม่ที่เราได้ข้อมูลมี 2 แห่ง อยู่ใน อ.เมืองทั้งคู่ ค่ารายอำเภอจึงมาจากเซนเซอร์ของ World Air Quality Index Project ซึ่งต้องมีอย่างน้อย 2 จุดที่ส่งข้อมูลใน 3 ชม. อำเภอที่ไม่ถึงเกณฑ์จะไม่แสดงค่า แทนที่จะเดา</p></details>
           <details><summary>“อากาศเอื้อต่อไฟ” คืออะไร</summary><p>บอกว่าอากาศแห้ง ร้อน และลมแรงจนไฟติดและลามง่ายแค่ไหน คำนวณจากอุณหภูมิ ความชื้น ลม และฝน ไม่ได้บอกว่าไฟจะเกิดที่ไหนหรือเมื่อไร ดูได้ที่แท็บวิเคราะห์และในการ์ดป่า</p></details>
           <details><summary>ข้อมูลที่ตัวแทนบันทึก ใครเห็นได้บ้าง</summary><p>รายละเอียดเหตุ รูป และชื่อผู้ประสานเห็นได้เฉพาะผู้มีสิทธิ์ในพื้นที่นั้น คนทั่วไปเห็นเฉพาะสรุปที่ผู้รับผิดชอบเลือกเผยแพร่ รูปไม่เผยแพร่พร้อมสรุปสาธารณะ</p></details>
@@ -2107,6 +2107,8 @@ function normalizeSatelliteProduct(raw){
   if(s==='N21'||s.includes('NOAA-21'))return {product:'viirs',label:'NOAA-21 VIIRS'};
   if(s==='N'||s.includes('SNPP')||s.includes('SUOMI'))return {product:'viirs',label:'Suomi NPP VIIRS'};
   if(s.includes('VIIRS'))return {product:'viirs',label:'VIIRS (ไม่ระบุดวง)'};
+  if(s==='T')return {product:'modis',label:'Terra MODIS'};
+  if(s==='A')return {product:'modis',label:'Aqua MODIS'};
   if(s.includes('MODIS')||s.includes('MOD')||s.includes('MYD')||s.includes('TERRA')||s.includes('AQUA'))return {product:'modis',label:'MODIS Terra/Aqua'};
   return {product:'unknown',label:'VIIRS (ไม่ระบุดวง)'};
 }
@@ -2514,7 +2516,7 @@ function hotspotPopupHtml(h){
     `${fmtFrp(h)} · ความเชื่อมั่น ${CmeEvidence.confidenceLabel(h.conf)}<br>`+
     `<small>ระดับคุณภาพการตรวจพบจากต้นทาง ไม่ใช่โอกาสเกิดไฟหรือความแม่นยำของระบบ</small><br>`+
     (h.confSource ? `<small>แหล่งระดับความเชื่อมั่น: ${CmeEvidence.escapeHtml(h.confSource)}</small><br>` : '')+
-    `${h.sat}<br></details></div>`;
+    `ดาวเทียม ${CmeEvidence.escapeHtml(typeof normalizeSatelliteProduct==='function'?normalizeSatelliteProduct(h.sat).label:h.sat)}<br></details></div>`;
 }
 function manualReportPopupHtml(r){
   const when = new Date(r.reported_at).toLocaleString('th-TH', {dateStyle:'medium', timeStyle:'short'});

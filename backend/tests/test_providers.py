@@ -617,3 +617,36 @@ def test_fetch_live_hotspots_raises_when_forest_required_and_backups_empty(mock_
 
     with pytest.raises(Exception, match="Royal Forest Department Firemap unavailable"):
         fetch_live_hotspots(gistda_key="gistda_key", include_forest_firemap=True)
+
+
+MODIS_HEADER = b"latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,confidence,version,bright_t31,frp,daynight\n"
+
+
+@patch("httpx.get")
+def test_modis_is_labelled_and_reads_its_numeric_confidence(mock_get):
+    from app.providers.hotspot_provider import NASA_MODIS_LABEL, fetch_nasa_modis_hotspots
+    resp = MagicMock()
+    resp.content = MODIS_HEADER + b"18.80,98.90,330.1,1.0,1.0,2026-10-22,1330,T,85,6.1NRT,300.0,12.5,N\n18.81,98.91,320.0,1.0,1.0,2026-10-22,0830,A,20,6.1NRT,300.0,3.0,D"
+    mock_get.return_value = resp
+
+    rows = fetch_nasa_modis_hotspots("key")
+
+    assert "/MODIS_NRT/" in mock_get.call_args.args[0]
+    assert [h.source for h in rows] == [NASA_MODIS_LABEL] * 2
+    assert [h.satellite for h in rows] == ["T", "A"]
+    assert [h.confidence_level for h in rows] == ["high", "low"]
+    assert rows[0].confidence_scheme == "MODIS" and rows[0].detected_at.startswith("2026-10-22T20:30")
+
+
+def test_modis_only_adds_points_viirs_did_not_see():
+    from app.providers.hotspot_provider import NASA_MODIS_LABEL, drop_modis_seen_by_viirs
+    viirs = [_hs(18.800, 98.900, NASA).model_copy(update={"detected_at": "2026-10-22T13:30:00+07:00"})]
+    def modis(lat, lon, at):
+        return _hs(lat, lon, NASA_MODIS_LABEL).model_copy(update={"detected_at": at})
+    same_fire = modis(18.805, 98.902, "2026-10-22T20:30:00+07:00")    # ~0.6 km, 7 h later
+    elsewhere = modis(18.900, 98.900, "2026-10-22T20:30:00+07:00")    # ~11 km away
+    much_later = modis(18.801, 98.900, "2026-10-23T08:30:00+07:00")   # 19 h later
+
+    kept = drop_modis_seen_by_viirs([same_fire, elsewhere, much_later], viirs)
+
+    assert kept == [elsewhere, much_later]

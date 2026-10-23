@@ -402,6 +402,11 @@ def fetch_forest_firemap_hotspots(target_date: datetime.date | None = None) -> l
 # RFD aggregates SNPP + NOAA-20 + NOAA-21 VIIRS; query all three so NASA is
 # comparable rather than undercounting (SNPP alone is often empty for a day).
 NASA_VIIRS_SOURCES = ("VIIRS_SNPP_NRT", "VIIRS_NOAA20_NRT", "VIIRS_NOAA21_NRT")
+# MODIS (Terra + Aqua, one FIRMS source) adds passes VIIRS does not make over
+# Chiang Mai: Terra around 08-09 and 20-21, Aqua around 15-16 Bangkok time
+# (October 2026). It only fills gaps; see drop_modis_seen_by_viirs.
+NASA_MODIS_SOURCE = "MODIS_NRT"
+NASA_MODIS_LABEL = "NASA FIRMS MODIS"
 
 
 def _nasa_detected_at(acq_date: str | None, acq_time: str | int | None) -> str:
@@ -447,11 +452,19 @@ def _dedup_same_source_by_location(hotspots: list[Hotspot]) -> list[Hotspot]:
 
 
 def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
+    return _fetch_firms(map_key, NASA_VIIRS_SOURCES, label="NASA FIRMS", scheme="VIIRS", prefix="HS-NASA")
+
+
+def fetch_nasa_modis_hotspots(map_key: str) -> list[Hotspot]:
+    return _fetch_firms(map_key, (NASA_MODIS_SOURCE,), label=NASA_MODIS_LABEL, scheme="MODIS", prefix="HS-MODIS")
+
+
+def _fetch_firms(map_key: str, products: tuple[str, ...], *, label: str, scheme: str, prefix: str) -> list[Hotspot]:
     # NASA FIRMS Area API bounding box for Chiang Mai (west, south, east, north).
     bbox = province_bbox()
     hotspots: list[Hotspot] = []
     idx = 0
-    for src in NASA_VIIRS_SOURCES:
+    for src in products:
         url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{map_key}/{src}/{bbox}/{_NASA_LIVE_DAY_RANGE}"
         logger.info("Fetching hotspots from NASA FIRMS %s", src)
         try:
@@ -466,19 +479,19 @@ def fetch_nasa_firms_hotspots(map_key: str) -> list[Hotspot]:
             try:
                 lat = float(row["latitude"])
                 lon = float(row["longitude"])
-                conf_raw = str(row.get("confidence", "n")).lower()
-                confidence = 90 if conf_raw == "h" else 75 if conf_raw == "n" else 50
+                native = native_confidence(row.get('confidence'), scheme)
+                confidence = {"high": 90, "nominal": 75}.get(native["confidence_level"], 50)
                 idx += 1
                 hotspots.append(Hotspot(
-                    id=f"HS-NASA-{idx:03d}",
+                    id=f"{prefix}-{idx:03d}",
                     latitude=lat,
                     longitude=lon,
                     district=estimate_district(lat, lon),
                     confidence=confidence,
-                    **native_confidence(row.get('confidence')),
+                    **native,
                     frp=_float_or_none(row.get("frp")),
                     brightness=_float_or_none(row.get("bright_ti4") or row.get("brightness")),
-                    source="NASA FIRMS",
+                    source=label,
                     detected_at=_nasa_detected_at(row.get("acq_date"), row.get("acq_time")),
                     satellite=row.get("satellite") or src,
                 ))
@@ -557,6 +570,36 @@ def fetch_hotspot_history_detections(map_key: str, days: int = 31) -> list[dict[
     return sorted(detections, key=lambda item: (str(item["date"]), int(item["hour"]), str(item["district"])))
 
 
+# A MODIS pixel is about 1 km; a VIIRS detection this close within half a day
+# is taken as the same fire, so MODIS adds a point only where VIIRS saw none.
+_MODIS_MATCH_KM = 1.0
+_MODIS_MATCH_HOURS = 12
+
+
+def drop_modis_seen_by_viirs(modis: list[Hotspot], viirs: list[Hotspot]) -> list[Hotspot]:
+    def when(h: Hotspot) -> datetime.datetime | None:
+        try:
+            return datetime.datetime.fromisoformat(str(h.detected_at).replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
+    def km(a: Hotspot, b: Hotspot) -> float:
+        dlat = math.radians(b.latitude - a.latitude)
+        dlon = math.radians(b.longitude - a.longitude)
+        x = math.sin(dlat / 2) ** 2 + math.cos(math.radians(a.latitude)) * math.cos(math.radians(b.latitude)) * math.sin(dlon / 2) ** 2
+        return 12742 * math.asin(math.sqrt(x))
+
+    window = datetime.timedelta(hours=_MODIS_MATCH_HOURS)
+    timed = [(v, when(v)) for v in viirs]
+    kept = []
+    for m in modis:
+        t = when(m)
+        seen = t is not None and any(vt is not None and abs(vt - t) <= window and km(m, v) <= _MODIS_MATCH_KM for v, vt in timed)
+        if not seen:
+            kept.append(m)
+    return kept
+
+
 def merge_hotspots(groups: list[list[Hotspot]]) -> list[Hotspot]:
     return reconcile_hotspots(groups)
 
@@ -567,6 +610,7 @@ _SOURCE_PRIORITY = {
     GISTDA_DISASTER_SOURCE: 1,
     GISTDA_VIIRS_SOURCE: 2,
     "NASA FIRMS": 3,
+    NASA_MODIS_LABEL: 4,
 }
 
 
@@ -663,6 +707,11 @@ def fetch_live_hotspots(
         _try(GISTDA_VIIRS_SOURCE, lambda: fetch_gistda_hotspots(gistda_key))
     if nasa_key:
         _try("NASA FIRMS", lambda: fetch_nasa_firms_hotspots(nasa_key))
+        viirs = [h for group in hotspot_groups for h in group]
+        _try(NASA_MODIS_LABEL, lambda: drop_modis_seen_by_viirs(fetch_nasa_modis_hotspots(nasa_key), viirs))
+        # Name MODIS as a source only when it added a point VIIRS did not have.
+        if NASA_MODIS_LABEL in sources and not source_breakdown.get(NASA_MODIS_LABEL):
+            sources.remove(NASA_MODIS_LABEL)
 
     if not hotspot_groups:
         raise Exception(f"Failed to fetch live hotspots: {'; '.join(fetch_errors)}")

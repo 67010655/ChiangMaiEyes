@@ -19,8 +19,8 @@
     return {zone,hemisphere:lat<0?'S':'N',easting:Math.round(E),northing:Math.round(Nn)};
   }
   const fmt=n=>Number(n).toLocaleString('en-US');
-  // FIRMS satellite codes to readable names (VIIRS: N = NOAA-20, N21 = NOAA-21, S/SNPP = Suomi NPP; MODIS: T = Terra, A = Aqua).
-  const SAT={N:'NOAA-20 (VIIRS)',N20:'NOAA-20 (VIIRS)',N21:'NOAA-21 (VIIRS)',S:'Suomi NPP (VIIRS)',SNPP:'Suomi NPP (VIIRS)',T:'Terra (MODIS)',A:'Aqua (MODIS)'};
+  // FIRMS satellite codes to readable names (VIIRS: N = Suomi NPP, N20 = NOAA-20, N21 = NOAA-21; MODIS: T = Terra, A = Aqua).
+  const SAT={N:'Suomi NPP (VIIRS)',N20:'NOAA-20 (VIIRS)',N21:'NOAA-21 (VIIRS)',S:'Suomi NPP (VIIRS)',SNPP:'Suomi NPP (VIIRS)',T:'Terra (MODIS)',A:'Aqua (MODIS)'};
   const satName=v=>SAT[String(v||'').trim().toUpperCase()]||v||'ไม่ระบุ';
   const esc=v=>root.CmeEvidence?root.CmeEvidence.escapeHtml(v):String(v);
   let sheet,body,title,lastFocus=null,onClose=null;

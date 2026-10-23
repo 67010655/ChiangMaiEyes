@@ -27,6 +27,13 @@ def native_confidence(raw, scheme='VIIRS'):
     if scheme == 'VIIRS':
         level = {'l': 'low', 'low': 'low', 'n': 'nominal', 'nominal': 'nominal',
                  'h': 'high', 'high': 'high'}.get(value, 'unknown')
+    elif scheme == 'MODIS':
+        # FIRMS MODIS confidence is 0-100: under 30 low, 30-79 nominal, 80+ high.
+        try:
+            n = float(value)
+            level = 'unknown' if not math.isfinite(n) or not 0 <= n <= 100 else 'low' if n < 30 else 'nominal' if n < 80 else 'high'
+        except ValueError:
+            level = 'unknown'
     else:
         level = 'unknown'
     return {'confidence_level': level, 'confidence_raw': str(raw) if raw is not None else None,
