@@ -260,14 +260,13 @@
   }
   function adminView(){
     const pend=pendingRequests(),open=state.incidents.filter(i=>!['closed','cancelled'].includes(i.status));
-    const noCoord=open.filter(i=>!i.coordinator_id).length;
     const P=root.CmeForestPublic;
     const headline=pend.length||open.length?`มีงานรอคุณ ${[pend.length?pend.length+' คำขอ':'',open.length?open.length+' เหตุที่ยังไม่ปิด':''].filter(Boolean).join(' และ ')}`:'ตอนนี้ไม่มีงานค้าง 🎉';
     return `<div class="rp">
       <section class="rp-head adm-head"><p class="fp-kicker">ผู้ดูแลระบบ</p><h2>ภาพรวมทุกป่า</h2><p class="adm-headline">${esc(headline)}</p><p class="fp-meta">คุณไม่ได้เป็นตัวแทนของป่าใด หน้านี้สรุปงานที่รอคุณ</p></section>
       <div class="adm-stats">
         <button type="button" class="adm-stat${pend.length?' warn':''}" data-cw="tab" data-tab="review"><span class="adm-ic" aria-hidden="true">📝</span><b>${pend.length}</b><span>คำขอรอตรวจ</span><small>${pend.length?'กดเพื่อตรวจ':'ไม่มีค้าง'}</small></button>
-        <button type="button" class="adm-stat${open.length?' alert':''}" data-cw="all-incidents"><span class="adm-ic" aria-hidden="true">🔥</span><b>${open.length}</b><span>เหตุที่ยังไม่ปิด</span><small>${noCoord?noCoord+' เหตุยังไม่มีผู้รับประสาน':open.length?'มีผู้รับประสานครบ':'ไม่มีเหตุเปิดอยู่'}</small></button>
+        <button type="button" class="adm-stat${open.length?' alert':''}" data-cw="all-incidents"><span class="adm-ic" aria-hidden="true">🔥</span><b>${open.length}</b><span>เหตุที่ยังไม่ปิด</span><small>${open.length?'หมุดยังอยู่บนแผนที่ รอผู้แจ้งกดจบงาน':'ไม่มีหมุดค้าง'}</small></button>
         <div class="adm-stat"><span class="adm-ic" aria-hidden="true">🌳</span><b>${state.catalog.length.toLocaleString('th-TH')}</b><span>ป่าในระบบ</span><small>ขอบเขตจาก RECOFTC</small></div>
       </div>
       ${open.length?`<section class="rp-section"><h2>เหตุที่ยังไม่ปิด</h2>${incidentRows(open.slice(0,5))}${open.length>5?`<div class="cw-actions">${button('ดูทั้งหมด','all-incidents')}</div>`:''}</section>`:''}
@@ -390,7 +389,7 @@
     return `<section class="cw-jobs"><h3>รอบตรวจข้อมูลและคิว LINE</h3><p>${job.scheduler_enabled?'ตั้งงานอัตโนมัติทุก '+job.interval_minutes+' นาทีผ่าน '+esc(job.scheduler_provider):'ยังไม่ได้เปิดงานอัตโนมัติตามรอบ'}</p><p class="cw-help">ตรวจเสร็จล่าสุด: ${latest?date(latest.completed_at):'ยังไม่มีรอบที่ตรวจเสร็จ'}${old?' · ควรตรวจการทำงาน':''}<br>รอบเรียกตรวจไม่ใช่ความถี่ที่ดาวเทียมหรือสถานีส่งข้อมูลใหม่</p><details><summary>ดูผลรอบล่าสุด</summary>${runs.slice(0,5).map(r=>`<p class="cw-help">${date(r.started_at)} · ${r.completed_at?'ตรวจเสร็จ':r.run_status==='failed'?'รอบนี้ไม่สำเร็จ จะตรวจซ้ำ':r.lease_until&&Date.parse(r.lease_until)<Date.now()?'รอบนี้หยุดก่อนเสร็จ รอตรวจซ้ำ':'กำลังตรวจ'}${r.summary?' · เข้าคิว '+Number(r.summary.queued||0)+' · ผู้ให้บริการรับ '+Number(r.summary.provider_accepted||0):''}</p>`).join('')||'<p class="cw-help">ยังไม่มีผลรอบงาน</p>'}</details></section>`;
   }
   function reviewCard(m){
-    return `<article class="cw-req s-${esc(m.status)}"><div class="cw-req-top">${badge(m.status)}${m.created_at?`<small>ส่งคำขอ ${date(m.created_at)} · ${esc(ago(m.created_at))}</small>`:''}</div>
+    return `<article class="cw-req s-${esc(m.status)}"><div class="cw-req-top"><span class="cw-status ${esc(m.status)}">${esc({pending:'รอตรวจ',approved:'อนุมัติแล้ว',rejected:'ไม่อนุมัติ',revoked:'ยกเลิกสิทธิ์แล้ว'}[m.status]||m.status)}</span>${m.created_at?`<small>ส่งคำขอ ${date(m.created_at)} · ${esc(ago(m.created_at))}</small>`:''}</div>
       <h3>🌳 ${esc(m.name)} <span>อ.${esc(String(m.amphoe||'').replace(/^อำเภอ|^อ\./,''))}</span></h3>
       <p class="cw-req-who">👤 ${esc(m.display_name||'ยังไม่ระบุชื่อ')} · ${esc(m.email)}</p>
       <blockquote class="cw-req-note">${esc(m.request_note||'ไม่ได้เขียนรายละเอียด')}</blockquote>

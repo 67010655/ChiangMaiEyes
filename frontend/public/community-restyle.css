@@ -51,3 +51,21 @@ body.light-mode .rp-card,body.light-mode .communityview .cw-section{box-shadow:0
 .cw-prefs>h2,.cw-prefs>.cw-help,.cw-prefs>.cw-admin-tools{grid-column:1/-1}
 .cw-prefs>.cw-pref-card{margin:0!important}
 @media(max-width:900px){.communityview .cw-section.cw-prefs{grid-template-columns:1fr}}
+
+/* Admin overview: same width and cards as the rep page; stat tiles like the analytics tiles */
+.rp:not(.rp-grid){max-width:1100px!important}
+.rp:not(.rp-grid)>.rp-head,.rp:not(.rp-grid)>.rp-section{position:relative;padding:18px!important;border:1px solid var(--line)!important;border-radius:16px!important;background:var(--panel)!important;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden}
+.rp:not(.rp-grid)>.rp-head::before,.rp:not(.rp-grid)>.rp-section::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#43b05f,#37d1d6)}
+body.light-mode .rp:not(.rp-grid)>.rp-head,body.light-mode .rp:not(.rp-grid)>.rp-section{box-shadow:0 6px 18px rgba(15,23,42,.06)}
+.adm-stat{position:relative;overflow:hidden;background:var(--panel)!important;border-color:var(--line)!important;padding:16px 16px 14px!important}
+.adm-stat::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#43b05f,#37d1d6)}
+.adm-stat.warn::before{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.adm-stat.alert::before{background:linear-gradient(90deg,#ef4444,#f59e0b)}
+
+/* Phones: four tabs (admin) go two per row instead of being cut off */
+@media(max-width:820px){
+  .cw-tabs:has(button:nth-child(4)){grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cw-tabs:has(button:nth-child(4)) button:nth-child(3){border-left:0!important}
+  .cw-tabs:has(button:nth-child(4)) button:nth-child(n+3){border-top:1px solid var(--line)!important}
+  .cw-tabs button{font-size:13px!important;padding:8px 6px!important;white-space:nowrap}
+}
