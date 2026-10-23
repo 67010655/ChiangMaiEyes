@@ -17,7 +17,7 @@
   const OPEN_WORDS={pending:'เปิดอยู่',confirmed:'เปิดอยู่',coordinating:'เปิดอยู่',controlled:'เปิดอยู่',closed:'จบงานแล้ว',cancelled:'ไม่ใช่ไฟ'};
   const badge=status=>`<span class="cw-status ${esc(status)}">${esc(OPEN_WORDS[status]||statusNames[status]||status)}</span>`;
   const ago=value=>{const t=Date.parse(value);if(!Number.isFinite(t))return '';const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<1?'เมื่อสักครู่':m<60?m+' นาทีที่แล้ว':m<1440?Math.round(m/60)+' ชม.ที่แล้ว':Math.round(m/1440)+' วันที่แล้ว';};
-  const nextStep={pending:'ตรวจว่าเกิดเหตุจริงไหม แล้วยืนยันหรือยกเลิก',confirmed:'หาคนรับประสาน แล้วอัปเดตการดำเนินงาน',coordinating:'บันทึกความคืบหน้า และชวนป่าข้างเคียงถ้าจำเป็น',controlled:'ตรวจผลอีกครั้ง แล้วบันทึกเหตุผลก่อนปิดเหตุ',closed:'ปิดแล้ว เปิดใหม่ได้ถ้ามีหลักฐานเพิ่ม',cancelled:'ยกเลิกแล้ว ดูเหตุผลในประวัติ'};
+  const nextStep={pending:'หมุดยังอยู่บนแผนที่ ผู้แจ้งกด "จบงาน" เมื่อไฟดับ',confirmed:'หมุดยังอยู่บนแผนที่ ผู้แจ้งกด "จบงาน" เมื่อไฟดับ',coordinating:'หมุดยังอยู่บนแผนที่ ผู้แจ้งกด "จบงาน" เมื่อไฟดับ',controlled:'หมุดยังอยู่บนแผนที่ ผู้แจ้งกด "จบงาน" เมื่อไฟดับ',closed:'จบงานแล้ว เก็บไว้ในประวัติ',cancelled:'บันทึกว่าไม่ใช่ไฟ เก็บไว้ในประวัติ'};
   const STEPS=['pending','confirmed','coordinating','controlled','closed'];
   const stepper=status=>{if(status==='cancelled')return '<div class="cw-steps cancelled"><span class="on">ยกเลิกเหตุ</span></div>';const at=STEPS.indexOf(status);return `<ol class="cw-steps" aria-label="ขั้นของเหตุ">${STEPS.map((st,n)=>`<li class="${n<at?'done':n===at?'on':''}"${n===at?' aria-current="step"':''}><span>${esc(statusNames[st])}</span></li>`).join('')}</ol>`;};
   const obsLabel=o=>o==='fire'?'🔥 เห็นเปลวไฟ':o==='smoke'?'💨 เห็นควัน':'';
