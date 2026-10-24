@@ -248,3 +248,8 @@ body.light-mode .as-lv{color:color-mix(in srgb,var(--lv) 45%,#000)}
 .as-more{margin-top:6px;align-self:flex-start;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--txt);font:600 13px var(--font);cursor:pointer}
 .as-more:hover{border-color:#43b05f}
 .as-archive-start{margin:0 0 12px;padding:10px 14px;border-radius:12px;border:1px dashed var(--line);background:var(--panel-2);font-size:13px;color:var(--txt)}
+
+/* Forest picker suggestions (shared with the map search list) */
+.forest-picker.has-suggest{position:relative}
+.forest-picker .ms-list{top:calc(100% + 4px);z-index:30}
+@media(max-width:820px){.forest-picker.has-suggest .forest-picker-count{display:none}}

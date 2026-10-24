@@ -133,9 +133,23 @@ def forest_contacts(response: Response, forest_ids=Depends(contact_forest_ids), 
 
 
 @router.post('/memberships')
-def request_membership(payload: MembershipRequest, ctx=Depends(session)):
-    store, token, _ = ctx
-    return store.rpc('request_membership', payload.model_dump(), token)
+def request_membership(payload: MembershipRequest, background_tasks: BackgroundTasks, ctx=Depends(session)):
+    store, token, user = ctx
+    result = store.rpc('request_membership', payload.model_dump(), token)
+    requester = ((user or {}).get('user_metadata') or {}).get('full_name') or 'ผู้ใช้ที่ยังไม่ระบุชื่อ'
+    background_tasks.add_task(_notify_request, store.settings, result, requester)
+    return result
+
+
+def _notify_request(settings, membership, requester: str):
+    import logging
+    from app.community_line import queue_request_notice, process_outbox
+    try:
+        store = CommunityStore(settings)
+        if queue_request_notice(store, membership or {}, requester):
+            process_outbox(store)
+    except Exception:  # noqa: BLE001 — the request is saved; a missed notice only means checking the site
+        logging.getLogger(__name__).warning('Request notice did not finish')
 
 
 @router.get('/review-queue')

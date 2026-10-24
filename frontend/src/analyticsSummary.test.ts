@@ -288,3 +288,27 @@ it('filtering keeps the อำเภอ / ป่าชุมชน groups, so th
   expect([...sel.querySelectorAll('optgroup[label="ป่าชุมชน"] option')].length).toBe(11);
   dom.window.close();
 });
+
+it('the analysis area box suggests districts and forests like the map search, and a pick sets the area', async () => {
+  const forests = Array.from({ length: 40 }, (_, i) => `<option value="f:${i}">ป่าชุมชนบ้านแม่${i} · อ.จอมทอง</option>`).join('');
+  const dom = new JSDOM(`<select id="anForest"><option value="">ทั้งจังหวัดเชียงใหม่</option><optgroup label="อำเภอ"><option value="d:จอมทอง">อ.จอมทอง (ทั้งอำเภอ)</option></optgroup><optgroup label="ป่าชุมชน">${forests}</optgroup></select>`, { runScripts: 'outside-only' });
+  const w = dom.window as any;
+  w.eval(pub('map-search.js')); w.eval(pub('forest-picker.js'));
+  const sel = w.document.getElementById('anForest');
+  const input = sel.previousElementSibling.querySelector('input');
+  let changed = '';
+  sel.addEventListener('change', () => { changed = sel.value; });
+  input.value = 'จอมทอง'; input.dispatchEvent(new w.Event('input'));
+  const list = sel.previousElementSibling.querySelector('.ms-list');
+  expect(list.hidden).toBe(false);
+  expect(list.textContent).toContain('อำเภอ');
+  expect(list.querySelector('.ms-opt').textContent).toContain('จอมทอง');
+  input.value = 'บ้านแม่7'; input.dispatchEvent(new w.Event('input'));
+  const opt = list.querySelector('.ms-opt');
+  expect(opt.textContent).toContain('ป่าชุมชนบ้านแม่7');
+  opt.dispatchEvent(new w.Event('pointerdown', { bubbles: true, cancelable: true }));
+  expect(changed).toBe('f:7');
+  expect(input.value).toBe('ป่าชุมชนบ้านแม่7');
+  expect(sel.querySelectorAll('option').length).toBe(42); // the full list is back after picking
+  dom.window.close();
+});

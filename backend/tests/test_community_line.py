@@ -218,3 +218,32 @@ def test_hotspot_text_lists_what_to_do_next():
     text = line.hotspot_text(LineStore(), 'ป่าชุมชนบ้านทดสอบ', 3, '2026-10-19T03:00:00+00:00', 'GISTDA', '2026-10-19T03:05:00+00:00')
     assert text.startswith('🔥') and 'ในป่าชุมชนบ้านทดสอบ' in text and 'ในป่า ป่า' not in text
     assert '1.' in text and '2.' in text and '3.' in text
+
+
+def test_new_rep_request_tells_admins_with_line_once_and_only_admins_may_receive_it():
+    class Store:
+        settings = settings()
+        inserted = []
+        def rows(self, table, **kw):
+            if table == 'cme_admins':
+                return [{'user_id': 'admin-1'}, {'user_id': 'admin-2'}] if 'user_id' not in kw else ([{'user_id': 'admin-1'}] if kw['user_id'] == 'eq.admin-1' else [])
+            if table == 'cme_line_links':
+                return [{'user_id': 'admin-1', 'line_user_id': 'U' + '1' * 32}] if kw.get('user_id') in (None, 'eq.admin-1') else []
+            if table == 'cme_forests':
+                return [{'name': 'ป่าชุมชนบ้านแม่คงคา', 'amphoe': 'แม่แจ่ม'}]
+            return []
+        def insert(self, table, row, **kw):
+            if any(r['dedup_key'] == row['dedup_key'] for _, r in self.inserted):
+                return []
+            self.inserted.append((table, row)); return [row]
+    store = Store()
+    m = {'id': 'm1', 'forest_id': 'f1', 'status': 'pending', 'request_note': 'กรรมการป่า'}
+    assert line.queue_request_notice(store, m, 'สมหญิง') == 1          # admin-2 has no LINE
+    assert line.queue_request_notice(store, m, 'สมหญิง') == 0          # same request: once
+    assert line.queue_request_notice(store, {**m, 'id': 'm2', 'status': 'approved'}, 'x') == 0
+    table, row = store.inserted[0]
+    assert row['user_id'] == 'admin-1' and row['dedup_key'] == 'admin-request/m1/admin-1'
+    assert 'ป่าชุมชนบ้านแม่คงคา (อ.แม่แจ่ม)' in row['message'] and 'สมหญิง' in row['message'] and '/#community' in row['message']
+    # The worker re-checks: an admin receives it without any forest membership; a non-admin does not.
+    assert line._eligible(store, {'user_id': 'admin-1', 'dedup_key': row['dedup_key'], 'category': 'incident', 'forest_id': 'f1'})
+    assert line._eligible(store, {'user_id': 'rep-1', 'dedup_key': 'admin-request/m1/rep-1', 'category': 'incident', 'forest_id': 'f1'}) is None

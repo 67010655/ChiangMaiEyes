@@ -5,6 +5,7 @@
   'use strict';
   const SELECTORS=['#anForest','#exportForest','#forestTerrainSelect','#spreadWorkspace select[name="forest_id"]'];
   const MIN_OPTIONS=30;
+  let pickers=0;
   // Thai text: case-insensitive, ignore spaces and the อ./อำเภอ prefix people may or may not type.
   const norm=s=>String(s||'').toLowerCase().replace(/อำเภอ|อ\./g,'').replace(/\s+/g,'');
   function enhance(sel){
@@ -46,6 +47,19 @@
       status.textContent=q?`พบ ${real.length} ป่า`:'';
     });
     snapshot();sync();
+    // Same suggestion list as the map search: type part of a name, pick a district or forest.
+    if(root.CmeMapSearch){
+      const items=()=>{if(!all)snapshot();return all.filter(o=>o.value).map(o=>{
+        const district=/^d:/.test(o.value),[name,sub]=String(o.text).split(' · ');
+        return {kind:district?'district':'forest',name:district?name.replace(/^อ\.|\s*\(ทั้งอำเภอ\)$/g,''):name,sub:district?'ทั้งอำเภอ':(sub||''),ref:o.value};});};
+      root.CmeMapSearch.init({input,items,listId:'fpList'+(++pickers),onPick:r=>{
+        input.value='';status.textContent='';
+        if(all&&sel.options.length!==all.length){filtering=true;rebuild(all);watcher.takeRecords();filtering=false;}
+        sel.value=r.ref;sel.dispatchEvent(new Event('change',{bubbles:true}));
+        input.value=r.kind==='district'?'อ.'+r.name:r.name;
+      }});
+      wrap.classList.add('has-suggest');
+    }
   }
   function scan(){SELECTORS.forEach(s=>document.querySelectorAll(s).forEach(enhance));}
   scan();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scan);

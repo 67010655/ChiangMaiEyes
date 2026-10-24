@@ -32,30 +32,30 @@
     for(const [, ,it] of scored){seen[it.kind]=(seen[it.kind]||0)+1;if(seen[it.kind]<=cap[it.kind])out.push(it);else more++;}
     out.more=more;return out;
   }
-  function listHtml(rows,q,title){
+  function listHtml(rows,q,title,listPrefix='msOpt'){
     if(!rows.length)return q?`<li class="ms-empty" role="option" aria-disabled="true">ไม่พบ "${esc(q)}" ลองพิมพ์บางส่วนของชื่อ หรือพิกัด เช่น 18.79, 98.98</li>`:'';
     const mark=t=>{const n=String(q||'').trim();if(!n)return esc(t);const i=t.indexOf(n);return i<0?esc(t):esc(t.slice(0,i))+'<mark>'+esc(t.slice(i,i+n.length))+'</mark>'+esc(t.slice(i+n.length));};
     let last='';
     return (title?`<li class="ms-title" role="presentation">${esc(title)}</li>`:'')+rows.map((r,i)=>{
       const head=!title&&r.kind!==last?`<li class="ms-title" role="presentation">${esc(KIND[r.kind].group)}</li>`:'';last=r.kind;
-      return head+`<li role="option" id="msOpt${i}" class="ms-opt" data-i="${i}" aria-selected="${i===0}"><span class="ms-ic ${r.kind}" aria-hidden="true">${KIND[r.kind].ic}</span><span class="ms-t"><b>${mark(r.name)}</b><small>${esc(r.sub||KIND[r.kind].label)}${r.extra?' · '+esc(r.extra):''}</small></span></li>`;}).join('')+(rows.more?`<li class="ms-empty" role="presentation">และอีก ${rows.more} รายการ พิมพ์ให้เจาะจงขึ้นเพื่อดู</li>`:'');
+      return head+`<li role="option" id="${listPrefix}${i}" class="ms-opt" data-i="${i}" aria-selected="${i===0}"><span class="ms-ic ${r.kind}" aria-hidden="true">${KIND[r.kind].ic}</span><span class="ms-t"><b>${mark(r.name)}</b><small>${esc(r.sub||KIND[r.kind].label)}${r.extra?' · '+esc(r.extra):''}</small></span></li>`;}).join('')+(rows.more?`<li class="ms-empty" role="presentation">และอีก ${rows.more} รายการ พิมพ์ให้เจาะจงขึ้นเพื่อดู</li>`:'');
   }
 
-  function init({input,items,suggest,onPick,onCoordinates}){
+  function init({input,items,suggest,onPick,onCoordinates,listId='mapSearchList',emptyTitle='มีจุดความร้อนใน 24 ชม.'}){
     if(!input)return;
     const box=input.closest('.map-search')||input.parentElement;
     const list=document.createElement('ul');
-    list.className='ms-list';list.id='mapSearchList';list.setAttribute('role','listbox');list.hidden=true;
+    list.className='ms-list';list.id=listId;list.setAttribute('role','listbox');list.hidden=true;
     box.appendChild(list);
     input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls',list.id);input.setAttribute('aria-expanded','false');
     let rows=[],active=0;
-    const show=(html,r)=>{rows=r;active=0;list.innerHTML=html;list.hidden=!html;input.setAttribute('aria-expanded',String(!!html));input.setAttribute('aria-activedescendant',r.length?'msOpt0':'');};
+    const show=(html,r)=>{rows=r;active=0;list.innerHTML=html;list.hidden=!html;input.setAttribute('aria-expanded',String(!!html));input.setAttribute('aria-activedescendant',r.length?listId+'-0':'');};
     const hide=()=>{list.hidden=true;input.setAttribute('aria-expanded','false');};
     const refresh=()=>{
       const q=input.value.trim();
-      if(!q){const s=suggest?suggest():[];show(listHtml(s,'',s.length?'มีจุดความร้อนใน 24 ชม.':''),s);return;}
+      if(!q){const s=suggest?suggest():[];show(listHtml(s,'',s.length?emptyTitle:'',listId+'-'),s);return;}
       if(/^\s*-?\d+(?:\.\d+)?[,\s]+-?\d+(?:\.\d+)?\s*$/.test(q)){show(`<li class="ms-opt" role="option" data-coord="1" aria-selected="true"><span class="ms-ic" aria-hidden="true">🧭</span><span class="ms-t"><b>${esc(q)}</b><small>ไปที่พิกัดนี้</small></span></li>`,[]);return;}
-      const r=rank(items(),q);show(listHtml(r,q),r);
+      const r=rank(items(),q);show(listHtml(r,q,'',listId+'-'),r);
     };
     const choose=i=>{
       if(list.querySelector('[data-coord]')){hide();onCoordinates?.(input.value.trim());input.blur();return;}

@@ -234,11 +234,46 @@ def queue_test(store: CommunityStore, user: dict) -> str:
     return rows[0]['id']
 
 
+ADMIN_REQUEST_KEY = 'admin-request/'
+
+
+def request_notice_text(store: CommunityStore, forest: dict, requester: str, note: str) -> str:
+    """LINE to admins when someone asks to become a forest's rep, so nobody has to keep checking the site."""
+    amphoe = str(forest.get('amphoe') or '').replace('อำเภอ', '').strip()
+    lines = ['📝 มีคำขอเป็นตัวแทนป่าชุมชนใหม่',
+             f'🌳 {forest.get("name") or "ป่าชุมชน"}' + (f' (อ.{amphoe})' if amphoe else ''),
+             f'👤 {requester}']
+    if note.strip():
+        lines.append('💬 ' + note.strip()[:200])
+    lines += ['', 'ก่อนอนุมัติ เช็กว่าเป็นคนในชุมชนนั้นจริง',
+              '✅ ตรวจคำขอ: ' + store.settings.community_site_url.rstrip('/') + '/#community']
+    return '\n'.join(lines)[:4000]
+
+
+def queue_request_notice(store: CommunityStore, membership: dict, requester: str) -> int:
+    """One message per admin with LINE linked, per request (dedup by membership id)."""
+    if not enabled(store.settings) or membership.get('status') != 'pending' or not membership.get('id'):
+        return 0
+    admins = {a['user_id'] for a in store.rows('cme_admins', select='user_id') or []}
+    linked = admins & linked_users(store)
+    if not linked:
+        return 0
+    found = store.rows('cme_forests', select='name,amphoe', forest_id='eq.' + str(membership['forest_id']))
+    text = request_notice_text(store, found[0] if found else {}, requester, membership.get('request_note') or '')
+    queued = 0
+    for uid in sorted(linked):
+        inserted = store.insert('cme_line_outbox', {'dedup_key': f'{ADMIN_REQUEST_KEY}{membership["id"]}/{uid}', 'user_id': uid,
+            'forest_id': membership['forest_id'], 'category': 'incident', 'message': text}, dedup=True)
+        queued += len(inserted or [])
+    return queued
+
+
 def _eligible(store: CommunityStore, row: dict):
     link = store.rows('cme_line_links', select='line_user_id', user_id='eq.' + row['user_id'])
     if not link:
         return None
-    if row['category'] == 'test':
+    # Tests and "new rep request" notices go to admins, who need not be a member of the forest.
+    if row['category'] == 'test' or str(row.get('dedup_key', '')).startswith(ADMIN_REQUEST_KEY):
         return link[0]['line_user_id'] if store.rows('cme_admins', select='user_id', user_id='eq.' + row['user_id']) else None
     approved = store.rows('cme_memberships', select='id', user_id='eq.' + row['user_id'],
                           forest_id='eq.' + str(row['forest_id']), status='eq.approved')
