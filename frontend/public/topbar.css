@@ -166,5 +166,7 @@ a:has(>.hotline-what.in-btn){display:inline-flex!important;flex-direction:column
    but below modals (3000). The top bar makes its own layer (backdrop blur), so the bar carries the z-index. */
 /* Phones: full-screen views cover the top bar on purpose (own header and close button), so only wider screens lift it. */
 @media(min-width:821px){.topbar{position:relative;z-index:1600!important}}
+/* Phones too, but only while the account menu is open: otherwise it opened underneath the community view. */
+.topbar:has(.auth-dropdown.open){position:relative;z-index:1600!important}
 .topbar .auth-wrap{position:relative;z-index:2}
 .auth-dropdown{z-index:2500!important}

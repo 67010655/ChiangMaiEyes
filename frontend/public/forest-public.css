@@ -171,3 +171,8 @@ button.adm-stat:hover{border-color:var(--green)}
 .rp-pin-act{display:flex;gap:8px;flex-wrap:wrap}
 .rp-pin-act .cw-btn{min-height:40px}
 .rp-pins-none{margin:0;padding:0 4px;font-size:13px;opacity:.75;color:var(--txt)}
+
+/* shared search suggestions (map-search list) */
+.fp-pick.has-suggest{position:relative}
+.fp-pick .ms-list{z-index:40}
+.fp-hero:has(.fp-pick.has-suggest){overflow:visible;position:relative;z-index:5}

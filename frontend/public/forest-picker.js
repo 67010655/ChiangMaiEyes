@@ -3,7 +3,7 @@
  * required rule and every existing script that reads or sets its value. */
 (function(root){
   'use strict';
-  const SELECTORS=['#anForest','#exportForest','#forestTerrainSelect','#spreadWorkspace select[name="forest_id"]'];
+  const SELECTORS=['#cwRequestForest','#anForest','#exportForest','#forestTerrainSelect','#spreadWorkspace select[name="forest_id"]'];
   const MIN_OPTIONS=30;
   let pickers=0;
   // Thai text: case-insensitive, ignore spaces and the อ./อำเภอ prefix people may or may not type.
@@ -51,7 +51,7 @@
     if(root.CmeMapSearch){
       const items=()=>{if(!all)snapshot();return all.filter(o=>o.value).map(o=>{
         const district=/^d:/.test(o.value),[name,sub]=String(o.text).split(' · ');
-        return {kind:district?'district':'forest',name:district?name.replace(/^อ\.|\s*\(ทั้งอำเภอ\)$/g,''):name,sub:district?'ทั้งอำเภอ':(sub||''),ref:o.value};});};
+        return {kind:district?'district':'forest',name:district?name.replace(/^อ\.|\s*\(ทั้งอำเภอ\)$/g,''):name,sub:district?'ทั้งอำเภอ':(sub?(/^อ\./.test(sub)?sub:'อ.'+sub):''),ref:o.value};});};
       root.CmeMapSearch.init({input,items,listId:'fpList'+(++pickers),onPick:r=>{
         input.value='';status.textContent='';
         if(all&&sel.options.length!==all.length){filtering=true;rebuild(all);watcher.takeRecords();filtering=false;}

@@ -114,7 +114,7 @@
   function membershipView(){
     const requests=state.me?.memberships||[],waiting=requests.filter(m=>m.status==='pending');
     const html=`<section class="cw-section"><h2>ขอสิทธิ์ตัวแทนป่าชุมชน</h2><p class="cw-help">เลือกป่าจากขอบเขตที่ได้รับจาก RECOFTC และระบุหน้าที่หรือช่องทางให้ผู้ดูแลตรวจสอบ การเลือกชื่อป่ายังไม่ถือว่าได้รับสิทธิ์</p>
-      <form class="cw-form" id="cwMembershipForm"><label>ค้นหาชื่อป่าหรืออำเภอ<input type="search" id="cwForestSearch" placeholder="พิมพ์ชื่อป่าหรืออำเภอ" autocomplete="off"></label><label>ป่าที่ขอสิทธิ์<select id="cwRequestForest" required data-required-message="เลือกป่าชุมชนก่อน">${options(state.catalog)}</select></label><label>หน้าที่และข้อมูลสำหรับตรวจสอบ<textarea name="note" maxlength="1000" required placeholder="เช่น หน้าที่ในชุมชน และช่องทางตรวจสอบกับหน่วยงาน"></textarea></label><button class="cw-btn primary">ส่งคำขอให้ผู้ดูแล</button></form>
+      <form class="cw-form" id="cwMembershipForm"><label>ป่าที่ขอสิทธิ์<select id="cwRequestForest" required data-required-message="เลือกป่าชุมชนก่อน">${options(state.catalog)}</select></label><label>หน้าที่และข้อมูลสำหรับตรวจสอบ<textarea name="note" maxlength="1000" required placeholder="เช่น หน้าที่ในชุมชน และช่องทางตรวจสอบกับหน่วยงาน"></textarea></label><button class="cw-btn primary">ส่งคำขอให้ผู้ดูแล</button></form>
       ${requests.length?`<h3>คำขอของคุณ</h3>${requests.map(m=>`<div class="cw-row"><div><h3>${esc(m.name)}</h3><p>${date(m.created_at)}</p>${m.review_note?`<p>${esc(m.review_note)}</p>`:''}</div><span class="cw-status ${esc(m.status)}">${esc(MEMBER_WORDS[m.status]||m.status)}</span></div>`).join('')}`:''}</section>`;
     // Someone already waiting sees that first; asking for another forest stays folded below.
     if(!waiting.length)return html;
@@ -443,6 +443,7 @@
     }
     if(state.tab==='practice'&&state.session&&state.me&&root.CmePractice)root.CmePractice.attach(document.getElementById('cwPractice'),{api});
     if(state.tab==='forest'&&state.me&&!state.detail&&!state.create){renderMap(forest());const now=body.querySelector('[data-rp-now]');if(now&&root.CmeForestPublic){root.CmeForestPublic.fillAsync(now,forest(),path=>root.fetch((context.apiBase||'')+path));root.CmeCoordination?.hydrate?.(body);}}
+    body.querySelectorAll('#cwRequestForest').forEach(sel=>root.CmeForestPicker?.enhance(sel));  // same search as the map
     if(state.detail?.photos?.length)loadPhotos();
     const did=state.detail?.incident?.id;
     if(did&&state.detail.events&&!fieldChecks.has(did)&&!checksLoading.has(did)){checksLoading.add(did);api('/incidents/'+did+'/field-checks').then(rows=>{fieldChecks.set(did,rows||[]);}).catch(()=>{fieldChecks.set(did,[]);}).finally(()=>{checksLoading.delete(did);if(state.detail?.incident?.id===did&&!state.busy)render();});}
@@ -565,7 +566,7 @@
   function input(event){
     const activeForm=event.target.closest('.cw-form');if(activeForm&&activeForm.id!=='cwIncidentForm')rememberForm(activeForm);
     if(event.target.closest('#cwIncidentForm')&&['latitude','longitude'].includes(event.target.name))updateNearPins();
-    if(event.target.id==='cwForestSearch'){const q=event.target.value.trim();document.getElementById('cwRequestForest').innerHTML=options(state.catalog.filter(f=>(f.name+' '+f.amphoe).includes(q)));}
+
     if(event.target.closest('#cwIncidentForm')&&event.target.name){if(!state.draft)state.draft=newDraft();state.draft[event.target.name]=event.target.value;saveDraft();}
     if(event.target.id==='cwActiveForest'){state.forestId=event.target.value;render();}
   }

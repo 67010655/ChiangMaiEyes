@@ -259,13 +259,22 @@ ${shareUrl(f)}`;
   function attach(el,ctx){
     el._fpCtx=ctx;
     if(!el.dataset.fpWired){el.dataset.fpWired='1';wire(el);}
+    // One search everywhere: the map's suggestion list, fed with this page's forests.
+    const box0=el.querySelector('#fpSearch');
+    if(box0&&root.CmeMapSearch&&!box0.dataset.ms){
+      box0.dataset.ms='1';box0.parentElement.classList.add('has-suggest');
+      const label=labeller(ctx.forests());
+      root.CmeMapSearch.init({input:box0,listId:'fpSearchList',
+        items:()=>ctx.forests().map(f=>({kind:'forest',name:label(f),sub:[f.tambon?'ต.'+f.tambon:'',f.amphoe?'อ.'+String(f.amphoe).replace(/^อำเภอ|^อ\./,''):''].filter(Boolean).join(' '),ref:f.forest_id})),
+        onPick:r=>el._fpPick?.(r.ref)});
+    }
     const box=el.querySelector('#fpCard'), id=box?.dataset.id;
     const f=id&&ctx.forests().find(x=>x.forest_id===id);
     if(f&&box?.firstElementChild)fillAsync(box,f,ctx.fetcher);
   }
   // Listeners go on the long-lived container once; each render reads the latest ctx.
   function wire(el){
-    const pick=id=>{
+    const pick=el._fpPick=id=>{
       const ctx=el._fpCtx;
       const f=ctx.forests().find(x=>x.forest_id===id);remember(f?id:'');ctx.onPick?.(f?id:'');
       try{root.history?.replaceState(null,'',f?'#community/forest/'+encodeURIComponent(id):'#community');}catch{}
@@ -273,7 +282,7 @@ ${shareUrl(f)}`;
       if(f)el.querySelector('#fpCard')?.scrollIntoView?.({block:'start',behavior:'smooth'});
     };
     el.addEventListener('input',e=>{
-      if(e.target.id!=='fpSearch')return;
+      if(e.target.id!=='fpSearch'||e.target.dataset.ms)return;  // the shared list handles it
       const out=el.querySelector('#fpResults');if(out)out.innerHTML=searchHtml(el._fpCtx.forests(),e.target.value);
     });
     el.addEventListener('click',e=>{
