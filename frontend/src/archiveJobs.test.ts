@@ -14,6 +14,7 @@ async function fixture(){
   await db.exec(migration('20261012140000_firms_geographic_scope.sql'));
   await db.exec(migration('20261020160000_archive_district_filter.sql'));
   await db.exec(migration('20261024090000_archive_analytics_daily_by_date.sql'));
+  await db.exec(migration('20261024120000_archive_analytics_narrow.sql'));
   return db;
 }
 describe('durable archive jobs and one-window analytics',()=>{
