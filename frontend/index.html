@@ -4016,15 +4016,23 @@ const analyticsEl=document.getElementById('analytics');
   new ResizeObserver(schedule).observe(rail);
   schedule();
 })();
+// Coming back to the map from another tab always shows the whole province. On phones the map sits
+// hidden (size 0) behind the full-screen views, and Leaflet's view drifted to a deep zoom meanwhile.
+let _navCurrent='home';
+function showWholeProvince(){
+  map.invalidateSize({pan:false});
+  if(_provinceBoundsForFit)map.fitBounds(_provinceBoundsForFit,{padding:[12,12],animate:false});
+}
 CmeNavigation.init({
-  close:()=>{closeAllOverlays();closeMobileDrawers();},
+  // Leaving a view also closes the map's open card (hotspot sheet / popup), so it isn't still there on return.
+  close:()=>{closeAllOverlays();closeMobileDrawers();window.CmeHotspotSheet?.close?.();map.closePopup();},
   views:{
-    home:()=>setTimeout(()=>map.invalidateSize(),60),
-    analytics:()=>{analyticsEl.classList.add('open');syncAnalyticsForests();renderAnalytics(currentRange);},
-    report:openReport,threed:open3D,
-    phase:()=>CmeCommunity.open('incidents'),community:()=>CmeCommunity.open('forest'),
-    guide:()=>document.getElementById('guideview').classList.add('open'),
-    data:()=>{document.getElementById('dataview').classList.add('open');renderAqiStations();loadArchive();loadFieldEvaluation();},
+    home:()=>{const from=_navCurrent;_navCurrent='home';setTimeout(()=>{if(from!=='home')showWholeProvince();else map.invalidateSize();},60);},
+    analytics:()=>{_navCurrent='analytics';analyticsEl.classList.add('open');syncAnalyticsForests();renderAnalytics(currentRange);},
+    report:()=>{_navCurrent='report';openReport();},threed:()=>{_navCurrent='threed';open3D();},
+    phase:()=>{_navCurrent='phase';CmeCommunity.open('incidents');},community:()=>{_navCurrent='community';CmeCommunity.open('forest');},
+    guide:()=>{_navCurrent='guide';document.getElementById('guideview').classList.add('open');},
+    data:()=>{_navCurrent='data';document.getElementById('dataview').classList.add('open');renderAqiStations();loadArchive();loadFieldEvaluation();},
   }
 });
 document.getElementById('guideClose').onclick=()=>CmeNavigation.open('home');
@@ -4061,12 +4069,7 @@ function openLatestHotspot(){
     m?.fire('click');
   },80);
 }
-document.getElementById('anClose').onclick=()=>{
-  analyticsEl.classList.remove('open');
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  document.querySelector('.nav-item[data-view="home"]').classList.add('active');
-  setTimeout(()=>map.invalidateSize(),60);
-};
+document.getElementById('anClose').onclick=()=>CmeNavigation.open('home');
 function toast(msg){ CmeUx.toast(msg); }
 
 // ---- stats helpers ----
