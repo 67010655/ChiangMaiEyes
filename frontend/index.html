@@ -1283,6 +1283,7 @@
 <link rel="stylesheet" href="/topbar.css">
 <link rel="stylesheet" href="/map-ui.css">
 <link rel="stylesheet" href="/incident-pins.css">
+<link rel="stylesheet" href="/practice-report.css">
 <link rel="stylesheet" href="/analytics-ui.css">
 <link rel="stylesheet" href="/fire-weather.css">
 <link rel="stylesheet" href="/forest-public.css">
@@ -1861,6 +1862,7 @@
         <div class="gd-alerts">
           <article class="gd-alert"><h3>💬 ฝุ่นรายอำเภอทาง LINE</h3><p class="gd-who">ทุกคน · ไม่ต้องสมัครสมาชิก</p><p>แจ้งเมื่อเซนเซอร์ในอำเภอวัดได้ระดับ “เริ่มมีผลต่อกลุ่มเสี่ยง” ขึ้นไปต่อเนื่อง 1 ชม. เปิดเฉพาะอำเภอที่มีเซนเซอร์ส่งข้อมูลอย่างน้อย 2 จุด หยุดได้ทุกเมื่อ พิมพ์ “หยุด”</p><button type="button" class="gc-try" data-guide-try="dustline">ไปรับแจ้งเตือน</button></article>
           <article class="gd-alert"><h3>🌳 ไฟใกล้ป่าที่ดูแล</h3><p class="gd-who">ตัวแทนป่าชุมชนที่ได้รับอนุมัติ</p><ol><li>สมัครและยืนยันอีเมล</li><li>ขอสิทธิ์ป่าที่ดูแล แล้วรอผู้ดูแลอนุมัติ</li><li>ผูก LINE ใน “ป่าชุมชน → การแจ้งเตือน”</li></ol><p>ได้ LINE เมื่อมีจุดความร้อนในป่า มีหมุดใหม่ห่างไม่เกิน 5 กม. และเมื่อหมุดนั้นจบงาน เรื่องไฟส่งทาง LINE ทางเดียว อีเมลใช้แค่เรื่องบัญชี</p><button type="button" class="gc-try" data-open-view="community">ไปที่ป่าชุมชน</button></article>
+          <article class="gd-alert gd-practice"><h3>🧪 ฝึกแจ้งไฟ</h3><p class="gd-who">ทุกคน · ไม่ต้องสมัครสมาชิก</p><p>ลองกดแจ้งไฟได้เหมือนของจริง แต่ข้อมูลอยู่ในเครื่องนี้เท่านั้น ไม่มีใครได้รับ LINE ระบบจะแสดงว่าถ้าเป็นของจริง ป่าไหนจะได้รับข้อความอะไร</p><button type="button" class="gc-try" data-guide-try="practice">เริ่มฝึก</button></article>
         </div>
       </section>
 
@@ -1996,6 +1998,7 @@
 <script src="/land-context.js"></script>
 <script src="/community-workspace.js"></script>
 <script src="/incident-pins.js"></script>
+<script src="/practice-report.js"></script>
 <script src="/field-checks.js"></script>
 <script src="/practice-workspace.js"></script>
 <script src="/auth-ui.js"></script>
@@ -3032,6 +3035,7 @@ let _pickingLocation = false;
 let _pickedLatLng = null;
 
 document.getElementById('reportHotspotBtn').onclick = ()=>{
+  if(CmePracticeReport.active()){ CmePracticeReport.open(); return; }  // practice: no account, nothing sent
   if(!currentUser){ openAuthModal(); return; }
   CmeCommunity.newIncident();
 };
@@ -3084,6 +3088,7 @@ document.getElementById('reportPickMapBtn').onclick = ()=>{
 // lat/lng args are optional — omitted when opened directly from the report
 // button (user fills them in via typing/GPS/map-pick instead).
 function openReportModal(lat, lng){
+  if(lat!=null&&lng!=null&&CmePracticeReport.takePick(lat,lng)) return;
   CmeCommunity.newIncident(lat!=null&&lng!=null?{lat,lon:lng}:undefined);
   return;
   const latEl = document.getElementById('reportLat'), lngEl = document.getElementById('reportLng');
@@ -4047,6 +4052,7 @@ document.getElementById('guideview').addEventListener('click',e=>{
       if(row&&!row.classList.contains('on'))row.click();
       if(_provinceBoundsForFit)map.fitBounds(_provinceBoundsForFit,{padding:[12,12]});
     }
+    else if(kind==='practice')CmePracticeReport.open();
     else if(kind==='replay')document.querySelector('.hs-replay-start:not([hidden])')?.click();
     else if(kind==='dust'){
       ['pm','sensors','wind'].forEach(k=>{const row=document.querySelector(`.layer[data-layer="${k}"]`);if(row&&!row.classList.contains('on'))row.click();});
@@ -6884,6 +6890,14 @@ CmeCommunity.init({
   showPin:id=>{showPinOnMap(id);},
   legacyPhase:()=>{closeAllOverlays();openPhasePanel();},
   exportForest:id=>{CmeNavigation.open('report');document.getElementById('exportScope').value='forest';document.getElementById('exportForest').value=id;buildReport();}
+});
+CmePracticeReport.init({
+  leaflet:L,
+  map:()=>map,
+  nearest:(lat,lon,n)=>CmeCoordination.nearest(lat,lon,allForests,n),
+  area:(lat,lon)=>CmeCoordination.administrativeArea(lat,lon),
+  pick:()=>{closeAllOverlays();startPickLocation();},
+  flyTo:(lat,lon)=>{closeAllOverlays();map.flyTo([lat,lon],13,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});},
 });
 
 // Per-district wind-direction pins in 3D were tried and removed

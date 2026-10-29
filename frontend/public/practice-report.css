@@ -1,0 +1,65 @@
+/* Practice fire report (practice-report.js). Amber, dashed and labelled "ฝึก" everywhere so a practice
+   pin can never be mistaken for a real violet report pin. */
+/* Sits under the full-screen views (z 1500), so it shows on the map only; never over the 1362 button. */
+.pr-banner{position:fixed;left:8px;right:62px;top:274px;z-index:1400;display:flex;align-items:center;gap:8px;
+  padding:6px 8px 6px 12px;border-radius:12px;background:#78350f;color:#fef3c7;border:2px dashed #fbbf24;box-shadow:0 6px 18px rgba(0,0,0,.35);font-size:13px;line-height:1.3}
+.pr-banner .pr-long{display:none}
+.pr-banner button{margin-left:auto;flex:none;background:#fef3c7;color:#78350f;border:0;border-radius:9px;padding:6px 10px;min-height:32px;font:inherit;font-weight:700;cursor:pointer}
+@media(min-width:821px){.pr-banner{left:50%;right:auto;transform:translateX(-50%);top:172px;max-width:620px}.pr-banner .pr-long{display:inline}.pr-banner .pr-short{display:none}}
+body.practice-mode #reportHotspotBtn{outline:3px dashed #fbbf24;outline-offset:2px}
+
+.pr-backdrop{position:fixed;inset:0;z-index:1800;display:none;align-items:flex-end;justify-content:center;background:rgba(5,8,12,.55)}
+.pr-backdrop.open{display:flex}
+@media(min-width:821px){.pr-backdrop{align-items:center}}
+.pr-card{position:relative;width:min(560px,100vw);max-height:92vh;overflow:auto;background:var(--panel,#111821);color:var(--txt,#e8eef5);border:1px solid var(--line,#253041);
+  border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.45)}
+@media(min-width:821px){.pr-card{border-radius:18px;padding:22px 24px}}
+.pr-x{position:absolute;right:12px;top:10px;width:36px;height:36px;border-radius:10px;border:1px solid var(--line,#253041);background:transparent;color:inherit;font-size:16px;cursor:pointer}
+.pr-card h2{margin:0 44px 8px 0;font-size:20px}
+.pr-card h3{margin:16px 0 6px;font-size:15px}
+.pr-safe{margin:0 0 12px;padding:9px 12px;border-radius:10px;background:rgba(251,191,36,.12);border:1px dashed #f59e0b;font-size:13.5px;line-height:1.5}
+.pr-form{display:flex;flex-direction:column;gap:10px}
+.pr-form label{display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--muted,#9aa8b7);flex:1}
+.pr-form input,.pr-form select,.pr-form textarea{font:inherit;font-size:16px;color:var(--txt,#e8eef5);background:var(--panel-2,#0b1118);border:1px solid var(--line,#253041);border-radius:10px;padding:10px 12px;min-height:44px;box-sizing:border-box;width:100%}
+.pr-form textarea{min-height:72px;resize:vertical}
+.pr-label{margin:4px 0 -4px;font-size:13.5px;color:var(--muted,#9aa8b7)}
+.pr-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.pr-row>label{min-width:120px}
+.pr-btn{min-height:44px;padding:9px 14px;border-radius:11px;border:1px solid var(--line,#253041);background:var(--panel-2,#0b1118);color:inherit;font:inherit;font-size:14.5px;font-weight:600;cursor:pointer}
+.pr-btn.primary{background:#d97706;border-color:#d97706;color:#fff}
+.pr-btn.ok{background:#15803d;border-color:#15803d;color:#fff}
+.pr-err{margin:0;color:#f87171;font-size:13.5px;min-height:0}
+.pr-err:empty{display:none}
+.pr-area{margin:-2px 0 0;font-size:13px;color:var(--muted,#9aa8b7)}
+.pr-sending{display:flex;align-items:center;gap:12px;justify-content:center;padding:40px 0;font-size:17px;font-weight:600}
+.pr-spin{width:22px;height:22px;border-radius:50%;border:3px solid rgba(251,191,36,.3);border-top-color:#fbbf24;animation:pr-spin .8s linear infinite}
+@keyframes pr-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.pr-spin{animation:none}}
+.pr-what{margin:0 0 8px;font-size:14px;color:var(--muted,#9aa8b7)}
+.pr-steps{list-style:none;margin:6px 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pr-steps li{display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border-radius:11px;border:1px solid var(--line,#253041);font-size:13.5px;font-weight:600}
+.pr-steps li b{flex:none;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--line,#253041);font-size:12.5px}
+.pr-steps li.done b{background:#15803d;color:#fff}
+.pr-steps li.now{border-color:#f59e0b}
+.pr-steps li.now b{background:#d97706;color:#fff}
+.pr-steps small{display:block;font-weight:400;color:var(--muted,#9aa8b7);font-size:12px;margin-top:2px}
+.pr-near{margin:0;padding-left:18px;font-size:14px;line-height:1.7}
+.pr-near span{color:var(--muted,#9aa8b7);font-size:13px}
+.pr-muted{color:var(--muted,#9aa8b7);font-size:13.5px;margin:0}
+.pr-line{margin-top:10px;border:1px solid var(--line,#253041);border-radius:11px;padding:8px 10px}
+.pr-line summary{cursor:pointer;font-size:13.5px;font-weight:600}
+.pr-line pre{white-space:pre-wrap;font:inherit;font-size:13.5px;line-height:1.55;margin:8px 0 0;padding:10px 12px;border-radius:12px 12px 12px 3px;background:#fff;color:#111}
+.pr-notes{margin:0;padding-left:18px;font-size:14px}
+.pr-notes small{color:var(--muted,#9aa8b7)}
+
+.pr-pin-wrap{background:none;border:0}
+.pr-pin{position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  background:#fbbf24;border:2px dashed #78350f;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.pr-pin span{transform:rotate(45deg);font-size:15px}
+.pr-pin em{position:absolute;transform:rotate(45deg);top:-16px;left:18px;font-style:normal;font-size:11px;font-weight:700;background:#78350f;color:#fef3c7;border-radius:6px;padding:1px 5px}
+.pr-pin.closed{opacity:.55}
+.pr-popup .pr-pop h3{margin:2px 0 4px;font-size:15px}
+.pr-pop p{margin:4px 0;font-size:13px}
+.pr-pop .pr-kicker{color:#b45309;font-weight:700}
+.pr-pop blockquote{margin:6px 0;padding:4px 8px;border-left:3px solid #f59e0b;font-size:13px}
+.pr-pop .pr-btn{min-height:36px;padding:6px 10px;font-size:13px;color:#111;background:#fef3c7;border-color:#f59e0b}
