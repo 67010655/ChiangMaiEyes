@@ -2466,11 +2466,41 @@ function popupActionsHtml(lat,lon){
 // ---- Experimental spread outline for one tapped point (2D and 3D) ----
 const SPREAD_SIM_STYLE={3:{color:'#ef4444',fill:.2},6:{color:'#f97316',fill:.1}};
 const spreadSimStyle=hrs=>SPREAD_SIM_STYLE[hrs]||{color:'#f97316',fill:.1};
-let spreadSimLayer=null, spreadSimStop=null, spreadSimKey=null;
+let spreadSimLayer=null, spreadSimStop=null, spreadSimKey=null, spreadSimPoint=null, spreadKeepOnClose=false;
+// While the outline shows, the point's popup or sheet is closed (it sits right on top of
+// the outline) and a small bar keeps the legend, "ดูข้อมูลจุด" and "ซ่อนแนวลาม".
+function spreadBar(){
+  let bar=document.getElementById('spreadBar');
+  if(!bar){
+    bar=document.createElement('div');bar.id='spreadBar';bar.className='spread-bar';bar.setAttribute('role','status');bar.hidden=true;
+    bar.innerHTML='<div class="sb-text"><b>🔥 แนวลามทดลอง</b> <span class="hs-spread-key"><i style="background:#ef4444"></i>3 ชม. <i style="background:#f97316"></i>6 ชม.</span><small>ถ้ายังไหม้และไม่มีการดับ · ยังไม่สอบเทียบกับไฟจริง</small></div>'+
+      '<div class="sb-actions"><button type="button" data-sb="info">ดูข้อมูลจุด</button><button type="button" data-sb="hide">ซ่อนแนวลาม</button></div>';
+    bar.addEventListener('click',e=>{const a=e.target.closest('[data-sb]')?.dataset.sb;if(a==='hide')clearSpreadSim();else if(a==='info')reopenSpreadPoint();});
+    document.body.appendChild(bar);
+  }
+  return bar;
+}
+// Close whatever shows the point's details without its close handler clearing the outline.
+function closeSpreadPointDetails(){
+  spreadKeepOnClose=true;
+  try{if(window.CmeHotspotSheet?.isOpen())CmeHotspotSheet.close();map.closePopup();_3dPopup?.remove();}
+  finally{spreadKeepOnClose=false;}
+}
+function reopenSpreadPoint(){
+  const p=spreadSimPoint;if(!p)return;
+  const h=hotspots.find(x=>Math.abs(x.lat-p.lat)<1e-9&&Math.abs(x.lon-p.lon)<1e-9);if(!h)return;
+  spreadBar().hidden=true;
+  if(p.in3D)open3DHotspotDetails(h,{keepView:true});
+  else{let m;layers.hotspots.eachLayer(l=>{const q=l.getLatLng?.();if(q&&Math.abs(q.lat-h.lat)<1e-9&&Math.abs(q.lng-h.lon)<1e-9)m=l;});m?.fire('click');}
+  // The reopened popup was drawn fresh; show its button as "hide" since the outline is still on.
+  setTimeout(()=>document.querySelectorAll('.hs-spread-btn').forEach(b=>{if(Number(b.dataset.spreadLat)===p.lat&&Number(b.dataset.spreadLon)===p.lon){b.setAttribute('aria-pressed','true');b.textContent='ซ่อนแนวลาม';}}),350);
+}
 function clearSpreadSim(){
-  spreadSimStop?.();spreadSimStop=null;spreadSimKey=null;
+  if(spreadKeepOnClose)return;
+  spreadSimStop?.();spreadSimStop=null;spreadSimKey=null;spreadSimPoint=null;
+  const bar=document.getElementById('spreadBar');if(bar)bar.hidden=true;
   if(spreadSimLayer){map.removeLayer(spreadSimLayer);spreadSimLayer=null;}
-  if(mlMap?.getSource?.('spread-sim'))mlMap.getSource('spread-sim').setData({type:'FeatureCollection',features:[]});
+  if(mlMap?.getSource?.('spread-sim')){mlMap.getSource('spread-sim').setData({type:'FeatureCollection',features:[]});mlMap.setPadding({top:0,right:0,bottom:0,left:0});}
   document.querySelectorAll('.hs-spread-btn[aria-pressed="true"]').forEach(b=>{b.setAttribute('aria-pressed','false');b.textContent='▶ ดูแนวลามทดลอง 6 ชม.';});
 }
 function _ensure3DSpreadLayers(){
@@ -2492,22 +2522,34 @@ async function showSpreadSim(btn){
     if(!result){if(msg)msg.textContent='จุดนี้ยังไม่อยู่ในรอบคำนวณล่าสุด (ใช้จุด 24 ชม. ล่าสุด สูงสุด 50 จุด)';return;}
     spreadSimKey=key;btn.setAttribute('aria-pressed','true');btn.textContent='ซ่อนแนวลาม';
     if(msg)msg.innerHTML=`<span class="hs-spread-key"><i style="background:#ef4444"></i>3 ชม. <i style="background:#f97316"></i>6 ชม.</span> ${CmeHotspotSpread.caption(result)}`;
-    const in3D=document.getElementById('threedview').classList.contains('open')&&mlMap;
+    const in3D=!!(document.getElementById('threedview').classList.contains('open')&&mlMap);
     const reduced=!motionDuration(1);
     const last=result.frames[result.frames.length-1].feature;
+    // Clear the view: the popup or sheet would cover the outline, the bar takes its place.
+    spreadSimPoint={lat,lon,in3D};
+    closeSpreadPointDetails();
+    const bar=spreadBar();bar.hidden=false;
+    const barH=bar.offsetHeight+24, bottomNav=isMobileViewport()?116:0; // the bar sits above the 1362 row on phones
     if(in3D){
       _ensure3DSpreadLayers();
       spreadSimStop=CmeHotspotSpread.animate(result,lat,lon,list=>mlMap.getSource('spread-sim')?.setData({type:'FeatureCollection',features:list.map(f=>({type:'Feature',properties:{hours:f.hours},geometry:f.geometry}))}),{reduced});
       const b=L.geoJSON(last).getBounds();
-      mlMap.fitBounds([[b.getWest(),b.getSouth()],[b.getEast(),b.getNorth()]],{padding:{top:90,bottom:isMobileViewport()?(document.getElementById('hotspotSheet')?.offsetHeight||0)+70:60,left:40,right:40},maxZoom:15.5,pitch:55,duration:motionDuration(900)});
+      // Keep the outline below the 3D title and style buttons, which are taller on phones.
+      const mapTop=mlMap.getContainer().getBoundingClientRect().top;
+      const hudBottom=Math.max(0,...[...document.querySelectorAll('#threedview .td-hud,#tdBasemap,#tdClose')].map(e=>e.getBoundingClientRect().bottom-mapTop));
+      // fitBounds with a tilt and large padding misplaces the outline on phones, so fit it flat
+      // into the free area, step back a little for the tilt, then fly there with that padding.
+      const pad={top:hudBottom+16,bottom:barH+bottomNav,left:40,right:40};
+      mlMap.setPadding({top:0,right:0,bottom:0,left:0}); // a sheet's leftover padding would leave no room
+      const cam=mlMap.cameraForBounds([[b.getWest(),b.getSouth()],[b.getEast(),b.getNorth()]],{padding:pad});
+      if(cam)mlMap.flyTo({center:cam.center,zoom:Math.min(15.5,cam.zoom-.5),pitch:55,padding:pad,duration:motionDuration(900)});
     }else{
       spreadSimLayer=L.layerGroup().addTo(map);
       spreadSimStop=CmeHotspotSpread.animate(result,lat,lon,list=>{
         spreadSimLayer.clearLayers();
         [...list].reverse().forEach(f=>{const st=spreadSimStyle(f.hours);L.geoJSON(f.geometry,{interactive:false,style:{color:st.color,weight:2,dashArray:'5 4',fillColor:st.color,fillOpacity:st.fill}}).addTo(spreadSimLayer);});
       },{reduced});
-      const sheetH=isMobileViewport()?(document.getElementById('hotspotSheet')?.offsetHeight||0):0;
-      map.fitBounds(L.geoJSON(last).getBounds(),{paddingTopLeft:[24,isMobileViewport()?70:40],paddingBottomRight:[24,sheetH+24],maxZoom:16,animate:motionDuration(300)>0});
+      map.fitBounds(L.geoJSON(last).getBounds(),{paddingTopLeft:[24,isMobileViewport()?70:40],paddingBottomRight:[24,barH+bottomNav],maxZoom:16,animate:motionDuration(300)>0});
     }
   }catch(e){if(msg)msg.textContent='โหลดแนวลามไม่ได้ ลองใหม่อีกครั้ง';}
   finally{btn.disabled=false;}
@@ -6281,26 +6323,32 @@ function _sync3DHotspots(){
       // the popup this same click just opened. Guard on both.
       e.stopPropagation();
       clearSpreadSim();
-      selectHotspot(h,{fromMarker:true});
-      show3DForestProximity(h.lat, h.lon);
-      if(isMobileViewport()&&window.CmeHotspotSheet){
-        // Same sheet as 2D; keep the point above it.
-        CmeHotspotSheet.open(h,hotspotPopupHtml(h),{onClose:()=>{clear3DForestProximity();clearSpreadSim();}});
-        const sheetH=document.getElementById('hotspotSheet')?.offsetHeight||0;
-        mlMap.flyTo({center:[h.lon,h.lat],zoom:Math.max(mlMap.getZoom(),14),padding:{top:0,bottom:sheetH,left:0,right:0},duration:motionDuration(900)});
-        return;
-      }
-      mlMap.flyTo({center:[h.lon,h.lat], zoom:Math.max(mlMap.getZoom(),14), duration:motionDuration(900)});
-      _3dPopup?.remove();
-      _3dPopup=new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'320px',className:'coordination-popup'})
-        .setLngLat([h.lon,h.lat])
-        .setHTML(hotspotPopupHtml(h))
-        .addTo(mlMap);
-      // MapLibre's on() does not return the popup, so it cannot sit in the chain.
-      _3dPopup.on('close', ()=>{clear3DForestProximity();clearSpreadSim();});
+      open3DHotspotDetails(h);
     });
     _3dMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([h.lon,h.lat]).addTo(mlMap));
   });
+}
+
+// Opens a 3D hotspot's details (sheet on phones, popup on desktop). keepView leaves the camera
+// where it is, for reopening the details while its spread outline is on screen.
+function open3DHotspotDetails(h,{keepView=false}={}){
+  selectHotspot(h,{fromMarker:true});
+  show3DForestProximity(h.lat, h.lon);
+  if(isMobileViewport()&&window.CmeHotspotSheet){
+    // Same sheet as 2D; keep the point above it.
+    CmeHotspotSheet.open(h,hotspotPopupHtml(h),{onClose:()=>{clear3DForestProximity();clearSpreadSim();}});
+    const sheetH=document.getElementById('hotspotSheet')?.offsetHeight||0;
+    if(!keepView)mlMap.flyTo({center:[h.lon,h.lat],zoom:Math.max(mlMap.getZoom(),14),padding:{top:0,bottom:sheetH,left:0,right:0},duration:motionDuration(900)});
+    return;
+  }
+  if(!keepView)mlMap.flyTo({center:[h.lon,h.lat], zoom:Math.max(mlMap.getZoom(),14), duration:motionDuration(900)});
+  _3dPopup?.remove();
+  _3dPopup=new maplibregl.Popup({closeButton:true,closeOnClick:false,maxWidth:'320px',className:'coordination-popup'})
+    .setLngLat([h.lon,h.lat])
+    .setHTML(hotspotPopupHtml(h))
+    .addTo(mlMap);
+  // MapLibre's on() does not return the popup, so it cannot sit in the chain.
+  _3dPopup.on('close', ()=>{clear3DForestProximity();clearSpreadSim();});
 }
 
 // Manual (staff-reported) hotspots — deliberately a different marker shape

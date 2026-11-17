@@ -307,3 +307,13 @@ body:has(#threedview.open) .hs-3d{display:none}
 @media(max-width:820px){
   .map-time-note.open{border-radius:14px!important;padding:10px 12px!important}
 }
+/* Spread outline bar: replaces the point's popup or sheet while the outline shows, so nothing covers it. */
+.spread-bar{position:fixed;left:8px;right:8px;bottom:calc(116px + env(safe-area-inset-bottom));z-index:1600;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 12px;border-radius:14px;background:var(--panel,#111821);color:var(--txt,#e8eef5);border:1px solid #f97316;box-shadow:0 8px 28px rgba(0,0,0,.45);font:14px/1.4 var(--font)}
+.spread-bar[hidden]{display:none}
+.spread-bar .sb-text{flex:1 1 220px;min-width:0}
+.spread-bar small{display:block;color:var(--muted,#9aa8b7);font-size:12.5px;margin-top:2px}
+.spread-bar .sb-actions{display:flex;gap:8px;flex:0 0 auto;margin-left:auto}
+.spread-bar button{min-height:40px;padding:6px 12px;border-radius:10px;border:1px solid var(--line,#253041);background:var(--panel-2,#0b1118);color:inherit;font:600 13.5px/1.2 var(--font);cursor:pointer}
+.spread-bar button[data-sb="hide"]{border-color:#f97316;background:rgba(249,115,22,.15)}
+@media(min-width:821px){.spread-bar{left:50%;right:auto;transform:translateX(-50%);bottom:24px;width:min(620px,calc(100vw - 120px))}}
