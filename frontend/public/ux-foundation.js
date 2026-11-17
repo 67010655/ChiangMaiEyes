@@ -47,6 +47,9 @@
     document.querySelectorAll('.topbar,.public-brief,.public-brief-details:not([hidden])').forEach(el=>{
       const b=el.getBoundingClientRect();if(b.width&&b.height&&b.top<=r.top+top&&b.bottom>r.top)top=Math.max(top,b.bottom-r.top+12);
     });
+    // The practice banner floats over the upper map, below the search bar.
+    const pb=document.getElementById('practiceBanner')?.getBoundingClientRect();
+    if(pb?.height&&pb.bottom>r.top&&pb.top<r.top+r.height/2)top=Math.max(top,pb.bottom-r.top+12);
     const nav=document.querySelector('.navrail')?.getBoundingClientRect();
     if(nav?.width>r.width*.5&&nav.top>r.top&&nav.top<r.bottom)bottom=r.bottom-nav.top+12;
     return {topLeft:[12,top],bottomRight:[12,bottom],height:Math.max(60,r.height-top-bottom-65)};

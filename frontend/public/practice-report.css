@@ -6,7 +6,27 @@
 .pr-banner .pr-long{display:none}
 .pr-banner button{margin-left:auto;flex:none;background:#fef3c7;color:#78350f;border:0;border-radius:9px;padding:6px 10px;min-height:32px;font:inherit;font-weight:700;cursor:pointer}
 @media(min-width:821px){.pr-banner{left:50%;right:auto;transform:translateX(-50%);top:172px;max-width:620px}.pr-banner .pr-long{display:inline}.pr-banner .pr-short{display:none}}
+.pr-banner button+button{margin-left:6px}
+.pr-banner .pr-go{background:#dc2626;color:#fff}
+.pr-banner.has-drill .pr-short{display:none}
 body.practice-mode #reportHotspotBtn{outline:3px dashed #fbbf24;outline-offset:2px}
+
+/* Drill: a practice LINE notification, then a practice satellite hotspot. */
+.pr-toast{position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top));z-index:1900;display:flex;gap:10px;align-items:flex-start;text-align:left;
+  padding:10px 14px;border:0;border-radius:16px;background:#fff;color:#111;font:inherit;font-size:14px;line-height:1.4;cursor:pointer;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);animation:pr-drop .35s ease-out}
+@media(min-width:821px){.pr-toast{left:auto;right:16px;width:380px}}
+.pr-toast-app{flex:none;width:36px;height:36px;border-radius:10px;background:#06c755;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.pr-toast small{color:#666;font-size:12px}
+.pr-toast-msg{display:block;margin-top:2px}
+@keyframes pr-drop{from{transform:translateY(-120%);opacity:0}}
+.pr-hot{position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.pr-hot span{width:16px;height:16px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 0 0 4px rgba(239,68,68,.35)}
+.pr-hot::before{content:'';position:absolute;inset:0;border-radius:50%;border:3px dashed #fbbf24;animation:pr-pulse 1.6s ease-out infinite}
+.pr-hot em{position:absolute;top:-14px;left:20px;font-style:normal;font-size:11px;font-weight:700;background:#78350f;color:#fef3c7;border-radius:6px;padding:1px 5px}
+@keyframes pr-pulse{to{transform:scale(1.6);opacity:0}}
+@media(prefers-reduced-motion:reduce){.pr-toast,.pr-hot::before{animation:none}}
+.pr-pop .pr-btn{margin:4px 4px 0 0}
 
 .pr-backdrop{position:fixed;inset:0;z-index:1800;display:none;align-items:flex-end;justify-content:center;background:rgba(5,8,12,.55)}
 .pr-backdrop.open{display:flex}

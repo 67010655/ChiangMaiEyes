@@ -99,6 +99,43 @@ it('a full practice run: the link turns practice on, the form sends nothing anyw
   vi.useRealTimers();
 });
 
+it('a drill link only accepts a point near Chiang Mai, and the alert mirrors the real hotspot wording', () => {
+  const { P } = setup();
+  expect(P.parseDrill('18.50663,98.35261')).toEqual({ lat: 18.50663, lon: 98.35261, started_at: null });
+  expect(P.parseDrill('13.7,100.5')).toBeNull();
+  expect(P.parseDrill('abc')).toBeNull();
+  const text = P.hotspotText('ป่าชุมชนบ้านต้นเรื่อง', '2026-11-19T08:20:00+07:00');
+  expect(text).toContain('🔥 ดาวเทียมพบจุดความร้อน 1 จุด ในป่าชุมชนบ้านต้นเรื่อง');
+  expect(text).toContain('โทร 1362');
+  expect(text).not.toMatch(/https?:\/\//);
+});
+
+it('a drill run: LINE notice first, then the practice report at that point, with no server call', () => {
+  vi.useFakeTimers();
+  const { P, win } = setup('https://chiangmaieyes.vercel.app/?practice=1&drill=18.5,98.4');
+  const own = forest('own', 'ป่าบ้านต้นเรื่อง', 18.5, 98.4), next = forest('n1', 'ป่าบ้านข้างเคียง', 18.52, 98.43);
+  P.init({ nearest: rowsFor([[own, 0], [next, 2.3]]), area: () => ({ status: 'matched', tambon: 'ช่างเคิ่ง', district: 'อำเภอแม่แจ่ม' }) });
+  const doc = win.document;
+  expect(P.active()).toBe(true);
+  expect(win.location.search).toBe('');
+  (doc.querySelector('#practiceBanner [data-pr="drill-start"]') as HTMLButtonElement).click();
+  expect(doc.getElementById('practiceToast')).toBeNull();
+  vi.advanceTimersByTime(4100);
+  const toast = doc.getElementById('practiceToast') as HTMLButtonElement;
+  expect(toast.textContent).toContain('ในป่าบ้านต้นเรื่อง');
+  toast.click();
+  expect(doc.querySelector('.pr-card h2')!.textContent).toBe('ข้อความ LINE (ฝึก)');
+  expect(doc.querySelector('.pr-safe')!.textContent).toContain('ตัวแทนป่าบ้านต้นเรื่อง');
+  expect(doc.querySelector('.pr-what')!.textContent).toContain('ต.ช่างเคิ่ง อ.แม่แจ่ม');
+  (doc.querySelector('[data-pr="drill-report"]') as HTMLButtonElement).click();
+  expect((doc.querySelector('#prForm [name="latitude"]') as HTMLInputElement).value).toBe('18.50000');
+  expect(doc.querySelector('#practiceBanner [data-pr="drill-show"]')).not.toBeNull();
+  (doc.querySelector('#practiceBanner [data-pr="exit"]') as HTMLButtonElement).click();
+  expect(win.sessionStorage.getItem('cme_practice_drill')).toBeNull();
+  expect(win.fetch).not.toHaveBeenCalled();
+  vi.useRealTimers();
+});
+
 it('a map pick goes to the practice form only when practice asked for it', () => {
   const { P, win } = setup();
   P.init({ pick: () => {} });

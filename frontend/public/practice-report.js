@@ -48,6 +48,26 @@
       'ℹ️ ถ้ายังเห็นไฟหรือควันใกล้ป่าคุณ โทร 1362 (สายด่วนกรมอุทยานฯ แจ้งไฟป่า) ได้เลย'].join('\n');
   }
 
+  // Drill ("สถานการณ์จำลอง"): a facilitator link (?practice=1&drill=lat,lon) puts one practice satellite
+  // hotspot on everyone's map. Pressing "เริ่ม" plays what a rep sees in a real fire: the LINE alert
+  // first, then the dot on the map, already about two hours old because satellite data arrives late.
+  const DRILL_KEY='cme_practice_drill',LAG_MIN=130;
+  function parseDrill(value){
+    const m=String(value||'').match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);if(!m)return null;
+    const lat=Number(m[1]),lon=Number(m[2]);
+    return lat>=17&&lat<=21&&lon>=97.3&&lon<=100?{lat,lon,started_at:null}:null;
+  }
+  const forestPhrase=name=>(String(name).startsWith('ป่า')?'ใน':'ในป่า ')+name;
+  // Mirrors the server's hotspot_text (sent only for hotspots inside a rep's forest boundary).
+  function hotspotText(forestName,detectedAt){
+    return [`🔥 ดาวเทียมพบจุดความร้อน 1 จุด ${forestPhrase(forestName)}`,`🕒 ตรวจพบล่าสุด ${clock(detectedAt)} น.`,'',
+      '💡 ควรทำต่อ','1. ตรวจในพื้นที่ หรือโทรถามคนที่อยู่ใกล้ป่า',
+      '2. ถ้าเป็นไฟจริง โทร 1362 (สายด่วนกรมอุทยานฯ แจ้งไฟป่า) และแจ้งหน่วยงานในพื้นที่ อย่าเข้าไปดับคนเดียว',
+      '3. ตรวจแล้วบันทึกเหตุในเว็บ คนอื่นจะได้ช่วยติดตาม','','📍 (ของจริงจะมีลิงก์เปิดดูบนแผนที่)',
+      'ℹ️ จุดความร้อนยังไม่ใช่เหตุไฟที่ยืนยันแล้ว · ที่มา NASA FIRMS'].join('\n');
+  }
+  const drillDetected=d=>new Date(Date.parse(d.started_at)-LAG_MIN*6e4).toISOString();
+
   // Storage: this browser only, a day at most. Broken or blocked storage just means no saved pin.
   function load(now=Date.now()){
     try{const rows=JSON.parse(root.localStorage.getItem(KEY)||'[]');return Array.isArray(rows)?rows.filter(p=>p&&now-Date.parse(p.created_at)<DAY):[];}catch{return [];}
@@ -70,7 +90,16 @@
     return `<ol class="pr-steps">${items.map(([n,t,s])=>`<li class="${done[n]?'done':n===cur?'now':''}"><b>${done[n]?'✓':n}</b><span>${esc(t)}<small>${esc(s)}</small></span></li>`).join('')}</ol>`;
   }
 
-  let ctx={},el=null,view='form',current=null,draft={},layer=null,picking=false;
+  let ctx={},el=null,view='form',current=null,draft={},layer=null,picking=false,drill=null;
+  function saveDrill(){try{drill?root.sessionStorage.setItem(DRILL_KEY,JSON.stringify(drill)):root.sessionStorage.removeItem(DRILL_KEY);}catch{}}
+  function loadDrill(){try{const d=JSON.parse(root.sessionStorage.getItem(DRILL_KEY)||'null');return d&&Number.isFinite(d.lat)&&Number.isFinite(d.lon)?d:null;}catch{return null;}}
+  // The forest the drill point is in (only that forest's reps get a real hotspot alert), else the nearest one.
+  function drillPlace(){
+    const rows=nearby(drill.lat,drill.lon,ctx.nearest),inside=rows.find(r=>r.own);
+    const a=ctx.area?.(drill.lat,drill.lon);
+    const area=a?.tambon?`ต.${a.tambon} อ.${String(a.district||'-').replace(/^(อำเภอ|อ\.)\s*/,'')}`:a?.district?`อ.${a.district}`:'';
+    return {inside,nearest:rows[0]||null,area};
+  }
   const nowLocal=()=>{const d=new Date(Date.now()+7*36e5);return d.toISOString().slice(0,16);};
   function active(){return root.document.body.classList.contains('practice-mode');}
   function setActive(on){
@@ -82,8 +111,38 @@
     let b=root.document.getElementById('practiceBanner');
     if(!active()){b?.remove();return;}
     if(!b){b=root.document.createElement('div');b.id='practiceBanner';b.className='pr-banner';b.setAttribute('role','status');root.document.body.appendChild(b);}
-    b.innerHTML='<span>🧪 <b>โหมดฝึก</b> <span class="pr-long">กด “แจ้งไฟ” ได้เลย ไม่ส่งข้อมูลจริง ไม่ส่ง LINE</span><span class="pr-short">ไม่ส่งข้อมูลจริง ไม่ส่ง LINE</span></span><button type="button" data-pr="exit">ออก</button>';
+    b.classList.toggle('has-drill',!!drill);
+    const drillBtn=!drill?'':drill.started_at?'<button type="button" data-pr="drill-show">🔥 ดูจุดจำลอง</button>':'<button type="button" class="pr-go" data-pr="drill-start">▶ เริ่มสถานการณ์</button>';
+    b.innerHTML='<span>🧪 <b>โหมดฝึก</b> <span class="pr-long">กด “แจ้งไฟ” ได้เลย ไม่ส่งข้อมูลจริง ไม่ส่ง LINE</span><span class="pr-short">ไม่ส่งข้อมูลจริง ไม่ส่ง LINE</span></span>'+drillBtn+'<button type="button" data-pr="exit">ออก</button>';
   }
+  function drillView(){
+    const {inside,nearest,area}=drillPlace(),name=inside?.name||nearest?.name||'ป่าชุมชน';
+    return `<h2>ข้อความ LINE (ฝึก)</h2>
+      <p class="pr-safe">🧪 ${inside?`ของจริง ตัวแทน${esc(name)}ที่ผูก LINE ไว้จะได้ข้อความนี้`:`จุดนี้อยู่นอกขอบเขตป่าชุมชน ของจริงระบบจะไม่ส่ง LINE เตือน ข้อความนี้คือตัวอย่างถ้าจุดอยู่ใน${esc(name)}`} <b>รอบนี้เป็นการฝึก</b></p>
+      ${area?`<p class="pr-what">จุดความร้อนจำลองอยู่ ${esc(area)}</p>`:''}
+      <div class="pr-line"><pre>${esc(hotspotText(name,drillDetected(drill)))}</pre></div>
+      <h3>ลองคิดก่อนกด</h3>
+      <ul class="pr-notes"><li>ได้ข้อความนี้แล้ว จะทำอะไรเป็นอย่างแรก</li><li>จะบอกใคร ทางไหน</li><li>ใครจะออกไปดูที่จุดนั้น</li></ul>
+      <div class="pr-row"><button type="button" class="pr-btn primary" data-pr="drill-show">ดูจุดบนแผนที่</button><button type="button" class="pr-btn" data-pr="drill-report">ไปดูแล้ว ฝึกแจ้งไฟที่จุดนี้</button></div>`;
+  }
+  function startDrill(){
+    if(!drill||drill.started_at)return;
+    drill.started_at=new Date().toISOString();saveDrill();banner();
+    root.setTimeout(()=>{drawPins();toast();},4000);
+  }
+  function toast(){
+    if(!drill)return;
+    const {inside,nearest}=drillPlace(),name=inside?.name||nearest?.name||'ป่าชุมชน';
+    root.document.getElementById('practiceToast')?.remove();
+    const t=root.document.createElement('button');t.type='button';t.id='practiceToast';t.className='pr-toast';t.setAttribute('role','alert');
+    t.innerHTML=`<span class="pr-toast-app">LINE</span><span><b>ChiangMaiEyes</b> <small>ตอนนี้ · ฝึก</small><span class="pr-toast-msg">🔥 ดาวเทียมพบจุดความร้อน 1 จุด ${esc(forestPhrase(name))}</span></span>`;
+    t.addEventListener('click',()=>{t.remove();view='drill';open({keep:true});});
+    root.document.body.appendChild(t);
+    try{root.navigator.vibrate?.([200,100,200]);}catch{}
+    root.setTimeout(()=>t.remove(),20000);
+  }
+  function showDrill(){close();ctx.flyTo?.(drill.lat,drill.lon);afterMove(()=>drillMarker?.openPopup());}
+  function drillReport(){ctx.map?.()?.closePopup();view='form';draft={latitude:drill.lat.toFixed(5),longitude:drill.lon.toFixed(5)};open({keep:true});}
   function form(){
     const d={observation:'smoke',observed_local:nowLocal(),latitude:'',longitude:'',description:'',contact_phone:'',reporter:'',...draft};draft=d;
     const a=d.latitude!==''&&d.longitude!==''?ctx.area?.(Number(d.latitude),Number(d.longitude)):null;
@@ -124,7 +183,7 @@
   }
   function render(){
     if(!el)return;
-    el.querySelector('.pr-body').innerHTML=view==='sending'?'<div class="pr-sending" role="status"><span class="pr-spin"></span>กำลังส่ง… <small>(ฝึก)</small></div>':view==='result'&&current?result(current):form();
+    el.querySelector('.pr-body').innerHTML=view==='sending'?'<div class="pr-sending" role="status"><span class="pr-spin"></span>กำลังส่ง… <small>(ฝึก)</small></div>':view==='result'&&current?result(current):view==='drill'&&drill?drillView():form();
   }
   function ensure(){
     if(el)return el;
@@ -169,6 +228,8 @@
     else if(a==='pick'){picking=true;close();ctx.pick?.();}
     else if(a==='done'||a==='notfire'){current.closed=a==='done'?'closed':'cancelled';persist();render();drawPins();}
     else if(a==='show'){close();ctx.flyTo?.(current.latitude,current.longitude);openPinPopup(current.id);}
+    else if(a==='drill-show')showDrill();
+    else if(a==='drill-report')drillReport();
     else if(a==='again'){current=null;draft={};view='form';render();}
     else if(a==='remove'){save(load().filter(p=>p.id!==current.id));current=null;draft={};view='form';render();drawPins();}
   }
@@ -186,27 +247,55 @@
       <p>ของจริงจะแจ้ง LINE ถึง ${p.alerted.length} ป่า</p>
       <button type="button" class="pr-btn" onclick="CmePracticeReport.reopen('${esc(p.id)}')">เปิดใบเหตุฝึก</button></div>`;
   }
-  const markers=new Map();
+  function drillPopupHtml(){
+    const {inside,nearest,area}=drillPlace();
+    return `<div class="pr-pop"><p class="pr-kicker">🧪 จุดความร้อนจำลอง · ไม่ใช่ข้อมูลจริง</p>
+      <h3>จุดความร้อนจากดาวเทียม${area?' · '+esc(area):''}</h3>
+      <p>ตรวจพบ ${esc(clock(drillDetected(drill)))} น. (ข้อมูลดาวเทียมมาช้าราว 2 ชั่วโมง)</p>
+      <p>${inside?`อยู่ในเขต${esc(inside.name)}`:nearest?`ห่าง${esc(nearest.name)} ${esc(kmText(nearest.km))}`:''}</p>
+      <p>ยังไม่ใช่ไฟที่ยืนยันแล้ว ต้องมีคนไปดู</p>
+      <button type="button" class="pr-btn" onclick="CmePracticeReport.drillLine()">ข้อความ LINE</button>
+      <button type="button" class="pr-btn" onclick="CmePracticeReport.drillReport()">ฝึกแจ้งไฟที่จุดนี้</button></div>`;
+  }
+  const POP={maxWidth:300,className:'pr-popup'};
+  const markers=new Map();let drillMarker=null;
   function drawPins(){
     const L=ctx.leaflet,map=ctx.map?.();if(!L||!map)return;
     if(!layer)layer=L.layerGroup().addTo(map);
-    layer.clearLayers();markers.clear();
+    layer.clearLayers();markers.clear();drillMarker=null;
     if(!active())return;
+    if(drill?.started_at)drillMarker=L.marker([drill.lat,drill.lon],{icon:L.divIcon({className:'pr-pin-wrap',html:'<div class="pr-hot"><span></span><em>ฝึก</em></div>',iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:950,title:'จุดความร้อนจำลอง'})
+      .bindPopup(drillPopupHtml,POP).addTo(layer);
     load().forEach(p=>{
       const m=L.marker([p.latitude,p.longitude],{icon:L.divIcon({className:'pr-pin-wrap',html:pinIcon(p),iconSize:[34,34],iconAnchor:[17,30]}),zIndexOffset:900,title:'หมุดฝึก'})
-        .bindPopup(()=>popupHtml(p),{maxWidth:300,className:'pr-popup'}).addTo(layer);
+        .bindPopup(()=>popupHtml(p),POP).addTo(layer);
       markers.set(p.id,m);
     });
   }
-  function openPinPopup(id){root.setTimeout(()=>markers.get(id)?.openPopup(),700);}
+  // Open a popup once the fly-to has landed, so it can pan clear of the banner.
+  function afterMove(fn){
+    const map=ctx.map?.();let done=false;const go=()=>{if(!done){done=true;fn();}};
+    map?.once?.('moveend',()=>root.setTimeout(go,50));root.setTimeout(go,2500);
+  }
+  function openPinPopup(id){afterMove(()=>markers.get(id)?.openPopup());}
   function reopen(id){const p=load().find(x=>x.id===id);if(!p)return;current=p;view='result';ctx.map?.()?.closePopup();open({keep:true});}
 
   function init(context){
     ctx=context||{};
     let on=false;try{on=root.sessionStorage.getItem('cme_practice')==='1';}catch{}
-    if(/^#practice$/i.test(root.location.hash)||new URLSearchParams(root.location.search).get('practice')==='1'){on=true;root.history.replaceState(null,'',root.location.pathname);}
-    root.document.addEventListener('click',e=>{if(e.target.closest('#practiceBanner [data-pr="exit"]')){close();setActive(false);}});
+    drill=on?loadDrill():null;
+    const params=new URLSearchParams(root.location.search),linkDrill=parseDrill(params.get('drill'));
+    if(linkDrill){drill=linkDrill;saveDrill();}
+    if(/^#practice$/i.test(root.location.hash)||params.get('practice')==='1'||linkDrill){on=true;root.history.replaceState(null,'',root.location.pathname);}
+    root.document.addEventListener('click',e=>{
+      const a=e.target.closest('#practiceBanner [data-pr]')?.dataset.pr;
+      if(a==='exit'){close();drill=null;saveDrill();root.document.getElementById('practiceToast')?.remove();setActive(false);}
+      else if(a==='drill-start')startDrill();
+      else if(a==='drill-show')showDrill();
+    });
     if(on)setActive(true);
   }
-  root.CmePracticeReport={init,open,close,active,setActive,takePick,reopen,drawPins,nearby,alerted,alertText,closedText,validate,load,save,steps,KEY};
+  const drillLine=()=>{ctx.map?.()?.closePopup();view='drill';open({keep:true});};
+  root.CmePracticeReport={init,open,close,active,setActive,takePick,reopen,drawPins,nearby,alerted,alertText,closedText,validate,load,save,steps,KEY,
+    parseDrill,hotspotText,drillReport,drillLine};
 })(window);
