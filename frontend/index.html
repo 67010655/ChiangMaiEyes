@@ -6364,15 +6364,24 @@ function open3DHotspotDetails(h,{keepView=false}={}){
     .addTo(mlMap);
   // MapLibre's on() does not return the popup, so it cannot sit in the chain.
   _3dPopup.on('close', ()=>{clear3DForestProximity();clearSpreadSim();});
-  // A tall popup above a centred point runs under the 3D title and style buttons: nudge the map down.
-  const popup=_3dPopup, nudge=()=>{
+  // A tall popup can run under the 3D title and style buttons, or down into the credits and hint box:
+  // nudge the map so it sits between them. Checked twice, since the forest list can grow the popup.
+  const popup=_3dPopup, overlapsX=r=>b=>b.width&&b.left<r.right&&b.right>r.left;
+  const nudge=()=>{
     const el=popup.getElement();if(!el?.isConnected)return;
     const r=el.getBoundingClientRect();
-    const hud=Math.max(0,...[...document.querySelectorAll('#threedview .td-hud:not(#tdLegend),#tdBasemap,#tdClose')]
-      .map(e=>e.getBoundingClientRect()).filter(b=>b.width&&b.left<r.right&&b.right>r.left).map(b=>b.bottom));
-    if(hud+8>r.top)mlMap.panBy([0,-(hud+8-r.top)],{duration:motionDuration(300)});
+    const top=Math.max(0,...[...document.querySelectorAll('#threedview .td-hud:not(#tdLegend):not(.td-hint),#tdBasemap,#tdClose')]
+      .map(e=>e.getBoundingClientRect()).filter(overlapsX(r)).map(b=>b.bottom))+8;
+    const bottom=Math.min(innerHeight,...[...document.querySelectorAll('#threedview .maplibregl-ctrl-bottom-right>*,#threedview .td-hint,#tdLegend')]
+      .map(e=>e.getBoundingClientRect()).filter(b=>b.height&&overlapsX(r)(b)).map(b=>b.top))-8;
+    const dy=top>r.top?top-r.top:r.bottom>bottom?-Math.min(r.bottom-bottom,Math.max(0,r.top-top)):0;
+    if(Math.abs(dy)>1)mlMap.panBy([0,-dy],{duration:motionDuration(300)});
+    return dy;
   };
-  if(keepView)setTimeout(nudge,60);else mlMap.once('moveend',()=>setTimeout(nudge,60));
+  // Near the edge of the 3D area the camera cannot move far enough; then show the popup below the point.
+  const settle=()=>{if(nudge()>1&&popup.options.anchor!=='top'){popup.options.anchor='top';popup.setLngLat(popup.getLngLat());}};
+  const twice=()=>{setTimeout(nudge,60);setTimeout(settle,900);};
+  if(keepView)twice();else mlMap.once('moveend',twice);
 }
 
 // Manual (staff-reported) hotspots — deliberately a different marker shape
