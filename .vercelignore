@@ -16,3 +16,11 @@ tmp
 /data
 docs
 scripts/*.log
+# Slides, field documents and other local working files never belong in the backend deploy.
+presentation-*
+fieldwork-*
+19พย-*
+*.pptx
+*.pdf
+*.png
+!frontend/public/**
