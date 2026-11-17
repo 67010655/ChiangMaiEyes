@@ -428,7 +428,7 @@
   .td-legend .td-fb{width:16px;height:16px;flex:none}
   .td-legend .lr{display:flex;align-items:center;gap:9px;font-family:var(--font);font-size:12px;color:var(--muted);padding:3px 0}
   .td-legend .lr .d{width:11px;height:11px;border-radius:50%;flex:none}
-  .td-hint{bottom:22px;right:26px;font-family:var(--font);font-size:12px;color:var(--dim);text-align:right;line-height:1.7}
+  .td-hint{bottom:44px;right:26px;font-family:var(--font);font-size:12px;color:var(--dim);text-align:right;line-height:1.7}
   .td-close{position:absolute;top:16px;right:24px;z-index:6;width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:rgba(17,22,29,.9);color:var(--muted);font-size:18px;cursor:pointer;pointer-events:auto}
   .td-close:hover{border-color:var(--danger);color:var(--danger)}
   /* 3D basemap switcher — same look as the 2D .basemap-toggle but a separate
@@ -444,9 +444,13 @@
     font-size:12px;letter-spacing:.1em;padding:7px 12px;cursor:pointer;transition:.15s
   }
   .td-basemap-toggle button.active{background:rgba(255,138,61,.16);color:var(--ember)}
-  .td-view-toggle{top:53px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto}
+  .td-view-toggle{top:62px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto}
   .td-view-toggle button{border:1px solid #34465d;background:rgba(12,24,42,.9);color:#d8e8ff;border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:12px;cursor:pointer}
   .td-view-toggle button:hover{border-color:#60a5fa;background:rgba(35,65,105,.94)}
+  @media(min-width:601px) and (max-width:900px){
+    .td-basemap-toggle{top:96px}.td-view-toggle{top:148px}
+    .threedview .maplibregl-ctrl-top-right{top:196px}
+  }
   @media(max-width:600px){
     .td-title{top:13px;left:14px;right:54px}
     .td-title h2{font-size:13px}
@@ -1863,6 +1867,7 @@
           <article class="gd-alert"><h3>💬 ฝุ่นรายอำเภอทาง LINE</h3><p class="gd-who">ทุกคน · ไม่ต้องสมัครสมาชิก</p><p>แจ้งเมื่อเซนเซอร์ในอำเภอวัดได้ระดับ “เริ่มมีผลต่อกลุ่มเสี่ยง” ขึ้นไปต่อเนื่อง 1 ชม. เปิดเฉพาะอำเภอที่มีเซนเซอร์ส่งข้อมูลอย่างน้อย 2 จุด หยุดได้ทุกเมื่อ พิมพ์ “หยุด”</p><button type="button" class="gc-try" data-guide-try="dustline">ไปรับแจ้งเตือน</button></article>
           <article class="gd-alert"><h3>🌳 ไฟใกล้ป่าที่ดูแล</h3><p class="gd-who">ตัวแทนป่าชุมชนที่ได้รับอนุมัติ</p><ol><li>สมัครและยืนยันอีเมล</li><li>ขอสิทธิ์ป่าที่ดูแล แล้วรอผู้ดูแลอนุมัติ</li><li>ผูก LINE ใน “ป่าชุมชน → การแจ้งเตือน”</li></ol><p>ได้ LINE เมื่อมีจุดความร้อนในป่า มีหมุดใหม่ห่างไม่เกิน 5 กม. และเมื่อหมุดนั้นจบงาน เรื่องไฟส่งทาง LINE ทางเดียว อีเมลใช้แค่เรื่องบัญชี</p><button type="button" class="gc-try" data-open-view="community">ไปที่ป่าชุมชน</button></article>
           <article class="gd-alert gd-practice"><h3>🧪 ฝึกแจ้งไฟ</h3><p class="gd-who">ทุกคน · ไม่ต้องสมัครสมาชิก</p><p>ลองกดแจ้งไฟได้เหมือนของจริง แต่ข้อมูลอยู่ในเครื่องนี้เท่านั้น ไม่มีใครได้รับ LINE ระบบจะแสดงว่าถ้าเป็นของจริง ป่าไหนจะได้รับข้อความอะไร</p><button type="button" class="gc-try" data-guide-try="practice">เริ่มฝึก</button></article>
+          <article class="gd-alert gd-propose"><h3>🌳 ป่าของฉันยังไม่มีในระบบ</h3><p class="gd-who">ทุกคน · ไม่ต้องสมัครสมาชิก</p><p>ปักหมุดป่าชุมชนที่ยังไม่อยู่บนแผนที่ ใส่ชื่อป่าแล้วส่ง ทีมจะตรวจสอบแล้วเพิ่มให้ ป่าจะยังไม่ขึ้นทันที</p><button type="button" class="gc-try" data-guide-try="propose">เสนอป่าใหม่</button></article>
         </div>
       </section>
 
@@ -1999,6 +2004,7 @@
 <script src="/community-workspace.js"></script>
 <script src="/incident-pins.js"></script>
 <script src="/practice-report.js"></script>
+<script src="/forest-proposal.js"></script>
 <script src="/field-checks.js"></script>
 <script src="/practice-workspace.js"></script>
 <script src="/auth-ui.js"></script>
@@ -2489,7 +2495,7 @@ function closeSpreadPointDetails(){
 function reopenSpreadPoint(){
   const p=spreadSimPoint;if(!p)return;
   const h=hotspots.find(x=>Math.abs(x.lat-p.lat)<1e-9&&Math.abs(x.lon-p.lon)<1e-9);if(!h)return;
-  spreadBar().hidden=true;
+  spreadBar().hidden=true;document.body.classList.remove('spread-mode');
   if(p.in3D)open3DHotspotDetails(h,{keepView:true});
   else{let m;layers.hotspots.eachLayer(l=>{const q=l.getLatLng?.();if(q&&Math.abs(q.lat-h.lat)<1e-9&&Math.abs(q.lng-h.lon)<1e-9)m=l;});m?.fire('click');}
   // The reopened popup was drawn fresh; show its button as "hide" since the outline is still on.
@@ -2498,7 +2504,7 @@ function reopenSpreadPoint(){
 function clearSpreadSim(){
   if(spreadKeepOnClose)return;
   spreadSimStop?.();spreadSimStop=null;spreadSimKey=null;spreadSimPoint=null;
-  const bar=document.getElementById('spreadBar');if(bar)bar.hidden=true;
+  const bar=document.getElementById('spreadBar');if(bar)bar.hidden=true;document.body.classList.remove('spread-mode');
   if(spreadSimLayer){map.removeLayer(spreadSimLayer);spreadSimLayer=null;}
   if(mlMap?.getSource?.('spread-sim')){mlMap.getSource('spread-sim').setData({type:'FeatureCollection',features:[]});mlMap.setPadding({top:0,right:0,bottom:0,left:0});}
   document.querySelectorAll('.hs-spread-btn[aria-pressed="true"]').forEach(b=>{b.setAttribute('aria-pressed','false');b.textContent='▶ ดูแนวลามทดลอง 6 ชม.';});
@@ -2528,18 +2534,23 @@ async function showSpreadSim(btn){
     // Clear the view: the popup or sheet would cover the outline, the bar takes its place.
     spreadSimPoint={lat,lon,in3D};
     closeSpreadPointDetails();
-    const bar=spreadBar();bar.hidden=false;
-    const barH=bar.offsetHeight+24, bottomNav=isMobileViewport()?116:0; // the bar sits above the 1362 row on phones
+    const bar=spreadBar();bar.classList.toggle('in-3d',in3D);bar.hidden=false;document.body.classList.add('spread-mode');
+    // The free map area: below the controls along the top, above the bar.
+    const freeArea=(container,topSel)=>{
+      const c=container.getBoundingClientRect();
+      const top=Math.max(12,...[...document.querySelectorAll(topSel)].map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.top<c.top+c.height/2).map(r=>r.bottom-c.top+12));
+      const bottom=Math.max(12,c.bottom-bar.getBoundingClientRect().top+12);
+      return {top,bottom};
+    };
     if(in3D){
       _ensure3DSpreadLayers();
       spreadSimStop=CmeHotspotSpread.animate(result,lat,lon,list=>mlMap.getSource('spread-sim')?.setData({type:'FeatureCollection',features:list.map(f=>({type:'Feature',properties:{hours:f.hours},geometry:f.geometry}))}),{reduced});
       const b=L.geoJSON(last).getBounds();
       // Keep the outline below the 3D title and style buttons, which are taller on phones.
-      const mapTop=mlMap.getContainer().getBoundingClientRect().top;
-      const hudBottom=Math.max(0,...[...document.querySelectorAll('#threedview .td-hud,#tdBasemap,#tdClose')].map(e=>e.getBoundingClientRect().bottom-mapTop));
+      const free=freeArea(mlMap.getContainer(),'#threedview .td-hud:not(#tdLegend),#tdBasemap,#tdClose');
       // fitBounds with a tilt and large padding misplaces the outline on phones, so fit it flat
       // into the free area, step back a little for the tilt, then fly there with that padding.
-      const pad={top:hudBottom+16,bottom:barH+bottomNav,left:40,right:40};
+      const pad={top:free.top,bottom:free.bottom,left:40,right:40};
       mlMap.setPadding({top:0,right:0,bottom:0,left:0}); // a sheet's leftover padding would leave no room
       const cam=mlMap.cameraForBounds([[b.getWest(),b.getSouth()],[b.getEast(),b.getNorth()]],{padding:pad});
       if(cam)mlMap.flyTo({center:cam.center,zoom:Math.min(15.5,cam.zoom-.5),pitch:55,padding:pad,duration:motionDuration(900)});
@@ -2549,7 +2560,8 @@ async function showSpreadSim(btn){
         spreadSimLayer.clearLayers();
         [...list].reverse().forEach(f=>{const st=spreadSimStyle(f.hours);L.geoJSON(f.geometry,{interactive:false,style:{color:st.color,weight:2,dashArray:'5 4',fillColor:st.color,fillOpacity:st.fill}}).addTo(spreadSimLayer);});
       },{reduced});
-      map.fitBounds(L.geoJSON(last).getBounds(),{paddingTopLeft:[24,isMobileViewport()?70:40],paddingBottomRight:[24,barH+bottomNav],maxZoom:16,animate:motionDuration(300)>0});
+      const free=freeArea(map.getContainer(),'.map-search,.map-3d-btn,#practiceBanner,.leaflet-top .leaflet-control');
+      map.fitBounds(L.geoJSON(last).getBounds(),{paddingTopLeft:[24,free.top],paddingBottomRight:[24,free.bottom],maxZoom:16,animate:motionDuration(300)>0});
     }
   }catch(e){if(msg)msg.textContent='โหลดแนวลามไม่ได้ ลองใหม่อีกครั้ง';}
   finally{btn.disabled=false;}
@@ -3130,7 +3142,7 @@ document.getElementById('reportPickMapBtn').onclick = ()=>{
 // lat/lng args are optional — omitted when opened directly from the report
 // button (user fills them in via typing/GPS/map-pick instead).
 function openReportModal(lat, lng){
-  if(lat!=null&&lng!=null&&CmePracticeReport.takePick(lat,lng)) return;
+  if(lat!=null&&lng!=null&&(CmePracticeReport.takePick(lat,lng)||CmeForestProposal.takePick(lat,lng))) return;
   CmeCommunity.newIncident(lat!=null&&lng!=null?{lat,lon:lng}:undefined);
   return;
   const latEl = document.getElementById('reportLat'), lngEl = document.getElementById('reportLng');
@@ -4095,6 +4107,7 @@ document.getElementById('guideview').addEventListener('click',e=>{
       if(_provinceBoundsForFit)map.fitBounds(_provinceBoundsForFit,{padding:[12,12]});
     }
     else if(kind==='practice')CmePracticeReport.open();
+    else if(kind==='propose')CmeForestProposal.open();
     else if(kind==='replay')document.querySelector('.hs-replay-start:not([hidden])')?.click();
     else if(kind==='dust'){
       ['pm','sensors','wind'].forEach(k=>{const row=document.querySelector(`.layer[data-layer="${k}"]`);if(row&&!row.classList.contains('on'))row.click();});
@@ -6036,6 +6049,8 @@ function initMapLibre3D(){
     pitch:62,
     bearing:-20,
     antialias:false,
+    // Credits stay one tap away (ⓘ) on phones, where the expanded text ran under the legend chip.
+    attributionControl:{compact:true},
     // Camera-only polish (NOT the resource fix above — see CM_SOURCE_BOUNDS):
     // keeps panning/zooming from wandering into the now-untextured area
     // outside the source bounds. Padded a bit beyond CM_SOURCE_BOUNDS so the
@@ -6349,6 +6364,15 @@ function open3DHotspotDetails(h,{keepView=false}={}){
     .addTo(mlMap);
   // MapLibre's on() does not return the popup, so it cannot sit in the chain.
   _3dPopup.on('close', ()=>{clear3DForestProximity();clearSpreadSim();});
+  // A tall popup above a centred point runs under the 3D title and style buttons: nudge the map down.
+  const popup=_3dPopup, nudge=()=>{
+    const el=popup.getElement();if(!el?.isConnected)return;
+    const r=el.getBoundingClientRect();
+    const hud=Math.max(0,...[...document.querySelectorAll('#threedview .td-hud:not(#tdLegend),#tdBasemap,#tdClose')]
+      .map(e=>e.getBoundingClientRect()).filter(b=>b.width&&b.left<r.right&&b.right>r.left).map(b=>b.bottom));
+    if(hud+8>r.top)mlMap.panBy([0,-(hud+8-r.top)],{duration:motionDuration(300)});
+  };
+  if(keepView)setTimeout(nudge,60);else mlMap.once('moveend',()=>setTimeout(nudge,60));
 }
 
 // Manual (staff-reported) hotspots — deliberately a different marker shape
@@ -6939,6 +6963,7 @@ CmeCommunity.init({
   legacyPhase:()=>{closeAllOverlays();openPhasePanel();},
   exportForest:id=>{CmeNavigation.open('report');document.getElementById('exportScope').value='forest';document.getElementById('exportForest').value=id;buildReport();}
 });
+CmeForestProposal.init({apiBase:API_BASE,area:(lat,lon)=>CmeCoordination.administrativeArea(lat,lon),pick:()=>{closeAllOverlays();startPickLocation();}});
 CmePracticeReport.init({
   leaflet:L,
   map:()=>map,

@@ -45,6 +45,8 @@ it('grows outlines from the point and always labels them as an experiment', () =
 it('offers the button only for points the model covers (last 24 hours)', () => {
   const { dom, S } = setup();
   expect(S.buttonHtml({ lat: 18.7, lon: 99, detected_at: new Date(Date.now() - 3 * 3600e3).toISOString() })).toContain('hs-spread-btn');
-  expect(S.buttonHtml({ lat: 18.7, lon: 99, detected_at: new Date(Date.now() - 30 * 3600e3).toISOString() })).toBe('');
+  const old = S.buttonHtml({ lat: 18.7, lon: 99, detected_at: new Date(Date.now() - 30 * 3600e3).toISOString() });
+  expect(old).not.toContain('hs-spread-btn');
+  expect(old).toContain('ภายใน 24 ชม.');
   dom.window.close();
 });

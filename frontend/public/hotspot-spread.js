@@ -11,7 +11,8 @@
   // The model only takes points detected in the last 24 hours.
   const eligible=h=>Number.isFinite(ageH(h))&&ageH(h)<=WINDOW_H;
   function buttonHtml(h){
-    if(!eligible(h))return '';
+    // Say why there is no button, so an older point does not look broken.
+    if(!eligible(h))return '<p class="hs-spread-none">แนวลามทดลองดูได้เฉพาะจุดที่ดาวเทียมเห็นภายใน 24 ชม. จุดนี้เก่ากว่านั้น</p>';
     return `<div class="hs-spread"><button type="button" class="hs-spread-btn" data-spread-lat="${Number(h.lat)}" data-spread-lon="${Number(h.lon)}">▶ ดูแนวลามทดลอง 6 ชม.</button><p class="hs-spread-msg" role="status" hidden></p></div>`;
   }
   function load(fetcher=root.fetch?.bind(root)){
