@@ -111,6 +111,8 @@ def read_dust_sensors(response:Response,settings:Settings=Depends(get_settings))
 
 from app.community import router as community_router
 app.include_router(community_router)
+from app.forest_proposals import router as forest_proposals_router
+app.include_router(forest_proposals_router)
 from app.land_context import router as land_context_router
 app.include_router(land_context_router)
 from app.community_field import router as field_router

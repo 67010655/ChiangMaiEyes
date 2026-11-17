@@ -248,3 +248,4 @@ body.light-mode .cw-pick.is-main{background:rgba(67,176,95,.12)}
 .cw-evidence .cw-sub{margin:16px 0 8px;font-size:14px;font-weight:700;color:var(--txt)}
 .cw-photo-add{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
 .cw-photo-add label{flex:1 1 220px}
+.cw-link{background:none;border:0;padding:0;color:var(--green,#43b05f);font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;min-height:32px}
