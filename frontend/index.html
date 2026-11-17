@@ -2726,6 +2726,16 @@ function fetchWindGrid(){
   if(!_windGridRequest) _windGridRequest=fetchWindGridUncached().finally(()=>{_windGridRequest=null;});
   return _windGridRequest;
 }
+// Open-Meteo limits calls per network address, and a 25-point grid counts as about 25 calls. A room of
+// people on one Wi-Fi reloading the page could hit that limit, so each browser reuses a response for 20 min.
+async function openMeteoJson(key,url,maxAgeMs=1200000){
+  try{const c=JSON.parse(localStorage.getItem(key)||'null');if(c&&c.url===url.replace(/&_=\d+/,'')&&Date.now()-c.at<maxAgeMs)return c.data;}catch{}
+  const res=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  if(!res.ok) throw new Error('Open-Meteo '+res.status);
+  const data=await res.json();
+  try{localStorage.setItem(key,JSON.stringify({at:Date.now(),url:url.replace(/&_=\d+/,''),data}));}catch{}
+  return data;
+}
 async function fetchWindGridUncached(){
   if(_windCacheField && Date.now()-_windCacheMs<600000) return _windCacheField;
   // 5×5 model points around the province give smooth, believable streamlines.
@@ -2733,9 +2743,7 @@ async function fetchWindGridUncached(){
   const latList=SL.flatMap(la=>SN.map(()=>la)).join(',');
   const lonList=SL.flatMap(()=>SN).join(',');
   const url=`https://api.open-meteo.com/v1/forecast?latitude=${latList}&longitude=${lonList}&hourly=windspeed_10m,winddirection_10m&forecast_days=1&timezone=Asia%2FBangkok`;
-  const res=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(10000)});
-  if(!res.ok) throw new Error('Open-Meteo '+res.status);
-  const results=await res.json();
+  const results=await openMeteoJson('cme_om_wind_grid',url);
   if(!Array.isArray(results)||results.length!==SL.length*SN.length) throw new Error('Unexpected Open-Meteo shape');
   const nowMs=Date.now(), times=results[0].hourly.time;
   _windGridSamples=[];
@@ -3467,8 +3475,7 @@ async function fetchWindRose(){
     const url='https://api.open-meteo.com/v1/forecast?latitude=18.79&longitude=98.99'+
       '&hourly=wind_direction_10m,wind_speed_10m&past_days=1&forecast_days=0'+
       '&timezone=Asia%2FBangkok&timeformat=unixtime';
-    const r=await fetch(url); if(!r.ok) return;
-    const d=await r.json();
+    const d=await openMeteoJson('cme_om_wind_rose',url).catch(()=>null); if(!d) return;
     const dirs=d.hourly&&d.hourly.wind_direction_10m;
     const speeds=d.hourly&&d.hourly.wind_speed_10m;
     if(!dirs||!dirs.length) return;
