@@ -325,3 +325,5 @@ body.spread-mode .map-time-note,body.spread-mode #hsReplay{visibility:hidden}
 body.spread-mode #tdLegend{visibility:hidden}
 /* Tablets show the insights button in the bottom-right corner; keep the 3D button beside it, not under it. */
 @media(min-width:821px) and (max-width:1180px){.map-3d-btn{right:70px}}
+.ms-propose{border-top:1px solid var(--line);margin-top:4px}
+.ms-propose b{color:var(--green,#43b05f)}

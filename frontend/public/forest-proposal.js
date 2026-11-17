@@ -55,6 +55,7 @@
   }
   function open(opts={}){
     ensure();
+    if(opts.name&&!draft.name)draft.name=String(opts.name).slice(0,120);
     if(opts.lat!=null){draft.latitude=Number(opts.lat).toFixed(5);draft.longitude=Number(opts.lon).toFixed(5);view='form';}
     else if(view==='done')view='form';
     el.classList.add('open');render();

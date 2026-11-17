@@ -40,3 +40,21 @@ it('a map pick fills the form, and sending posts to the team with the tambon fil
   expect(JSON.parse(opts.body)).toMatchObject({ name: 'ป่าชุมชนบ้านหัวดอยใหม่', tambon: 'กองแขก', district: 'แม่แจ่ม', latitude: 18.31067, contact_phone: null });
   expect(doc.querySelector('.pr-card h2').textContent).toBe('ส่งแล้ว ขอบคุณครับ');
 });
+
+it('the map search offers a proposal when no forest matches, prefilled with what was typed', () => {
+  const dom = new JSDOM('<!doctype html><body><div class="map-search"><input id="q"></div></body>', { runScripts: 'outside-only', url: 'https://chiangmaieyes.vercel.app/' });
+  const win = dom.window as any;
+  win.eval(readFileSync(resolve(__dirname, '../public/map-search.js'), 'utf8'));
+  const proposed: string[] = [];
+  const input = win.document.getElementById('q');
+  win.CmeMapSearch.init({ input, items: () => [{ kind: 'district', name: 'แม่แจ่ม' }], onPick: () => {}, onPropose: (q: string) => proposed.push(q) });
+  input.value = 'ป่าบ้านไม่มีในระบบ';
+  input.dispatchEvent(new win.Event('input'));
+  const opt = win.document.querySelector('.ms-propose');
+  expect(opt).not.toBeNull();
+  opt.dispatchEvent(new win.Event('pointerdown', { bubbles: true, cancelable: true }));
+  expect(proposed).toEqual(['ป่าบ้านไม่มีในระบบ']);
+  input.value = 'แม่แจ่ม';
+  input.dispatchEvent(new win.Event('input'));
+  expect(win.document.querySelector('.ms-propose')).not.toBeNull(); // a district match still offers it: no forest matched
+});

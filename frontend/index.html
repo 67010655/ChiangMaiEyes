@@ -3992,6 +3992,7 @@ CmeMapSearch.init({
   input:document.getElementById('mobileSearchInput'),
   items:searchItems,suggest:searchSuggestions,
   onCoordinates:q=>runMobileSearch(q),
+  onPropose:q=>CmeForestProposal.open({name:q}),
   onPick:r=>{
     if(r.kind==='district'){const layer=districtLayerRef[r.name];if(layer)selectDistrict(r.name,layer);else if(r.ref?.c)map.flyTo(r.ref.c,11);}
     else if(r.kind==='tambon'){const c=_tambonCentroid(r.ref),p=r.ref.properties||{};if(c)selectTambonSearch(p.tambon_th||p.T_NAME_T,c,p.amphoe_th||p.A_NAME_T);}

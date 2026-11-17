@@ -216,11 +216,13 @@ ${shareUrl(f)}`;
     const fn=f=>map.get(f.forest_id)||f.name;labelCache.set(forests,fn);return fn;
   }
   const norm=s=>String(s||'').toLowerCase().replace(/ป่าชุมชน|อำเภอ|อ\.|ต\.|บ้าน/g,'').replace(/\s+/g,'');
+  // Forests missing from the list can be proposed; the form lives in forest-proposal.js.
+  const proposeLine=q=>root.CmeForestProposal?`<p class="fp-line">ไม่เจอป่าของคุณ? <button type="button" class="fp-link" onclick="CmeForestProposal.open({name:this.dataset.q})" data-q="${esc(q)}">เสนอป่าที่ยังไม่มีในระบบ</button></p>`:'';
   function searchHtml(forests,q){
     const label=labeller(forests), n=norm(q);
     if(!n)return '';
     const hits=forests.filter(f=>norm(label(f)+' '+f.amphoe+' '+(f.tambon||'')+' '+(f.village||'')).includes(n)).slice(0,8);
-    if(!hits.length)return `<p class="fp-line">ไม่พบป่าชื่อ "${esc(q)}" ลองพิมพ์ชื่อบ้านหรืออำเภอ</p>`;
+    if(!hits.length)return `<p class="fp-line">ไม่พบป่าชื่อ "${esc(q)}" ลองพิมพ์ชื่อบ้านหรืออำเภอ</p>${proposeLine(q)}`;
     return `<ul class="fp-list compact" role="listbox" aria-label="ผลค้นหาป่าชุมชน">${hits.map(f=>`<li><button type="button" role="option" data-fp="pick" data-id="${esc(f.forest_id)}"><span class="fp-li-t"><b>${esc(label(f))}</b><small>${f.tambon&&!label(f).includes('ต.')?'ต.'+esc(f.tambon)+' · ':''}อ.${esc(f.amphoe||'')}</small></span></button></li>`).join('')}</ul>`;
   }
   function html({forests=[],dashboard=null,selectedId='',incidentsHtml='',hasIncidents=false,showRep=true,showList=true,now=Date.now()}={}){
@@ -230,6 +232,7 @@ ${shareUrl(f)}`;
       <section class="fp-hero"><h2>ป่าชุมชนในเชียงใหม่ <span>${esc(forests.length.toLocaleString('th-TH'))} แห่ง</span></h2>
         <div class="fp-pick"><input type="search" id="fpSearch" class="fp-search" placeholder="พิมพ์ชื่อป่าหรืออำเภอ" aria-label="ค้นหาป่าชุมชน" autocomplete="off" aria-controls="fpResults"><button type="button" class="cw-btn" data-fp="near">📍 ใกล้ฉัน</button></div>
         <div id="fpResults" aria-live="polite"></div>
+        ${proposeLine('')}
         ${f?`<p class="fp-current">กำลังดู <b>${esc(label(f))}</b> <button type="button" class="fp-link" data-fp="clear">เปลี่ยนป่า</button></p>`:''}</section>
       <div id="fpCard" data-id="${f?esc(f.forest_id):''}">${f?forestCard(f,dashboard,now):''}</div>
       ${showList?`<section class="fp-section"><h2>ป่าที่มีจุดความร้อนใกล้ · 24 ชม.</h2>${listHtml(rows,selectedId,label)}</section>`:''}

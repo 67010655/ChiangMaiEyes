@@ -32,16 +32,19 @@
     for(const [, ,it] of scored){seen[it.kind]=(seen[it.kind]||0)+1;if(seen[it.kind]<=cap[it.kind])out.push(it);else more++;}
     out.more=more;return out;
   }
-  function listHtml(rows,q,title,listPrefix='msOpt'){
-    if(!rows.length)return q?`<li class="ms-empty" role="option" aria-disabled="true">ไม่พบ "${esc(q)}" ลองพิมพ์บางส่วนของชื่อ หรือพิกัด เช่น 18.79, 98.98</li>`:'';
+  // A forest the search cannot find may simply not be in the system yet: offer to propose it.
+  const proposeHtml=q=>`<li role="option" class="ms-opt ms-propose" data-propose="1" aria-selected="false"><span class="ms-ic" aria-hidden="true">🌳</span><span class="ms-t"><b>ไม่เจอป่าของคุณ? เสนอเป็นป่าใหม่</b><small>ส่งให้ทีมตรวจสอบแล้วเพิ่มเข้าแผนที่ · ไม่ต้องสมัคร</small></span></li>`;
+  function listHtml(rows,q,title,listPrefix='msOpt',propose=false){
+    const extra=propose&&q&&!rows.some(r=>r.kind==='forest')?proposeHtml(q):'';
+    if(!rows.length)return q?`<li class="ms-empty" role="option" aria-disabled="true">ไม่พบ "${esc(q)}" ลองพิมพ์บางส่วนของชื่อ หรือพิกัด เช่น 18.79, 98.98</li>`+extra:'';
     const mark=t=>{const n=String(q||'').trim();if(!n)return esc(t);const i=t.indexOf(n);return i<0?esc(t):esc(t.slice(0,i))+'<mark>'+esc(t.slice(i,i+n.length))+'</mark>'+esc(t.slice(i+n.length));};
     let last='';
     return (title?`<li class="ms-title" role="presentation">${esc(title)}</li>`:'')+rows.map((r,i)=>{
       const head=!title&&r.kind!==last?`<li class="ms-title" role="presentation">${esc(KIND[r.kind].group)}</li>`:'';last=r.kind;
-      return head+`<li role="option" id="${listPrefix}${i}" class="ms-opt" data-i="${i}" aria-selected="${i===0}"><span class="ms-ic ${r.kind}" aria-hidden="true">${KIND[r.kind].ic}</span><span class="ms-t"><b>${mark(r.name)}</b><small>${esc(r.sub||KIND[r.kind].label)}${r.extra?' · '+esc(r.extra):''}</small></span></li>`;}).join('')+(rows.more?`<li class="ms-empty" role="presentation">และอีก ${rows.more} รายการ พิมพ์ให้เจาะจงขึ้นเพื่อดู</li>`:'');
+      return head+`<li role="option" id="${listPrefix}${i}" class="ms-opt" data-i="${i}" aria-selected="${i===0}"><span class="ms-ic ${r.kind}" aria-hidden="true">${KIND[r.kind].ic}</span><span class="ms-t"><b>${mark(r.name)}</b><small>${esc(r.sub||KIND[r.kind].label)}${r.extra?' · '+esc(r.extra):''}</small></span></li>`;}).join('')+(rows.more?`<li class="ms-empty" role="presentation">และอีก ${rows.more} รายการ พิมพ์ให้เจาะจงขึ้นเพื่อดู</li>`:'')+extra;
   }
 
-  function init({input,items,suggest,onPick,onCoordinates,listId='mapSearchList',emptyTitle='มีจุดความร้อนใน 24 ชม.'}){
+  function init({input,items,suggest,onPick,onCoordinates,onPropose,listId='mapSearchList',emptyTitle='มีจุดความร้อนใน 24 ชม.'}){
     if(!input)return;
     const box=input.closest('.map-search')||input.parentElement;
     const list=document.createElement('ul');
@@ -55,10 +58,11 @@
       const q=input.value.trim();
       if(!q){const s=suggest?suggest():[];show(listHtml(s,'',s.length?emptyTitle:'',listId+'-'),s);return;}
       if(/^\s*-?\d+(?:\.\d+)?[,\s]+-?\d+(?:\.\d+)?\s*$/.test(q)){show(`<li class="ms-opt" role="option" data-coord="1" aria-selected="true"><span class="ms-ic" aria-hidden="true">🧭</span><span class="ms-t"><b>${esc(q)}</b><small>ไปที่พิกัดนี้</small></span></li>`,[]);return;}
-      const r=rank(items(),q);show(listHtml(r,q,'',listId+'-'),r);
+      const r=rank(items(),q);show(listHtml(r,q,'',listId+'-',!!onPropose),r);
     };
     const choose=i=>{
       if(list.querySelector('[data-coord]')){hide();onCoordinates?.(input.value.trim());input.blur();return;}
+      if(i==='propose'){hide();input.blur();onPropose?.(input.value.trim());return;}
       const r=rows[i];if(!r)return;hide();input.value=r.name;input.blur();onPick(r);
     };
     const move=d=>{
@@ -73,11 +77,11 @@
     input.addEventListener('keydown',e=>{
       if(e.key==='ArrowDown'){e.preventDefault();move(1);}
       else if(e.key==='ArrowUp'){e.preventDefault();move(-1);}
-      else if(e.key==='Enter'){e.preventDefault();if(!list.hidden&&list.querySelector('.ms-opt'))choose(active);}
+      else if(e.key==='Enter'){e.preventDefault();const o=list.querySelectorAll('.ms-opt')[active];if(!list.hidden&&o)choose(o.dataset.propose?'propose':active);}
       else if(e.key==='Escape'){hide();input.blur();}
     });
     // pointerdown (not click) so the pick lands before the input blurs.
-    list.addEventListener('pointerdown',e=>{const o=e.target.closest('.ms-opt');if(!o)return;e.preventDefault();choose(Number(o.dataset.i||0));});
+    list.addEventListener('pointerdown',e=>{const o=e.target.closest('.ms-opt');if(!o)return;e.preventDefault();choose(o.dataset.propose?'propose':Number(o.dataset.i||0));});
     input.addEventListener('blur',()=>setTimeout(()=>{hide();if(!input.value)startHints();},150));
 
     // Rotating example names while the box is empty: a district, then a forest.
