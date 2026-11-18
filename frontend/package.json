@@ -16,6 +16,7 @@
     "leaflet": "^1.9.4",
     "leaflet-velocity": "^2.1.4",
     "lucide-react": "^1.17.0",
+    "maplibre-contour": "^0.1.1",
     "maplibre-gl": "^6.11.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

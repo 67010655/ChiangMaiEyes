@@ -7,9 +7,10 @@ let loading: Promise<typeof import('maplibre-gl')> | null = null;
 Object.assign(window, {
   mapTilerKey: import.meta.env.VITE_MAPTILER_KEY || "",
   ensureMapLibre: () => {
-    loading ??= import('maplibre-gl').then(maplibregl => {
+    loading ??= Promise.all([import('maplibre-gl'), import('maplibre-contour')]).then(([maplibregl, contour]) => {
       maplibregl.setWorkerUrl(workerUrl);
-      Object.assign(window, {maplibregl});
+      // Contour lines in 3D are drawn in the browser from the same Terrarium elevation tiles.
+      Object.assign(window, {maplibregl, mlcontour: (contour as any).default || contour});
       return maplibregl;
     }).catch(error => {
       loading = null;

@@ -447,6 +447,8 @@
   .td-view-toggle{top:62px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:auto}
   .td-view-toggle button{border:1px solid #34465d;background:rgba(12,24,42,.9);color:#d8e8ff;border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:12px;cursor:pointer}
   .td-view-toggle button:hover{border-color:#60a5fa;background:rgba(35,65,105,.94)}
+  .td-view-toggle button.active{border-color:#e2e8f0;background:rgba(226,232,240,.18);color:#fff}
+  @media(max-width:600px){.td-view-toggle{flex-wrap:wrap;justify-content:center;width:max-content;max-width:calc(100vw - 110px)}}
   @media(min-width:601px) and (max-width:900px){
     .td-basemap-toggle{top:96px}.td-view-toggle{top:148px}
     .threedview .maplibregl-ctrl-top-right{top:196px}
@@ -1789,10 +1791,12 @@
       <button id="tdCity" type="button">อาคาร 3D</button>
       <button id="tdProvince" type="button">ภาพรวมจังหวัด</button>
       <button id="tdMountain" type="button">ดูภูเขา</button>
+      <button id="tdContours" type="button" aria-pressed="true" title="เส้นความสูงทุก 100 หรือ 500 เมตร ตัวเลขคือความสูงจากระดับน้ำทะเล (เมตร)">〰 เส้นความสูง</button>
     </div>
     <details class="td-hud td-legend" id="tdLegend" open>
       <summary>สัญลักษณ์บนแผนที่</summary>
       <div class="lr td-wind" id="tdWind" hidden></div>
+      <div class="lr td-contour"><span><i style="display:inline-block;width:18px;border-top:2px solid #f1f5f9;vertical-align:middle;margin-right:6px"></i>เส้นความสูง · ตัวเลขคือเมตรจากระดับน้ำทะเล</span></div>
       <div class="lr td-ages"><span><span class="hs-dot-pin age-new"></span>จุดความร้อน ≤6 ชม.</span><span><span class="hs-dot-pin age-recent"></span>6–24 ชม.</span><span><span class="hs-dot-pin age-old"></span>เก่ากว่า</span></div>
       <div class="lr td-sep"><svg class="td-fb" viewBox="0 0 22 22" aria-hidden="true"><rect x="1.5" y="1.5" width="19" height="19" rx="4.5" fill="#2f8f4e" stroke="#fff" stroke-width="1.5"/><path d="M11 4.5l5.5 7h-3l3.5 4.5h-12l3.5-4.5h-3z M10 16h2v2.5h-2z" fill="#fff"/></svg>ป่าชุมชน (มีแผนจัดการไฟ)</div>
       <div class="lr"><svg class="td-fb" viewBox="0 0 22 22" aria-hidden="true"><rect x="1.5" y="1.5" width="19" height="19" rx="4.5" fill="#0f8f8c" stroke="#fff" stroke-width="1.5"/><path d="M11 4.5l5.5 7h-3l3.5 4.5h-12l3.5-4.5h-3z M10 16h2v2.5h-2z" fill="#fff"/></svg>ป่าชุมชน (ไม่มีข้อมูลการจัดการไฟ)</div>
@@ -6057,9 +6061,24 @@ function initMapLibre3D(){
   // Legend starts folded on phones, where the map is small.
   const legend=document.getElementById('tdLegend');if(legend)legend.open=!isMobileViewport();
   const fastBuildings=!!window.mapTilerKey;
+  // Contour lines (เส้นความสูง): computed in a worker from the Terrarium DEM the terrain already uses.
+  let contourTiles=null;
+  try{
+    if(window.mlcontour&&!window._cmeDemSource){
+      window._cmeDemSource=new mlcontour.DemSource({url:'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',encoding:'terrarium',maxzoom:11,worker:true,cacheSize:60,timeoutMs:15000});
+      window._cmeDemSource.setupMaplibre(maplibregl);
+    }
+    contourTiles=window._cmeDemSource?.contourProtocolUrl({multiplier:1,
+      // zoom: [minor, major] metres. Chiang Mai runs from ~300 m to 2,565 m (Doi Inthanon).
+      thresholds:{8:[500,1000],10:[200,1000],11:[200,1000],12:[100,500],13:[50,250],14:[25,100]},
+      contourLayer:'contours',elevationKey:'ele',levelKey:'level',extent:4096,buffer:1})||null;
+  }catch(e){console.warn('contours unavailable',e);contourTiles=null;}
+  const contoursOn=(()=>{try{return localStorage.getItem('cme_3d_contours')!=='0';}catch(_){return true;}})();
   const style={
     version:8,
+    glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
     sources:{
+      ...(contourTiles?{'contours':{type:'vector',tiles:[contourTiles],maxzoom:14,bounds:CM_SOURCE_BOUNDS}}:{}),
       'esri-dark':{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'Tiles © Esri',maxzoom:16,bounds:CM_SOURCE_BOUNDS},
       'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:11,bounds:CM_SOURCE_BOUNDS},
       'terrain-shade':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:11,bounds:CM_SOURCE_BOUNDS,attribution:'Mapzen elevation tiles'},
@@ -6074,6 +6093,13 @@ function initMapLibre3D(){
       // 3D open for two basemaps most sessions never switch to.
       {id:'basemap-dark',type:'raster',source:'esri-dark',paint:{'raster-brightness-max':0.7,'raster-contrast':0.12}},
       {id:'hillshade',type:'hillshade',source:'terrain-shade',paint:{'hillshade-shadow-color':'#0c111a','hillshade-accent-color':'#2c3a50','hillshade-exaggeration':0.45}},
+      ...(contourTiles?[
+        {id:'contour-lines',type:'line',source:'contours','source-layer':'contours',layout:{visibility:contoursOn?'visible':'none','line-join':'round'},
+          paint:{'line-color':'#f1f5f9','line-opacity':['match',['get','level'],1,0.95,0.32],'line-width':['match',['get','level'],1,2,0.7]}},
+        {id:'contour-labels',type:'symbol',source:'contours','source-layer':'contours',
+          layout:{visibility:contoursOn?'visible':'none','symbol-placement':'line','text-field':['number-format',['get','ele'],{}],'text-font':['Open Sans Semibold'],'text-size':['match',['get','level'],1,14,12],'symbol-spacing':360,'text-max-angle':30,'text-padding':4},
+          paint:{'text-color':'#ffffff','text-halo-color':'rgba(5,8,12,.85)','text-halo-width':1.6}}
+      ]:[]),
       ...(fastBuildings?[{id:'buildings-3d-fill',type:'fill-extrusion',source:'buildings-tiles','source-layer':'building',minzoom:12,paint:{
         'fill-extrusion-color':'#617ca5',
         'fill-extrusion-height':['case',['has','height'],['to-number',['get','height']],9],
@@ -6260,6 +6286,13 @@ function initMapLibre3D(){
   mlMap.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
   document.getElementById('tdCity').onclick=()=>mlMap.flyTo({center:[98.9675,18.7985],zoom:16,pitch:58,bearing:-28,duration:motionDuration(1000)});
   document.getElementById('tdProvince').onclick=()=>mlMap.flyTo({center:[98.99,18.79],zoom:9,pitch:62,bearing:-20,duration:motionDuration(1000)});
+  {const btn=document.getElementById('tdContours');
+    let on=(()=>{try{return localStorage.getItem('cme_3d_contours')!=='0';}catch(_){return true;}})();
+    const sync=()=>{btn.setAttribute('aria-pressed',String(on));btn.classList.toggle('active',on);};
+    btn.hidden=!window._cmeDemSource;
+    btn.onclick=()=>{on=!on;const apply=()=>['contour-lines','contour-labels'].forEach(id=>mlMap.getLayer(id)&&mlMap.setLayoutProperty(id,'visibility',on?'visible':'none'));
+      if(mlMap.isStyleLoaded())apply();else mlMap.once('idle',apply);try{localStorage.setItem('cme_3d_contours',on?'1':'0');}catch(_){}sync();};
+    sync();}
   document.getElementById('tdMountain').onclick=()=>mlMap.flyTo({center:[98.9,18.81],zoom:12.2,pitch:65,bearing:-25,duration:motionDuration(1000)});
   const checkTerrain=()=>{
     const height=mlMap.queryTerrainElevation(mlMap.getCenter());
