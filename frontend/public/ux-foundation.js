@@ -54,6 +54,7 @@
     if(nav?.width>r.width*.5&&nav.top>r.top&&nav.top<r.bottom)bottom=r.bottom-nav.top+12;
     // Phone controls along the bottom of the map (1362, report, replay, time row) must not cover a popup.
     if(r.width<821)document.querySelectorAll('.call-fab,#reportHotspotBtn,#hsReplay,.map-time-note').forEach(el=>{
+      if(getComputedStyle(el).visibility==='hidden')return;
       const b=el.getBoundingClientRect();if(b.width&&b.height&&b.top>r.top+r.height/2&&b.top<r.bottom)bottom=Math.max(bottom,r.bottom-b.top+12);
     });
     return {topLeft:[12,top],bottomRight:[12,bottom],height:Math.max(60,r.height-top-bottom-65)};
@@ -83,12 +84,14 @@
       let observer;
       this.on('popupopen',e=>{
         observer?.disconnect();
+        // Phones: the legend row and replay button step aside while a popup is open, so the popup has room.
+        if(this.getContainer().getBoundingClientRect().width<821)document.body.classList.add('map-popup-open');
         const close=e.popup.getElement().querySelector('.leaflet-popup-close-button');
         if(close){close.setAttribute('aria-label','ปิดรายละเอียดจุด');close.title='ปิดรายละเอียดจุด';}
         if(root.ResizeObserver){observer=new ResizeObserver(()=>{if(e.popup.isOpen())e.popup._adjustPan();});observer.observe(e.popup.getElement());}
         requestAnimationFrame(()=>{if(e.popup.isOpen())e.popup._adjustPan();});
       });
-      this.on('popupclose',()=>observer?.disconnect());
+      this.on('popupclose',()=>{observer?.disconnect();document.body.classList.remove('map-popup-open');});
       this.on('resize',()=>this._popup?._adjustPan());
       this.on('moveend',()=>requestAnimationFrame(()=>this._popup?._adjustPan()));
       // Header wrapping changes the map height without a window resize.
@@ -181,5 +184,13 @@
     if(detail){detail.replaceChildren(empty({title:'รายละเอียดจุดบนแผนที่',reason:'เลือกจุดความร้อนเพื่อดูเวลา พื้นที่ และช่องทางติดต่อ',action:'กลับไปดูแผนที่',onAction:()=>root.closeMobileDrawers?.()}));}
   }
   root.CmeUx={category,pmColor,pmChip,pmChipHtml,empty,toast,popupPadding,mapLocale,invalidMessage,offlineAge};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+  // Phones: the bottom menu's real height (it grows with text size and the safe area), so sheets
+  // and full-screen views end exactly above it instead of a few pixels under it.
+  function trackNavHeight(){
+    const nav=document.querySelector('.navrail');if(!nav)return;
+    const set=()=>{const r=nav.getBoundingClientRect();const fixedBottom=getComputedStyle(nav).position==='fixed'&&r.bottom>=innerHeight-1;
+      document.documentElement.style.setProperty('--nav-h',fixedBottom?Math.ceil(r.height)+'px':'0px');};
+    set();addEventListener('resize',set);if(window.ResizeObserver)new ResizeObserver(set).observe(nav);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{setup();trackNavHeight();});else{setup();trackNavHeight();}
 })(window);

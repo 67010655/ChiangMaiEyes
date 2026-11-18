@@ -46,7 +46,7 @@ body.practice-mode #reportHotspotBtn{outline:3px dashed #fbbf24;outline-offset:2
 .pr-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .pr-row>label{min-width:120px}
 .pr-btn{min-height:44px;padding:9px 14px;border-radius:11px;border:1px solid var(--line,#253041);background:var(--panel-2,#0b1118);color:inherit;font:inherit;font-size:14.5px;font-weight:600;cursor:pointer}
-.pr-btn.primary{background:#d97706;border-color:#d97706;color:#fff}
+.pr-btn.primary{background:#b45309;border-color:#b45309;color:#fff}
 .pr-btn.ok{background:#15803d;border-color:#15803d;color:#fff}
 .pr-err{margin:0;color:#f87171;font-size:13.5px;min-height:0}
 .pr-err:empty{display:none}
@@ -67,7 +67,7 @@ body.practice-mode #reportHotspotBtn{outline:3px dashed #fbbf24;outline-offset:2
 .pr-near span{color:var(--muted,#9aa8b7);font-size:13px}
 .pr-muted{color:var(--muted,#9aa8b7);font-size:13.5px;margin:0}
 .pr-line{margin-top:10px;border:1px solid var(--line,#253041);border-radius:11px;padding:8px 10px}
-.pr-line summary{cursor:pointer;font-size:13.5px;font-weight:600}
+.pr-line summary{cursor:pointer;font-size:13.5px;font-weight:600;min-height:36px;display:flex;align-items:center}
 .pr-line pre{white-space:pre-wrap;font:inherit;font-size:13.5px;line-height:1.55;margin:8px 0 0;padding:10px 12px;border-radius:12px 12px 12px 3px;background:#fff;color:#111}
 .pr-notes{margin:0;padding-left:18px;font-size:14px}
 .pr-notes small{color:var(--muted,#9aa8b7)}
@@ -80,9 +80,10 @@ body.practice-mode #reportHotspotBtn{outline:3px dashed #fbbf24;outline-offset:2
 .pr-pin.closed{opacity:.55}
 .pr-popup .pr-pop h3{margin:2px 0 4px;font-size:15px}
 .pr-pop p{margin:4px 0;font-size:13px}
-.pr-pop .pr-kicker{color:#b45309;font-weight:700}
+.pr-pop .pr-kicker{color:#fbbf24;font-weight:700}
+body.light-mode .pr-pop .pr-kicker{color:#b45309}
 .pr-pop blockquote{margin:6px 0;padding:4px 8px;border-left:3px solid #f59e0b;font-size:13px}
 .pr-pop .pr-btn{min-height:36px;padding:6px 10px;font-size:13px;color:#111;background:#fef3c7;border-color:#f59e0b}
-.pr-pop .pr-spread{background:rgba(249,115,22,.15);border-color:#f97316;color:#111}
+.pr-pop .pr-spread{background:#ffedd5;border-color:#f97316;color:#111}
 .pr-spread-key{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px}
 .pr-spread-key i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-left:4px}

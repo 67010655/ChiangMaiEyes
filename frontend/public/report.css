@@ -89,3 +89,5 @@
   .paper thead{display:table-header-group}
   .reportview .export-options{display:none!important}
 }
+/* The community page's .rp-head (dark panel) shares this class name; the report paper stays white. */
+.paper .rp-head{background:transparent!important}

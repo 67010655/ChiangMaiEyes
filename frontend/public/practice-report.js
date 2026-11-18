@@ -289,10 +289,10 @@
     if(!active())return;
     if(drill?.started_at&&spreadOn&&spreadFrames)[...spreadFrames.frames].reverse().forEach(f=>{const c=f.hours<=3?'#ef4444':'#f97316';
       L.geoJSON(f.geometry,{interactive:false,style:{color:c,weight:2,dashArray:'5 4',fillColor:c,fillOpacity:f.hours<=3?.2:.1}}).addTo(layer);});
-    if(drill?.started_at)drillMarker=L.marker([drill.lat,drill.lon],{icon:L.divIcon({className:'pr-pin-wrap',html:'<div class="pr-hot"><span></span><em>ฝึก</em></div>',iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:950,title:'จุดความร้อนจำลอง'})
+    if(drill?.started_at)drillMarker=L.marker([drill.lat,drill.lon],{icon:L.divIcon({className:'pr-pin-wrap cme-hit',html:'<div class="pr-hot"><span></span><em>ฝึก</em></div>',iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:950,title:'จุดความร้อนจำลอง'})
       .bindPopup(drillPopupHtml,POP).addTo(layer);
     load().forEach(p=>{
-      const m=L.marker([p.latitude,p.longitude],{icon:L.divIcon({className:'pr-pin-wrap',html:pinIcon(p),iconSize:[34,34],iconAnchor:[17,30]}),zIndexOffset:900,title:'หมุดฝึก'})
+      const m=L.marker([p.latitude,p.longitude],{icon:L.divIcon({className:'pr-pin-wrap cme-hit',html:pinIcon(p),iconSize:[34,34],iconAnchor:[17,30]}),zIndexOffset:900,title:'หมุดฝึก'})
         .bindPopup(()=>popupHtml(p),POP).addTo(layer);
       markers.set(p.id,m);
     });

@@ -913,7 +913,7 @@
       position:fixed;left:0;right:0;bottom:-100vh;z-index:1750;
       max-height:74vh;overflow-y:auto;border:none;
       border-top:1px solid var(--line);border-radius:16px 16px 0 0;
-      padding-bottom:calc(52px + env(safe-area-inset-bottom,0) + 14px);
+      padding-bottom:calc(var(--nav-h,calc(52px + env(safe-area-inset-bottom,0px))) + 14px);
       box-shadow:0 -8px 30px rgba(0,0,0,.35);
     }
     .side.left.drawer-open,.side.right.drawer-open{bottom:0}
@@ -935,7 +935,7 @@
        button, so it should feel like a dedicated page, not a popup floating
        under a header that never changes. */
     .analytics,.reportview,.threedview,.phaseview,.guideview{
-      left:0;top:0;bottom:calc(52px + env(safe-area-inset-bottom,0));
+      left:0;top:0;bottom:var(--nav-h,calc(52px + env(safe-area-inset-bottom,0px)));
     }
     /* conditions badge */
     .cond-badge{flex-wrap:wrap}
@@ -971,7 +971,7 @@
     .leaflet-control-attribution{
       position:fixed !important;
       right:12px !important; left:auto !important; top:auto !important;
-      bottom:calc(52px + env(safe-area-inset-bottom,0)) !important;
+      bottom:var(--nav-h,calc(52px + env(safe-area-inset-bottom,0px))) !important;
       max-width:150px; text-align:right; z-index:840;
       /* single line, truncated — a multi-line wrap grows tall enough to
          creep up into the report/locate FABs sitting right above it */
@@ -991,8 +991,8 @@
       opacity:0;pointer-events:none;transition:opacity .2s ease;
     }
     .mobile-drawer-backdrop.open{opacity:1;pointer-events:auto}
-    .mobile-drawer-handle{display:block;width:36px;height:4px;border-radius:2px;background:var(--line);
-      margin:9px auto 2px;flex:none}
+    .mobile-drawer-handle{display:block;width:44px;height:5px;border-radius:2px;background:var(--line);
+      margin:0 auto -6px;flex:none;box-sizing:content-box;padding:16px 60px;background-clip:content-box}
 
     /* extra clearance above the fixed bottom nav (dvh fix above should be
        enough on its own, but keep a generous buffer belt-and-suspenders) */
@@ -3255,7 +3255,7 @@ function renderManualReports(){
         `<span style="background:var(--ember);border:2px solid #fff;box-shadow:0 0 8px rgba(255,138,61,.8);border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px">
                <svg style="transform:rotate(45deg)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
              </span></div>`,
-      className:'', iconSize:[22,22], iconAnchor:[11,22]
+      className:'cme-hit', iconSize:[22,22], iconAnchor:[11,22]
     });
     const m = L.marker([r.latitude, r.longitude], {icon, zIndexOffset:200});
     const isOwner = currentUser && currentUser.id === r.reporter_id;
@@ -3310,7 +3310,7 @@ function renderPins(){
   layers.pins.clearLayers();
   const now=Date.now();
   incidentPins.forEach(p=>{
-    const icon=L.divIcon({html:CmeIncidentPins.iconHtml(p,now),className:'',iconSize:[26,26],iconAnchor:[13,26]});
+    const icon=L.divIcon({html:CmeIncidentPins.iconHtml(p,now),className:'cme-hit',iconSize:[26,26],iconAnchor:[13,26]});
     const m=L.marker([p.latitude,p.longitude],{icon,zIndexOffset:300,title:'ตัวแทนป่า '+p.forest_name+' แจ้ง'+(p.observation==='fire'?'เปลวไฟ':'ควัน')});
     m.on('click',()=>openPin(p.id));
     layers.pins.addLayer(m);
