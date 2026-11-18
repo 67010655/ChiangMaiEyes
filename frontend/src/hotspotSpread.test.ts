@@ -50,3 +50,12 @@ it('offers the button only for points the model covers (last 24 hours)', () => {
   expect(old).toContain('ภายใน 24 ชม.');
   dom.window.close();
 });
+
+it('low-confidence points get no button, the same rule as the model, and say why', () => {
+  const { dom, S } = setup();
+  const recent = new Date(Date.now() - 2 * 3600e3).toISOString();
+  expect(S.buttonHtml({ lat: 19.06, lon: 98.75, detected_at: recent, conf: 'low' })).not.toContain('hs-spread-btn');
+  expect(S.buttonHtml({ lat: 19.06, lon: 98.75, detected_at: recent, conf: 'low' })).toContain('ความเชื่อมั่นต่ำ');
+  expect(S.buttonHtml({ lat: 18.7, lon: 98.35, detected_at: recent, conf: 'nominal' })).toContain('hs-spread-btn');
+  dom.window.close();
+});

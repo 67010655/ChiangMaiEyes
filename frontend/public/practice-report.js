@@ -243,6 +243,7 @@
     return `<div class="pr-pop"><p class="pr-kicker">🧪 หมุดฝึก · ไม่มีใครเห็นนอกจากเครื่องนี้</p>
       <h3>เห็น${what(p)}${p.own_forest?' ที่ '+esc(p.own_forest):''}</h3>
       <p>${p.reporter?'แจ้งโดย '+esc(p.reporter)+' · ':''}พบเมื่อ ${esc(clock(p.observed_at))} น.${p.closed?' · '+(p.closed==='cancelled'?'ปิดว่าไม่ใช่ไฟ':'จบงานแล้ว'):''}</p>
+      ${root.CmeCoords?.html(p.latitude,p.longitude)||''}
       ${p.description?`<blockquote>${esc(p.description)}</blockquote>`:''}
       <p>ของจริงจะแจ้ง LINE ถึง ${p.alerted.length} ป่า</p>
       <button type="button" class="pr-btn" onclick="CmePracticeReport.reopen('${esc(p.id)}')">เปิดใบเหตุฝึก</button></div>`;
@@ -253,6 +254,7 @@
       <h3>จุดความร้อนจากดาวเทียม${area?' · '+esc(area):''}</h3>
       <p>ตรวจพบ ${esc(clock(drillDetected(drill)))} น. (ข้อมูลดาวเทียมมาช้าราว 2 ชั่วโมง)</p>
       <p>${inside?`อยู่ในเขต${esc(inside.name)}`:nearest?`ห่าง${esc(nearest.name)} ${esc(kmText(nearest.km))}`:''}</p>
+      ${root.CmeCoords?.html(drill.lat,drill.lon)||''}
       <p>ยังไม่ใช่ไฟที่ยืนยันแล้ว ต้องมีคนไปดู</p>
       <button type="button" class="pr-btn" onclick="CmePracticeReport.drillLine()">ข้อความ LINE</button>
       <button type="button" class="pr-btn" onclick="CmePracticeReport.drillReport()">ฝึกแจ้งไฟที่จุดนี้</button></div>`;

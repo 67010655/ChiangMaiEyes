@@ -58,6 +58,7 @@
       <p class="pin-kicker">👁 ตัวแทนป่าชุมชนแจ้ง · ยังไม่ใช่การยืนยันจากหน่วยงาน</p>
       <h3>เห็น${what(pin)}ที่ ${esc(pin.forest_name)}${pin.amphoe?` <small>อ.${esc(String(pin.amphoe).replace(/^(อำเภอ|อ\.)\s*/,''))}</small>`:''}</h3>
       <p class="pin-who">แจ้งโดย <b>${esc(pin.reporter_name)}</b>${pin.mine?' (คุณ)':''} · พบเมื่อ ${esc(clock(pin.observed_at))} · แจ้ง${esc(agoText(pin,now))}</p>
+      ${root.CmeCoords?.html(pin.latitude,pin.longitude)||''}
       ${desc?`<blockquote>${esc(desc)}</blockquote>`:'<p class="pin-none">ผู้แจ้งไม่ได้เขียนรายละเอียดเพิ่ม</p>'}
       ${latestNoteHtml(pin)}
       ${phone}

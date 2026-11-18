@@ -327,3 +327,9 @@ body.spread-mode #tdLegend{visibility:hidden}
 @media(min-width:821px) and (max-width:1180px){.map-3d-btn{right:70px}}
 .ms-propose{border-top:1px solid var(--line);margin-top:4px}
 .ms-propose b{color:var(--green,#43b05f)}
+/* Coordinates line in every popup and sheet */
+.cme-coord{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:6px 0;font-size:13px}
+.cme-coord b{font-family:var(--mono,ui-monospace,monospace);font-weight:600;letter-spacing:.01em}
+.cme-coord-copy,.cme-coord-map{min-height:32px;padding:4px 10px;border-radius:8px;border:1px solid var(--line,#253041);background:transparent;color:inherit;font:600 12.5px/1.2 var(--font,inherit);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.cme-coord-map{color:#4ade80;border-color:rgba(74,222,128,.45)}
+body.light-mode .cme-coord-map{color:#15803d}

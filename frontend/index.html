@@ -2002,6 +2002,7 @@
 <script src="/spread-hint.js"></script>
 <script src="/land-context.js"></script>
 <script src="/community-workspace.js"></script>
+<script src="/coords.js"></script>
 <script src="/incident-pins.js"></script>
 <script src="/practice-report.js"></script>
 <script src="/forest-proposal.js"></script>
@@ -2460,8 +2461,10 @@ function popupWhereHtml(lat,lon,tambon,district){
   const me=window.CmeMyLocation;
   const km=me?CmeEvidence.distanceKm({lat:me.lat,lon:me.lon},{lat:Number(lat),lon:Number(lon)}):null;
   const place=[tambon?'ต.'+CmeEvidence.escapeHtml(tambon):'',district?'อ.'+CmeEvidence.escapeHtml(district):''].filter(Boolean).join(' ');
-  if(!place&&km===null)return '';
-  return `<ul class="hs-rows hs-where"><li class="hs-row"><span class="hs-ic where">📍</span><div><b>${km!==null?'ห่างคุณ '+km.toFixed(1)+' กม.':place}</b>${km!==null&&place?`<small>${place}</small>`:''}</div></li></ul>`;
+  // Coordinates always show, so the point can go straight into Google Maps or a LINE message.
+  const coord=window.CmeCoords?.html(lat,lon)||'';
+  if(!place&&km===null)return coord;
+  return `<ul class="hs-rows hs-where"><li class="hs-row"><span class="hs-ic where">📍</span><div><b>${km!==null?'ห่างคุณ '+km.toFixed(1)+' กม.':place}</b>${km!==null&&place?`<small>${place}</small>`:''}</div></li></ul>`+coord;
 }
 function popupActionsHtml(lat,lon){
   // Safety-relevant: a park or sanctuary needs its officers before anyone goes in.
@@ -6026,8 +6029,8 @@ function initMapLibre3D(){
     version:8,
     sources:{
       'esri-dark':{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'Tiles © Esri',maxzoom:16,bounds:CM_SOURCE_BOUNDS},
-      'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,bounds:CM_SOURCE_BOUNDS},
-      'terrain-shade':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:14,bounds:CM_SOURCE_BOUNDS,attribution:'Mapzen elevation tiles'},
+      'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:11,bounds:CM_SOURCE_BOUNDS},
+      'terrain-shade':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:11,bounds:CM_SOURCE_BOUNDS,attribution:'Mapzen elevation tiles'},
       ...(fastBuildings?{'buildings-tiles':{type:'vector',tiles:[`https://api.maptiler.com/tiles/v4/{z}/{x}/{y}.pbf?key=${encodeURIComponent(window.mapTilerKey)}`],minzoom:0,maxzoom:15,bounds:CM_SOURCE_BOUNDS,attribution:'© MapTiler © OpenStreetMap contributors'}}:{})
     },
     layers:[
@@ -6066,7 +6069,10 @@ function initMapLibre3D(){
     // hard wall exactly at the data boundary.
     maxBounds:[[97.6,16.8],[100.0,20.6]],
     minZoom:7.3,
-    maxPitch:70
+    maxPitch:70,
+    // Speed: phones with 3x screens drew 9x the pixels; elevation tiles stop at z11 (about 75 m,
+    // finer than the 2.2x-exaggerated relief needs) and are overzoomed, so far fewer downloads.
+    pixelRatio:Math.min(window.devicePixelRatio||1,isMobileViewport()?1.5:2)
   });
 
   // Terrain must stay on at inspection zooms, where mountain relief is useful.

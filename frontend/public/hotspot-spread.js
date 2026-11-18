@@ -9,10 +9,12 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const ageH=h=>(Date.now()-Date.parse(h.detected_at))/3600000;
   // The model only takes points detected in the last 24 hours.
-  const eligible=h=>Number.isFinite(ageH(h))&&ageH(h)<=WINDOW_H;
+  // The model only takes points from the last 24 hours that the satellite is not unsure about.
+  const lowConfidence=h=>String(h.confidence_level||h.conf||'').toLowerCase()==='low';
+  const eligible=h=>Number.isFinite(ageH(h))&&ageH(h)<=WINDOW_H&&!lowConfidence(h);
   function buttonHtml(h){
     // Say why there is no button, so an older point does not look broken.
-    if(!eligible(h))return '<p class="hs-spread-none">แนวลามทดลองดูได้เฉพาะจุดที่ดาวเทียมเห็นภายใน 24 ชม. จุดนี้เก่ากว่านั้น</p>';
+    if(!eligible(h))return `<p class="hs-spread-none">${lowConfidence(h)&&Number.isFinite(ageH(h))&&ageH(h)<=WINDOW_H?'จุดนี้ดาวเทียมให้ความเชื่อมั่นต่ำ ระบบจึงไม่คำนวณแนวลาม ควรมีคนไปดูยืนยันก่อน':'แนวลามทดลองดูได้เฉพาะจุดที่ดาวเทียมเห็นภายใน 24 ชม. จุดนี้เก่ากว่านั้น'}</p>`;
     return `<div class="hs-spread"><button type="button" class="hs-spread-btn" data-spread-lat="${Number(h.lat)}" data-spread-lon="${Number(h.lon)}">▶ ดูแนวลามทดลอง 6 ชม.</button><p class="hs-spread-msg" role="status" hidden></p></div>`;
   }
   function load(fetcher=root.fetch?.bind(root)){
