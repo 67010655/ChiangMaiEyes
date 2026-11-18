@@ -146,3 +146,23 @@ it('a map pick goes to the practice form only when practice asked for it', () =>
   expect((win.document.querySelector('#prForm [name="latitude"]') as HTMLInputElement).value).toBe('18.50000');
   expect(P.takePick(18.6, 98.5)).toBe(false);
 });
+
+it('the drill popup can show the spread outline from the same server model as real points', async () => {
+  vi.useFakeTimers();
+  const { P, win } = setup('https://chiangmaieyes.vercel.app/?practice=1&drill=18.5,98.4');
+  const ring = [[98.4, 18.5], [98.41, 18.51], [98.42, 18.5], [98.4, 18.5]];
+  win.fetch = vi.fn(async () => ({ ok: true, json: async () => ({ frames: [3, 6].map(h => ({ hours: h, geometry: { features: [{ geometry: { type: 'Polygon', coordinates: [ring] } }] } })) }) }));
+  const added: any[] = [];
+  const layerGroup = () => ({ addTo() { return this; }, clearLayers() {} });
+  const fakeL = { layerGroup, divIcon: (o: any) => o, marker: () => ({ bindPopup() { return this; }, addTo() { return this; }, openPopup() {} }),
+    geoJSON: (g: any, o: any) => ({ addTo() { added.push(o?.style?.color); return this; }, getBounds: () => 'b' }) };
+  const map = { closePopup() {}, fitBounds: vi.fn(), once() {}, getContainer: () => win.document.body };
+  P.init({ leaflet: fakeL, map: () => map, apiBase: '', nearest: () => [], area: () => null });
+  (win.document.querySelector('#practiceBanner [data-pr="drill-start"]') as HTMLButtonElement).click();
+  vi.advanceTimersByTime(4100);
+  await P.drillSpread();
+  expect(win.fetch.mock.calls[0][0]).toBe('/api/spread/practice?lat=18.5&lon=98.4');
+  expect(added).toEqual(['#f97316', '#ef4444']);
+  expect(map.fitBounds).toHaveBeenCalled();
+  vi.useRealTimers();
+});

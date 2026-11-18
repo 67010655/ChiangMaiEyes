@@ -83,3 +83,6 @@ body.practice-mode #reportHotspotBtn{outline:3px dashed #fbbf24;outline-offset:2
 .pr-pop .pr-kicker{color:#b45309;font-weight:700}
 .pr-pop blockquote{margin:6px 0;padding:4px 8px;border-left:3px solid #f59e0b;font-size:13px}
 .pr-pop .pr-btn{min-height:36px;padding:6px 10px;font-size:13px;color:#111;background:#fef3c7;border-color:#f59e0b}
+.pr-pop .pr-spread{background:rgba(249,115,22,.15);border-color:#f97316;color:#111}
+.pr-spread-key{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px}
+.pr-spread-key i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-left:4px}

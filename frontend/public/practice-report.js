@@ -256,8 +256,29 @@
       <p>${inside?`อยู่ในเขต${esc(inside.name)}`:nearest?`ห่าง${esc(nearest.name)} ${esc(kmText(nearest.km))}`:''}</p>
       ${root.CmeCoords?.html(drill.lat,drill.lon)||''}
       <p>ยังไม่ใช่ไฟที่ยืนยันแล้ว ต้องมีคนไปดู</p>
+      <button type="button" class="pr-btn pr-spread" onclick="CmePracticeReport.drillSpread()">${spreadOn?'ซ่อนแนวลาม':'▶ ดูแนวลามทดลอง 6 ชม.'}</button>
+      ${spreadOn?'<p class="pr-spread-key"><i style="background:#ef4444"></i>3 ชม. <i style="background:#f97316"></i>6 ชม. · ถ้ายังไหม้และไม่มีการดับ (โมเดลเดียวกับจุดจริง)</p>':''}
       <button type="button" class="pr-btn" onclick="CmePracticeReport.drillLine()">ข้อความ LINE</button>
       <button type="button" class="pr-btn" onclick="CmePracticeReport.drillReport()">ฝึกแจ้งไฟที่จุดนี้</button></div>`;
+  }
+  // Spread outline for the drill point: the same model and live wind as a real point, from the server.
+  let spreadFrames=null,spreadOn=false;
+  async function drillSpread(){
+    const L=ctx.leaflet,map=ctx.map?.();if(!drill||!L||!map)return;
+    if(spreadOn){spreadOn=false;drawPins();return;}
+    try{
+      if(!spreadFrames||spreadFrames.key!==drill.lat+','+drill.lon){
+        const r=await root.fetch((ctx.apiBase||'')+`/api/spread/practice?lat=${drill.lat}&lon=${drill.lon}`,{cache:'no-store'});
+        const data=await r.json().catch(()=>({}));
+        const frames=(data.frames||[]).map(f=>({hours:f.hours,geometry:f.geometry?.features?.[0]?.geometry})).filter(f=>f.geometry);
+        if(!r.ok||!frames.length)throw new Error(typeof data.detail==='string'?data.detail:'คำนวณแนวลามไม่ได้ตอนนี้ ลองใหม่อีกครั้ง');
+        spreadFrames={key:drill.lat+','+drill.lon,frames};
+      }
+      spreadOn=true;map.closePopup();drawPins();
+      const last=spreadFrames.frames[spreadFrames.frames.length-1];
+      map.fitBounds(L.geoJSON(last.geometry).getBounds(),{padding:[40,40],maxZoom:15});
+      root.setTimeout(()=>drillMarker?.openPopup(),900);
+    }catch(error){root.alert?.(error.message||'คำนวณแนวลามไม่ได้ตอนนี้');}
   }
   const POP={maxWidth:300,className:'pr-popup'};
   const markers=new Map();let drillMarker=null;
@@ -266,6 +287,8 @@
     if(!layer)layer=L.layerGroup().addTo(map);
     layer.clearLayers();markers.clear();drillMarker=null;
     if(!active())return;
+    if(drill?.started_at&&spreadOn&&spreadFrames)[...spreadFrames.frames].reverse().forEach(f=>{const c=f.hours<=3?'#ef4444':'#f97316';
+      L.geoJSON(f.geometry,{interactive:false,style:{color:c,weight:2,dashArray:'5 4',fillColor:c,fillOpacity:f.hours<=3?.2:.1}}).addTo(layer);});
     if(drill?.started_at)drillMarker=L.marker([drill.lat,drill.lon],{icon:L.divIcon({className:'pr-pin-wrap',html:'<div class="pr-hot"><span></span><em>ฝึก</em></div>',iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:950,title:'จุดความร้อนจำลอง'})
       .bindPopup(drillPopupHtml,POP).addTo(layer);
     load().forEach(p=>{
@@ -291,7 +314,7 @@
     if(/^#practice$/i.test(root.location.hash)||params.get('practice')==='1'||linkDrill){on=true;root.history.replaceState(null,'',root.location.pathname);}
     root.document.addEventListener('click',e=>{
       const a=e.target.closest('#practiceBanner [data-pr]')?.dataset.pr;
-      if(a==='exit'){close();drill=null;saveDrill();root.document.getElementById('practiceToast')?.remove();setActive(false);}
+      if(a==='exit'){close();drill=null;spreadOn=false;spreadFrames=null;saveDrill();root.document.getElementById('practiceToast')?.remove();setActive(false);}
       else if(a==='drill-start')startDrill();
       else if(a==='drill-show')showDrill();
     });
@@ -299,5 +322,5 @@
   }
   const drillLine=()=>{ctx.map?.()?.closePopup();view='drill';open({keep:true});};
   root.CmePracticeReport={init,open,close,active,setActive,takePick,reopen,drawPins,nearby,alerted,alertText,closedText,validate,load,save,steps,KEY,
-    parseDrill,hotspotText,drillReport,drillLine};
+    parseDrill,hotspotText,drillReport,drillLine,drillSpread};
 })(window);

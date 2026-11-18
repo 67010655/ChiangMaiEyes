@@ -6988,6 +6988,7 @@ CmeCommunity.init({
 });
 CmeForestProposal.init({apiBase:API_BASE,area:(lat,lon)=>CmeCoordination.administrativeArea(lat,lon),pick:()=>{closeAllOverlays();startPickLocation();}});
 CmePracticeReport.init({
+  apiBase:API_BASE,
   leaflet:L,
   map:()=>map,
   nearest:(lat,lon,n)=>CmeCoordination.nearest(lat,lon,allForests,n),

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 from threading import Lock
 
 import httpx
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from app.config import Settings, get_settings
 from app.forecast_terrain import at as terrain_at, dataset
 from app.spread_scenario import Fuel, Wind, rate_of_spread, destination
@@ -153,3 +153,45 @@ def current_spread(background_tasks: BackgroundTasks, settings: Settings=Depends
     from app.forecast_archive import collect_background
     background_tasks.add_task(collect_background,settings,result,'spread')
     return result
+
+
+# Practice drills put a made-up hotspot on the map; trainees should see the same outline a real
+# point there would get now (live wind, real slope, the same assumed fuel). Results are cached per
+# ~100 m cell for 10 minutes and the number of fresh runs is capped, so the public endpoint cannot
+# be used to hammer the weather service. Nothing here is archived.
+_practice_cache: dict = {}
+_practice_runs: list = []
+PRACTICE_TTL_S = 600
+PRACTICE_RUNS_PER_10_MIN = 60
+
+
+def practice(lat: float, lon: float):
+    key = (round(lat, 3), round(lon, 3))
+    now_m = time.monotonic()
+    with _lock:
+        hit = _practice_cache.get(key)
+        if hit and now_m < hit[0]:
+            return hit[1]
+        _practice_runs[:] = [t for t in _practice_runs if now_m - t < PRACTICE_TTL_S]
+        if len(_practice_runs) >= PRACTICE_RUNS_PER_10_MIN:
+            raise HTTPException(429, 'คำนวณแนวลามฝึกถี่เกินไป ลองใหม่อีกสักครู่')
+        _practice_runs.append(now_m)
+    as_of = datetime.now(timezone.utc)
+    point = {'latitude': key[0], 'longitude': key[1], 'detected_at': as_of.isoformat(), 'confidence_level': 'nominal', 'source': 'practice drill'}
+    try:
+        weather = fetch_weather([point])
+    except (httpx.HTTPError, ValueError):
+        weather = {}
+    result = build([point], weather, as_of=as_of, source_mode='practice_point',
+                   source_retrieved_at={'weather_received_at': as_of.isoformat()})
+    result['practice'] = True
+    with _lock:
+        if len(_practice_cache) > 500:
+            _practice_cache.clear()
+        _practice_cache[key] = (now_m + (PRACTICE_TTL_S if result['used_points'] else 30), result)
+    return result
+
+
+@router.get('/practice')
+def practice_spread(lat: float = Query(ge=17, le=21), lon: float = Query(ge=97.3, le=100)):
+    return practice(lat, lon)
