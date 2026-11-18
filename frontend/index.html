@@ -6058,6 +6058,9 @@ function forestBadgeImage(fill){
   return g.getImageData(0,0,n,n);
 }
 function initMapLibre3D(){
+  // Phones get a lighter 3D: coarser elevation (z10 terrain, z9 shading), 1x pixels, a lower camera
+  // that sees fewer far tiles, and no fades. Desktop keeps the full detail.
+  const lite=isMobileViewport(), demMax=lite?10:11;
   // Legend starts folded on phones, where the map is small.
   const legend=document.getElementById('tdLegend');if(legend)legend.open=!isMobileViewport();
   const fastBuildings=!!window.mapTilerKey;
@@ -6065,13 +6068,15 @@ function initMapLibre3D(){
   let contourTiles=null;
   try{
     if(window.mlcontour&&!window._cmeDemSource){
-      window._cmeDemSource=new mlcontour.DemSource({url:'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',encoding:'terrarium',maxzoom:11,worker:true,cacheSize:60,timeoutMs:15000});
+      window._cmeDemSource=new mlcontour.DemSource({url:'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',encoding:'terrarium',maxzoom:demMax,worker:true,cacheSize:lite?40:60,timeoutMs:15000});
       window._cmeDemSource.setupMaplibre(maplibregl);
     }
     contourTiles=window._cmeDemSource?.contourProtocolUrl({multiplier:1,
       // zoom: [minor, major] metres. Chiang Mai runs from ~300 m to 2,565 m (Doi Inthanon).
       thresholds:{8:[500,1000],10:[200,1000],11:[200,1000],12:[100,500],13:[50,250],14:[25,100]},
-      contourLayer:'contours',elevationKey:'ele',levelKey:'level',extent:4096,buffer:1})||null;
+      contourLayer:'contours',elevationKey:'ele',levelKey:'level',extent:lite?2048:4096,buffer:1,
+      // Phones build each contour tile from one coarser elevation tile (the same ones the terrain uses).
+      overzoom:lite?1:0,subsampleBelow:lite?100:undefined})||null;
   }catch(e){console.warn('contours unavailable',e);contourTiles=null;}
   const contoursOn=(()=>{try{return localStorage.getItem('cme_3d_contours')!=='0';}catch(_){return true;}})();
   const style={
@@ -6080,8 +6085,10 @@ function initMapLibre3D(){
     sources:{
       ...(contourTiles?{'contours':{type:'vector',tiles:[contourTiles],maxzoom:14,bounds:CM_SOURCE_BOUNDS}}:{}),
       'esri-dark':{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'Tiles © Esri',maxzoom:16,bounds:CM_SOURCE_BOUNDS},
-      'terrain-dem':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:11,bounds:CM_SOURCE_BOUNDS},
-      'terrain-shade':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:11,bounds:CM_SOURCE_BOUNDS,attribution:'Mapzen elevation tiles'},
+      // Terrain and contour lines read the same elevation tiles once (shared through maplibre-contour);
+      // phones ask for one zoom coarser (512 px tiles) — about a quarter of the downloads.
+      'terrain-dem':{type:'raster-dem',tiles:[window._cmeDemSource?.sharedDemProtocolUrl||'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:lite?512:256,encoding:'terrarium',maxzoom:demMax,bounds:CM_SOURCE_BOUNDS},
+      'terrain-shade':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],tileSize:256,encoding:'terrarium',maxzoom:lite?9:11,bounds:CM_SOURCE_BOUNDS,attribution:'Mapzen elevation tiles'},
       ...(fastBuildings?{'buildings-tiles':{type:'vector',tiles:[`https://api.maptiler.com/tiles/v4/{z}/{x}/{y}.pbf?key=${encodeURIComponent(window.mapTilerKey)}`],minzoom:0,maxzoom:15,bounds:CM_SOURCE_BOUNDS,attribution:'© MapTiler © OpenStreetMap contributors'}}:{})
     },
     layers:[
@@ -6115,7 +6122,7 @@ function initMapLibre3D(){
     style,
     center:[98.9675,18.7985],
     zoom:10.3,
-    pitch:62,
+    pitch:lite?50:62,
     bearing:-20,
     antialias:false,
     // Credits stay one tap away (ⓘ) on phones, where the expanded text ran under the legend chip.
@@ -6127,10 +6134,12 @@ function initMapLibre3D(){
     // hard wall exactly at the data boundary.
     maxBounds:[[97.6,16.8],[100.0,20.6]],
     minZoom:7.3,
-    maxPitch:70,
+    maxPitch:lite?60:70,
+    fadeDuration:lite?0:300,
+    maxTileCacheSize:lite?120:null,
     // Speed: phones with 3x screens drew 9x the pixels; elevation tiles stop at z11 (about 75 m,
     // finer than the 2.2x-exaggerated relief needs) and are overzoomed, so far fewer downloads.
-    pixelRatio:Math.min(window.devicePixelRatio||1,isMobileViewport()?1.5:2)
+    pixelRatio:Math.min(window.devicePixelRatio||1,lite?1:2)
   });
 
   // Terrain must stay on at inspection zooms, where mountain relief is useful.

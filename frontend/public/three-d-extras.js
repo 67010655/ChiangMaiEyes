@@ -65,21 +65,23 @@
     container.insertBefore(canvas,mapCanvas.nextSibling);
     const ctx=canvas.getContext('2d');
     const [west,south,east,north]=bounds||[97.9,17.1,99.7,20.3];
-    const N=mobile?190:360, MAX_AGE=90;
+    const N=mobile?120:360, MAX_AGE=90;
     const spawn=p=>{p.lon=west+Math.random()*(east-west);p.lat=south+Math.random()*(north-south);p.age=Math.floor(Math.random()*MAX_AGE);p.px=null;return p;};
     const parts=Array.from({length:N},()=>spawn({}));
-    const resize=()=>{const r=mapCanvas.getBoundingClientRect(),dpr=Math.min(2,root.devicePixelRatio||1);canvas.width=r.width*dpr;canvas.height=r.height*dpr;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(dpr,0,0,dpr,0,0);};
+    const resize=()=>{const r=mapCanvas.getBoundingClientRect(),dpr=mobile?1:Math.min(2,root.devicePixelRatio||1);canvas.width=r.width*dpr;canvas.height=r.height*dpr;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(dpr,0,0,dpr,0,0);};
     resize();
     const clear=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);parts.forEach(p=>p.px=null);};
+    // Phones: streaks pause while the user drags or zooms, so the map itself gets the processor.
+    let moving=false;const onStart=()=>{moving=true;},onEnd=()=>{moving=false;};
     const onMove=()=>clear();
-    map.on('move',onMove);map.on('resize',resize);
+    map.on('move',onMove);map.on('resize',resize);if(mobile){map.on('movestart',onStart);map.on('moveend',onEnd);}
     // Same wind colour as the 2D map: cyan on dark, deep teal on light.
     const ink=()=>document.body.classList.contains('light-mode')?'rgba(14,116,144,':'rgba(55,209,214,';
     let raf=0,last=0;
     const frame=now=>{
       raf=requestAnimationFrame(frame);
-      if(now-last<33)return;last=now;            // ~30 fps is plenty for streaks
-      if(document.hidden)return;
+      if(now-last<(mobile?50:33))return;last=now;   // ~30 fps is plenty for streaks (20 on phones)
+      if(document.hidden||moving)return;
       // Fade old trails.
       ctx.globalCompositeOperation='destination-in';ctx.fillStyle='rgba(0,0,0,0.9)';ctx.fillRect(0,0,canvas.width,canvas.height);
       ctx.globalCompositeOperation='source-over';
@@ -100,7 +102,7 @@
       }
     };
     raf=requestAnimationFrame(frame);
-    W={map,canvas,stop:()=>{cancelAnimationFrame(raf);map.off('move',onMove);map.off('resize',resize);canvas.remove();}};
+    W={map,canvas,stop:()=>{cancelAnimationFrame(raf);map.off('move',onMove);map.off('resize',resize);map.off('movestart',onStart);map.off('moveend',onEnd);canvas.remove();}};
     return true;
   }
   function stopWind(){W?.stop();W=null;}
