@@ -35,3 +35,25 @@ it('the first screen always offers the 1362 hotline and old PM labels use the sa
   expect(html).not.toContain("p>90?'อันตราย'");
   expect(html.indexOf('/public-guidance.js')).toBeLessThan(html.indexOf('/land-context.js'));
 });
+
+it('around me: rings count fresh points per band and the level follows distance and wind',()=>{
+  const {dom,G}=load();const now=Date.parse('2026-03-10T10:00:00Z');
+  const iso=(h:number)=>new Date(now-h*3600e3).toISOString();
+  const me={lat:18.80,lon:98.95};
+  // ~0.5 km N, ~4 km N, ~8 km N, one old point 0.2 km away (ignored)
+  const hs=[{lat:18.8045,lon:98.95,detected_at:iso(2)},{lat:18.836,lon:98.95,detected_at:iso(5)},{lat:18.872,lon:98.95,detected_at:iso(20)},{lat:18.8018,lon:98.95,detected_at:iso(40)}];
+  const r=G.aroundMe(me,hs,{now});
+  expect(r.rings.map((x:any)=>x.n)).toEqual([1,0,1,1]);
+  expect(r.level).toBe('high');expect(r.advice.join(' ')).toContain('1362');
+  // 4 km away: high only when the wind comes from the fire (north) toward the user
+  const four=[{lat:18.836,lon:98.95,detected_at:iso(1)}];
+  expect(G.aroundMe(me,four,{now,windFromDeg:180,windKmh:8}).level).toBe('watch');
+  const up=G.aroundMe(me,four,{now,windFromDeg:10,windKmh:8});
+  expect(up.level).toBe('high');expect(up.upwind).toBe(1);expect(up.reasons.join(' ')).toContain('ลมพัดจาก');
+  // calm wind does not count as blowing toward the user
+  expect(G.aroundMe(me,four,{now,windFromDeg:0,windKmh:1}).level).toBe('watch');
+  // nothing near: low, unless the dust is unhealthy
+  expect(G.aroundMe(me,[],{now}).level).toBe('low');
+  expect(G.aroundMe(me,[],{now,pm25:80}).level).toBe('watch');
+  dom.window.close();
+});

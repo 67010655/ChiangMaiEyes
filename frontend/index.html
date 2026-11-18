@@ -3862,41 +3862,71 @@ function myLocationHtml(lat,lon,accuracy){
     </div>`;
   }
   const where=amphoe?`อ.${e(amphoe)}${tb?.tambon?' · ต.'+e(tb.tambon):''}`:'กำลังโหลดขอบเขตอำเภอ…';
-  const near=r.nearestFresh;
-  let tone,head,detail;
-  if(near&&r.freshWithin>0){tone='warn';head=`มีจุดความร้อน ${r.freshWithin} จุด ในรัศมี ${r.radiusKm} กม.`;}
-  else if(near){tone='ok';head=`ไม่มีจุดความร้อนในรัศมี ${r.radiusKm} กม.`;}
-  else{tone='ok';head='ยังไม่พบจุดความร้อนใน 24 ชม.';}
-  detail=near?`ใกล้ที่สุด <b>${e(near.km.toFixed(1))} กม.</b> ไปทางทิศ${_degToCompass(near.deg)} · พบ ${e(formatAge(near.ageHours*60))} ที่แล้ว`
+  const ctx=aroundMeContext(lat,lon), a=CmePublicGuidance.aroundMe({lat,lon},hotspots,ctx);
+  const near=a.nearest, icon={high:'🔥',watch:'⚠️',low:'🌿'}[a.level];
+  const nearTxt=near?`ใกล้ที่สุด <b>${e(near.km.toFixed(1))} กม.</b> ทางทิศ${_degToCompass(near.deg)} · พบ ${e(formatAge(near.ageHours*60))} ที่แล้ว`
     :r.nearestAny?`จุดเก่าที่ใกล้ที่สุดอยู่ห่าง ${e(r.nearestAny.km.toFixed(1))} กม.`:'';
-  const tip=tone==='warn'?'💡 ถ้าเห็นควันหรือได้กลิ่นไหม้ ปิดหน้าต่าง และอย่าเข้าไปดับไฟคนเดียว':'💡 ไม่พบจุดไม่ได้แปลว่าไม่มีไฟ ถ้าเห็นควันจริงให้เชื่อสิ่งที่เห็น'+(globalThis.CmeSatPasses?' · '+CmeSatPasses.short()+' ไฟที่เพิ่งเริ่มอาจยังไม่ขึ้น':'');
+  const ringRow=a.rings.map((x,i)=>`<li class="${x.n?'has':''}"><b>${x.n}</b><small>${i?a.rings[i-1].km+'–':'ไม่เกิน '}${x.km} กม.</small></li>`).join('');
+  const why=a.reasons.slice(1).map(t=>`<li>${e(t)}</li>`).join('');
+  const sat=globalThis.CmeSatPasses?`<p class="ml-note">${e(CmeSatPasses.short())} ไฟที่เพิ่งเริ่มอาจยังไม่ขึ้น</p>`:'';
   return `<div class="ml-card">
     <p class="ml-kicker">📍 คุณอยู่ที่</p><h3>${where}</h3>
-    <div class="ml-status ${tone}"><span aria-hidden="true">${tone==='warn'?'🔥':'🌿'}</span><div><b>${head}</b>${detail?`<small>${detail}</small>`:''}</div></div>
-    <p class="ml-tip">${tip}</p>
-    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<a class="ml-btn call" href="tel:1362">📞 โทร 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a></div>
-    <p class="ml-note">ระยะเส้นตรงจากจุดที่ดาวเทียมเห็น ตำแหน่งของคุณอยู่ในเครื่องนี้เท่านั้น ไม่ได้ส่งไปที่ไหน</p>${fuzzy}
+    <div class="ml-level ${a.level}"><span aria-hidden="true">${icon}</span><div><small>ระดับรอบตัวคุณตอนนี้</small><b>${e(a.label)} · ${e(a.head)}</b>${nearTxt?`<em>${nearTxt}</em>`:''}</div></div>
+    ${why?`<ul class="ml-why">${why}</ul>`:''}
+    <p class="ml-sub">จุดความร้อนใน 24 ชม. ตามวงระยะ (วงบนแผนที่)</p>
+    <ol class="ml-rings">${ringRow}</ol>
+    <p class="ml-sub">ควรทำอะไร</p>
+    <ul class="ml-advice">${a.advice.map(t=>`<li>${e(t)}</li>`).join('')}</ul>
+    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<button type="button" class="ml-btn" data-ml="3d">⛰️ ดูแบบ 3D</button><a class="ml-btn call" href="tel:1362">📞 โทร 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a></div>
+    <p class="ml-note">ดูจากระยะห่างจุดที่ดาวเทียมเห็น ทิศลม และฝุ่นใกล้คุณเท่านั้น ไม่ใช่การวัดความเสี่ยงจริง ตำแหน่งของคุณอยู่ในเครื่องนี้ ไม่ได้ส่งไปที่ไหน</p>${sat}${fuzzy}
   </div>`;
+}
+// Wind and dust nearest to a point: the wind grid sample closest to it (else the station wind),
+// and the nearest PM2.5 station within 30 km.
+function aroundMeContext(lat,lon){
+  const d2=(a,b)=>(a.lat-b.lat)**2+((a.lon-b.lon)*Math.cos(lat*Math.PI/180))**2;
+  const me={lat,lon};let windFromDeg=PREVAILING?.deg??null,windKmh=PREVAILING?.kmh??null;
+  const g=_windGridSamples.slice().sort((a,b)=>d2(a,me)-d2(b,me))[0];
+  if(g&&Number.isFinite(g.fromDeg)){windFromDeg=g.fromDeg;windKmh=g.kmh;}
+  let pm25=null;const st=(pmStations||[]).map(s=>({s,km:CmePublicGuidance.nearMe(me,[{lat:s.c[0],lon:s.c[1],detected_at:new Date().toISOString()}]).nearestAny?.km})).filter(x=>x.km<=30).sort((a,b)=>a.km-b.km)[0];
+  if(st)pm25=st.s.pm;
+  return {windFromDeg,windKmh,pm25};
+}
+// Distance rings around the user's location (2D): 1, 3, 5 and 10 km, labelled.
+function myRingsLayer(lat,lon){
+  const g=L.layerGroup();
+  CmePublicGuidance.RINGS_KM.forEach((k,i)=>{
+    const col=['#ef4444','#f97316','#facc15','#94a3b8'][i];
+    L.circle([lat,lon],{radius:k*1000,color:col,weight:i===3?1.5:2,opacity:.9,dashArray:i?'6 6':null,fill:i===0,fillColor:col,fillOpacity:.06,interactive:false}).addTo(g);
+    const east=lon+k/(111.32*Math.cos(lat*Math.PI/180));
+    L.marker([lat,east],{interactive:false,keyboard:false,icon:L.divIcon({className:'ml-ring-label',html:`<span style="border-color:${col}">${k} กม.</span>`,iconSize:[52,22],iconAnchor:[26,11]})}).addTo(g);
+  });
+  return g;
 }
 function showMyLocation(lat,lon,accuracy){
   // Kept in the browser only, so hotspot popups can say how far away they are.
   window.CmeMyLocation={lat,lon};
+  const busy=document.getElementById('cme-toast');if(busy)busy.hidden=true;
   if(myLocationLayer) map.removeLayer(myLocationLayer);
   const inside=!_districtFeatures.length||!!districtForPoint(lat,lon);
   const dot=L.circleMarker([lat,lon],{radius:8,color:'#fff',weight:2,fillColor:'#3b82f6',fillOpacity:1});
   myLocationLayer=L.layerGroup([
+    myRingsLayer(lat,lon),
     L.circle([lat,lon],{radius:Math.min(accuracy||0,2000),color:'#3b82f6',weight:1,fillOpacity:.08,interactive:false}),dot
   ]).addTo(map);
   const open=()=>{
     const html=myLocationHtml(lat,lon,accuracy);
     let host;
-    if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();CmeHotspotSheet.openPanel({kicker:'ตำแหน่งของฉัน',title:inside?'รอบตัวคุณตอนนี้':'นอกเขตเชียงใหม่',html});host=document.querySelector('#hotspotSheet .hs-sheet-body');}
+    if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();const lv=inside?CmePublicGuidance.aroundMe({lat,lon},hotspots,aroundMeContext(lat,lon)):null;
+      // Opens low so the rings stay visible; the title already says the level. Tap or drag up for the advice.
+      CmeHotspotSheet.openPanel({kicker:inside?'รอบตัวคุณ · แตะเพื่อดูคำแนะนำ':'ตำแหน่งของฉัน',title:lv?({high:'🔥 ',watch:'⚠️ ',low:'🌿 '}[lv.level]+lv.label+' · '+lv.head):'นอกเขตเชียงใหม่',html,stop:inside?'peek':'half'});host=document.querySelector('#hotspotSheet .hs-sheet-body');}
     else{dot.bindPopup(html,{maxWidth:320,className:'ml-popup'}).openPopup();host=dot.getPopup()?.getElement();}
     if(!host||host.dataset.mlWired)return;host.dataset.mlWired='1';
     host.addEventListener('click',ev=>{
       const b=ev.target.closest?.('[data-ml]');if(!b)return;
       const me=window.CmeMyLocation;if(!me)return;
       if(b.dataset.ml==='province'){CmeHotspotSheet?.close?.();map.closePopup();map.flyToBounds([[17.24,98.0],[20.15,99.57]],{duration:motionDuration(1200)/1000,animate:motionDuration(1200)>0});}
+      if(b.dataset.ml==='3d'){CmeHotspotSheet?.close?.();map.closePopup();show3DMyLocation();}
       if(b.dataset.ml==='nearest'){const n=CmePublicGuidance.nearMe(me,hotspots,{radiusKm:10}).nearestFresh;if(n){CmeHotspotSheet?.close?.();map.closePopup();openHotspotAt(n.h);}}
     });
   };
@@ -3904,7 +3934,8 @@ function showMyLocation(lat,lon,accuracy){
   // Open once the map arrives, or after a moment if it never reports arriving.
   let shown=false;const first=()=>{if(shown)return;shown=true;open();};
   map.once('moveend',first);setTimeout(first,1200);
-  if(inside)map.flyTo([lat,lon],12,{duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
+  // Fit the 5 km ring; on phones leave the lower half for the sheet that opens next.
+  if(inside)map.flyToBounds(L.latLng(lat,lon).toBounds(11000),{paddingTopLeft:[10,10],paddingBottomRight:[10,isMobileViewport()?130:10],maxZoom:13,duration:motionDuration(800)/1000,animate:motionDuration(800)>0});
   else map.setView([lat,lon],Math.min(map.getZoom(),7),{animate:false});
 }
 function openHotspotAt(h){
@@ -4025,7 +4056,7 @@ function hideSplash(){
     el.classList.add('hide');
     runMapRenderTask('boundary-fit',()=>{
       map.invalidateSize();
-      if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, {padding:[12,12], animate:false});
+      if(_provinceBoundsForFit&&!window.CmeMyLocation) map.fitBounds(_provinceBoundsForFit, {padding:[12,12], animate:false});
     });
   }, Math.max(0,minimum-elapsed));
 }
@@ -4690,7 +4721,8 @@ async function loadBoundaries() {
     L.polygon([[[-85,-180],[-85,180],[85,180],[85,-180]],...rings],{className:'cm-outside-mask',stroke:false,fillOpacity:1,interactive:false}).addTo(layers.boundaries);
   });
   runMapRenderTask('boundary-fit',()=>{
-    if(_provinceBoundsForFit) map.fitBounds(_provinceBoundsForFit, { padding: [12, 12], animate: false });
+    // Late boundary loads must not pull a user who already asked for their location back out.
+    if(_provinceBoundsForFit&&!window.CmeMyLocation) map.fitBounds(_provinceBoundsForFit, { padding: [12, 12], animate: false });
   });
   runMapRenderTask('boundary-districts',()=>{
     // 2. Draw Chiang Mai District boundaries (Interactive hovers, Tooltips, thin borders)
@@ -6431,6 +6463,39 @@ function _sync3DManualReports(){
 }
 
 // Incident pins in 3D: same eye, same popup as the 2D layer.
+// "ดูไฟรอบตัวฉัน" in 3D: the same 1/3/5/10 km rings draped on the terrain, a blue dot, and the camera
+// tilted toward the user so hills between them and the fire show.
+let _3dMeMarkers=[];
+function _ringPolygon(lat,lon,km,n=96){
+  const pts=[];for(let i=0;i<=n;i++){const t=i/n*2*Math.PI;pts.push([lon+km/(111.32*Math.cos(lat*Math.PI/180))*Math.sin(t),lat+km/111.32*Math.cos(t)]);}
+  return pts;
+}
+function _sync3DMyLocation(){
+  if(!mlMap)return;const me=window.CmeMyLocation;
+  _3dMeMarkers.forEach(m=>m.remove());_3dMeMarkers=[];
+  if(!me)return;
+  const cols=['#ef4444','#f97316','#facc15','#94a3b8'];
+  const fc={type:'FeatureCollection',features:CmePublicGuidance.RINGS_KM.map((k,i)=>({type:'Feature',properties:{color:cols[i],i},geometry:{type:'Polygon',coordinates:[_ringPolygon(me.lat,me.lon,k)]}}))};
+  if(mlMap.getSource('my-rings'))mlMap.getSource('my-rings').setData(fc);
+  else{
+    mlMap.addSource('my-rings',{type:'geojson',data:fc});
+    mlMap.addLayer({id:'my-rings-fill',type:'fill',source:'my-rings',filter:['==',['get','i'],0],paint:{'fill-color':'#ef4444','fill-opacity':0.08}});
+    mlMap.addLayer({id:'my-rings-line',type:'line',source:'my-rings',paint:{'line-color':['get','color'],'line-width':2.5,'line-opacity':0.95,'line-dasharray':[2,1.5]}});
+  }
+  CmePublicGuidance.RINGS_KM.forEach((k,i)=>{
+    const el=document.createElement('div');el.className='ml-ring-label';el.innerHTML=`<span style="border-color:${cols[i]}">${k} กม.</span>`;
+    _3dMeMarkers.push(new maplibregl.Marker({element:el}).setLngLat([me.lon+k/(111.32*Math.cos(me.lat*Math.PI/180)),me.lat]).addTo(mlMap));
+  });
+  const dot=document.createElement('div');dot.className='ml-me-dot';dot.setAttribute('aria-label','ตำแหน่งของคุณ');
+  _3dMeMarkers.push(new maplibregl.Marker({element:dot}).setLngLat([me.lon,me.lat]).addTo(mlMap));
+}
+async function show3DMyLocation(){
+  const me=window.CmeMyLocation;if(!me)return;
+  await open3D();if(!mlMap)return;
+  const go=()=>{_sync3DMyLocation();mlMap.setPadding({top:0,bottom:0,left:0,right:0});
+    mlMap.flyTo({center:[me.lon,me.lat],zoom:isMobileViewport()?11:11.6,pitch:58,bearing:0,duration:motionDuration(1600)});};
+  if(mlMap.isStyleLoaded())go();else mlMap.once('idle',go);
+}
 let _3dPinMarkers=[];
 function _sync3DPins(){
   _3dPinMarkers.forEach(m=>m.remove());

@@ -72,7 +72,7 @@
     };
     const up=e=>{
       if(!active)return;active=false;el.classList.remove('dragging');
-      if(!moved){if(e.currentTarget.classList.contains('hs-sheet-handle'))setStop(el.dataset.stop==='full'?'half':'full');return;}
+      if(!moved){if(e.currentTarget.classList.contains('hs-sheet-handle'))setStop(el.dataset.stop==='full'?'half':'full');else if(el.dataset.stop==='peek'&&!e.target.closest('button'))setStop('half');return;}
       const st=stops(),h=el.getBoundingClientRect().height;
       // A quick flick decides the direction; otherwise snap to the nearest stop.
       if(v>0.6)setStop(h>st.half?'half':'peek');
@@ -94,7 +94,7 @@
     </dl>`;
   }
   // Generic panel: same sheet for districts and other map places.
-  function openPanel({kicker='',title:t='',html='',onClose:cb}={}){
+  function openPanel({kicker='',title:t='',html='',onClose:cb,stop='half'}={}){
     ensure();
     if(onClose&&onClose!==cb)onClose();
     onClose=cb||null;
@@ -102,7 +102,7 @@
     sheet.querySelector('.hs-sheet-kicker').textContent=kicker;
     title.textContent=t;
     body.innerHTML=html;
-    sheet.hidden=false;document.body.classList.add('hs-sheet-open');setStop('half');sheet.scrollTop=0;
+    sheet.hidden=false;document.body.classList.add('hs-sheet-open');setStop(stop);sheet.scrollTop=0;
     requestAnimationFrame(()=>sheet.focus({preventScroll:true}));
   }
   function open(h,html,opts={}){

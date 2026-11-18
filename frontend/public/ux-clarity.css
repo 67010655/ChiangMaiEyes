@@ -341,3 +341,31 @@ body:has(#hotspotSheet:not([hidden])) .threedview .td-legend{display:none}
 @keyframes mlWobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-6deg)}}
 @media(prefers-reduced-motion:reduce){.ml-away .ml-emoji{animation:none}}
 .ml-popup .leaflet-popup-content{margin:14px 16px;min-width:250px}
+
+/* ดูไฟรอบตัวฉัน: level, ring counts, advice, ring labels on the map */
+.ml-level{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel-2)}
+.ml-level>span{font-size:24px;line-height:1.1}
+.ml-level small{display:block;font-size:12.5px;color:var(--muted)}
+.ml-level b{display:block;font-size:17px;line-height:1.35}
+.ml-level em{display:block;margin-top:3px;font-style:normal;font-size:13px;color:var(--muted)}
+.ml-level em b{display:inline;font-size:13px;color:var(--txt)}
+.ml-level.high{border-color:#ef4444;background:rgba(239,68,68,.13)}.ml-level.high b{color:#fca5a5}
+.ml-level.watch{border-color:#f59e0b;background:rgba(245,158,11,.12)}.ml-level.watch b{color:#fcd34d}
+.ml-level.low{border-color:rgba(67,176,95,.6);background:rgba(67,176,95,.10)}.ml-level.low b{color:#86efac}
+body.light-mode .ml-level.high b{color:#b91c1c}body.light-mode .ml-level.watch b{color:#92400e}body.light-mode .ml-level.low b{color:#166534}
+body.light-mode .ml-level em b{color:inherit}
+.ml-why{margin:8px 0 0;padding-left:18px;font-size:13.5px}
+.ml-sub{margin:12px 0 6px;font-size:13px;font-weight:700;color:var(--muted)}
+.ml-rings{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ml-rings li{padding:7px 4px;border-radius:10px;border:1px solid var(--line);text-align:center}
+.ml-rings li b{display:block;font-size:18px;line-height:1.2}
+.ml-rings li small{display:block;font-size:12px;color:var(--muted)}
+.ml-rings li.has{border-color:#f97316;background:rgba(249,115,22,.1)}
+.ml-rings li:nth-child(1).has{border-color:#ef4444;background:rgba(239,68,68,.13)}
+.ml-advice{margin:0;padding-left:18px;font-size:14px;line-height:1.6}
+.ml-actions{flex-wrap:wrap}
+.ml-ring-label{pointer-events:none}
+.ml-ring-label span{display:inline-block;transform:translateY(-50%);padding:1px 7px;border-radius:999px;border:1.5px solid;background:rgba(7,10,14,.82);color:#fff;font:700 12px/1.5 var(--font);white-space:nowrap}
+.leaflet-marker-icon.ml-ring-label{display:flex;align-items:center;justify-content:center}
+.leaflet-marker-icon.ml-ring-label span{transform:none}
+.ml-me-dot{width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,.3)}
