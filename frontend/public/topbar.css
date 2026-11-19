@@ -173,3 +173,6 @@ a:has(>.hotline-what.in-btn){display:inline-flex!important;flex-direction:column
 
 /* Taps always land on the button itself, never on its icon or name (those get redrawn). */
 .auth-btn *{pointer-events:none}
+
+/* Phones: the menu is moved to <body> when opened (see onAuthBtnClick), so it is never clipped by the bar. */
+@media(max-width:820px),(max-width:980px) and (max-height:500px){body>.auth-dropdown{position:fixed!important;top:calc(56px + env(safe-area-inset-top,0px))!important;right:12px!important;left:auto!important;z-index:2500!important}}
