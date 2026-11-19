@@ -3030,6 +3030,11 @@ document.querySelectorAll('.layer').forEach(el=>{
 function updateAuthUI(){
   const btn = document.getElementById('authBtn');
   const who = document.getElementById('authWhoText');
+  // Supabase re-announces the session on focus and token refresh. Redrawing the button then swapped
+  // the icon out from under a finger on iPhone and the tap was lost, so redraw only when the account changes.
+  const key=currentUser?(currentUser.id||'')+'|'+(currentUser.email||'')+'|'+(currentUser.user_metadata?.full_name||''):'';
+  if(btn.dataset.authKey===key&&btn.dataset.authKey!==undefined)return;
+  btn.dataset.authKey=key;
   if(currentUser){
     const name = currentUser.user_metadata?.full_name || currentUser.email;
     btn.classList.add('logged-in');
