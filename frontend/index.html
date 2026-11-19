@@ -3892,14 +3892,14 @@ function myLocationHtml(lat,lon,accuracy){
   const why=a.reasons.slice(1).map(t=>`<li>${e(t)}</li>`).join('');
   const sat=globalThis.CmeSatPasses?`<p class="ml-note">${e(CmeSatPasses.short())} ไฟที่เพิ่งเริ่มอาจยังไม่ขึ้น</p>`:'';
   return `<div class="ml-card">
-    <p class="ml-kicker">📍 คุณอยู่ที่</p><h3>${where}</h3>
+    <div class="ml-top"><p class="ml-kicker">📍 คุณอยู่ที่</p><button type="button" class="ml-close" data-ml="clear">✕ ปิดวงรอบตัว</button></div><h3>${where}</h3>
     <div class="ml-level ${a.level}"><span aria-hidden="true">${icon}</span><div><small>ระดับรอบตัวคุณตอนนี้</small><b>${e(a.label)} · ${e(a.head)}</b>${nearTxt?`<em>${nearTxt}</em>`:''}</div></div>
     ${why?`<ul class="ml-why">${why}</ul>`:''}
     <p class="ml-sub">จุดความร้อนใน 24 ชม. ตามวงระยะ (วงบนแผนที่)</p>
     <ol class="ml-rings">${ringRow}</ol>
     <p class="ml-sub">ควรทำอะไร</p>
     <ul class="ml-advice">${a.advice.map(t=>`<li>${e(t)}</li>`).join('')}</ul>
-    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<button type="button" class="ml-btn" data-ml="3d">⛰️ ดูแบบ 3D</button><button type="button" class="ml-btn" data-ml="clear">✕ ปิดวงรอบตัว</button><a class="ml-btn call" href="tel:1362">📞 โทร 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a></div>
+    <div class="ml-actions">${near?'<button type="button" class="ml-btn" data-ml="nearest">ดูจุดที่ใกล้ที่สุด</button>':''}<button type="button" class="ml-btn" data-ml="3d">⛰️ ดูแบบ 3D</button><a class="ml-btn call" href="tel:1362">📞 โทร 1362<small class="hotline-what in-btn">สายด่วนกรมอุทยานฯ</small></a></div>
     <p class="ml-note">ดูจากระยะห่างจุดที่ดาวเทียมเห็น ทิศลม และฝุ่นใกล้คุณเท่านั้น ไม่ใช่การวัดความเสี่ยงจริง ตำแหน่งของคุณอยู่ในเครื่องนี้ ไม่ได้ส่งไปที่ไหน</p>${sat}${fuzzy}
   </div>`;
 }
@@ -3951,10 +3951,13 @@ function showMyLocation(lat,lon,accuracy){
     let host;
     if(isMobileViewport()&&window.CmeHotspotSheet){map.closePopup();const lv=inside?CmePublicGuidance.aroundMe({lat,lon},hotspots,aroundMeContext(lat,lon)):null;
       // Opens low so the rings stay visible; the title already says the level. Tap or drag up for the advice.
-      CmeHotspotSheet.openPanel({kicker:inside?'รอบตัวคุณ · แตะเพื่อดูคำแนะนำ':'ตำแหน่งของฉัน',title:lv?({high:'🔥 ',watch:'⚠️ ',low:'🌿 '}[lv.level]+lv.label+' · '+lv.head):'นอกเขตเชียงใหม่',html,stop:inside?'peek':'half',
+      CmeHotspotSheet.openPanel({kicker:inside?'รอบตัวคุณ · แตะเพื่อดูคำแนะนำ · ✕ ปิดวง':'ตำแหน่งของฉัน',title:lv?({high:'🔥 ',watch:'⚠️ ',low:'🌿 '}[lv.level]+lv.label+' · '+lv.head):'นอกเขตเชียงใหม่',html,stop:inside?'peek':'half',
         // ✕ on this sheet also takes the rings off the map (not when another panel replaces it).
         onClose:()=>{if(!_keepMyRings&&!CmeHotspotSheet.isOpen())clearMyLocation();_keepMyRings=false;}});host=document.querySelector('#hotspotSheet .hs-sheet-body');}
-    else{dot.bindPopup(html,{maxWidth:320,className:'ml-popup'}).openPopup();host=dot.getPopup()?.getElement();}
+    else{dot.bindPopup(html,{maxWidth:320,className:'ml-popup'}).openPopup();host=dot.getPopup()?.getElement();
+      // Desktop: the popup's ✕ also takes the rings off the map (clicking elsewhere only closes the popup).
+      const x=host?.querySelector('.leaflet-popup-close-button');
+      if(x&&!x.dataset.mlClear){x.dataset.mlClear='1';x.title='ปิดวงรอบตัว';x.setAttribute('aria-label','ปิดวงรอบตัว');x.addEventListener('click',()=>clearMyLocation());}}
     if(!host||host.dataset.mlWired)return;host.dataset.mlWired='1';
     host.addEventListener('click',ev=>{
       const b=ev.target.closest?.('[data-ml]');if(!b)return;

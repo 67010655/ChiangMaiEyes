@@ -369,3 +369,7 @@ body.light-mode .ml-level em b{color:inherit}
 .leaflet-marker-icon.ml-ring-label{display:flex;align-items:center;justify-content:center}
 .leaflet-marker-icon.ml-ring-label span{transform:none}
 .ml-me-dot{width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,.3)}
+.ml-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ml-top .ml-kicker{margin:0}
+.ml-close{flex:none;min-height:36px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel-2);color:var(--txt);font:600 13.5px var(--font);cursor:pointer}
+.ml-close:hover{border-color:var(--muted)}
