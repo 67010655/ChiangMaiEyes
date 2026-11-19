@@ -918,7 +918,11 @@
       padding-bottom:calc(var(--nav-h,calc(52px + env(safe-area-inset-bottom,0px))) + 14px);
       box-shadow:0 -8px 30px rgba(0,0,0,.35);
     }
-    .side.left.drawer-open,.side.right.drawer-open{bottom:0}
+    /* Open drawers end above the bottom menu (not under it) and use the visible height (dvh), so on
+       iPhone Safari nothing hides behind the menu or the browser bar. */
+    .side.left.drawer-open,.side.right.drawer-open{bottom:var(--nav-h,calc(52px + env(safe-area-inset-bottom,0px)));
+      max-height:calc(100dvh - var(--nav-h,60px) - 96px);padding-bottom:16px;
+      overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
     /* mobile summary strip: brand, active hotspots, PM2.5, AQI — critical
        zones dropped (redundant with active hotspots) to cut crowding */
     .topbar{gap:4px;padding:0 8px;overflow-x:hidden}
@@ -3795,6 +3799,9 @@ function openMobileDrawer(side,opener=document.activeElement){
   const trigger=document.getElementById(side==='left'?'mobileLayersBtn':'tabletInsightsBtn');
   mobileDrawerOpener=previous||(opener&&opener!==document.body?opener:trigger);
   panel.classList.add('drawer-open');panel.tabIndex=-1;
+  // iPhone Safari can keep a panel that slid in from off-screen unscrollable; re-enabling its overflow
+  // after it is in place makes Safari set up touch scrolling again.
+  panel.style.overflowY='hidden';setTimeout(()=>{panel.style.overflowY='';panel.scrollTop=0;},40);
   panel.id=panel.id||side+'MapDrawer';panel.setAttribute('role','region');
   panel.setAttribute('aria-label',side==='left'?'ชั้นข้อมูลและแจ้งเตือน':'สรุปอากาศและสถิติ');
   trigger?.setAttribute('aria-controls',panel.id);trigger?.setAttribute('aria-expanded','true');
